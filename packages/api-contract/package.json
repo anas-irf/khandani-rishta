@@ -1,0 +1,19 @@
+{
+  "name": "@khandani/api-contract",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "OpenAPI contract of the Khandani Rishta API and the TypeScript types generated from it.",
+  "exports": {
+    ".": {
+      "types": "./src/schema.d.ts"
+    }
+  },
+  "scripts": {
+    "generate": "openapi-typescript ./openapi.json --output ./src/schema.d.ts"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.13.0",
+    "typescript": "npm:@typescript/typescript6@^6.0.2"
+  }
+}

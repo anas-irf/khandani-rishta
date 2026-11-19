@@ -1,0 +1,26 @@
+# Local PostgreSQL for development. The credentials are for local use only.
+# Start:  docker compose -f infra/local/docker-compose.yml up -d
+# Stop:   docker compose -f infra/local/docker-compose.yml down
+name: khandani
+
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: khandani
+      POSTGRES_PASSWORD: khandani
+      POSTGRES_DB: khandani_dev
+    ports:
+      # Host port 5433, so it doesn't clash with a PostgreSQL installed directly on the machine.
+      - "127.0.0.1:5433:5432"
+    volumes:
+      # PostgreSQL 18+ images keep their data under /var/lib/postgresql/<version>.
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U khandani -d khandani_dev"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres-data:

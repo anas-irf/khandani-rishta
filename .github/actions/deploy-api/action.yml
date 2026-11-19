@@ -1,0 +1,66 @@
+name: Deploy API to a VM
+description: Uploads the API release to a VM over SSH through Cloudflare Access, then activates it with deploy.sh.
+
+inputs:
+  ssh-host:
+    description: SSH hostname behind Cloudflare Access, for example ssh.example.com
+    required: true
+  ssh-user:
+    description: Admin user on the VM
+    required: true
+  ssh-private-key:
+    description: Private key of the admin user
+    required: true
+  ssh-known-hosts:
+    description: known_hosts entry for the SSH hostname
+    required: true
+  access-client-id:
+    description: Cloudflare Access service token client ID
+    required: true
+  access-client-secret:
+    description: Cloudflare Access service token client secret
+    required: true
+  release-archive:
+    description: Path to the release archive built by the API workflow
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Install cloudflared
+      shell: bash
+      run: |
+        curl -fsSL -o "$RUNNER_TEMP/cloudflared.deb" https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+        sudo dpkg -i "$RUNNER_TEMP/cloudflared.deb"
+
+    - name: Configure SSH
+      shell: bash
+      env:
+        SSH_HOST: ${{ inputs.ssh-host }}
+        SSH_USER: ${{ inputs.ssh-user }}
+        SSH_PRIVATE_KEY: ${{ inputs.ssh-private-key }}
+        SSH_KNOWN_HOSTS: ${{ inputs.ssh-known-hosts }}
+      run: |
+        install -d -m 700 ~/.ssh
+        printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+        chmod 600 ~/.ssh/deploy_key
+        printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+        cat > ~/.ssh/config <<EOF
+        Host deploy-target
+          HostName ${SSH_HOST}
+          User ${SSH_USER}
+          IdentityFile ~/.ssh/deploy_key
+          IdentitiesOnly yes
+          ProxyCommand cloudflared access ssh --hostname %h --service-token-id \$TUNNEL_SERVICE_TOKEN_ID --service-token-secret \$TUNNEL_SERVICE_TOKEN_SECRET
+        EOF
+
+    - name: Upload and activate the release
+      shell: bash
+      env:
+        TUNNEL_SERVICE_TOKEN_ID: ${{ inputs.access-client-id }}
+        TUNNEL_SERVICE_TOKEN_SECRET: ${{ inputs.access-client-secret }}
+        RELEASE_ARCHIVE: ${{ inputs.release-archive }}
+      run: |
+        release_id="${GITHUB_SHA}"
+        ssh deploy-target "mkdir -p /opt/khandani/releases/${release_id} && tar -xzf - -C /opt/khandani/releases/${release_id}" < "$RELEASE_ARCHIVE"
+        ssh deploy-target "/opt/khandani/releases/${release_id}/bin/deploy.sh ${release_id}"

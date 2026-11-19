@@ -1,0 +1,32 @@
+[Unit]
+Description=Khandani Rishta API
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=khandani
+Group=khandani
+EnvironmentFile=/etc/khandani/api.env
+ExecStart=/opt/khandani/current/khandani-api
+Restart=always
+RestartSec=2
+
+# Keep a runaway process from starving the rest of the 1 GiB VM.
+MemoryMax=700M
+LimitNOFILE=65536
+
+# Hardening: the API needs no write access to the filesystem.
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target

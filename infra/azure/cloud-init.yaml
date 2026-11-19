@@ -1,0 +1,43 @@
+#cloud-config
+# First-boot setup for both API VMs (production and staging).
+# Paste this file into "Custom data" when creating the VM in the Azure portal.
+
+package_update: true
+package_upgrade: true
+packages:
+  - curl
+  - postgresql-client
+  - rclone
+  - unattended-upgrades
+
+groups:
+  - khandani
+
+users:
+  - default
+  # System account that runs the API. It can't log in.
+  - name: khandani
+    system: true
+    primary_group: khandani
+    shell: /usr/sbin/nologin
+    no_create_home: true
+
+write_files:
+  - path: /etc/systemd/journald.conf.d/size.conf
+    content: |
+      [Journal]
+      SystemMaxUse=1G
+
+runcmd:
+  # 2 GiB swap: the VMs only have 1 GiB of RAM.
+  - [sh, -c, 'if [ ! -f /swapfile ]; then fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile && echo "/swapfile none swap sw 0 0" >> /etc/fstab; fi']
+  - systemctl restart systemd-journald
+  # Releases belong to the admin user (uid 1000) that deploys them.
+  - install -d -o 1000 -g 1000 /opt/khandani /opt/khandani/releases
+  # Env files: readable by root and the khandani group only.
+  - install -d -m 0750 -o root -g khandani /etc/khandani
+  # cloudflared from Cloudflare's package repository.
+  - install -d -m 0755 /usr/share/keyrings
+  - curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg -o /usr/share/keyrings/cloudflare-main.gpg
+  - echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared any main' > /etc/apt/sources.list.d/cloudflared.list
+  - apt-get update && apt-get install -y cloudflared

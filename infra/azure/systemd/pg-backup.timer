@@ -1,0 +1,10 @@
+[Unit]
+Description=Nightly database dump to Cloudflare R2
+
+[Timer]
+OnCalendar=*-*-* 02:00:00 UTC
+RandomizedDelaySec=15min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

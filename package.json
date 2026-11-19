@@ -3,6 +3,9 @@
   "private": true,
   "packageManager": "pnpm@12.21.0",
   "scripts": {
+    "bootstrap": "node scripts/bootstrap.mjs",
+    "db:start": "docker compose -f infra/local/docker-compose.yml up -d --wait",
+    "db:stop": "docker compose -f infra/local/docker-compose.yml down",
     "dev:web": "pnpm --filter @khandani/web dev",
     "build:web": "pnpm --filter @khandani/web build",
     "generate:api-client": "pnpm --filter @khandani/api-contract generate",

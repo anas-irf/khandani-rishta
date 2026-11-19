@@ -105,7 +105,7 @@ Ground rules:
 | | Local | Staging | Production |
 |---|---|---|---|
 | Web | Vite dev server (`pnpm dev`) | Workers `staging` environment at `staging.<domain>` | Workers at `<domain>` and `www.<domain>` |
-| API | `cargo run` on port 8080 | Azure VM `B1s` at `api-staging.<domain>` | Azure VM `B2ats_v2` at `api.<domain>` |
+| API | `cargo run` on port 8787 | Azure VM `B1s` at `api-staging.<domain>` | Azure VM `B2ats_v2` at `api.<domain>` |
 | Database | PostgreSQL 18 in Docker | `khandani_staging` database on the shared Flexible Server | `khandani_prod` database on the shared Flexible Server |
 | Files | R2 bucket `kr-dev-media` | R2 bucket `kr-staging-media` | R2 bucket `kr-prod-media` |
 | Auth | Clerk Development instance | Clerk Development instance | Clerk Production instance |
@@ -500,6 +500,8 @@ No log-shipping agent on the VMs. It would compete for RAM on 1 GiB machines.
 | Node.js 26 LTS and pnpm | Web tooling |
 | Android Studio (latest stable) | Android app |
 | Azure CLI, `cloudflared`, GitHub CLI | Operations |
+
+`pnpm bootstrap` in the repository root starts PostgreSQL, the API and the web app in one terminal, and restarts the API when its code changes. Without a local Rust install, it builds and runs the API in the `rust` Docker image.
 
 Secrets come from each app's git-ignored env file (section 15). Optional: develop the API inside WSL 2 (Ubuntu) for a Linux setup closer to production.
 

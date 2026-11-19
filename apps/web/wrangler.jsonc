@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "khandani-web",
+  "compatibility_date": "2026-11-18",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry",
+  "observability": {
+    "enabled": true
+  },
+  // Production. Add the custom domains once the domain is on Cloudflare:
+  // "routes": [
+  //   { "pattern": "example.com", "custom_domain": true },
+  //   { "pattern": "www.example.com", "custom_domain": true }
+  // ],
+  "env": {
+    // Built with CLOUDFLARE_ENV=staging, then deployed with `wrangler deploy`.
+    "staging": {
+      "name": "khandani-web-staging"
+      // "routes": [{ "pattern": "staging.example.com", "custom_domain": true }]
+    }
+  }
+}

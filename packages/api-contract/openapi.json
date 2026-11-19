@@ -1,0 +1,131 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Khandani Rishta API",
+    "description": "HTTP API used by the Khandani Rishta web and Android apps.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/healthz": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "The API process is running.",
+        "operationId": "healthz",
+        "responses": {
+          "200": {
+            "description": "The process is up",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/readyz": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "The API can reach the database and is ready for traffic.",
+        "operationId": "readyz",
+        "responses": {
+          "200": {
+            "description": "Ready to serve traffic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The database is unreachable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/meta": {
+      "get": {
+        "tags": [
+          "meta"
+        ],
+        "summary": "Name, version and environment of the running API.",
+        "operationId": "meta",
+        "responses": {
+          "200": {
+            "description": "API information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Meta"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Health": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "`ok` when healthy, `unavailable` otherwise."
+          }
+        }
+      },
+      "Meta": {
+        "type": "object",
+        "required": [
+          "name",
+          "version",
+          "environment"
+        ],
+        "properties": {
+          "environment": {
+            "type": "string",
+            "description": "Deployment the API runs in: `local`, `staging` or `production`."
+          },
+          "name": {
+            "type": "string",
+            "description": "Service name."
+          },
+          "version": {
+            "type": "string",
+            "description": "Version of the running build."
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "health",
+      "description": "Liveness and readiness checks"
+    },
+    {
+      "name": "meta",
+      "description": "Information about the running API"
+    }
+  ]
+}

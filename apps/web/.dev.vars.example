@@ -1,0 +1,3 @@
+# Copy to .dev.vars for local development. Never commit real values.
+# Server-side secrets for the Worker (read during `pnpm dev`). On staging and
+# production, upload each value with `wrangler secret put <NAME> --env <env>`.

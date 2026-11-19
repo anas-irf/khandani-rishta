@@ -1,0 +1,152 @@
+name: API
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - apps/api/**
+      - infra/azure/**
+      - packages/api-contract/openapi.json
+      - .github/actions/deploy-api/**
+      - .github/workflows/api.yml
+  pull_request:
+    paths:
+      - apps/api/**
+      - infra/azure/**
+      - packages/api-contract/openapi.json
+      - .github/actions/deploy-api/**
+      - .github/workflows/api.yml
+  workflow_dispatch:
+    inputs:
+      deploy_production:
+        description: Deploy this commit to production
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: api-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    name: Check and build
+    runs-on: ubuntu-26.04
+    defaults:
+      run:
+        working-directory: apps/api
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: khandani
+          POSTGRES_PASSWORD: khandani
+          POSTGRES_DB: khandani_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U khandani -d khandani_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://khandani:khandani@localhost:5432/khandani_test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install the pinned Rust toolchain
+        run: |
+          channel="$(grep -oP '^channel = "\K[^"]+' rust-toolchain.toml)"
+          rustup toolchain install "$channel" --profile minimal --component clippy,rustfmt
+
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          workspaces: apps/api
+
+      - name: Format
+        run: cargo fmt --check
+
+      - name: Lint
+        run: cargo clippy --all-targets --locked -- -D warnings
+
+      - name: Test
+        run: cargo test --locked
+
+      - name: Check the committed OpenAPI spec is current
+        run: |
+          cargo run --locked --quiet -- openapi > ../../packages/api-contract/openapi.json
+          git diff --exit-code -- ../../packages/api-contract/openapi.json
+
+      - name: Build the release binary
+        if: github.event_name != 'pull_request'
+        run: cargo build --release --locked
+
+      - name: Package the release
+        if: github.event_name != 'pull_request'
+        run: |
+          mkdir -p release/bin release/systemd
+          cp target/release/khandani-api release/
+          cp ../../infra/azure/bin/*.sh release/bin/
+          cp ../../infra/azure/systemd/* release/systemd/
+          chmod +x release/khandani-api release/bin/*.sh
+          tar -czf khandani-api.tar.gz -C release .
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: github.event_name != 'pull_request'
+        with:
+          name: khandani-api
+          path: apps/api/khandani-api.tar.gz
+          retention-days: 14
+
+  deploy-staging:
+    name: Deploy to staging
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-26.04
+    environment: staging
+    concurrency:
+      group: deploy-api-staging
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: khandani-api
+      - uses: ./.github/actions/deploy-api
+        with:
+          ssh-host: ${{ vars.SSH_HOST }}
+          ssh-user: ${{ vars.SSH_USER }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-known-hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
+          access-client-id: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          access-client-secret: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+          release-archive: khandani-api.tar.gz
+
+  deploy-production:
+    name: Deploy to production
+    needs: check
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy_production && github.ref == 'refs/heads/main' && vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-26.04
+    environment: production
+    concurrency:
+      group: deploy-api-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: khandani-api
+      - uses: ./.github/actions/deploy-api
+        with:
+          ssh-host: ${{ vars.SSH_HOST }}
+          ssh-user: ${{ vars.SSH_USER }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-known-hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
+          access-client-id: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          access-client-secret: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+          release-archive: khandani-api.tar.gz

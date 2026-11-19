@@ -202,7 +202,7 @@ function spawnApi() {
   spawnSync('docker', ['rm', '-f', apiContainer], { stdio: 'ignore' })
   const toolchain = readFileSync(join(apiDir, 'rust-toolchain.toml'), 'utf8')
   const channel = /channel\s*=\s*"([^"]+)"/.exec(toolchain)?.[1]
-  if (!channel) fail('Could not read the Rust version from apps/api/rust-toolchain.toml.')
+  if (!channel) throw new Error('apps/api/rust-toolchain.toml has no channel')
   const port = apiPort()
   // Inside the container, "localhost" is the container itself, so reach the database via the host.
   const databaseUrl = new URL(readApiEnv().DATABASE_URL)
@@ -264,7 +264,17 @@ async function stopApi() {
 }
 
 function startApi() {
-  const child = spawnApi()
+  let child
+  try {
+    child = spawnApi()
+  } catch (error) {
+    // For example while a branch switch has removed files. Wait for the next change.
+    api = undefined
+    say(
+      `Could not start the API (${error.message}). It restarts when you save a change in apps/api.`,
+    )
+    return
+  }
   api = child
   child.on('exit', (code) => {
     afterGrace(() => {
@@ -282,8 +292,11 @@ async function restartApi() {
   }
   restarting = true
   say('API code changed, restarting the API...')
-  await stopApi()
-  restarting = false
+  try {
+    await stopApi()
+  } finally {
+    restarting = false
+  }
   if (shuttingDown) return
   startApi()
   if (restartQueued) {
@@ -335,6 +348,14 @@ if (!useNativeRust) {
 
 process.on('SIGINT', () => shutdown(0))
 process.on('SIGTERM', () => shutdown(0))
+
+// Never exit on an unexpected error without stopping the API and the web app first.
+for (const event of ['uncaughtException', 'unhandledRejection']) {
+  process.on(event, (error) => {
+    console.error(`${paint('1;31', 'x')} ${error?.stack ?? error}`)
+    shutdown(1)
+  })
+}
 
 startApi()
 watchApi()

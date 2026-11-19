@@ -265,8 +265,8 @@ Cloudflare Workers hosting:
 |---|---|---|
 | Language | Kotlin | 2.4 |
 | UI | Jetpack Compose with Material 3 (Compose BOM) | BOM 2026.11 |
-| Build | Android Gradle Plugin, Gradle (Kotlin DSL), version catalog (`gradle/libs.versions.toml`) | AGP 9.5, Gradle 9.9 |
-| JDK | Android Studio's bundled JDK | |
+| Build | Android Gradle Plugin, Gradle (Kotlin DSL), version catalog (`gradle/libs.versions.toml`) | AGP 9.4 (the newest the installed Android Studio supports), Gradle 9.9 |
+| JDK | Gradle runs on JDK 25, downloaded automatically (`gradle/gradle-daemon-jvm.properties`) | |
 | SDK levels | `minSdk 26` (Android 8.0; Clerk needs 24 or higher). `compileSdk` 37.2 (Android 17 QPR2, required by the current Compose libraries). `targetSdk` 37 (Android 17) | |
 | Architecture | Single activity, MVVM (ViewModel + Kotlin Coroutines and Flow) | |
 | Dependency injection | Hilt, with KSP for code generation | 2.60, KSP 2.3 |

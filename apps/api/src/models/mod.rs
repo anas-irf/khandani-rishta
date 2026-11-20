@@ -1,8 +1,15 @@
 //! Request and response types (serde, utoipa `ToSchema`), one file per area (21 section 2).
 
+pub mod admin;
+pub mod connections;
+pub mod discovery;
+pub mod interests;
 pub mod me;
+pub mod notifications;
 pub mod photos;
+pub mod profile;
 pub mod reference;
+pub mod verifications;
 
 use time::{Duration, OffsetDateTime};
 

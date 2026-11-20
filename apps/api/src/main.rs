@@ -26,12 +26,14 @@ mod realtime;
 mod reference;
 mod routes;
 mod sanctions;
+mod seed;
 mod services;
 mod settings;
 mod state;
 mod telemetry;
 #[cfg(test)]
 mod test_support;
+mod views;
 
 use std::net::SocketAddr;
 use std::time::Duration;
@@ -60,6 +62,7 @@ fn main() -> anyhow::Result<()> {
     }
 
     let config = Config::from_env()?;
+    let seed_dev = std::env::args().nth(1).as_deref() == Some("seed-dev");
 
     // Sentry has to start before the async runtime.
     let _sentry = telemetry::init_sentry(&config);
@@ -69,7 +72,30 @@ fn main() -> anyhow::Result<()> {
         .enable_all()
         .build()
         .context("failed to start the Tokio runtime")?
-        .block_on(serve(config))
+        .block_on(async move {
+            if seed_dev {
+                seed_dev_command(config).await
+            } else {
+                serve(config).await
+            }
+        })
+}
+
+/// `cargo run -- seed-dev`: fake profiles for local and staging use. Refuses production.
+async fn seed_dev_command(config: Config) -> anyhow::Result<()> {
+    if config.app_env == config::AppEnv::Production {
+        anyhow::bail!("seed-dev refuses to run when APP_ENV=production");
+    }
+    let db = PgPoolOptions::new()
+        .max_connections(config.database_max_connections)
+        .connect(&config.database_url)
+        .await
+        .context("failed to connect to PostgreSQL")?;
+    sqlx::migrate!("./migrations")
+        .run(&db)
+        .await
+        .context("failed to run database migrations")?;
+    seed::run(&config, &db).await
 }
 
 async fn serve(config: Config) -> anyhow::Result<()> {

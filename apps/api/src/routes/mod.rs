@@ -9,10 +9,12 @@ mod interests;
 pub mod me;
 mod meta;
 mod notifications;
+mod photo_access;
 mod photos;
 mod profile;
 mod reference;
 mod relations;
+mod reports;
 mod verifications;
 mod webhooks;
 mod ws;
@@ -60,6 +62,8 @@ pub fn api_router() -> OpenApiRouter<AppState> {
         .merge(interests::router())
         .merge(connections::router())
         .merge(relations::router())
+        .merge(photo_access::router())
+        .merge(reports::router())
         .merge(ws::router())
         .nest("/admin", admin::router());
 

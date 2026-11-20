@@ -1,4 +1,4 @@
-//! Shortlist, pass, block, photo access and reports (15 section 13).
+//! Shortlist, pass and block (15 section 13).
 
 use utoipa_axum::router::OpenApiRouter;
 

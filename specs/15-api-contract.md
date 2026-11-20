@@ -12,7 +12,7 @@ Every screen document refers to endpoints by the method and path given here. Fie
 
 | Topic | Rule |
 |---|---|
-| Base URL | `https://api.<domain>` (production), `https://api-staging.<domain>` (staging), `http://localhost:8787` (local). All product routes start with `/v1`. |
+| Base URL | `https://api.khandanirishta.app` (production), `https://api-staging.khandanirishta.app` (staging), `http://localhost:8787` (local). All product routes start with `/v1`. |
 | Format | JSON, UTF-8, `snake_case` keys. Requests with a body send `Content-Type: application/json`. |
 | Authentication | `Authorization: Bearer <Clerk session token>`. Details in 06 section 6. |
 | IDs | UUID strings. Lookup values are their `code`. `region_id` and `city_id` are integers. |
@@ -686,7 +686,7 @@ type SearchFilters = {
 | GET | `/v1/reference/regions?country_code=PK` | public | Regions of a country |
 | GET | `/v1/reference/cities` | public | City search |
 
-**`GET /v1/meta/app-release`** returns `{ "version_code": 12, "version_name": "1.3.0", "min_supported_version_code": 9, "download_url": "https://download.<domain>/khandani-rishta-1.3.0.apk", "release_notes": "..." }`, or `404 not_found` when no release exists.
+**`GET /v1/meta/app-release`** returns `{ "version_code": 12, "version_name": "1.3.0", "min_supported_version_code": 9, "download_url": "https://download.khandanirishta.app/khandani-rishta-1.3.0.apk", "release_notes": "..." }`, or `404 not_found` when no release exists.
 
 **`GET /v1/reference/bootstrap`** returns everything a client needs to render pickers. It supports `ETag` / `If-None-Match` and `Cache-Control: public, max-age=3600`. Clients cache it on disk and revalidate at start.
 

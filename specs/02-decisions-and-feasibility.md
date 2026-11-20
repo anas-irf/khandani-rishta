@@ -134,7 +134,7 @@ Each has a default that the specifications already follow. Changing an answer la
 | Q-08 | How is the Ahmadi community handled (D-24)? | Religion "Other", not a sect of Islam | Seed data. Needs the owner's and a lawyer's confirmation |
 | Q-09 | Should new profiles wait for a moderator before going live? | No for profile data, yes for photos (D-21) | Two settings |
 | Q-10 | Who moderates, and how quickly must a photo or a report be handled? | The owner at launch; photos within 24 hours, urgent reports within 12 hours | Staffing |
-| Q-11 | What are the domain name and the support email address? | `<domain>`, `support@<domain>` placeholders | Configuration |
+| Q-11 | What are the domain name and the support email address? | **Answered 2026-11-21:** `khandanirishta.app`, with `support@khandanirishta.app`. The specifications use it throughout | Configuration |
 | Q-12 | Who writes and reviews the Terms, Privacy Policy and Community Guidelines? | Outlines are in 16; a lawyer in Pakistan should review before launch | Content |
 | Q-13 | Should parents be able to manage several children's profiles under one login? | Not at launch (D-01) | Medium: remove one unique constraint, add a profile switcher |
 | Q-14 | Should a guardian be able to read the candidate's chats (chaperone mode)? | Not at launch; guardian contact sharing only | Medium |

@@ -91,7 +91,7 @@ Dotted lines are the staging path, which mirrors production on a smaller VM.
 Request paths:
 
 1. **Pages:** the browser loads the web app from Cloudflare Workers. Static assets come from Cloudflare's edge. Public pages are rendered on the Worker, signed-in screens render in the browser.
-2. **API:** the browser and the Android app call `https://api.<domain>/v1/...` with a Clerk session token. Cloudflare forwards the request through the production Tunnel to Axum on the production VM, which queries PostgreSQL in the same region.
+2. **API:** the browser and the Android app call `https://api.khandanirishta.app/v1/...` with a Clerk session token. Cloudflare forwards the request through the production Tunnel to Axum on the production VM, which queries PostgreSQL in the same region.
 3. **Files:** the API hands out short-lived presigned URLs. Clients upload to and download from R2 directly, so file bytes never pass through the VMs.
 4. **Auth:** Clerk handles sign-in on both clients. The API verifies Clerk tokens locally and receives Clerk webhooks to keep its own user records in sync.
 
@@ -104,8 +104,8 @@ Ground rules:
 
 | | Local | Staging | Production |
 |---|---|---|---|
-| Web | Vite dev server (`pnpm dev`) | Workers `staging` environment at `staging.<domain>` | Workers at `<domain>` and `www.<domain>` |
-| API | `cargo run` on port 8787 | Azure VM `B1s` at `api-staging.<domain>` | Azure VM `B2ats_v2` at `api.<domain>` |
+| Web | Vite dev server (`pnpm dev`) | Workers `staging` environment at `staging.khandanirishta.app` | Workers at `khandanirishta.app` and `www.khandanirishta.app` |
+| API | `cargo run` on port 8787 | Azure VM `B1s` at `api-staging.khandanirishta.app` | Azure VM `B2ats_v2` at `api.khandanirishta.app` |
 | Database | PostgreSQL 18 in Docker | `khandani_staging` database on the shared Flexible Server | `khandani_prod` database on the shared Flexible Server |
 | Files | R2 bucket `kr-dev-media` | R2 bucket `kr-staging-media` | R2 bucket `kr-prod-media` |
 | Auth | Clerk Development instance | Clerk Development instance | Clerk Production instance |
@@ -159,7 +159,7 @@ Each app commits an `.env.example`. Real env files are git-ignored (section 15).
 | Middleware | `tower`, `tower-http` (CORS, compression, timeouts, request ID, tracing, panic catching) | 0.5, 0.7 |
 | PostgreSQL access and migrations | `sqlx` (Postgres, rustls, compile-time checked queries) | 0.9 |
 | JSON | `serde`, `serde_json` | 1.x |
-| Input validation | `garde` | 0.23 |
+| Input validation | Hand-written validators that collect every field error into the API error body (`error.rs`, `domain/text_rules.rs`) | |
 | Clerk token verification | `jsonwebtoken`, with Clerk's JWKS cached in memory | 12 |
 | Clerk webhook signatures | `svix` | 2.10 |
 | Outbound HTTP (Resend, FCM, Azure AI) | `reqwest` (rustls) | 0.13 |
@@ -167,13 +167,21 @@ Each app commits an `.env.example`. Real env files are git-ignored (section 15).
 | R2 through the S3 API | `aws-sdk-s3` | 1.x |
 | IDs | `uuid` (v7, time-ordered) | 1.29 |
 | In-process cache | `moka` | 0.12 |
-| Rate limiting | `tower_governor` | 0.8 |
+| Rate limiting | In-process GCRA limiter (`ratelimit.rs`), keyed by verified user id, or by client IP for requests without a token | |
 | OpenAPI spec | `utoipa`, `utoipa-axum` | 6.0, 0.3 |
 | Logs and traces | `tracing`, `tracing-subscriber` (JSON output on staging and production) | 0.1, 0.3 |
 | Error tracking | `sentry`, `sentry-tower` | 0.49 |
 | Error types | `thiserror`, `anyhow` | 2.x, 1.x |
 | Image processing | `image` | 0.25 |
 | Local `.env` loading | `dotenvy` (local only) | 0.15 |
+| Identity number encryption | `aes-gcm` (AES-256-GCM) | 0.11 |
+| Keyed hashes, digests | `hmac`, `sha2` | 0.13, 0.11 |
+| Keys, nonces, codes | `base64`, `rand` | 0.23, 0.10 |
+| Text rules and chat safety patterns | `regex`, `unicode-normalization` | 1.x, 0.1 |
+| Dates, ages, `Asia/Karachi` day boundaries (fixed UTC+5) | `time` | 0.3 |
+| Wiping identity numbers from memory | `zeroize` | 1.x |
+| Service traits, stream helpers | `async-trait`, `futures-util` | 0.1, 0.3 |
+| Test doubles for outbound HTTP, WebSocket test client | `wiremock`, `tokio-tungstenite` (dev only) | 0.6, 0.29 |
 
 ### Runtime shape
 
@@ -182,7 +190,7 @@ Each app commits an `.env.example`. Real env files are git-ignored (section 15).
 - Background jobs live in a PostgreSQL table and are claimed with `FOR UPDATE SKIP LOCKED`. No Redis, no message broker.
 - Real-time updates use Axum WebSockets with in-process fan-out over Tokio channels. Clients ping every 30 seconds because Cloudflare closes idle connections.
 - Caching uses `moka`, always with a size cap (`max_capacity`), because each VM has 1 GiB of RAM.
-- Rate limits use `tower_governor` in memory, keyed by Clerk user ID, or by client IP from Cloudflare's `CF-Connecting-IP` header.
+- Rate limits are kept in memory, keyed by the verified user id (checked after token verification, so a forged `sub` cannot drain someone else's allowance), or by client IP from Cloudflare's `CF-Connecting-IP` header for requests without a token.
 - The cache, rate limiter and pub/sub sit behind small traits, so Redis (or Valkey) can replace them once we run more than one API instance.
 
 ### API conventions
@@ -256,7 +264,7 @@ Rendering:
 
 - Public pages are server-rendered or prerendered on the Worker for SEO and fast first paint.
 - Signed-in screens use TanStack Start's selective SSR (`ssr: false`) and render in the browser. Their data is per-user anyway, and this keeps each request well inside the Workers Free CPU limit.
-- The browser calls the API directly at `api.<domain>`. Server functions only fetch data for server-rendered pages, forwarding the user's Clerk token.
+- The browser calls the API directly at `api.khandanirishta.app`. Server functions only fetch data for server-rendered pages, forwarding the user's Clerk token.
 
 Cloudflare Workers hosting:
 
@@ -288,7 +296,7 @@ Cloudflare Workers hosting:
 
 Distribution (no Play Store for now):
 
-- On an `android-v*` tag, CI builds a signed release APK and uploads it to the public R2 bucket, served at `download.<domain>`, and attaches it to a GitHub Release. The version name comes from the tag and the version code from the workflow run number, so every release installs over the previous one.
+- On an `android-v*` tag, CI builds a signed release APK and uploads it to the public R2 bucket, served at `download.khandanirishta.app`, and attaches it to a GitHub Release. The version name comes from the tag and the version code from the workflow run number, so every release installs over the previous one.
 - The app checks the API for the latest version and prompts users to update.
 - One release keystore for the life of the app, stored in 1Password and as an encrypted GitHub Actions secret. Losing it means users must uninstall and reinstall to get updates.
 - Register on the Android Developer Console for developer verification before it is enforced in our users' countries (rolling out globally in 2027). Without it, users can only install through Android's advanced sideloading flow.
@@ -299,7 +307,9 @@ Distribution (no Play Store for now):
 ## 10. Authentication (Clerk)
 
 - Clerk runs sign-up, sign-in, sessions, email verification, Google sign-in and MFA for both clients. Its built-in bot protection (Cloudflare Turnstile) guards sign-ups.
-- **Instances:** Development (local and staging) and Production. The Production instance needs Clerk-provided DNS records on our domain (Frontend API, Account Portal and email records).
+- **Instances:** Development (local and staging) and Production, in the Clerk application "Khandani Rishta" (`app_3MNual4Fg0860GLX8xfhawZOecL`). The Development instance's Frontend API is `https://eminent-mutt-4798.clerk.accounts.dev` (the API's `CLERK_ISSUER`). The Production instance is created with `clerk deploy` and needs Clerk-provided DNS records on `khandanirishta.app` (Frontend API, Account Portal and email records), plus Google OAuth custom credentials (specs/06 section 4.3).
+- **Settings:** applied from the checklist in specs/06 section 2.1. Most are set with `clerk config patch`; two are dashboard-only toggles: "Allow users to delete their accounts" (off) and bot sign-up protection (on).
+- **Local keys:** `clerk env pull --app app_3MNual4Fg0860GLX8xfhawZOecL` prints the Development keys for `apps/web/.env.local`, `apps/web/.dev.vars` and `apps/api/.env`.
 - **Web:** `@clerk/tanstack-react-start`.
 - **Android:** Clerk Android SDK, with the Native API enabled in the Clerk dashboard.
 - **Tokens:** Clerk session tokens are short-lived JWTs (about 60 seconds) that the SDKs refresh automatically. Clients send them as `Authorization: Bearer <token>`.
@@ -313,7 +323,7 @@ Distribution (no Play Store for now):
 | Bucket | Access | Contents |
 |---|---|---|
 | `kr-dev-media`, `kr-staging-media`, `kr-prod-media` | Private, presigned URLs only | User uploads, one bucket per environment |
-| `kr-public` | Public through the custom domain `download.<domain>` | APKs and other public files |
+| `kr-public` | Public through the custom domain `download.khandanirishta.app` | APKs and other public files |
 | `kr-backups` | Private, 30-day lifecycle rule | Nightly database dumps |
 
 - Create the buckets with the location hint closest to most users (for example Asia-Pacific).
@@ -368,7 +378,7 @@ Both VMs get the same setup. Only the env file, the Tunnel hostnames and the bac
 | Component | Details |
 |---|---|
 | `khandani-api.service` | systemd unit running `/opt/khandani/current/khandani-api` as an unprivileged user, with `EnvironmentFile=/etc/khandani/api.env` and `Restart=always` |
-| `cloudflared.service` | A remotely managed Tunnel, installed with its token. Hostnames are set in the Cloudflare dashboard. Production: `api.<domain>` and `ssh.<domain>`. Staging: `api-staging.<domain>` and `ssh-staging.<domain>`. The API route points to `http://localhost:8080`, the SSH route to `ssh://localhost:22` behind Cloudflare Access |
+| `cloudflared.service` | A remotely managed Tunnel, installed with its token. Hostnames are set in the Cloudflare dashboard. Production: `api.khandanirishta.app` and `ssh.khandanirishta.app`. Staging: `api-staging.khandanirishta.app` and `ssh-staging.khandanirishta.app`. The API route points to `http://localhost:8080`, the SSH route to `ssh://localhost:22` behind Cloudflare Access |
 | `pg-backup.timer` | Production VM only: nightly `pg_dump` of `khandani_prod`, uploaded to R2 `kr-backups` with `rclone` |
 | Env files | `/etc/khandani/api.env` on both VMs, plus `/etc/khandani/backup.env` on production. Owned by root, readable only by the service's group, edited over SSH (section 15) |
 | OS upkeep | `unattended-upgrades` for security patches, a 2 GiB swap file, journald capped at 1 GiB |
@@ -390,7 +400,7 @@ Domain: the free first-year domain from the Student Pack (Name.com, Namecheap `.
 
 | Hostname | Target | Purpose |
 |---|---|---|
-| `<domain>`, `www` | Workers custom domain | Web app, production |
+| `khandanirishta.app`, `www` | Workers custom domain | Web app, production |
 | `staging` | Workers custom domain (staging environment) | Web app, staging |
 | `api` | Cloudflare Tunnel to the production VM | Production API |
 | `api-staging` | Cloudflare Tunnel to the staging VM | Staging API |
@@ -496,7 +506,7 @@ No log-shipping agent on the VMs. It would compete for RAM on 1 GiB machines.
 - Secrets live only in git-ignored env files, Workers secrets and GitHub Actions secrets, never in the repository (section 15).
 - Public-repository safeguards from section 16.
 - Every API route requires a valid Clerk token, except health checks and signature-verified webhooks.
-- API rate limits (`tower_governor`) plus Clerk's bot protection on sign-up.
+- API rate limits (in memory, per verified user and per IP) plus Clerk's bot protection on sign-up.
 - Uploaded images are re-encoded on the server, which strips EXIF data including GPS location.
 - Dependency checks: Dependabot alerts, dependency review on pull requests, `cargo deny` and `pnpm audit` (weekly), and a 1-day minimum release age for npm packages.
 - Workflow security: zizmor on every pull request, actions pinned to commit SHAs, read-only `GITHUB_TOKEN` by default.
@@ -560,7 +570,7 @@ Both environments run on the same free allowances, so they end together. Options
 2. Move production to Heroku with the student credit, if its 24 months are still running: Basic dyno + Postgres Essential-1 (10 GB) is about $16/month, $3 over the credit. This needs a Dockerfile for the API (Heroku's container stack). Staging would pause until there's budget for it.
 3. Stay on Azure and pay. Estimate with the Azure pricing calculator first.
 
-Moving is a deploy change, not a rewrite: `pg_dump` and `pg_restore`, point `api.<domain>` at the new host, copy the env file.
+Moving is a deploy change, not a rewrite: `pg_dump` and `pg_restore`, point `api.khandanirishta.app` at the new host, copy the env file.
 
 ### Key dates
 

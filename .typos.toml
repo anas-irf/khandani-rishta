@@ -2,6 +2,10 @@
 # Fix real mistakes in the text. Add a word here only when it is correct but looks like a
 # misspelling to the dictionary.
 
+[default]
+# Base64 bodies of PEM keys, such as the throwaway signing key in apps/api/src/test_support.rs.
+extend-ignore-re = ["(?s)-----BEGIN [A-Z ]+-----.*?-----END [A-Z ]+-----"]
+
 [default.extend-words]
 # Keys are lower case and also cover capitalised and upper case forms.
 # Surname and honorific in the Pakistani reference data (specs/05-reference-data.md).
@@ -10,3 +14,7 @@ mian = "mian"
 matric = "matric"
 # Bachelor of Arts, in the list of degree abbreviations.
 ba = "ba"
+
+[files]
+# Generated from GeoNames: tens of thousands of place names that are not dictionary words.
+extend-exclude = ["apps/api/migrations/0012_seed_geography.sql"]

@@ -450,7 +450,7 @@ All numbers that product rules depend on live in the `app_settings` table so an 
 | `legal.terms_version` | `"2026-11-20"` | Current Terms of Use version. |
 | `legal.privacy_version` | `"2026-11-20"` | Current Privacy Policy version. |
 | `legal.guidelines_version` | `"2026-11-20"` | Current Community Guidelines version. |
-| `support.email` | `"support@<domain>"` | Shown on blocked screens and in emails. |
+| `support.email` | `"support@khandanirishta.app"` | Shown on blocked screens and in emails. |
 | `announcement.banner` | `null` | Optional object `{ "text_en": "...", "text_ur": "...", "url": "..." }` shown at the top of the home screen. |
 
 Fixed limits that are part of validation and are not settings: text lengths (schema `CHECK`s), 6 additional languages, 10 hobbies, 200 shortlist entries, preference array sizes (04 section 5.6), photo file rules (08 section 5).

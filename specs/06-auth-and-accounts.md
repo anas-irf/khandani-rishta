@@ -50,7 +50,7 @@ There are two Clerk instances: **Development** (used by local machines and by st
 | Sessions | Session token version | 2 | 2 |
 | Native applications | Native API | On | On |
 | Native applications | Android app | Package `com.khandanirishta.app` with the debug SHA-256 fingerprint | Same package with the release SHA-256 fingerprint |
-| Webhooks | Endpoint | The `cloudflared` quick tunnel URL of the developer plus `https://api-staging.<domain>/webhooks/clerk` | `https://api.<domain>/webhooks/clerk` |
+| Webhooks | Endpoint | The `cloudflared` quick tunnel URL of the developer plus `https://api-staging.khandanirishta.app/webhooks/clerk` | `https://api.khandanirishta.app/webhooks/clerk` |
 | Webhooks | Subscribed events | `user.created`, `user.updated`, `user.deleted` | Same |
 | Domains | Frontend API, Account Portal and email DNS records | Not needed | The records Clerk lists, added in Cloudflare |
 | Paths | Sign-in URL, sign-up URL, redirect after sign-in | The routes defined in 17 | Same |
@@ -685,9 +685,9 @@ Product emails (interest received and so on) are sent to `users.email`. If a web
 
 | Variable | Secret | Example | Meaning |
 |---|---|---|---|
-| `CLERK_ISSUER` | No | `https://clerk.<domain>` (production), `https://<slug>.clerk.accounts.dev` (development) | Frontend API URL of the Clerk instance. Must equal the token's `iss`. No trailing slash. |
+| `CLERK_ISSUER` | No | `https://clerk.khandanirishta.app` (production), `https://<slug>.clerk.accounts.dev` (development) | Frontend API URL of the Clerk instance. Must equal the token's `iss`. No trailing slash. |
 | `CLERK_JWKS_URL` | No | empty | Optional override. Defaults to `<CLERK_ISSUER>/.well-known/jwks.json`. |
-| `CLERK_AUTHORIZED_PARTIES` | No | `https://<domain>,https://www.<domain>` | Comma-separated web origins accepted in `azp`. Locally `http://localhost:3000`. Usually the same list as `CORS_ALLOWED_ORIGINS`. |
+| `CLERK_AUTHORIZED_PARTIES` | No | `https://khandanirishta.app,https://www.khandanirishta.app` | Comma-separated web origins accepted in `azp`. Locally `http://localhost:3000`. Usually the same list as `CORS_ALLOWED_ORIGINS`. |
 | `CLERK_SECRET_KEY` | Yes | `sk_live_...` | Backend API key. Used for provisioning, sync, session revocation and user deletion. |
 | `CLERK_API_BASE_URL` | No | `https://api.clerk.com/v1` | Backend API base. Overridden in tests to point at a mock. |
 | `CLERK_WEBHOOK_SECRET` | Yes | `whsec_...` | Signing secret of this environment's webhook endpoint. |

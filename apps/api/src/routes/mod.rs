@@ -1,13 +1,30 @@
-//! HTTP routes and the middleware stack.
+//! HTTP routes and the middleware stack. One file per row of 15 section 17; handlers are thin.
 
+mod account;
+mod admin;
+mod connections;
+mod discovery;
 mod health;
+mod interests;
+pub mod me;
 mod meta;
+mod notifications;
+mod photo_access;
+mod photos;
+mod profile;
+mod reference;
+mod relations;
+mod reports;
+mod verifications;
+mod webhooks;
+mod ws;
 
 use std::time::Duration;
 
 use axum::Router;
-use axum::extract::Request;
+use axum::extract::{DefaultBodyLimit, Request};
 use axum::http::{HeaderName, HeaderValue, Method, StatusCode, header};
+use axum::response::IntoResponse;
 use tower::ServiceBuilder;
 use tower_http::catch_panic::CatchPanicLayer;
 use tower_http::compression::CompressionLayer;
@@ -19,6 +36,8 @@ use utoipa::OpenApi;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
+use crate::error::ApiError;
+use crate::extract::BODY_LIMIT_BYTES;
 use crate::openapi::ApiDoc;
 use crate::state::AppState;
 
@@ -30,10 +49,29 @@ const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 
 /// All routes with their OpenAPI metadata. Product routes go under `/v1`.
 pub fn api_router() -> OpenApiRouter<AppState> {
+    let v1 = OpenApiRouter::new()
+        .merge(meta::router())
+        .merge(reference::router())
+        .merge(me::router())
+        .merge(account::router())
+        .merge(notifications::router())
+        .merge(profile::router())
+        .merge(photos::router())
+        .merge(verifications::router())
+        .merge(discovery::router())
+        .merge(interests::router())
+        .merge(connections::router())
+        .merge(relations::router())
+        .merge(photo_access::router())
+        .merge(reports::router())
+        .merge(ws::router())
+        .nest("/admin", admin::router());
+
     OpenApiRouter::with_openapi(ApiDoc::openapi())
         .routes(routes!(health::healthz))
         .routes(routes!(health::readyz))
-        .nest("/v1", meta::router())
+        .nest("/v1", v1)
+        .nest("/webhooks", webhooks::router())
 }
 
 /// The complete application: routes, middleware and shared state.
@@ -67,9 +105,24 @@ pub fn app(state: AppState) -> Router {
             StatusCode::REQUEST_TIMEOUT,
             REQUEST_TIMEOUT,
         ))
-        .layer(CatchPanicLayer::new());
+        .layer(CatchPanicLayer::custom(|_| {
+            ApiError::Internal(anyhow::anyhow!("handler panicked")).into_response()
+        }))
+        .layer(axum::middleware::from_fn(crate::error::scope_request_id))
+        .layer(axum::middleware::from_fn_with_state(
+            state.clone(),
+            crate::middleware::ip_rate_limit,
+        ))
+        .layer(axum::middleware::from_fn_with_state(
+            state.clone(),
+            crate::middleware::android_version_check,
+        ));
 
-    router.layer(middleware).with_state(state)
+    router
+        .layer(DefaultBodyLimit::max(BODY_LIMIT_BYTES))
+        .fallback(|| async { ApiError::NotFound })
+        .layer(middleware)
+        .with_state(state)
 }
 
 fn cors_layer(origins: Vec<HeaderValue>) -> CorsLayer {
@@ -82,66 +135,144 @@ fn cors_layer(origins: Vec<HeaderValue>) -> CorsLayer {
             Method::PATCH,
             Method::DELETE,
         ])
-        .allow_headers([header::AUTHORIZATION, header::CONTENT_TYPE])
-        .expose_headers([REQUEST_ID_HEADER])
+        .allow_headers([
+            header::AUTHORIZATION,
+            header::CONTENT_TYPE,
+            header::IF_NONE_MATCH,
+            HeaderName::from_static("x-app-platform"),
+            HeaderName::from_static("x-app-version-code"),
+        ])
+        .expose_headers([REQUEST_ID_HEADER, header::ETAG, header::RETRY_AFTER])
         .max_age(Duration::from_hours(1))
 }
 
 #[cfg(test)]
 mod tests {
-    use axum::body::{Body, to_bytes};
-    use axum::http::{Request, StatusCode};
+    use axum::http::StatusCode;
+    use serde_json::json;
     use sqlx::PgPool;
-    use tower::ServiceExt;
 
-    use super::*;
-    use crate::config::Config;
-
-    /// Sends a GET request through the full middleware stack and returns the status, the
-    /// request ID header and the body.
-    async fn get(db: PgPool, path: &str) -> (StatusCode, Option<HeaderValue>, String) {
-        let app = app(AppState::new(Config::for_tests(), db));
-        let request = Request::get(path).body(Body::empty()).unwrap();
-
-        let response = app.oneshot(request).await.unwrap();
-
-        let status = response.status();
-        let request_id = response.headers().get(&REQUEST_ID_HEADER).cloned();
-        let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
-        (
-            status,
-            request_id,
-            String::from_utf8(body.to_vec()).unwrap(),
-        )
-    }
+    use crate::test_support::TestApp;
 
     #[sqlx::test]
     async fn healthz_reports_ok(db: PgPool) {
-        let (status, _, body) = get(db, "/healthz").await;
-
-        assert_eq!(status, StatusCode::OK);
-        assert_eq!(body, r#"{"status":"ok"}"#);
+        let app = TestApp::new(db).await;
+        let response = app.get("/healthz", None).await;
+        assert_eq!(response.status, StatusCode::OK);
+        assert_eq!(response.json, json!({ "status": "ok" }));
     }
 
     #[sqlx::test]
     async fn readyz_reports_ok_when_the_database_answers(db: PgPool) {
-        let (status, _, body) = get(db, "/readyz").await;
-
-        assert_eq!(status, StatusCode::OK);
-        assert_eq!(body, r#"{"status":"ok"}"#);
+        let app = TestApp::new(db).await;
+        let response = app.get("/readyz", None).await;
+        assert_eq!(response.status, StatusCode::OK);
     }
 
     #[sqlx::test]
     async fn every_response_carries_a_request_id(db: PgPool) {
-        let (_, request_id, _) = get(db, "/healthz").await;
-
-        assert!(request_id.is_some_and(|id| !id.is_empty()));
+        let app = TestApp::new(db).await;
+        let response = app.get("/healthz", None).await;
+        assert!(response.request_id.is_some_and(|id| !id.is_empty()));
     }
 
     #[sqlx::test]
-    async fn unknown_routes_return_404(db: PgPool) {
-        let (status, _, _) = get(db, "/v1/does-not-exist").await;
+    async fn unknown_routes_return_the_error_body(db: PgPool) {
+        let app = TestApp::new(db).await;
+        let response = app.get("/v1/does-not-exist", None).await;
+        assert_eq!(response.status, StatusCode::NOT_FOUND);
+        assert_eq!(response.json["error"]["code"], "not_found");
+        assert_eq!(
+            response.json["error"]["request_id"].as_str(),
+            response.request_id.as_deref()
+        );
+    }
 
-        assert_eq!(status, StatusCode::NOT_FOUND);
+    #[sqlx::test]
+    async fn malformed_and_unknown_fields_are_bad_requests(db: PgPool) {
+        let app = TestApp::new(db).await;
+        let user = app.member().await;
+        let response = app
+            .raw(
+                "PATCH",
+                "/v1/me",
+                Some(&user.token),
+                Some("{not json".into()),
+            )
+            .await;
+        assert_eq!(response.status, StatusCode::BAD_REQUEST);
+        assert_eq!(response.json["error"]["code"], "bad_request");
+
+        let response = app
+            .patch(
+                "/v1/me",
+                Some(&user.token),
+                json!({ "locale": "en", "colour": "red" }),
+            )
+            .await;
+        assert_eq!(response.status, StatusCode::BAD_REQUEST);
+        assert_eq!(response.json["error"]["code"], "bad_request");
+    }
+
+    #[sqlx::test]
+    async fn oversized_bodies_are_refused(db: PgPool) {
+        let app = TestApp::new(db).await;
+        let user = app.member().await;
+        let big = format!("{{\"timezone\":\"{}\"}}", "a".repeat(70 * 1024));
+        let response = app
+            .raw("PATCH", "/v1/me", Some(&user.token), Some(big))
+            .await;
+        assert_eq!(response.status, StatusCode::PAYLOAD_TOO_LARGE);
+        assert_eq!(response.json["error"]["code"], "payload_too_large");
+    }
+
+    #[sqlx::test]
+    async fn old_android_builds_must_upgrade(db: PgPool) {
+        let app = TestApp::new(db).await;
+        sqlx::query(
+            "INSERT INTO app_releases (platform, version_code, version_name, min_supported_version_code, download_url)
+             VALUES ('android', 12, '1.3.0', 9, 'https://download.example/kr-1.3.0.apk')",
+        )
+        .execute(&app.state.db)
+        .await
+        .unwrap();
+        let user = app.member().await;
+        let old = app
+            .request_with_headers(
+                "GET",
+                "/v1/me",
+                Some(&user.token),
+                None,
+                &[("x-app-platform", "android"), ("x-app-version-code", "8")],
+            )
+            .await;
+        assert_eq!(old.status.as_u16(), 426);
+        assert_eq!(
+            old.json["error"]["details"]["download_url"],
+            "https://download.example/kr-1.3.0.apk"
+        );
+
+        let meta = app
+            .request_with_headers(
+                "GET",
+                "/v1/meta/app-release?platform=android",
+                None,
+                None,
+                &[("x-app-platform", "android"), ("x-app-version-code", "8")],
+            )
+            .await;
+        assert_eq!(meta.status, StatusCode::OK, "meta routes stay open");
+        assert_eq!(meta.json["version_code"], 12);
+
+        let current = app
+            .request_with_headers(
+                "GET",
+                "/v1/me",
+                Some(&user.token),
+                None,
+                &[("x-app-platform", "android"), ("x-app-version-code", "9")],
+            )
+            .await;
+        assert_eq!(current.status, StatusCode::OK);
     }
 }

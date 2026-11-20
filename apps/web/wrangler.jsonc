@@ -4,6 +4,14 @@
   "compatibility_date": "2026-11-18",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
+  // Non-secret variables for the Worker (17 section 15). CLERK_SECRET_KEY is a secret:
+  // `wrangler secret put CLERK_SECRET_KEY --env <env>`.
+  "vars": {
+    "CLERK_SIGN_IN_URL": "/sign-in",
+    "CLERK_SIGN_UP_URL": "/sign-in",
+    "CLERK_SIGN_IN_FALLBACK_REDIRECT_URL": "/home",
+    "CLERK_SIGN_UP_FALLBACK_REDIRECT_URL": "/home"
+  },
   "observability": {
     "enabled": true
   },
@@ -15,7 +23,13 @@
   "env": {
     // Built with CLOUDFLARE_ENV=staging, then deployed with `wrangler deploy`.
     "staging": {
-      "name": "khandani-web-staging"
+      "name": "khandani-web-staging",
+      "vars": {
+        "CLERK_SIGN_IN_URL": "/sign-in",
+        "CLERK_SIGN_UP_URL": "/sign-in",
+        "CLERK_SIGN_IN_FALLBACK_REDIRECT_URL": "/home",
+        "CLERK_SIGN_UP_FALLBACK_REDIRECT_URL": "/home"
+      }
       // "routes": [{ "pattern": "staging.example.com", "custom_domain": true }]
     }
   }

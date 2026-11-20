@@ -1,0 +1,280 @@
+{
+  "home": {
+    "greeting": "Welcome back, {{name}}",
+    "greeting_plain": "Welcome back",
+    "greeting_managed": "Welcome back. Managing {{name}}'s profile.",
+    "announcement_close": "Hide this announcement",
+    "first_run": {
+      "text": "Tip: open a profile and send an interest. If it is accepted you can chat. Your contact details stay private until you choose to share them.",
+      "close": "Hide this tip"
+    },
+    "pending": {
+      "text_one": "1 member is interested in you",
+      "text_other": "{{count}} members are interested in you",
+      "view": "View"
+    },
+    "nudges_label": "Suggestions for your profile",
+    "nudge": {
+      "add_photo": {
+        "title": "Add a photo",
+        "text": "Profiles with a photo receive far more interest."
+      },
+      "verify_identity": {
+        "title": "Verify your identity",
+        "text": "Verified profiles are trusted more and can send more interests each day."
+      },
+      "add_about_me": {
+        "title": "Write about yourself",
+        "text": "A few honest lines help families decide."
+      },
+      "set_preferences": {
+        "title": "Set your partner preferences",
+        "text": "Tell us who you are looking for."
+      },
+      "verify_photo": {
+        "title": "Verify your photo",
+        "text": "A quick selfie shows that the photos are really you."
+      },
+      "add_contact_details": {
+        "title": "Add contact details",
+        "text": "Needed before you can share your number with a connection. They stay private until you share."
+      },
+      "complete_profile": {
+        "title": "Complete the profile",
+        "text": "The profile is {{completeness}}% complete."
+      }
+    },
+    "rows": {
+      "matches": "Your matches",
+      "new_members": "New members",
+      "nearby": "Near you",
+      "see_all": "See all",
+      "see_all_named": "See all: {{title}}"
+    },
+    "visitors": {
+      "title": "Viewed your profile",
+      "text_one": "1 member viewed the profile this week",
+      "text_other": "{{count}} members viewed the profile this week",
+      "see_all": "See all",
+      "see_all_label": "See all members who viewed your profile"
+    },
+    "completeness": {
+      "ring": "Profile {{value}}% complete",
+      "text": "Complete profiles receive more interest.",
+      "action": "Improve my profile"
+    },
+    "safety": {
+      "text": "Never send money to anyone you meet here.",
+      "link": "Read the safety tips."
+    }
+  },
+  "matches_state": {
+    "finding": "Finding your matches...",
+    "none_title": "No matches yet.",
+    "none_text": "Try the search, or check back later.",
+    "search": "Search",
+    "exhausted_empty": "No more members fit all your must-haves right now.",
+    "exhausted_end": "You have seen everyone who fits your must-haves. Loosen one to see more.",
+    "review_preferences": "Review preferences",
+    "hint": "Changing your must-have for {{dimension}} would show {{count}} more profiles.",
+    "age_hint": "Widening your age range may also help."
+  },
+  "matches": {
+    "title": "Your matches",
+    "updated": "Updated {{time}}",
+    "refresh": "Refresh",
+    "preferences": "Preferences",
+    "refreshing": "Finding new matches...",
+    "rate_limited": "Matches were refreshed a few minutes ago.",
+    "end": "That is everyone for now. New members join every day.",
+    "list_label": "Your matches"
+  },
+  "card": {
+    "more": "More actions for {{name}}",
+    "not_interested": "Not interested",
+    "hidden": "Hidden.",
+    "undo": "Undo"
+  },
+  "dimension": {
+    "age": "Age",
+    "height": "Height",
+    "marital_status": "Marital status",
+    "children": "Children",
+    "religion": "Religion",
+    "sect": "Sect",
+    "caste": "Caste",
+    "mother_tongue": "Mother tongue",
+    "location": "Location",
+    "education": "Education",
+    "profession": "Profession",
+    "income": "Income",
+    "religiosity": "Religious practice",
+    "appearance": "Hijab or beard",
+    "family": "Family",
+    "living_arrangement": "Living after marriage",
+    "work_after_marriage": "Work after marriage",
+    "smoking": "Smoking"
+  },
+  "search": {
+    "title": "Search",
+    "form_label": "Search filters",
+    "quick_find": "Quick find",
+    "code_label": "Profile code",
+    "code_placeholder": "KR...",
+    "find": "Find",
+    "code_invalid": "A profile code looks like KR7F3K2QX9.",
+    "code_not_found": "No profile with this code is available to you.",
+    "groups": {
+      "basics": "Basics",
+      "community": "Community",
+      "location": "Location",
+      "education_work": "Education and work",
+      "faith": "Faith",
+      "family": "Family",
+      "lifestyle": "Lifestyle",
+      "profile": "Profile"
+    },
+    "group_count_one": "{{count}} active",
+    "group_count_other": "{{count}} active",
+    "any": "Any",
+    "any_time": "Any time",
+    "from": "From",
+    "to": "To",
+    "range_from": "{{label}}, from",
+    "range_to": "{{label}}, to",
+    "years": "{{value}} years",
+    "fields": {
+      "age": "Age",
+      "height": "Height",
+      "marital_status": "Marital status",
+      "children": "Children",
+      "religion": "Religion",
+      "sect": "Sect",
+      "caste": "Caste or biradari",
+      "mother_tongue": "Mother tongue",
+      "country": "Country",
+      "region": "Province or state",
+      "city": "City",
+      "education": "Education, at least",
+      "employment": "Employment",
+      "profession": "Profession",
+      "income": "Monthly income, at least",
+      "religiosity": "Religious practice",
+      "hijab": "Hijab",
+      "beard": "Beard",
+      "family_values": "Family values",
+      "family_type": "Family type",
+      "living": "Living after marriage",
+      "work": "Work after marriage",
+      "smoking": "Smoking",
+      "managed_by": "Profile managed by",
+      "has_photo": "With a photo only",
+      "verified_only": "Verified members only",
+      "active": "Active",
+      "joined": "Joined"
+    },
+    "active_option": {
+      "1": "Today",
+      "7": "This week",
+      "30": "This month"
+    },
+    "joined_option": {
+      "7": "This week",
+      "30": "This month"
+    },
+    "education_option": "{{name}} or higher",
+    "income_option": "At least {{amount}} PKR a month or the equivalent abroad",
+    "income_option_lowest": "{{label}} PKR a month",
+    "add": "Add",
+    "add_named": "Add {{label}}",
+    "remove_value": "Remove {{value}}",
+    "selected": "{{label}}, chosen",
+    "city_country": "Country of the city",
+    "city_search": "Search for a city",
+    "city_search_hint": "Type at least 2 letters.",
+    "city_unknown": "Chosen city",
+    "no_results": "Nothing found",
+    "sort": {
+      "label": "Sort",
+      "best_match": "Best match",
+      "newest": "Newest members",
+      "recently_active": "Recently active"
+    },
+    "actions": {
+      "search": "Search",
+      "reset": "Reset",
+      "use_preferences": "Use my preferences",
+      "save": "Save this search",
+      "filters": "Filters",
+      "filters_count": "Filters ({{count}})",
+      "edit_filters": "Edit filters"
+    },
+    "results": {
+      "label": "Search results",
+      "count_one": "1 profile",
+      "count_other": "{{count}} profiles",
+      "many": "More than 500 profiles",
+      "active_filters": "Active filters",
+      "remove_filter": "Remove filter: {{label}}",
+      "empty_title": "No profiles match these filters.",
+      "empty_text": "Try removing a filter.",
+      "start": "Set your filters, then tap Search."
+    }
+  },
+  "saved": {
+    "label": "Saved searches",
+    "menu": "Options for {{name}}",
+    "rename": "Rename",
+    "notify": "Notify me about new members",
+    "remove": "Remove",
+    "remove_title": "Remove this saved search?",
+    "remove_text": "\"{{name}}\" will no longer be listed here.",
+    "rename_title": "Rename saved search",
+    "dialog_title": "Save this search",
+    "name_label": "Name",
+    "name_default": "Search {{date}}",
+    "name_count": "{{count}} of {{max}} characters",
+    "notify_label": "Notify me about new members who match",
+    "save": "Save",
+    "saved": "Search saved.",
+    "updated": "Saved",
+    "limit": "You can keep up to 10 saved searches. Remove one first."
+  },
+  "shortlist": {
+    "title": "Shortlist",
+    "intro": "Only you can see this list.",
+    "label": "Saved profiles",
+    "saved_at": "Saved {{time}}",
+    "unavailable": "No longer available",
+    "remove_unavailable": "Remove this profile from the shortlist",
+    "edit_note": "Edit note",
+    "add_note": "Add a note",
+    "note_title": "Note about {{name}}",
+    "note_label": "Note",
+    "note_help": "Only you can see this note.",
+    "note_count": "{{count}} of {{max}} characters",
+    "note_saved": "Note saved.",
+    "remove": "Remove",
+    "removed": "Removed.",
+    "undo": "Undo",
+    "empty_title": "No saved profiles yet.",
+    "empty_text": "Tap the heart on a profile to save it for later.",
+    "see_matches": "See my matches"
+  },
+  "visitors": {
+    "title": "Who viewed me",
+    "tabs_label": "Profile views",
+    "viewed_me": "Viewed me",
+    "i_viewed": "I viewed",
+    "viewed_at": "Viewed {{time}}",
+    "times": "{{count}} times",
+    "private": {
+      "title": "You are browsing privately",
+      "text": "Because your visits are hidden from others, you also cannot see who viewed you. Turn on 'Let members see that I viewed their profile' to see this list.",
+      "action": "Open privacy settings"
+    },
+    "empty_viewed_me_title": "No one has viewed the profile in the last 30 days.",
+    "empty_viewed_me_text": "Adding a photo and completing the profile helps.",
+    "empty_i_viewed_title": "Profiles you open appear here for 30 days."
+  }
+}

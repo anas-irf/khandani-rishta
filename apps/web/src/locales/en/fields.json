@@ -1,0 +1,78 @@
+{
+  "select": {
+    "placeholder": "Select"
+  },
+  "search_select": {
+    "placeholder": "Select",
+    "search": "Type to search",
+    "search_label": "Search: {{label}}",
+    "options_label": "Choices: {{label}}",
+    "no_results": "No matches. Try another spelling.",
+    "more_results": "Showing the first {{shown}} matches. Type more to narrow the list.",
+    "clear": "Clear {{label}}"
+  },
+  "multi_select": {
+    "add": "Add",
+    "add_label": "Add to {{label}}",
+    "remove": "Remove {{item}}",
+    "max_reached": "You can choose up to {{max}}.",
+    "selected_label": "Chosen: {{label}}"
+  },
+  "text_area": {
+    "counter": "{{length}} / {{max}}",
+    "counter_label": "{{length}} of {{max}} characters used"
+  },
+  "number": {
+    "decrease": "Decrease {{label}}",
+    "increase": "Increase {{label}}"
+  },
+  "city": {
+    "country": "Country of residence",
+    "region": "Province or state",
+    "region_placeholder": "Select a province or state",
+    "city": "City",
+    "city_placeholder": "Type the city name",
+    "city_hint": "Type at least 2 letters to search.",
+    "results_label": "Cities",
+    "searching": "Searching",
+    "no_results": "No city found with this name.",
+    "not_listed": "My city is not listed",
+    "city_name": "City name",
+    "back_to_list": "Choose the city from the list instead",
+    "city_with_region": "{{city}}, {{region}}"
+  },
+  "date_of_birth": {
+    "day": "Day",
+    "month": "Month",
+    "year": "Year",
+    "invalid": "Enter a real date."
+  },
+  "height": {
+    "feet": "Feet",
+    "inches": "Inches",
+    "feet_option": "{{feet}} ft",
+    "inches_option": "{{inches}} in",
+    "centimetres": "{{cm}} cm"
+  },
+  "phone": {
+    "dial_code": "Country code",
+    "number": "Number",
+    "dial_option": "{{country}} ({{dial}})",
+    "placeholder_pk": "3XX XXXXXXX"
+  },
+  "identity": {
+    "placeholder_cnic": "12345-1234567-1",
+    "placeholder_passport": "AB1234567"
+  },
+  "range": {
+    "min": "From",
+    "max": "To",
+    "any": "Any",
+    "no_preference": "No preference"
+  },
+  "importance": {
+    "help": "How much this matters when we suggest matches.",
+    "must_note": "Must have: members who do not fit, or who have not filled in this detail, are never shown as matches."
+  },
+  "new_tab": "(opens in a new tab)"
+}

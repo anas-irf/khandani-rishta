@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-labelledby="t d">
+  <!-- Static brand image for Open Graph (17 section 13). Never a member photo.
+       Most social networks need a PNG: export this file to /og-image.png (1200 x 630) before launch,
+       then point `OG_IMAGE_PATH` in src/features/public/config.ts at it. -->
+  <title id="t">Khandani Rishta</title>
+  <desc id="d">Rishta, the khandani way. A free, family-first rishta platform.</desc>
+  <rect width="1200" height="630" fill="#FAFAF9"/>
+  <rect width="1200" height="14" fill="#0F766E"/>
+  <rect y="616" width="1200" height="14" fill="#B45309"/>
+  <g transform="translate(96 84)">
+    <rect width="104" height="104" rx="26" fill="#0F766E"/>
+    <circle cx="41" cy="52" r="21" fill="none" stroke="#FFFFFF" stroke-width="6.5"/>
+    <circle cx="63" cy="52" r="21" fill="none" stroke="#FEF3C7" stroke-width="6.5"/>
+  </g>
+  <text x="224" y="158" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-size="52" font-weight="700" fill="#1C1917">Khandani Rishta</text>
+  <text x="96" y="352" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-size="96" font-weight="700" fill="#0F766E">Rishta, the</text>
+  <text x="96" y="456" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-size="96" font-weight="700" fill="#0F766E">khandani way.</text>
+  <text x="96" y="540" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-size="36" fill="#57534E">A free, family-first rishta platform.</text>
+  <path d="M860 602V392a120 120 0 0 1 240 0v210z" fill="#CCFBF1" stroke="#0F766E" stroke-width="6"/>
+  <circle cx="954" cy="452" r="42" fill="none" stroke="#0F766E" stroke-width="10"/>
+  <circle cx="1006" cy="452" r="42" fill="none" stroke="#B45309" stroke-width="10"/>
+</svg>

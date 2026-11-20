@@ -1,0 +1,150 @@
+{
+  "centre": {
+    "title": "Verification",
+    "intro": "Verified profiles get more replies and can send more interests each day. It is free.",
+    "footer": "Your documents are seen only by our review team and are deleted 30 days after the decision.",
+    "closed": "The profile is closed. Reopen it to send a verification request.",
+    "closed_action": "Reopen the profile",
+    "loading": "Loading the verification state",
+    "identity": {
+      "title": "Identity document",
+      "not_started": "Add your CNIC number, then upload the card.",
+      "number_added": "Upload the card to get the badge.",
+      "pending": "Under review. We usually finish within 24 hours.",
+      "verified": "Verified on {{date}}.",
+      "verified_no_date": "Verified.",
+      "rejected": "Not approved: {{reason}}. You can try again.",
+      "document": "{{type}}: {{number}}",
+      "start": "Start",
+      "upload": "Upload the card",
+      "change_number": "Change the number",
+      "try_again": "Try again"
+    },
+    "photo": {
+      "title": "Photo check",
+      "no_photo": "Add a photo first.",
+      "not_started": "Take a quick selfie so members know your photos are really you.",
+      "pending": "Under review.",
+      "verified": "Verified.",
+      "rejected": "Not approved: {{reason}}. You can try again.",
+      "add_photo": "Add a photo",
+      "take_selfie": "Take a selfie",
+      "try_again": "Try again"
+    },
+    "phone": {
+      "title": "Phone number",
+      "confirmed": "Confirmed",
+      "confirm": "Confirm your number"
+    },
+    "cancel": {
+      "action": "Cancel request",
+      "title": "Cancel this verification request?",
+      "description": "The documents you sent are deleted. You can send a new request at any time.",
+      "confirm": "Cancel request",
+      "keep": "Keep the request",
+      "done": "The request is cancelled."
+    },
+    "history": {
+      "toggle": "Past requests",
+      "empty": "No requests yet.",
+      "kind": {
+        "id_document": "Identity document",
+        "selfie": "Photo check"
+      },
+      "status": {
+        "pending": "Under review",
+        "approved": "Approved",
+        "rejected": "Not approved",
+        "cancelled": "Cancelled"
+      },
+      "line": "{{kind}}: {{status}}, {{date}}"
+    }
+  },
+  "reason": {
+    "unreadable": "We could not read the image clearly. Please take a sharper photo in good light, with the whole card visible.",
+    "document_mismatch": "The details on the document do not match the profile (name, date of birth, gender or number). If the profile has a mistake you cannot edit, email {{support_email}} and we will help.",
+    "face_mismatch": "The selfie does not match the document or the profile photos. Please make sure the selfie shows {{name}}, and that every profile photo is of {{name}}.",
+    "face_mismatch_self": "The selfie does not match the document or the profile photos. Please make sure the selfie shows you, and that every profile photo is of you.",
+    "gesture_missing": "The selfie did not show the requested gesture. Please take a new selfie and follow the instruction on the screen.",
+    "expired_document": "The document has expired. Please upload a valid one.",
+    "underage": "The candidate must be at least 18 years old to use Khandani Rishta.",
+    "suspected_fraud": "We could not accept this document. If you believe this is a mistake, email {{support_email}}.",
+    "other": "We could not approve the request. Please try again or email {{support_email}}."
+  },
+  "gesture": {
+    "peace_sign": "Hold up two fingers next to your face",
+    "thumbs_up": "Give a thumbs up next to your face",
+    "open_palm": "Show your open palm next to your face",
+    "hand_on_head": "Place one hand flat on top of your head",
+    "illustration": "Drawing of the gesture: {{instruction}}",
+    "loading": "Loading today's gesture",
+    "changed": "The requested gesture has changed. Please take a new selfie."
+  },
+  "camera": {
+    "open": "Open camera",
+    "capture": "Take the photo",
+    "preview": "Camera preview",
+    "starting": "Starting the camera",
+    "denied": "We need the camera for this check. Allow camera access in your settings and try again.",
+    "denied_help": "In your browser, select the camera icon or the lock icon next to the address, allow the camera for this site, then select Try again.",
+    "unavailable": "Open Khandani Rishta on your phone to take the selfie",
+    "unavailable_help": "This browser cannot use a camera. A phone browser or the Android app can take the selfie.",
+    "try_again": "Try again"
+  },
+  "review": {
+    "alt": "The photo you took",
+    "use": "Use this photo",
+    "retake": "Retake"
+  },
+  "selfie": {
+    "title": "Photo check",
+    "body": "Take one selfie of {{name}} doing the gesture below. We compare it with the profile photos. The selfie is never shown on the profile and is deleted 30 days after our decision.",
+    "body_self": "Take one selfie of yourself doing the gesture below. We compare it with the profile photos. The selfie is never shown on the profile and is deleted 30 days after our decision.",
+    "managed": "This selfie must be of {{name}}, the person this profile is for.",
+    "continue": "Continue",
+    "submit": "Submit selfie",
+    "success": "Thank you. We usually review within 24 hours.",
+    "done": "Done",
+    "no_photo": "Add a photo first.",
+    "add_photo": "Add a photo",
+    "already_exists": "A selfie is already being reviewed.",
+    "progress": "Sending the selfie"
+  },
+  "identity": {
+    "title": "Verify identity",
+    "step1": "Document number",
+    "step2": "Photo of the card",
+    "step3": "Selfie",
+    "managed_note": "Enter {{name}}'s number, not your own.",
+    "tips": "Place the card on a dark, flat surface. Make sure all four corners are visible. Avoid glare. Do not cover any part of the card.",
+    "front": "Front of the card",
+    "back": "Back of the card",
+    "front_passport": "Photo page of the passport",
+    "choose_front": "Take or choose a photo of the front",
+    "choose_back": "Take or choose a photo of the back",
+    "choose_passport": "Take or choose a photo of the photo page",
+    "selfie_body": "Now a quick selfie of {{name}} so we can match the card. {{gesture}}",
+    "selfie_body_self": "Now a quick selfie of yourself so we can match the card. {{gesture}}",
+    "number_on_file": "Registered number: {{type}} {{number}}",
+    "submit": "Submit for review",
+    "success": "Thank you. We will review your documents, usually within 24 hours. You can keep using the app meanwhile.",
+    "done": "Done",
+    "already_exists": "A request is already being reviewed.",
+    "pending": "Under review. We usually finish within 24 hours.",
+    "verified": "Your identity is verified.",
+    "back_to_centre": "Back to verification",
+    "progress_label": "Sending for review",
+    "slot": {
+      "front": "Uploading the front",
+      "back": "Uploading the back",
+      "selfie": "Uploading the selfie",
+      "submit": "Sending the request"
+    }
+  },
+  "errors": {
+    "too_large": "This photo is too large. Please retake it.",
+    "upload_failed": "The upload failed. Check your connection and try again.",
+    "unsupported_type": "Choose a JPEG, PNG or WebP photo.",
+    "unreadable": "This photo could not be read. Please take it again."
+  }
+}

@@ -9,60 +9,1571 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthedRouteImport } from './routes/_authed'
+import { Route as PublicRouteImport } from './routes/_public'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as AuthedAppRouteImport } from './routes/_authed/_app'
+import { Route as AuthedAdminRouteImport } from './routes/_authed/admin'
+import { Route as AuthedOnboardingRouteImport } from './routes/_authed/onboarding'
+import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as PublicCommunityGuidelinesRouteImport } from './routes/_public/community-guidelines'
+import { Route as PublicContactRouteImport } from './routes/_public/contact'
+import { Route as PublicDownloadRouteImport } from './routes/_public/download'
+import { Route as PublicFaqRouteImport } from './routes/_public/faq'
+import { Route as PublicHowItWorksRouteImport } from './routes/_public/how-it-works'
+import { Route as PublicNikahGuideRouteImport } from './routes/_public/nikah-guide'
+import { Route as PublicPrivacyRouteImport } from './routes/_public/privacy'
+import { Route as PublicSafetyRouteImport } from './routes/_public/safety'
+import { Route as PublicTermsRouteImport } from './routes/_public/terms'
+import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
+import { Route as AuthedAppChatsRouteImport } from './routes/_authed/_app/chats'
+import { Route as AuthedAppHomeRouteImport } from './routes/_authed/_app/home'
+import { Route as AuthedAppInterestsRouteImport } from './routes/_authed/_app/interests'
+import { Route as AuthedAppMatchesRouteImport } from './routes/_authed/_app/matches'
+import { Route as AuthedAppNotificationsRouteImport } from './routes/_authed/_app/notifications'
+import { Route as AuthedAppPhotoRequestsRouteImport } from './routes/_authed/_app/photo-requests'
+import { Route as AuthedAppSearchRouteImport } from './routes/_authed/_app/search'
+import { Route as AuthedAppShortlistRouteImport } from './routes/_authed/_app/shortlist'
+import { Route as AuthedAppVisitorsRouteImport } from './routes/_authed/_app/visitors'
+import { Route as AuthedAccountBlockedRouteImport } from './routes/_authed/account/blocked'
+import { Route as AuthedAccountChangesRouteImport } from './routes/_authed/account/changes'
+import { Route as AuthedAccountConsentRouteImport } from './routes/_authed/account/consent'
+import { Route as AuthedAccountDeletionRouteImport } from './routes/_authed/account/deletion'
+import { Route as AuthedAccountReviewRouteImport } from './routes/_authed/account/review'
+import { Route as AuthedAdminIndexRouteImport } from './routes/_authed/admin/index'
+import { Route as AuthedAdminAnnouncementsRouteImport } from './routes/_authed/admin/announcements'
+import { Route as AuthedAdminAuditLogRouteImport } from './routes/_authed/admin/audit-log'
+import { Route as AuthedAdminCastesRouteImport } from './routes/_authed/admin/castes'
+import { Route as AuthedAdminPhotosRouteImport } from './routes/_authed/admin/photos'
+import { Route as AuthedAdminReleasesRouteImport } from './routes/_authed/admin/releases'
+import { Route as AuthedAdminSettingsRouteImport } from './routes/_authed/admin/settings'
+import { Route as AuthedAdminTextsRouteImport } from './routes/_authed/admin/texts'
+import { Route as AuthedOnboardingIndexRouteImport } from './routes/_authed/onboarding/index'
+import { Route as AuthedOnboardingStepRouteImport } from './routes/_authed/onboarding/$step'
+import { Route as AuthedOnboardingDoneRouteImport } from './routes/_authed/onboarding/done'
+import { Route as AuthedAppChatsIndexRouteImport } from './routes/_authed/_app/chats/index'
+import { Route as AuthedAppMeIndexRouteImport } from './routes/_authed/_app/me/index'
+import { Route as AuthedAppMePhotosRouteImport } from './routes/_authed/_app/me/photos'
+import { Route as AuthedAppMePreferencesRouteImport } from './routes/_authed/_app/me/preferences'
+import { Route as AuthedAppPPublicCodeRouteImport } from './routes/_authed/_app/p.$publicCode'
+import { Route as AuthedAppSettingsIndexRouteImport } from './routes/_authed/_app/settings/index'
+import { Route as AuthedAppSettingsAccountRouteImport } from './routes/_authed/_app/settings/account'
+import { Route as AuthedAppSettingsBlockedRouteImport } from './routes/_authed/_app/settings/blocked'
+import { Route as AuthedAppSettingsContactsRouteImport } from './routes/_authed/_app/settings/contacts'
+import { Route as AuthedAppSettingsHelpRouteImport } from './routes/_authed/_app/settings/help'
+import { Route as AuthedAppSettingsNotificationsRouteImport } from './routes/_authed/_app/settings/notifications'
+import { Route as AuthedAppSettingsPrivacyRouteImport } from './routes/_authed/_app/settings/privacy'
+import { Route as AuthedAdminProfilesIndexRouteImport } from './routes/_authed/admin/profiles/index'
+import { Route as AuthedAdminProfilesProfileIdRouteImport } from './routes/_authed/admin/profiles/$profileId'
+import { Route as AuthedAdminReportsIndexRouteImport } from './routes/_authed/admin/reports/index'
+import { Route as AuthedAdminReportsReportIdRouteImport } from './routes/_authed/admin/reports/$reportId'
+import { Route as AuthedAdminUsersIndexRouteImport } from './routes/_authed/admin/users/index'
+import { Route as AuthedAdminUsersUserIdRouteImport } from './routes/_authed/admin/users/$userId'
+import { Route as AuthedAdminVerificationsIndexRouteImport } from './routes/_authed/admin/verifications/index'
+import { Route as AuthedAdminVerificationsRequestIdRouteImport } from './routes/_authed/admin/verifications/$requestId'
+import { Route as AuthedAppChatsConnectionIdIndexRouteImport } from './routes/_authed/_app/chats/$connectionId/index'
+import { Route as AuthedAppChatsConnectionIdDetailsRouteImport } from './routes/_authed/_app/chats/$connectionId/details'
+import { Route as AuthedAppMeEditSectionRouteImport } from './routes/_authed/_app/me/edit.$section'
+import { Route as AuthedAppMeVerificationIndexRouteImport } from './routes/_authed/_app/me/verification/index'
+import { Route as AuthedAppMeVerificationIdentityRouteImport } from './routes/_authed/_app/me/verification/identity'
+import { Route as AuthedAppMeVerificationSelfieRouteImport } from './routes/_authed/_app/me/verification/selfie'
+import { Route as AuthedAppProfilesProfileIdIndexRouteImport } from './routes/_authed/_app/profiles/$profileId/index'
+import { Route as AuthedAppProfilesProfileIdPhotosRouteImport } from './routes/_authed/_app/profiles/$profileId/photos'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AuthedRoute = AuthedRouteImport.update({
+  id: '/_authed',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PublicRoute = PublicRouteImport.update({
+  id: '/_public',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthedAppRoute = AuthedAppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedAdminRoute = AuthedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedOnboardingRoute = AuthedOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const PublicIndexRoute = PublicIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicCommunityGuidelinesRoute =
+  PublicCommunityGuidelinesRouteImport.update({
+    id: '/community-guidelines',
+    path: '/community-guidelines',
+    getParentRoute: () => PublicRoute,
+  } as any)
+const PublicContactRoute = PublicContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicDownloadRoute = PublicDownloadRouteImport.update({
+  id: '/download',
+  path: '/download',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicFaqRoute = PublicFaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicHowItWorksRoute = PublicHowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicNikahGuideRoute = PublicNikahGuideRouteImport.update({
+  id: '/nikah-guide',
+  path: '/nikah-guide',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicPrivacyRoute = PublicPrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicSafetyRoute = PublicSafetyRouteImport.update({
+  id: '/safety',
+  path: '/safety',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicTermsRoute = PublicTermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => PublicRoute,
+} as any)
+const SignInSplatRoute = SignInSplatRouteImport.update({
+  id: '/sign-in/$',
+  path: '/sign-in/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthedAppChatsRoute = AuthedAppChatsRouteImport.update({
+  id: '/chats',
+  path: '/chats',
+  getParentRoute: () => AuthedAppRoute,
+} as any)
+const AuthedAppHomeRoute = AuthedAppHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => AuthedAppRoute,
+} as any)
+const AuthedAppInterestsRoute = AuthedAppInterestsRouteImport.update({
+  id: '/interests',
+  path: '/interests',
+  getParentRoute: () => AuthedAppRoute,
+} as any)
+const AuthedAppMatchesRoute = AuthedAppMatchesRouteImport.update({
+  id: '/matches',
+  path: '/matches',
+  getParentRoute: () => AuthedAppRoute,
+} as any)
+const AuthedAppNotificationsRoute = AuthedAppNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => AuthedAppRoute,
+} as any)
+const AuthedAppPhotoRequestsRoute = AuthedAppPhotoRequestsRouteImport.update({
+  id: '/photo-requests',
+  path: '/photo-requests',
+  getParentRoute: () => AuthedAppRoute,
+} as any)
+const AuthedAppSearchRoute = AuthedAppSearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => AuthedAppRoute,
+} as any)
+const AuthedAppShortlistRoute = AuthedAppShortlistRouteImport.update({
+  id: '/shortlist',
+  path: '/shortlist',
+  getParentRoute: () => AuthedAppRoute,
+} as any)
+const AuthedAppVisitorsRoute = AuthedAppVisitorsRouteImport.update({
+  id: '/visitors',
+  path: '/visitors',
+  getParentRoute: () => AuthedAppRoute,
+} as any)
+const AuthedAccountBlockedRoute = AuthedAccountBlockedRouteImport.update({
+  id: '/account/blocked',
+  path: '/account/blocked',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedAccountChangesRoute = AuthedAccountChangesRouteImport.update({
+  id: '/account/changes',
+  path: '/account/changes',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedAccountConsentRoute = AuthedAccountConsentRouteImport.update({
+  id: '/account/consent',
+  path: '/account/consent',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedAccountDeletionRoute = AuthedAccountDeletionRouteImport.update({
+  id: '/account/deletion',
+  path: '/account/deletion',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedAccountReviewRoute = AuthedAccountReviewRouteImport.update({
+  id: '/account/review',
+  path: '/account/review',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedAdminIndexRoute = AuthedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedAdminAnnouncementsRoute =
+  AuthedAdminAnnouncementsRouteImport.update({
+    id: '/announcements',
+    path: '/announcements',
+    getParentRoute: () => AuthedAdminRoute,
+  } as any)
+const AuthedAdminAuditLogRoute = AuthedAdminAuditLogRouteImport.update({
+  id: '/audit-log',
+  path: '/audit-log',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedAdminCastesRoute = AuthedAdminCastesRouteImport.update({
+  id: '/castes',
+  path: '/castes',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedAdminPhotosRoute = AuthedAdminPhotosRouteImport.update({
+  id: '/photos',
+  path: '/photos',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedAdminReleasesRoute = AuthedAdminReleasesRouteImport.update({
+  id: '/releases',
+  path: '/releases',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedAdminSettingsRoute = AuthedAdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedAdminTextsRoute = AuthedAdminTextsRouteImport.update({
+  id: '/texts',
+  path: '/texts',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedOnboardingIndexRoute = AuthedOnboardingIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthedOnboardingRoute,
+} as any)
+const AuthedOnboardingStepRoute = AuthedOnboardingStepRouteImport.update({
+  id: '/$step',
+  path: '/$step',
+  getParentRoute: () => AuthedOnboardingRoute,
+} as any)
+const AuthedOnboardingDoneRoute = AuthedOnboardingDoneRouteImport.update({
+  id: '/done',
+  path: '/done',
+  getParentRoute: () => AuthedOnboardingRoute,
+} as any)
+const AuthedAppChatsIndexRoute = AuthedAppChatsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthedAppChatsRoute,
+} as any)
+const AuthedAppMeIndexRoute = AuthedAppMeIndexRouteImport.update({
+  id: '/me/',
+  path: '/me/',
+  getParentRoute: () => AuthedAppRoute,
+} as any)
+const AuthedAppMePhotosRoute = AuthedAppMePhotosRouteImport.update({
+  id: '/me/photos',
+  path: '/me/photos',
+  getParentRoute: () => AuthedAppRoute,
+} as any)
+const AuthedAppMePreferencesRoute = AuthedAppMePreferencesRouteImport.update({
+  id: '/me/preferences',
+  path: '/me/preferences',
+  getParentRoute: () => AuthedAppRoute,
+} as any)
+const AuthedAppPPublicCodeRoute = AuthedAppPPublicCodeRouteImport.update({
+  id: '/p/$publicCode',
+  path: '/p/$publicCode',
+  getParentRoute: () => AuthedAppRoute,
+} as any)
+const AuthedAppSettingsIndexRoute = AuthedAppSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => AuthedAppRoute,
+} as any)
+const AuthedAppSettingsAccountRoute =
+  AuthedAppSettingsAccountRouteImport.update({
+    id: '/settings/account',
+    path: '/settings/account',
+    getParentRoute: () => AuthedAppRoute,
+  } as any)
+const AuthedAppSettingsBlockedRoute =
+  AuthedAppSettingsBlockedRouteImport.update({
+    id: '/settings/blocked',
+    path: '/settings/blocked',
+    getParentRoute: () => AuthedAppRoute,
+  } as any)
+const AuthedAppSettingsContactsRoute =
+  AuthedAppSettingsContactsRouteImport.update({
+    id: '/settings/contacts',
+    path: '/settings/contacts',
+    getParentRoute: () => AuthedAppRoute,
+  } as any)
+const AuthedAppSettingsHelpRoute = AuthedAppSettingsHelpRouteImport.update({
+  id: '/settings/help',
+  path: '/settings/help',
+  getParentRoute: () => AuthedAppRoute,
+} as any)
+const AuthedAppSettingsNotificationsRoute =
+  AuthedAppSettingsNotificationsRouteImport.update({
+    id: '/settings/notifications',
+    path: '/settings/notifications',
+    getParentRoute: () => AuthedAppRoute,
+  } as any)
+const AuthedAppSettingsPrivacyRoute =
+  AuthedAppSettingsPrivacyRouteImport.update({
+    id: '/settings/privacy',
+    path: '/settings/privacy',
+    getParentRoute: () => AuthedAppRoute,
+  } as any)
+const AuthedAdminProfilesIndexRoute =
+  AuthedAdminProfilesIndexRouteImport.update({
+    id: '/profiles/',
+    path: '/profiles/',
+    getParentRoute: () => AuthedAdminRoute,
+  } as any)
+const AuthedAdminProfilesProfileIdRoute =
+  AuthedAdminProfilesProfileIdRouteImport.update({
+    id: '/profiles/$profileId',
+    path: '/profiles/$profileId',
+    getParentRoute: () => AuthedAdminRoute,
+  } as any)
+const AuthedAdminReportsIndexRoute = AuthedAdminReportsIndexRouteImport.update({
+  id: '/reports/',
+  path: '/reports/',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedAdminReportsReportIdRoute =
+  AuthedAdminReportsReportIdRouteImport.update({
+    id: '/reports/$reportId',
+    path: '/reports/$reportId',
+    getParentRoute: () => AuthedAdminRoute,
+  } as any)
+const AuthedAdminUsersIndexRoute = AuthedAdminUsersIndexRouteImport.update({
+  id: '/users/',
+  path: '/users/',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedAdminUsersUserIdRoute = AuthedAdminUsersUserIdRouteImport.update({
+  id: '/users/$userId',
+  path: '/users/$userId',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedAdminVerificationsIndexRoute =
+  AuthedAdminVerificationsIndexRouteImport.update({
+    id: '/verifications/',
+    path: '/verifications/',
+    getParentRoute: () => AuthedAdminRoute,
+  } as any)
+const AuthedAdminVerificationsRequestIdRoute =
+  AuthedAdminVerificationsRequestIdRouteImport.update({
+    id: '/verifications/$requestId',
+    path: '/verifications/$requestId',
+    getParentRoute: () => AuthedAdminRoute,
+  } as any)
+const AuthedAppChatsConnectionIdIndexRoute =
+  AuthedAppChatsConnectionIdIndexRouteImport.update({
+    id: '/$connectionId/',
+    path: '/$connectionId/',
+    getParentRoute: () => AuthedAppChatsRoute,
+  } as any)
+const AuthedAppChatsConnectionIdDetailsRoute =
+  AuthedAppChatsConnectionIdDetailsRouteImport.update({
+    id: '/$connectionId/details',
+    path: '/$connectionId/details',
+    getParentRoute: () => AuthedAppChatsRoute,
+  } as any)
+const AuthedAppMeEditSectionRoute = AuthedAppMeEditSectionRouteImport.update({
+  id: '/me/edit/$section',
+  path: '/me/edit/$section',
+  getParentRoute: () => AuthedAppRoute,
+} as any)
+const AuthedAppMeVerificationIndexRoute =
+  AuthedAppMeVerificationIndexRouteImport.update({
+    id: '/me/verification/',
+    path: '/me/verification/',
+    getParentRoute: () => AuthedAppRoute,
+  } as any)
+const AuthedAppMeVerificationIdentityRoute =
+  AuthedAppMeVerificationIdentityRouteImport.update({
+    id: '/me/verification/identity',
+    path: '/me/verification/identity',
+    getParentRoute: () => AuthedAppRoute,
+  } as any)
+const AuthedAppMeVerificationSelfieRoute =
+  AuthedAppMeVerificationSelfieRouteImport.update({
+    id: '/me/verification/selfie',
+    path: '/me/verification/selfie',
+    getParentRoute: () => AuthedAppRoute,
+  } as any)
+const AuthedAppProfilesProfileIdIndexRoute =
+  AuthedAppProfilesProfileIdIndexRouteImport.update({
+    id: '/profiles/$profileId/',
+    path: '/profiles/$profileId/',
+    getParentRoute: () => AuthedAppRoute,
+  } as any)
+const AuthedAppProfilesProfileIdPhotosRoute =
+  AuthedAppProfilesProfileIdPhotosRouteImport.update({
+    id: '/profiles/$profileId/photos',
+    path: '/profiles/$profileId/photos',
+    getParentRoute: () => AuthedAppRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof PublicIndexRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin': typeof AuthedAdminRouteWithChildren
+  '/onboarding': typeof AuthedOnboardingRouteWithChildren
+  '/community-guidelines': typeof PublicCommunityGuidelinesRoute
+  '/contact': typeof PublicContactRoute
+  '/download': typeof PublicDownloadRoute
+  '/faq': typeof PublicFaqRoute
+  '/how-it-works': typeof PublicHowItWorksRoute
+  '/nikah-guide': typeof PublicNikahGuideRoute
+  '/privacy': typeof PublicPrivacyRoute
+  '/safety': typeof PublicSafetyRoute
+  '/terms': typeof PublicTermsRoute
+  '/sign-in/$': typeof SignInSplatRoute
+  '/chats': typeof AuthedAppChatsRouteWithChildren
+  '/home': typeof AuthedAppHomeRoute
+  '/interests': typeof AuthedAppInterestsRoute
+  '/matches': typeof AuthedAppMatchesRoute
+  '/notifications': typeof AuthedAppNotificationsRoute
+  '/photo-requests': typeof AuthedAppPhotoRequestsRoute
+  '/search': typeof AuthedAppSearchRoute
+  '/shortlist': typeof AuthedAppShortlistRoute
+  '/visitors': typeof AuthedAppVisitorsRoute
+  '/account/blocked': typeof AuthedAccountBlockedRoute
+  '/account/changes': typeof AuthedAccountChangesRoute
+  '/account/consent': typeof AuthedAccountConsentRoute
+  '/account/deletion': typeof AuthedAccountDeletionRoute
+  '/account/review': typeof AuthedAccountReviewRoute
+  '/admin/announcements': typeof AuthedAdminAnnouncementsRoute
+  '/admin/audit-log': typeof AuthedAdminAuditLogRoute
+  '/admin/castes': typeof AuthedAdminCastesRoute
+  '/admin/photos': typeof AuthedAdminPhotosRoute
+  '/admin/releases': typeof AuthedAdminReleasesRoute
+  '/admin/settings': typeof AuthedAdminSettingsRoute
+  '/admin/texts': typeof AuthedAdminTextsRoute
+  '/onboarding/$step': typeof AuthedOnboardingStepRoute
+  '/onboarding/done': typeof AuthedOnboardingDoneRoute
+  '/admin/': typeof AuthedAdminIndexRoute
+  '/onboarding/': typeof AuthedOnboardingIndexRoute
+  '/me/photos': typeof AuthedAppMePhotosRoute
+  '/me/preferences': typeof AuthedAppMePreferencesRoute
+  '/p/$publicCode': typeof AuthedAppPPublicCodeRoute
+  '/settings/account': typeof AuthedAppSettingsAccountRoute
+  '/settings/blocked': typeof AuthedAppSettingsBlockedRoute
+  '/settings/contacts': typeof AuthedAppSettingsContactsRoute
+  '/settings/help': typeof AuthedAppSettingsHelpRoute
+  '/settings/notifications': typeof AuthedAppSettingsNotificationsRoute
+  '/settings/privacy': typeof AuthedAppSettingsPrivacyRoute
+  '/admin/profiles/$profileId': typeof AuthedAdminProfilesProfileIdRoute
+  '/admin/reports/$reportId': typeof AuthedAdminReportsReportIdRoute
+  '/admin/users/$userId': typeof AuthedAdminUsersUserIdRoute
+  '/admin/verifications/$requestId': typeof AuthedAdminVerificationsRequestIdRoute
+  '/chats/': typeof AuthedAppChatsIndexRoute
+  '/me/': typeof AuthedAppMeIndexRoute
+  '/settings/': typeof AuthedAppSettingsIndexRoute
+  '/admin/profiles/': typeof AuthedAdminProfilesIndexRoute
+  '/admin/reports/': typeof AuthedAdminReportsIndexRoute
+  '/admin/users/': typeof AuthedAdminUsersIndexRoute
+  '/admin/verifications/': typeof AuthedAdminVerificationsIndexRoute
+  '/chats/$connectionId/details': typeof AuthedAppChatsConnectionIdDetailsRoute
+  '/me/edit/$section': typeof AuthedAppMeEditSectionRoute
+  '/me/verification/identity': typeof AuthedAppMeVerificationIdentityRoute
+  '/me/verification/selfie': typeof AuthedAppMeVerificationSelfieRoute
+  '/profiles/$profileId/photos': typeof AuthedAppProfilesProfileIdPhotosRoute
+  '/chats/$connectionId/': typeof AuthedAppChatsConnectionIdIndexRoute
+  '/me/verification/': typeof AuthedAppMeVerificationIndexRoute
+  '/profiles/$profileId/': typeof AuthedAppProfilesProfileIdIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/': typeof PublicIndexRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/community-guidelines': typeof PublicCommunityGuidelinesRoute
+  '/contact': typeof PublicContactRoute
+  '/download': typeof PublicDownloadRoute
+  '/faq': typeof PublicFaqRoute
+  '/how-it-works': typeof PublicHowItWorksRoute
+  '/nikah-guide': typeof PublicNikahGuideRoute
+  '/privacy': typeof PublicPrivacyRoute
+  '/safety': typeof PublicSafetyRoute
+  '/terms': typeof PublicTermsRoute
+  '/sign-in/$': typeof SignInSplatRoute
+  '/home': typeof AuthedAppHomeRoute
+  '/interests': typeof AuthedAppInterestsRoute
+  '/matches': typeof AuthedAppMatchesRoute
+  '/notifications': typeof AuthedAppNotificationsRoute
+  '/photo-requests': typeof AuthedAppPhotoRequestsRoute
+  '/search': typeof AuthedAppSearchRoute
+  '/shortlist': typeof AuthedAppShortlistRoute
+  '/visitors': typeof AuthedAppVisitorsRoute
+  '/account/blocked': typeof AuthedAccountBlockedRoute
+  '/account/changes': typeof AuthedAccountChangesRoute
+  '/account/consent': typeof AuthedAccountConsentRoute
+  '/account/deletion': typeof AuthedAccountDeletionRoute
+  '/account/review': typeof AuthedAccountReviewRoute
+  '/admin/announcements': typeof AuthedAdminAnnouncementsRoute
+  '/admin/audit-log': typeof AuthedAdminAuditLogRoute
+  '/admin/castes': typeof AuthedAdminCastesRoute
+  '/admin/photos': typeof AuthedAdminPhotosRoute
+  '/admin/releases': typeof AuthedAdminReleasesRoute
+  '/admin/settings': typeof AuthedAdminSettingsRoute
+  '/admin/texts': typeof AuthedAdminTextsRoute
+  '/onboarding/$step': typeof AuthedOnboardingStepRoute
+  '/onboarding/done': typeof AuthedOnboardingDoneRoute
+  '/admin': typeof AuthedAdminIndexRoute
+  '/onboarding': typeof AuthedOnboardingIndexRoute
+  '/me/photos': typeof AuthedAppMePhotosRoute
+  '/me/preferences': typeof AuthedAppMePreferencesRoute
+  '/p/$publicCode': typeof AuthedAppPPublicCodeRoute
+  '/settings/account': typeof AuthedAppSettingsAccountRoute
+  '/settings/blocked': typeof AuthedAppSettingsBlockedRoute
+  '/settings/contacts': typeof AuthedAppSettingsContactsRoute
+  '/settings/help': typeof AuthedAppSettingsHelpRoute
+  '/settings/notifications': typeof AuthedAppSettingsNotificationsRoute
+  '/settings/privacy': typeof AuthedAppSettingsPrivacyRoute
+  '/admin/profiles/$profileId': typeof AuthedAdminProfilesProfileIdRoute
+  '/admin/reports/$reportId': typeof AuthedAdminReportsReportIdRoute
+  '/admin/users/$userId': typeof AuthedAdminUsersUserIdRoute
+  '/admin/verifications/$requestId': typeof AuthedAdminVerificationsRequestIdRoute
+  '/chats': typeof AuthedAppChatsIndexRoute
+  '/me': typeof AuthedAppMeIndexRoute
+  '/settings': typeof AuthedAppSettingsIndexRoute
+  '/admin/profiles': typeof AuthedAdminProfilesIndexRoute
+  '/admin/reports': typeof AuthedAdminReportsIndexRoute
+  '/admin/users': typeof AuthedAdminUsersIndexRoute
+  '/admin/verifications': typeof AuthedAdminVerificationsIndexRoute
+  '/chats/$connectionId/details': typeof AuthedAppChatsConnectionIdDetailsRoute
+  '/me/edit/$section': typeof AuthedAppMeEditSectionRoute
+  '/me/verification/identity': typeof AuthedAppMeVerificationIdentityRoute
+  '/me/verification/selfie': typeof AuthedAppMeVerificationSelfieRoute
+  '/profiles/$profileId/photos': typeof AuthedAppProfilesProfileIdPhotosRoute
+  '/chats/$connectionId': typeof AuthedAppChatsConnectionIdIndexRoute
+  '/me/verification': typeof AuthedAppMeVerificationIndexRoute
+  '/profiles/$profileId': typeof AuthedAppProfilesProfileIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_authed': typeof AuthedRouteWithChildren
+  '/_public': typeof PublicRouteWithChildren
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/_authed/_app': typeof AuthedAppRouteWithChildren
+  '/_authed/admin': typeof AuthedAdminRouteWithChildren
+  '/_authed/onboarding': typeof AuthedOnboardingRouteWithChildren
+  '/_public/community-guidelines': typeof PublicCommunityGuidelinesRoute
+  '/_public/contact': typeof PublicContactRoute
+  '/_public/download': typeof PublicDownloadRoute
+  '/_public/faq': typeof PublicFaqRoute
+  '/_public/how-it-works': typeof PublicHowItWorksRoute
+  '/_public/nikah-guide': typeof PublicNikahGuideRoute
+  '/_public/privacy': typeof PublicPrivacyRoute
+  '/_public/safety': typeof PublicSafetyRoute
+  '/_public/terms': typeof PublicTermsRoute
+  '/sign-in/$': typeof SignInSplatRoute
+  '/_public/': typeof PublicIndexRoute
+  '/_authed/_app/chats': typeof AuthedAppChatsRouteWithChildren
+  '/_authed/_app/home': typeof AuthedAppHomeRoute
+  '/_authed/_app/interests': typeof AuthedAppInterestsRoute
+  '/_authed/_app/matches': typeof AuthedAppMatchesRoute
+  '/_authed/_app/notifications': typeof AuthedAppNotificationsRoute
+  '/_authed/_app/photo-requests': typeof AuthedAppPhotoRequestsRoute
+  '/_authed/_app/search': typeof AuthedAppSearchRoute
+  '/_authed/_app/shortlist': typeof AuthedAppShortlistRoute
+  '/_authed/_app/visitors': typeof AuthedAppVisitorsRoute
+  '/_authed/account/blocked': typeof AuthedAccountBlockedRoute
+  '/_authed/account/changes': typeof AuthedAccountChangesRoute
+  '/_authed/account/consent': typeof AuthedAccountConsentRoute
+  '/_authed/account/deletion': typeof AuthedAccountDeletionRoute
+  '/_authed/account/review': typeof AuthedAccountReviewRoute
+  '/_authed/admin/announcements': typeof AuthedAdminAnnouncementsRoute
+  '/_authed/admin/audit-log': typeof AuthedAdminAuditLogRoute
+  '/_authed/admin/castes': typeof AuthedAdminCastesRoute
+  '/_authed/admin/photos': typeof AuthedAdminPhotosRoute
+  '/_authed/admin/releases': typeof AuthedAdminReleasesRoute
+  '/_authed/admin/settings': typeof AuthedAdminSettingsRoute
+  '/_authed/admin/texts': typeof AuthedAdminTextsRoute
+  '/_authed/onboarding/$step': typeof AuthedOnboardingStepRoute
+  '/_authed/onboarding/done': typeof AuthedOnboardingDoneRoute
+  '/_authed/admin/': typeof AuthedAdminIndexRoute
+  '/_authed/onboarding/': typeof AuthedOnboardingIndexRoute
+  '/_authed/_app/me/photos': typeof AuthedAppMePhotosRoute
+  '/_authed/_app/me/preferences': typeof AuthedAppMePreferencesRoute
+  '/_authed/_app/p/$publicCode': typeof AuthedAppPPublicCodeRoute
+  '/_authed/_app/settings/account': typeof AuthedAppSettingsAccountRoute
+  '/_authed/_app/settings/blocked': typeof AuthedAppSettingsBlockedRoute
+  '/_authed/_app/settings/contacts': typeof AuthedAppSettingsContactsRoute
+  '/_authed/_app/settings/help': typeof AuthedAppSettingsHelpRoute
+  '/_authed/_app/settings/notifications': typeof AuthedAppSettingsNotificationsRoute
+  '/_authed/_app/settings/privacy': typeof AuthedAppSettingsPrivacyRoute
+  '/_authed/admin/profiles/$profileId': typeof AuthedAdminProfilesProfileIdRoute
+  '/_authed/admin/reports/$reportId': typeof AuthedAdminReportsReportIdRoute
+  '/_authed/admin/users/$userId': typeof AuthedAdminUsersUserIdRoute
+  '/_authed/admin/verifications/$requestId': typeof AuthedAdminVerificationsRequestIdRoute
+  '/_authed/_app/chats/': typeof AuthedAppChatsIndexRoute
+  '/_authed/_app/me/': typeof AuthedAppMeIndexRoute
+  '/_authed/_app/settings/': typeof AuthedAppSettingsIndexRoute
+  '/_authed/admin/profiles/': typeof AuthedAdminProfilesIndexRoute
+  '/_authed/admin/reports/': typeof AuthedAdminReportsIndexRoute
+  '/_authed/admin/users/': typeof AuthedAdminUsersIndexRoute
+  '/_authed/admin/verifications/': typeof AuthedAdminVerificationsIndexRoute
+  '/_authed/_app/chats/$connectionId/details': typeof AuthedAppChatsConnectionIdDetailsRoute
+  '/_authed/_app/me/edit/$section': typeof AuthedAppMeEditSectionRoute
+  '/_authed/_app/me/verification/identity': typeof AuthedAppMeVerificationIdentityRoute
+  '/_authed/_app/me/verification/selfie': typeof AuthedAppMeVerificationSelfieRoute
+  '/_authed/_app/profiles/$profileId/photos': typeof AuthedAppProfilesProfileIdPhotosRoute
+  '/_authed/_app/chats/$connectionId/': typeof AuthedAppChatsConnectionIdIndexRoute
+  '/_authed/_app/me/verification/': typeof AuthedAppMeVerificationIndexRoute
+  '/_authed/_app/profiles/$profileId/': typeof AuthedAppProfilesProfileIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/sitemap.xml'
+    | '/admin'
+    | '/onboarding'
+    | '/community-guidelines'
+    | '/contact'
+    | '/download'
+    | '/faq'
+    | '/how-it-works'
+    | '/nikah-guide'
+    | '/privacy'
+    | '/safety'
+    | '/terms'
+    | '/sign-in/$'
+    | '/chats'
+    | '/home'
+    | '/interests'
+    | '/matches'
+    | '/notifications'
+    | '/photo-requests'
+    | '/search'
+    | '/shortlist'
+    | '/visitors'
+    | '/account/blocked'
+    | '/account/changes'
+    | '/account/consent'
+    | '/account/deletion'
+    | '/account/review'
+    | '/admin/announcements'
+    | '/admin/audit-log'
+    | '/admin/castes'
+    | '/admin/photos'
+    | '/admin/releases'
+    | '/admin/settings'
+    | '/admin/texts'
+    | '/onboarding/$step'
+    | '/onboarding/done'
+    | '/admin/'
+    | '/onboarding/'
+    | '/me/photos'
+    | '/me/preferences'
+    | '/p/$publicCode'
+    | '/settings/account'
+    | '/settings/blocked'
+    | '/settings/contacts'
+    | '/settings/help'
+    | '/settings/notifications'
+    | '/settings/privacy'
+    | '/admin/profiles/$profileId'
+    | '/admin/reports/$reportId'
+    | '/admin/users/$userId'
+    | '/admin/verifications/$requestId'
+    | '/chats/'
+    | '/me/'
+    | '/settings/'
+    | '/admin/profiles/'
+    | '/admin/reports/'
+    | '/admin/users/'
+    | '/admin/verifications/'
+    | '/chats/$connectionId/details'
+    | '/me/edit/$section'
+    | '/me/verification/identity'
+    | '/me/verification/selfie'
+    | '/profiles/$profileId/photos'
+    | '/chats/$connectionId/'
+    | '/me/verification/'
+    | '/profiles/$profileId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/sitemap.xml'
+    | '/community-guidelines'
+    | '/contact'
+    | '/download'
+    | '/faq'
+    | '/how-it-works'
+    | '/nikah-guide'
+    | '/privacy'
+    | '/safety'
+    | '/terms'
+    | '/sign-in/$'
+    | '/home'
+    | '/interests'
+    | '/matches'
+    | '/notifications'
+    | '/photo-requests'
+    | '/search'
+    | '/shortlist'
+    | '/visitors'
+    | '/account/blocked'
+    | '/account/changes'
+    | '/account/consent'
+    | '/account/deletion'
+    | '/account/review'
+    | '/admin/announcements'
+    | '/admin/audit-log'
+    | '/admin/castes'
+    | '/admin/photos'
+    | '/admin/releases'
+    | '/admin/settings'
+    | '/admin/texts'
+    | '/onboarding/$step'
+    | '/onboarding/done'
+    | '/admin'
+    | '/onboarding'
+    | '/me/photos'
+    | '/me/preferences'
+    | '/p/$publicCode'
+    | '/settings/account'
+    | '/settings/blocked'
+    | '/settings/contacts'
+    | '/settings/help'
+    | '/settings/notifications'
+    | '/settings/privacy'
+    | '/admin/profiles/$profileId'
+    | '/admin/reports/$reportId'
+    | '/admin/users/$userId'
+    | '/admin/verifications/$requestId'
+    | '/chats'
+    | '/me'
+    | '/settings'
+    | '/admin/profiles'
+    | '/admin/reports'
+    | '/admin/users'
+    | '/admin/verifications'
+    | '/chats/$connectionId/details'
+    | '/me/edit/$section'
+    | '/me/verification/identity'
+    | '/me/verification/selfie'
+    | '/profiles/$profileId/photos'
+    | '/chats/$connectionId'
+    | '/me/verification'
+    | '/profiles/$profileId'
+  id:
+    | '__root__'
+    | '/_authed'
+    | '/_public'
+    | '/sitemap.xml'
+    | '/_authed/_app'
+    | '/_authed/admin'
+    | '/_authed/onboarding'
+    | '/_public/community-guidelines'
+    | '/_public/contact'
+    | '/_public/download'
+    | '/_public/faq'
+    | '/_public/how-it-works'
+    | '/_public/nikah-guide'
+    | '/_public/privacy'
+    | '/_public/safety'
+    | '/_public/terms'
+    | '/sign-in/$'
+    | '/_public/'
+    | '/_authed/_app/chats'
+    | '/_authed/_app/home'
+    | '/_authed/_app/interests'
+    | '/_authed/_app/matches'
+    | '/_authed/_app/notifications'
+    | '/_authed/_app/photo-requests'
+    | '/_authed/_app/search'
+    | '/_authed/_app/shortlist'
+    | '/_authed/_app/visitors'
+    | '/_authed/account/blocked'
+    | '/_authed/account/changes'
+    | '/_authed/account/consent'
+    | '/_authed/account/deletion'
+    | '/_authed/account/review'
+    | '/_authed/admin/announcements'
+    | '/_authed/admin/audit-log'
+    | '/_authed/admin/castes'
+    | '/_authed/admin/photos'
+    | '/_authed/admin/releases'
+    | '/_authed/admin/settings'
+    | '/_authed/admin/texts'
+    | '/_authed/onboarding/$step'
+    | '/_authed/onboarding/done'
+    | '/_authed/admin/'
+    | '/_authed/onboarding/'
+    | '/_authed/_app/me/photos'
+    | '/_authed/_app/me/preferences'
+    | '/_authed/_app/p/$publicCode'
+    | '/_authed/_app/settings/account'
+    | '/_authed/_app/settings/blocked'
+    | '/_authed/_app/settings/contacts'
+    | '/_authed/_app/settings/help'
+    | '/_authed/_app/settings/notifications'
+    | '/_authed/_app/settings/privacy'
+    | '/_authed/admin/profiles/$profileId'
+    | '/_authed/admin/reports/$reportId'
+    | '/_authed/admin/users/$userId'
+    | '/_authed/admin/verifications/$requestId'
+    | '/_authed/_app/chats/'
+    | '/_authed/_app/me/'
+    | '/_authed/_app/settings/'
+    | '/_authed/admin/profiles/'
+    | '/_authed/admin/reports/'
+    | '/_authed/admin/users/'
+    | '/_authed/admin/verifications/'
+    | '/_authed/_app/chats/$connectionId/details'
+    | '/_authed/_app/me/edit/$section'
+    | '/_authed/_app/me/verification/identity'
+    | '/_authed/_app/me/verification/selfie'
+    | '/_authed/_app/profiles/$profileId/photos'
+    | '/_authed/_app/chats/$connectionId/'
+    | '/_authed/_app/me/verification/'
+    | '/_authed/_app/profiles/$profileId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  AuthedRoute: typeof AuthedRouteWithChildren
+  PublicRoute: typeof PublicRouteWithChildren
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  SignInSplatRoute: typeof SignInSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_authed': {
+      id: '/_authed'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_public': {
+      id: '/_public'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PublicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authed/_app': {
+      id: '/_authed/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthedAppRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/admin': {
+      id: '/_authed/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthedAdminRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/onboarding': {
+      id: '/_authed/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AuthedOnboardingRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_public/': {
+      id: '/_public/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof PublicIndexRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/community-guidelines': {
+      id: '/_public/community-guidelines'
+      path: '/community-guidelines'
+      fullPath: '/community-guidelines'
+      preLoaderRoute: typeof PublicCommunityGuidelinesRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/contact': {
+      id: '/_public/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof PublicContactRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/download': {
+      id: '/_public/download'
+      path: '/download'
+      fullPath: '/download'
+      preLoaderRoute: typeof PublicDownloadRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/faq': {
+      id: '/_public/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof PublicFaqRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/how-it-works': {
+      id: '/_public/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof PublicHowItWorksRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/nikah-guide': {
+      id: '/_public/nikah-guide'
+      path: '/nikah-guide'
+      fullPath: '/nikah-guide'
+      preLoaderRoute: typeof PublicNikahGuideRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/privacy': {
+      id: '/_public/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PublicPrivacyRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/safety': {
+      id: '/_public/safety'
+      path: '/safety'
+      fullPath: '/safety'
+      preLoaderRoute: typeof PublicSafetyRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/terms': {
+      id: '/_public/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof PublicTermsRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/sign-in/$': {
+      id: '/sign-in/$'
+      path: '/sign-in/$'
+      fullPath: '/sign-in/$'
+      preLoaderRoute: typeof SignInSplatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authed/_app/chats': {
+      id: '/_authed/_app/chats'
+      path: '/chats'
+      fullPath: '/chats'
+      preLoaderRoute: typeof AuthedAppChatsRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/_app/home': {
+      id: '/_authed/_app/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof AuthedAppHomeRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/_app/interests': {
+      id: '/_authed/_app/interests'
+      path: '/interests'
+      fullPath: '/interests'
+      preLoaderRoute: typeof AuthedAppInterestsRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/_app/matches': {
+      id: '/_authed/_app/matches'
+      path: '/matches'
+      fullPath: '/matches'
+      preLoaderRoute: typeof AuthedAppMatchesRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/_app/notifications': {
+      id: '/_authed/_app/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthedAppNotificationsRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/_app/photo-requests': {
+      id: '/_authed/_app/photo-requests'
+      path: '/photo-requests'
+      fullPath: '/photo-requests'
+      preLoaderRoute: typeof AuthedAppPhotoRequestsRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/_app/search': {
+      id: '/_authed/_app/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof AuthedAppSearchRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/_app/shortlist': {
+      id: '/_authed/_app/shortlist'
+      path: '/shortlist'
+      fullPath: '/shortlist'
+      preLoaderRoute: typeof AuthedAppShortlistRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/_app/visitors': {
+      id: '/_authed/_app/visitors'
+      path: '/visitors'
+      fullPath: '/visitors'
+      preLoaderRoute: typeof AuthedAppVisitorsRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/account/blocked': {
+      id: '/_authed/account/blocked'
+      path: '/account/blocked'
+      fullPath: '/account/blocked'
+      preLoaderRoute: typeof AuthedAccountBlockedRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/account/changes': {
+      id: '/_authed/account/changes'
+      path: '/account/changes'
+      fullPath: '/account/changes'
+      preLoaderRoute: typeof AuthedAccountChangesRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/account/consent': {
+      id: '/_authed/account/consent'
+      path: '/account/consent'
+      fullPath: '/account/consent'
+      preLoaderRoute: typeof AuthedAccountConsentRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/account/deletion': {
+      id: '/_authed/account/deletion'
+      path: '/account/deletion'
+      fullPath: '/account/deletion'
+      preLoaderRoute: typeof AuthedAccountDeletionRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/account/review': {
+      id: '/_authed/account/review'
+      path: '/account/review'
+      fullPath: '/account/review'
+      preLoaderRoute: typeof AuthedAccountReviewRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/admin/': {
+      id: '/_authed/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthedAdminIndexRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/admin/announcements': {
+      id: '/_authed/admin/announcements'
+      path: '/announcements'
+      fullPath: '/admin/announcements'
+      preLoaderRoute: typeof AuthedAdminAnnouncementsRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/admin/audit-log': {
+      id: '/_authed/admin/audit-log'
+      path: '/audit-log'
+      fullPath: '/admin/audit-log'
+      preLoaderRoute: typeof AuthedAdminAuditLogRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/admin/castes': {
+      id: '/_authed/admin/castes'
+      path: '/castes'
+      fullPath: '/admin/castes'
+      preLoaderRoute: typeof AuthedAdminCastesRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/admin/photos': {
+      id: '/_authed/admin/photos'
+      path: '/photos'
+      fullPath: '/admin/photos'
+      preLoaderRoute: typeof AuthedAdminPhotosRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/admin/releases': {
+      id: '/_authed/admin/releases'
+      path: '/releases'
+      fullPath: '/admin/releases'
+      preLoaderRoute: typeof AuthedAdminReleasesRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/admin/settings': {
+      id: '/_authed/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AuthedAdminSettingsRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/admin/texts': {
+      id: '/_authed/admin/texts'
+      path: '/texts'
+      fullPath: '/admin/texts'
+      preLoaderRoute: typeof AuthedAdminTextsRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/onboarding/': {
+      id: '/_authed/onboarding/'
+      path: '/'
+      fullPath: '/onboarding/'
+      preLoaderRoute: typeof AuthedOnboardingIndexRouteImport
+      parentRoute: typeof AuthedOnboardingRoute
+    }
+    '/_authed/onboarding/$step': {
+      id: '/_authed/onboarding/$step'
+      path: '/$step'
+      fullPath: '/onboarding/$step'
+      preLoaderRoute: typeof AuthedOnboardingStepRouteImport
+      parentRoute: typeof AuthedOnboardingRoute
+    }
+    '/_authed/onboarding/done': {
+      id: '/_authed/onboarding/done'
+      path: '/done'
+      fullPath: '/onboarding/done'
+      preLoaderRoute: typeof AuthedOnboardingDoneRouteImport
+      parentRoute: typeof AuthedOnboardingRoute
+    }
+    '/_authed/_app/chats/': {
+      id: '/_authed/_app/chats/'
+      path: '/'
+      fullPath: '/chats/'
+      preLoaderRoute: typeof AuthedAppChatsIndexRouteImport
+      parentRoute: typeof AuthedAppChatsRoute
+    }
+    '/_authed/_app/me/': {
+      id: '/_authed/_app/me/'
+      path: '/me'
+      fullPath: '/me/'
+      preLoaderRoute: typeof AuthedAppMeIndexRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/_app/me/photos': {
+      id: '/_authed/_app/me/photos'
+      path: '/me/photos'
+      fullPath: '/me/photos'
+      preLoaderRoute: typeof AuthedAppMePhotosRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/_app/me/preferences': {
+      id: '/_authed/_app/me/preferences'
+      path: '/me/preferences'
+      fullPath: '/me/preferences'
+      preLoaderRoute: typeof AuthedAppMePreferencesRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/_app/p/$publicCode': {
+      id: '/_authed/_app/p/$publicCode'
+      path: '/p/$publicCode'
+      fullPath: '/p/$publicCode'
+      preLoaderRoute: typeof AuthedAppPPublicCodeRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/_app/settings/': {
+      id: '/_authed/_app/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof AuthedAppSettingsIndexRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/_app/settings/account': {
+      id: '/_authed/_app/settings/account'
+      path: '/settings/account'
+      fullPath: '/settings/account'
+      preLoaderRoute: typeof AuthedAppSettingsAccountRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/_app/settings/blocked': {
+      id: '/_authed/_app/settings/blocked'
+      path: '/settings/blocked'
+      fullPath: '/settings/blocked'
+      preLoaderRoute: typeof AuthedAppSettingsBlockedRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/_app/settings/contacts': {
+      id: '/_authed/_app/settings/contacts'
+      path: '/settings/contacts'
+      fullPath: '/settings/contacts'
+      preLoaderRoute: typeof AuthedAppSettingsContactsRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/_app/settings/help': {
+      id: '/_authed/_app/settings/help'
+      path: '/settings/help'
+      fullPath: '/settings/help'
+      preLoaderRoute: typeof AuthedAppSettingsHelpRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/_app/settings/notifications': {
+      id: '/_authed/_app/settings/notifications'
+      path: '/settings/notifications'
+      fullPath: '/settings/notifications'
+      preLoaderRoute: typeof AuthedAppSettingsNotificationsRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/_app/settings/privacy': {
+      id: '/_authed/_app/settings/privacy'
+      path: '/settings/privacy'
+      fullPath: '/settings/privacy'
+      preLoaderRoute: typeof AuthedAppSettingsPrivacyRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/admin/profiles/': {
+      id: '/_authed/admin/profiles/'
+      path: '/profiles'
+      fullPath: '/admin/profiles/'
+      preLoaderRoute: typeof AuthedAdminProfilesIndexRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/admin/profiles/$profileId': {
+      id: '/_authed/admin/profiles/$profileId'
+      path: '/profiles/$profileId'
+      fullPath: '/admin/profiles/$profileId'
+      preLoaderRoute: typeof AuthedAdminProfilesProfileIdRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/admin/reports/': {
+      id: '/_authed/admin/reports/'
+      path: '/reports'
+      fullPath: '/admin/reports/'
+      preLoaderRoute: typeof AuthedAdminReportsIndexRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/admin/reports/$reportId': {
+      id: '/_authed/admin/reports/$reportId'
+      path: '/reports/$reportId'
+      fullPath: '/admin/reports/$reportId'
+      preLoaderRoute: typeof AuthedAdminReportsReportIdRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/admin/users/': {
+      id: '/_authed/admin/users/'
+      path: '/users'
+      fullPath: '/admin/users/'
+      preLoaderRoute: typeof AuthedAdminUsersIndexRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/admin/users/$userId': {
+      id: '/_authed/admin/users/$userId'
+      path: '/users/$userId'
+      fullPath: '/admin/users/$userId'
+      preLoaderRoute: typeof AuthedAdminUsersUserIdRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/admin/verifications/': {
+      id: '/_authed/admin/verifications/'
+      path: '/verifications'
+      fullPath: '/admin/verifications/'
+      preLoaderRoute: typeof AuthedAdminVerificationsIndexRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/admin/verifications/$requestId': {
+      id: '/_authed/admin/verifications/$requestId'
+      path: '/verifications/$requestId'
+      fullPath: '/admin/verifications/$requestId'
+      preLoaderRoute: typeof AuthedAdminVerificationsRequestIdRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/_app/chats/$connectionId/': {
+      id: '/_authed/_app/chats/$connectionId/'
+      path: '/$connectionId'
+      fullPath: '/chats/$connectionId/'
+      preLoaderRoute: typeof AuthedAppChatsConnectionIdIndexRouteImport
+      parentRoute: typeof AuthedAppChatsRoute
+    }
+    '/_authed/_app/chats/$connectionId/details': {
+      id: '/_authed/_app/chats/$connectionId/details'
+      path: '/$connectionId/details'
+      fullPath: '/chats/$connectionId/details'
+      preLoaderRoute: typeof AuthedAppChatsConnectionIdDetailsRouteImport
+      parentRoute: typeof AuthedAppChatsRoute
+    }
+    '/_authed/_app/me/edit/$section': {
+      id: '/_authed/_app/me/edit/$section'
+      path: '/me/edit/$section'
+      fullPath: '/me/edit/$section'
+      preLoaderRoute: typeof AuthedAppMeEditSectionRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/_app/me/verification/': {
+      id: '/_authed/_app/me/verification/'
+      path: '/me/verification'
+      fullPath: '/me/verification/'
+      preLoaderRoute: typeof AuthedAppMeVerificationIndexRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/_app/me/verification/identity': {
+      id: '/_authed/_app/me/verification/identity'
+      path: '/me/verification/identity'
+      fullPath: '/me/verification/identity'
+      preLoaderRoute: typeof AuthedAppMeVerificationIdentityRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/_app/me/verification/selfie': {
+      id: '/_authed/_app/me/verification/selfie'
+      path: '/me/verification/selfie'
+      fullPath: '/me/verification/selfie'
+      preLoaderRoute: typeof AuthedAppMeVerificationSelfieRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/_app/profiles/$profileId/': {
+      id: '/_authed/_app/profiles/$profileId/'
+      path: '/profiles/$profileId'
+      fullPath: '/profiles/$profileId/'
+      preLoaderRoute: typeof AuthedAppProfilesProfileIdIndexRouteImport
+      parentRoute: typeof AuthedAppRoute
+    }
+    '/_authed/_app/profiles/$profileId/photos': {
+      id: '/_authed/_app/profiles/$profileId/photos'
+      path: '/profiles/$profileId/photos'
+      fullPath: '/profiles/$profileId/photos'
+      preLoaderRoute: typeof AuthedAppProfilesProfileIdPhotosRouteImport
+      parentRoute: typeof AuthedAppRoute
     }
   }
 }
 
+interface AuthedAppChatsRouteChildren {
+  AuthedAppChatsIndexRoute: typeof AuthedAppChatsIndexRoute
+  AuthedAppChatsConnectionIdDetailsRoute: typeof AuthedAppChatsConnectionIdDetailsRoute
+  AuthedAppChatsConnectionIdIndexRoute: typeof AuthedAppChatsConnectionIdIndexRoute
+}
+
+const AuthedAppChatsRouteChildren: AuthedAppChatsRouteChildren = {
+  AuthedAppChatsIndexRoute: AuthedAppChatsIndexRoute,
+  AuthedAppChatsConnectionIdDetailsRoute:
+    AuthedAppChatsConnectionIdDetailsRoute,
+  AuthedAppChatsConnectionIdIndexRoute: AuthedAppChatsConnectionIdIndexRoute,
+}
+
+const AuthedAppChatsRouteWithChildren = AuthedAppChatsRoute._addFileChildren(
+  AuthedAppChatsRouteChildren,
+)
+
+interface AuthedAppRouteChildren {
+  AuthedAppChatsRoute: typeof AuthedAppChatsRouteWithChildren
+  AuthedAppHomeRoute: typeof AuthedAppHomeRoute
+  AuthedAppInterestsRoute: typeof AuthedAppInterestsRoute
+  AuthedAppMatchesRoute: typeof AuthedAppMatchesRoute
+  AuthedAppNotificationsRoute: typeof AuthedAppNotificationsRoute
+  AuthedAppPhotoRequestsRoute: typeof AuthedAppPhotoRequestsRoute
+  AuthedAppSearchRoute: typeof AuthedAppSearchRoute
+  AuthedAppShortlistRoute: typeof AuthedAppShortlistRoute
+  AuthedAppVisitorsRoute: typeof AuthedAppVisitorsRoute
+  AuthedAppMePhotosRoute: typeof AuthedAppMePhotosRoute
+  AuthedAppMePreferencesRoute: typeof AuthedAppMePreferencesRoute
+  AuthedAppPPublicCodeRoute: typeof AuthedAppPPublicCodeRoute
+  AuthedAppSettingsAccountRoute: typeof AuthedAppSettingsAccountRoute
+  AuthedAppSettingsBlockedRoute: typeof AuthedAppSettingsBlockedRoute
+  AuthedAppSettingsContactsRoute: typeof AuthedAppSettingsContactsRoute
+  AuthedAppSettingsHelpRoute: typeof AuthedAppSettingsHelpRoute
+  AuthedAppSettingsNotificationsRoute: typeof AuthedAppSettingsNotificationsRoute
+  AuthedAppSettingsPrivacyRoute: typeof AuthedAppSettingsPrivacyRoute
+  AuthedAppMeIndexRoute: typeof AuthedAppMeIndexRoute
+  AuthedAppSettingsIndexRoute: typeof AuthedAppSettingsIndexRoute
+  AuthedAppMeEditSectionRoute: typeof AuthedAppMeEditSectionRoute
+  AuthedAppMeVerificationIdentityRoute: typeof AuthedAppMeVerificationIdentityRoute
+  AuthedAppMeVerificationSelfieRoute: typeof AuthedAppMeVerificationSelfieRoute
+  AuthedAppProfilesProfileIdPhotosRoute: typeof AuthedAppProfilesProfileIdPhotosRoute
+  AuthedAppMeVerificationIndexRoute: typeof AuthedAppMeVerificationIndexRoute
+  AuthedAppProfilesProfileIdIndexRoute: typeof AuthedAppProfilesProfileIdIndexRoute
+}
+
+const AuthedAppRouteChildren: AuthedAppRouteChildren = {
+  AuthedAppChatsRoute: AuthedAppChatsRouteWithChildren,
+  AuthedAppHomeRoute: AuthedAppHomeRoute,
+  AuthedAppInterestsRoute: AuthedAppInterestsRoute,
+  AuthedAppMatchesRoute: AuthedAppMatchesRoute,
+  AuthedAppNotificationsRoute: AuthedAppNotificationsRoute,
+  AuthedAppPhotoRequestsRoute: AuthedAppPhotoRequestsRoute,
+  AuthedAppSearchRoute: AuthedAppSearchRoute,
+  AuthedAppShortlistRoute: AuthedAppShortlistRoute,
+  AuthedAppVisitorsRoute: AuthedAppVisitorsRoute,
+  AuthedAppMePhotosRoute: AuthedAppMePhotosRoute,
+  AuthedAppMePreferencesRoute: AuthedAppMePreferencesRoute,
+  AuthedAppPPublicCodeRoute: AuthedAppPPublicCodeRoute,
+  AuthedAppSettingsAccountRoute: AuthedAppSettingsAccountRoute,
+  AuthedAppSettingsBlockedRoute: AuthedAppSettingsBlockedRoute,
+  AuthedAppSettingsContactsRoute: AuthedAppSettingsContactsRoute,
+  AuthedAppSettingsHelpRoute: AuthedAppSettingsHelpRoute,
+  AuthedAppSettingsNotificationsRoute: AuthedAppSettingsNotificationsRoute,
+  AuthedAppSettingsPrivacyRoute: AuthedAppSettingsPrivacyRoute,
+  AuthedAppMeIndexRoute: AuthedAppMeIndexRoute,
+  AuthedAppSettingsIndexRoute: AuthedAppSettingsIndexRoute,
+  AuthedAppMeEditSectionRoute: AuthedAppMeEditSectionRoute,
+  AuthedAppMeVerificationIdentityRoute: AuthedAppMeVerificationIdentityRoute,
+  AuthedAppMeVerificationSelfieRoute: AuthedAppMeVerificationSelfieRoute,
+  AuthedAppProfilesProfileIdPhotosRoute: AuthedAppProfilesProfileIdPhotosRoute,
+  AuthedAppMeVerificationIndexRoute: AuthedAppMeVerificationIndexRoute,
+  AuthedAppProfilesProfileIdIndexRoute: AuthedAppProfilesProfileIdIndexRoute,
+}
+
+const AuthedAppRouteWithChildren = AuthedAppRoute._addFileChildren(
+  AuthedAppRouteChildren,
+)
+
+interface AuthedAdminRouteChildren {
+  AuthedAdminAnnouncementsRoute: typeof AuthedAdminAnnouncementsRoute
+  AuthedAdminAuditLogRoute: typeof AuthedAdminAuditLogRoute
+  AuthedAdminCastesRoute: typeof AuthedAdminCastesRoute
+  AuthedAdminPhotosRoute: typeof AuthedAdminPhotosRoute
+  AuthedAdminReleasesRoute: typeof AuthedAdminReleasesRoute
+  AuthedAdminSettingsRoute: typeof AuthedAdminSettingsRoute
+  AuthedAdminTextsRoute: typeof AuthedAdminTextsRoute
+  AuthedAdminIndexRoute: typeof AuthedAdminIndexRoute
+  AuthedAdminProfilesProfileIdRoute: typeof AuthedAdminProfilesProfileIdRoute
+  AuthedAdminReportsReportIdRoute: typeof AuthedAdminReportsReportIdRoute
+  AuthedAdminUsersUserIdRoute: typeof AuthedAdminUsersUserIdRoute
+  AuthedAdminVerificationsRequestIdRoute: typeof AuthedAdminVerificationsRequestIdRoute
+  AuthedAdminProfilesIndexRoute: typeof AuthedAdminProfilesIndexRoute
+  AuthedAdminReportsIndexRoute: typeof AuthedAdminReportsIndexRoute
+  AuthedAdminUsersIndexRoute: typeof AuthedAdminUsersIndexRoute
+  AuthedAdminVerificationsIndexRoute: typeof AuthedAdminVerificationsIndexRoute
+}
+
+const AuthedAdminRouteChildren: AuthedAdminRouteChildren = {
+  AuthedAdminAnnouncementsRoute: AuthedAdminAnnouncementsRoute,
+  AuthedAdminAuditLogRoute: AuthedAdminAuditLogRoute,
+  AuthedAdminCastesRoute: AuthedAdminCastesRoute,
+  AuthedAdminPhotosRoute: AuthedAdminPhotosRoute,
+  AuthedAdminReleasesRoute: AuthedAdminReleasesRoute,
+  AuthedAdminSettingsRoute: AuthedAdminSettingsRoute,
+  AuthedAdminTextsRoute: AuthedAdminTextsRoute,
+  AuthedAdminIndexRoute: AuthedAdminIndexRoute,
+  AuthedAdminProfilesProfileIdRoute: AuthedAdminProfilesProfileIdRoute,
+  AuthedAdminReportsReportIdRoute: AuthedAdminReportsReportIdRoute,
+  AuthedAdminUsersUserIdRoute: AuthedAdminUsersUserIdRoute,
+  AuthedAdminVerificationsRequestIdRoute:
+    AuthedAdminVerificationsRequestIdRoute,
+  AuthedAdminProfilesIndexRoute: AuthedAdminProfilesIndexRoute,
+  AuthedAdminReportsIndexRoute: AuthedAdminReportsIndexRoute,
+  AuthedAdminUsersIndexRoute: AuthedAdminUsersIndexRoute,
+  AuthedAdminVerificationsIndexRoute: AuthedAdminVerificationsIndexRoute,
+}
+
+const AuthedAdminRouteWithChildren = AuthedAdminRoute._addFileChildren(
+  AuthedAdminRouteChildren,
+)
+
+interface AuthedOnboardingRouteChildren {
+  AuthedOnboardingStepRoute: typeof AuthedOnboardingStepRoute
+  AuthedOnboardingDoneRoute: typeof AuthedOnboardingDoneRoute
+  AuthedOnboardingIndexRoute: typeof AuthedOnboardingIndexRoute
+}
+
+const AuthedOnboardingRouteChildren: AuthedOnboardingRouteChildren = {
+  AuthedOnboardingStepRoute: AuthedOnboardingStepRoute,
+  AuthedOnboardingDoneRoute: AuthedOnboardingDoneRoute,
+  AuthedOnboardingIndexRoute: AuthedOnboardingIndexRoute,
+}
+
+const AuthedOnboardingRouteWithChildren =
+  AuthedOnboardingRoute._addFileChildren(AuthedOnboardingRouteChildren)
+
+interface AuthedRouteChildren {
+  AuthedAppRoute: typeof AuthedAppRouteWithChildren
+  AuthedAdminRoute: typeof AuthedAdminRouteWithChildren
+  AuthedOnboardingRoute: typeof AuthedOnboardingRouteWithChildren
+  AuthedAccountBlockedRoute: typeof AuthedAccountBlockedRoute
+  AuthedAccountChangesRoute: typeof AuthedAccountChangesRoute
+  AuthedAccountConsentRoute: typeof AuthedAccountConsentRoute
+  AuthedAccountDeletionRoute: typeof AuthedAccountDeletionRoute
+  AuthedAccountReviewRoute: typeof AuthedAccountReviewRoute
+}
+
+const AuthedRouteChildren: AuthedRouteChildren = {
+  AuthedAppRoute: AuthedAppRouteWithChildren,
+  AuthedAdminRoute: AuthedAdminRouteWithChildren,
+  AuthedOnboardingRoute: AuthedOnboardingRouteWithChildren,
+  AuthedAccountBlockedRoute: AuthedAccountBlockedRoute,
+  AuthedAccountChangesRoute: AuthedAccountChangesRoute,
+  AuthedAccountConsentRoute: AuthedAccountConsentRoute,
+  AuthedAccountDeletionRoute: AuthedAccountDeletionRoute,
+  AuthedAccountReviewRoute: AuthedAccountReviewRoute,
+}
+
+const AuthedRouteWithChildren =
+  AuthedRoute._addFileChildren(AuthedRouteChildren)
+
+interface PublicRouteChildren {
+  PublicCommunityGuidelinesRoute: typeof PublicCommunityGuidelinesRoute
+  PublicContactRoute: typeof PublicContactRoute
+  PublicDownloadRoute: typeof PublicDownloadRoute
+  PublicFaqRoute: typeof PublicFaqRoute
+  PublicHowItWorksRoute: typeof PublicHowItWorksRoute
+  PublicNikahGuideRoute: typeof PublicNikahGuideRoute
+  PublicPrivacyRoute: typeof PublicPrivacyRoute
+  PublicSafetyRoute: typeof PublicSafetyRoute
+  PublicTermsRoute: typeof PublicTermsRoute
+  PublicIndexRoute: typeof PublicIndexRoute
+}
+
+const PublicRouteChildren: PublicRouteChildren = {
+  PublicCommunityGuidelinesRoute: PublicCommunityGuidelinesRoute,
+  PublicContactRoute: PublicContactRoute,
+  PublicDownloadRoute: PublicDownloadRoute,
+  PublicFaqRoute: PublicFaqRoute,
+  PublicHowItWorksRoute: PublicHowItWorksRoute,
+  PublicNikahGuideRoute: PublicNikahGuideRoute,
+  PublicPrivacyRoute: PublicPrivacyRoute,
+  PublicSafetyRoute: PublicSafetyRoute,
+  PublicTermsRoute: PublicTermsRoute,
+  PublicIndexRoute: PublicIndexRoute,
+}
+
+const PublicRouteWithChildren =
+  PublicRoute._addFileChildren(PublicRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  AuthedRoute: AuthedRouteWithChildren,
+  PublicRoute: PublicRouteWithChildren,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
+  SignInSplatRoute: SignInSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
+import type { startInstance } from './start.ts'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }

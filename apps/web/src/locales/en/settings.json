@@ -1,0 +1,327 @@
+{
+  "title": "Settings",
+  "saving": {
+    "working": "Saving",
+    "saved": "Saved",
+    "failed": "Could not save. Please try again."
+  },
+  "home": {
+    "list_label": "Settings",
+    "rows": {
+      "privacy": "Privacy",
+      "notifications": "Notifications",
+      "contacts": "Contact details",
+      "blocked": "Blocked members",
+      "account": "Account",
+      "help": "Help and safety"
+    },
+    "version": "App version: {{version}}"
+  },
+  "privacy": {
+    "title": "Privacy",
+    "preview_link": "Preview how others see the profile",
+    "review_must_haves": "Review my must-haves",
+    "groups": {
+      "find": "Who can find me",
+      "name_photos": "Name and photos",
+      "details": "Details I share",
+      "activity": "Activity"
+    },
+    "hide_dialog": {
+      "title": "Hide the profile from matches and search?",
+      "text": "You will receive no new interests unless you send one first.",
+      "confirm": "Hide"
+    },
+    "fields": {
+      "discovery_visibility": {
+        "title": "Profile visibility",
+        "options": {
+          "everyone": {
+            "label": "Everyone",
+            "help": "Your profile appears in matches and search for all members."
+          },
+          "preference_match": {
+            "label": "Only people who fit my must-haves",
+            "help": "Only members who meet every preference you marked as a must-have can find or open your profile."
+          },
+          "hidden": {
+            "label": "Hidden",
+            "help": "Nobody can find you. Only people you send an interest to, and your connections, can open your profile."
+          }
+        }
+      },
+      "interest_permission": {
+        "title": "Who can send me an interest",
+        "options": {
+          "everyone": {
+            "label": "Anyone",
+            "help": "Any member can send you an interest."
+          },
+          "verified_only": {
+            "label": "Verified members only",
+            "help": "Only members with a verified photo or verified ID can send you an interest."
+          },
+          "preference_match": {
+            "label": "Only people who fit my must-haves",
+            "help": "Only members who meet every preference you marked as a must-have can send you an interest."
+          }
+        }
+      },
+      "name_display": {
+        "title": "Name shown to members",
+        "note": "Your connections always see your full name.",
+        "example": "Example: {{example}}",
+        "options": {
+          "full_name": "Full name",
+          "first_name_last_initial": "First name and initial",
+          "first_name_only": "First name only",
+          "initials": "Initials",
+          "code_only": "Profile code only"
+        }
+      },
+      "photo_visibility": {
+        "title": "Who can see my photos",
+        "note": "No app can fully stop someone from photographing their screen. Share clear photos only with people you trust.",
+        "options": {
+          "members": {
+            "label": "All members",
+            "help": "Every member who can open your profile sees your photos."
+          },
+          "interests_and_connections": {
+            "label": "People I show interest in",
+            "help": "Photos are blurred. They become clear for people you send an interest to and for your connections."
+          },
+          "connections": {
+            "label": "Connections only",
+            "help": "Photos are blurred until you and the other person are connected."
+          },
+          "approved_only": {
+            "label": "Only people I approve",
+            "help": "Photos are blurred for everyone. You approve each person who may see them, including connections."
+          }
+        }
+      },
+      "allow_photo_requests": {
+        "title": "Let members ask to see my photos",
+        "help": "When your photos are blurred, members can send you a request. You decide each one."
+      },
+      "caste_visibility": {
+        "title": "Caste and sub-caste",
+        "help": "If you hide this from members, people who search or match by caste will not find you through it."
+      },
+      "income_visibility": {
+        "title": "Income",
+        "help": "If you hide this from members, it is not used to match you with people who ask for a minimum income."
+      },
+      "family_visibility": {
+        "title": "Family details",
+        "help": "Parents, siblings, family type and values, and your 'about my family' text. If hidden from members, family values are not used in matching."
+      },
+      "career_details_visibility": {
+        "title": "Job title, employer and institute",
+        "help": "Your education level and profession category are always visible."
+      },
+      "home_visibility": {
+        "title": "Home details",
+        "help": "Ownership, type and size of the family home."
+      },
+      "area_visibility": {
+        "title": "Neighbourhood",
+        "help": "Your city is always visible. This controls the area within the city."
+      },
+      "health_visibility": {
+        "title": "Health details",
+        "help": "Disability information and blood group."
+      },
+      "show_last_active": {
+        "title": "Show when I was last active",
+        "help": "If you turn this off, you also will not see when others were last active. Search can still order members by recent activity."
+      },
+      "show_online_status": {
+        "title": "Show when I am online",
+        "help": "If you turn this off, you also will not see who is online."
+      },
+      "record_my_visits": {
+        "title": "Let members see that I viewed their profile",
+        "help": "If you turn this off you browse privately, your earlier visits are hidden too, and you cannot see who viewed your profile."
+      },
+      "send_read_receipts": {
+        "title": "Read receipts",
+        "help": "If you turn this off, others will not see when you have read their messages or opened their interest, and you will not see it for theirs."
+      }
+    },
+    "photo_requests_link": "Photo requests",
+    "visibility_options": {
+      "members": "All members",
+      "connections": "Connections only",
+      "nobody": "Nobody"
+    },
+    "details_note": "Age, height, marital status, religion, sect, mother tongue, city, education level and profession are always visible to members who can open your profile. To hide the whole profile, change 'Profile visibility' or pause the profile."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "intro": "These switches only control push notifications and emails. Everything still appears in the app.",
+    "push": {
+      "title": "Push notifications",
+      "web_note": "Push notifications are available in the Android app.",
+      "interests": "Interests",
+      "messages": "Messages and connection updates",
+      "photo_requests": "Photo requests",
+      "matches": "New matches",
+      "profile_views": "Profile views"
+    },
+    "email": {
+      "title": "Email",
+      "note": "Messages about your account and safety are always sent.",
+      "interests": "Interests",
+      "messages": "Unread messages",
+      "match_digest": "Match digest",
+      "announcements": "News and announcements"
+    },
+    "quiet": {
+      "title": "Quiet hours",
+      "switch": "Quiet hours",
+      "from": "From",
+      "to": "To",
+      "help": "No push notifications are sent between these times. They arrive when the quiet hours end, and they are always in the app."
+    }
+  },
+  "blocked": {
+    "title": "Blocked members",
+    "text": "Blocked members cannot see you, and you cannot see them.",
+    "list_label": "Blocked members",
+    "code": "Profile code {{code}}",
+    "since": "Blocked {{when}}",
+    "unblock": "Unblock",
+    "unblock_dialog": {
+      "title": "Unblock {{name}}?",
+      "text": "You will be able to see each other again. A connection or chat that ended is not restored."
+    },
+    "unblocked": "Unblocked.",
+    "empty": "You have not blocked anyone."
+  },
+  "help": {
+    "title": "Help and safety",
+    "list_label": "Help pages",
+    "rows": {
+      "safety": "Safety tips",
+      "how": "How Khandani Rishta works",
+      "faq": "Questions and answers",
+      "nikah": "Nikah guide",
+      "guidelines": "Community Guidelines",
+      "terms": "Terms of Use",
+      "privacy": "Privacy Policy",
+      "contact": "Contact support"
+    },
+    "about": {
+      "title": "About",
+      "version": "App version: {{version}}",
+      "code": "Profile code: {{code}}"
+    },
+    "support": {
+      "subject": "Support request {{code}}",
+      "body": "App version: {{version}}\nPlatform: web"
+    }
+  },
+  "account": {
+    "title": "Account",
+    "sign_in": {
+      "title": "Sign-in and security",
+      "email": "Email: {{email}}",
+      "email_none": "Email: not set",
+      "email_verified": "Email verified",
+      "phone": "Phone: {{phone}}",
+      "manage": "Manage sign-in and security",
+      "unavailable": "Sign-in and security settings are not available in this preview."
+    },
+    "language": {
+      "title": "Language",
+      "label": "Language",
+      "english": "English",
+      "urdu": "Urdu",
+      "coming_soon": "Coming soon"
+    },
+    "status": {
+      "title": "Profile status",
+      "line": {
+        "active": "The profile is live.",
+        "paused": "The profile is paused.",
+        "closed": "The profile is closed.",
+        "not_live": "The profile is not live yet."
+      },
+      "pause": {
+        "action": "Pause the profile",
+        "title": "Pause the profile?",
+        "body": "While it is paused: members cannot find the profile or send new interests. Interests you have already received stay open and you can still answer them. You can still chat with your connections. You cannot browse matches or send interests. You can resume at any time.",
+        "confirm": "Pause",
+        "done": "The profile is paused."
+      },
+      "resume": {
+        "action": "Resume the profile",
+        "done": "The profile is live again."
+      },
+      "close": {
+        "action": "Close the profile",
+        "title": "Close the profile?",
+        "reason_label": "Why are you closing it?",
+        "body": "Closing hides the profile from everyone except your connections. All open interests, sent and received, are closed. You can read your chats but cannot send messages. You can reopen the profile later.",
+        "confirm": "Close the profile",
+        "done": "The profile is closed.",
+        "mubarak": "Mubarak! If the match is one of your connections, you can mark the engagement or nikah on that connection.",
+        "mubarak_title": "Mubarak!",
+        "open_connections": "Open my connections"
+      },
+      "reopen": {
+        "action": "Reopen the profile",
+        "title": "Reopen the profile?",
+        "body": "The profile becomes visible to members again.",
+        "confirm": "Reopen",
+        "done": "The profile is live again.",
+        "nikah_title": "Reopen after a nikah?",
+        "nikah_body": "This profile was closed after a nikah was confirmed with {{name}}. Reopening ends that connection. Type REOPEN to confirm.",
+        "nikah_phrase": "Type REOPEN to confirm",
+        "member_fallback": "a member"
+      }
+    },
+    "data": {
+      "title": "Your data",
+      "none": "Get a copy of everything stored about you as a file.",
+      "request": "Download my data",
+      "queued": "Your file is being prepared. This can take a few minutes. We will email you when it is ready.",
+      "ready": "Your file is ready until {{date}}.",
+      "download": "Download",
+      "request_new": "Request a new file",
+      "failed": "The file could not be prepared.",
+      "try_again": "Try again",
+      "expired": "The previous file has expired.",
+      "limit": "You can request your data once every 24 hours."
+    },
+    "delete": {
+      "title": "Delete account",
+      "action": "Delete my account",
+      "gentle": {
+        "title": "Take a break instead?",
+        "text": "Looking for a break instead? You can pause or close your profile and come back any time.",
+        "pause": "Pause my profile",
+        "close": "Close my profile",
+        "continue": "Continue to delete"
+      },
+      "confirm": {
+        "title": "Delete your account?",
+        "list_label": "What happens when you delete your account",
+        "hidden": "Your profile is hidden from everyone as soon as you confirm.",
+        "days": "You have {{days}} days to change your mind. Sign in again and choose \"Keep my account\".",
+        "purge": "On {{date}} we permanently delete your profile, photos, preferences, contact details, identity number and verification images.",
+        "messages": "Messages you sent are removed. People you chatted with will see \"Member no longer available\" and \"Message removed\".",
+        "record": "We keep a minimal record for up to 2 years to protect other members: reports and moderation decisions about the account, and the dates you accepted our terms. If the account was banned, a scrambled fingerprint of the identity number, email and phone stays on a block list. It cannot be turned back into the original.",
+        "break": "Looking for a break instead? You can pause your profile and come back any time.",
+        "reason_label": "Why are you leaving? (optional)",
+        "phrase_label": "Type DELETE to confirm",
+        "button": "Delete my account"
+      }
+    },
+    "sign_out": {
+      "title": "Sign out"
+    }
+  }
+}

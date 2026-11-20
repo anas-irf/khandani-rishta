@@ -1,0 +1,237 @@
+{
+  "load": {
+    "not_found": "This profile is not available.",
+    "view_limit": "You have viewed the maximum number of profiles for today. The count resets at midnight, Pakistan time.",
+    "view_limit_title": "Limit reached",
+    "ok": "OK"
+  },
+  "by_code": {
+    "opening": "Opening the profile",
+    "not_found": "No profile with this code is available to you."
+  },
+  "gallery": {
+    "label": "Photos of {{name}}",
+    "position": "{{current}} of {{total}}",
+    "open": "Open photo {{current}} of {{total}}",
+    "previous": "Previous photo",
+    "next": "Next photo",
+    "none": "No photo added yet"
+  },
+  "photo_access": {
+    "private": "{{name}}'s photos are private",
+    "requested": "Photo request sent. You will be notified when it is approved.",
+    "request": "Request photos"
+  },
+  "header": {
+    "online": "Online now",
+    "code": "Profile code {{code}}",
+    "copy_code": "Copy the profile code",
+    "copied": "Profile code copied.",
+    "managed_by": "Profile managed by {{label}}"
+  },
+  "verification": {
+    "title": "Verification",
+    "id_verified": "Identity document checked by our team",
+    "photo_verified": "Photos checked against a live selfie",
+    "phone_verified": "Phone number confirmed",
+    "disclaimer": "Verification confirms identity details only. Always take your own care and involve your family."
+  },
+  "compat": {
+    "title": "Compatibility",
+    "ring": "{{value}}% match",
+    "viewer_fit": "{{name}} fits {{value}}% of what you are looking for",
+    "owner_fit": "You fit {{value}}% of what {{name}} is looking for",
+    "details_show": "See details",
+    "details_hide": "Hide details",
+    "must": "Must have",
+    "matched": "Matches",
+    "not_matched": "Does not match"
+  },
+  "about": {
+    "title": "About {{name}}"
+  },
+  "blocks": {
+    "basics": "Basics",
+    "community": "Religion and community",
+    "location": "Location",
+    "education_career": "Education and career",
+    "family": "Family",
+    "lifestyle": "Faith and lifestyle"
+  },
+  "pronoun": {
+    "male": "him",
+    "female": "her"
+  },
+  "rows": {
+    "marital_status": "Marital status",
+    "children": "Children",
+    "children_none": "No children",
+    "children_with_one": "{{count}} child, living with {{pronoun}}",
+    "children_with_other": "{{count}} children, living with {{pronoun}}",
+    "children_without_one": "{{count}} child, not living with {{pronoun}}",
+    "children_without_other": "{{count}} children, not living with {{pronoun}}",
+    "current_wives": "Current wives",
+    "current_wives_value_one": "{{count}} current wife",
+    "current_wives_value_other": "{{count}} current wives",
+    "height": "Height",
+    "weight": "Weight",
+    "weight_value": "{{value}} kg",
+    "complexion": "Complexion",
+    "build": "Build",
+    "religion": "Religion",
+    "sect": "Sect",
+    "caste": "Caste",
+    "mother_tongue": "Mother tongue",
+    "other_languages": "Other languages",
+    "lives_in": "Lives in",
+    "area": "Area",
+    "nationality": "Nationality",
+    "residency": "Residency status",
+    "home_town": "Family's home town",
+    "relocate": "Willing to relocate",
+    "education_level": "Education level",
+    "field": "Field of study",
+    "degree": "Degree",
+    "institute": "Institute",
+    "employment": "Employment",
+    "profession": "Profession",
+    "job_title": "Job title",
+    "employer": "Employer",
+    "income": "Monthly income",
+    "father": "Father",
+    "mother": "Mother",
+    "brothers": "Brothers",
+    "sisters": "Sisters",
+    "siblings_value": "{{count}}, {{married}} married",
+    "family_type": "Family type",
+    "family_status": "Family status",
+    "family_values": "Family values",
+    "family_lives_in": "Family lives in",
+    "home": "Home",
+    "about_family": "About the family",
+    "religiosity": "Religious practice",
+    "prayers": "Prayers",
+    "hijab": "Hijab",
+    "beard": "Beard",
+    "religious_education": "Religious education",
+    "smoking": "Smoking",
+    "living": "Living after marriage",
+    "work": "Work after marriage",
+    "timeline": "Hopes to marry",
+    "jahez": "View on jahez",
+    "hobbies": "Hobbies",
+    "blood_group": "Blood group",
+    "disability": "Disability"
+  },
+  "looking_for": {
+    "title": "What {{name}} is looking for",
+    "summary": "You match {{matched}} of {{total}}.",
+    "none": "{{name}} has not set any preferences.",
+    "must": "Must have",
+    "age": "{{min}} to {{max}} years",
+    "range": "{{min}} to {{max}}",
+    "at_least": "At least {{value}}",
+    "up_to": "Up to {{value}}",
+    "you_match": "You match",
+    "you_do_not_match": "You do not match"
+  },
+  "safety": {
+    "report": "Report this profile",
+    "block": "Block",
+    "money": "Never send money to anyone you meet here."
+  },
+  "actions": {
+    "label": "Actions",
+    "open_chat": "Open chat",
+    "accept": "Accept",
+    "decline": "Decline",
+    "withdraw": "Withdraw",
+    "interest_sent": "Interest sent",
+    "send_interest": "Send interest",
+    "connected": "Connected",
+    "not_interested": "Not interested",
+    "menu": "More actions for {{name}}",
+    "connection_details": "Connection details",
+    "report": "Report",
+    "block": "Block",
+    "let_see_photos": "Let {{name}} see my photos",
+    "photos_granted": "{{name}} can now see your photos.",
+    "shortlisted": "Added to your shortlist.",
+    "add_note": "Add a note"
+  },
+  "received": {
+    "text": "{{name}} is interested in you",
+    "expires": "Expires {{date}}"
+  },
+  "cannot_send": {
+    "cooldown": "You can send an interest again on {{date}}.",
+    "daily_limit": "You have used today's interests. More tomorrow.",
+    "verify_more": "Verify to send more",
+    "pending_limit": "You have many unanswered interests. Withdraw some to send more.",
+    "view_sent": "View sent interests",
+    "connection_limit": "You have reached the maximum number of connections. End one to connect with someone new.",
+    "verified_only": "This member accepts interests only from verified members.",
+    "get_verified": "Get verified",
+    "preference_match": "This member accepts interests only from people who fit their preferences.",
+    "own_profile_not_active": "Resume your profile to send interests."
+  },
+  "send": {
+    "title": "Send an interest to {{name}}",
+    "left": "{{left}} of {{total}} interests left today.",
+    "message_label": "Message",
+    "templates_label": "Message templates",
+    "template_1": "Assalam-o-Alaikum. I liked your profile and would like to take this forward with the blessing of our families.",
+    "template_2": "Assalam-o-Alaikum. Our preferences seem to match well. Please have a look at my profile.",
+    "template_3": "Assalam-o-Alaikum. I am writing on behalf of my family. We found your profile suitable and would like to connect.",
+    "template_none": "No message",
+    "helper": "Do not include phone numbers or social media names.",
+    "count": "{{count}} of {{max}} characters",
+    "submit": "Send interest",
+    "sent": "Interest sent",
+    "cooldown": "You can send an interest again on {{date}}.",
+    "verify_now": "Verify now",
+    "mutual_title": "You are both interested!",
+    "mutual_text": "You are now connected.",
+    "start_chatting": "Start chatting",
+    "later": "Later",
+    "limit": {
+      "daily": "You have used today's interests. More tomorrow.",
+      "pending": "You have many unanswered interests. Withdraw some to send more.",
+      "connections": "You have reached the maximum number of connections. End one to connect with someone new."
+    }
+  },
+  "accept": {
+    "done": "You are now connected.",
+    "limit_you": "You have reached the maximum number of connections. End one to accept.",
+    "limit_them": "This member cannot take new connections right now. Please try again later."
+  },
+  "decline": {
+    "title": "Decline this interest?",
+    "text": "{{name}} will not be notified.",
+    "also_block": "Also block {{name}}",
+    "confirm": "Decline",
+    "done": "Interest declined."
+  },
+  "withdraw": {
+    "title": "Withdraw your interest?",
+    "text": "You can send a new one after 7 days.",
+    "confirm": "Withdraw",
+    "done": "Interest withdrawn."
+  },
+  "pass": {
+    "done": "You will not see this profile for 6 months.",
+    "open_interest": "You also have an open interest to {{name}}. Withdraw it?",
+    "withdraw": "Withdraw",
+    "keep": "Keep"
+  },
+  "photos": {
+    "title": "Photos of {{name}}",
+    "close": "Close",
+    "position": "{{current}} of {{total}}",
+    "previous": "Previous photo",
+    "next": "Next photo",
+    "failed": "Could not load this photo.",
+    "retry": "Try again",
+    "report": "Report photo"
+  }
+}

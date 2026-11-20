@@ -1,0 +1,90 @@
+{
+  "tier_essentials": "Essentials",
+  "more": "More preferences",
+  "any": "Any",
+  "importance_label": "Importance: {{row}}",
+  "must_note": "Must have: members who do not fit, or who have not filled in this detail, are never shown as matches.",
+  "must_warning": "You have {{count}} must-haves. This can leave very few matches. Keep must-haves for true dealbreakers.",
+  "must_summary_one": "{{count}} must-have",
+  "must_summary_other": "{{count}} must-haves",
+  "rows": {
+    "age": "Age",
+    "marital_status": "Marital status",
+    "religion": "Religion",
+    "sect": "Sect",
+    "location": "Location",
+    "countries": "Countries",
+    "regions": "Provinces or states",
+    "cities": "Cities",
+    "add_places": "Add specific provinces or cities",
+    "education": "Education",
+    "education_option": "{{name}} or higher",
+    "height": "Height",
+    "children": "Children",
+    "caste": "Caste or biradari",
+    "mother_tongue": "Mother tongue",
+    "profession": "Employment and profession",
+    "employment": "Employment",
+    "profession_list": "Profession",
+    "income": "Monthly income",
+    "income_option": "At least {{amount}} PKR a month or the equivalent abroad",
+    "religiosity": "Religious practice",
+    "appearance_hijab": "Hijab",
+    "appearance_beard": "Beard",
+    "family": "Family",
+    "family_values": "Family values",
+    "family_types": "Family type",
+    "living_arrangement": "Living after marriage",
+    "work_after_marriage_male": "Wife working after marriage",
+    "work_after_marriage_female": "His view on wife working",
+    "smoking": "Smoking"
+  },
+  "cities_search": "Search for a city",
+  "cities_country": "Country to search in",
+  "notes_label": "Anything else you are looking for",
+  "notes_help": "Shown on the profile after review.",
+  "failed_onboarding": "Something went wrong on our side. Your earlier steps are saved. Please try again.",
+  "failed": "Something went wrong. Please try again.",
+  "errors": {
+    "age_min": {
+      "out_of_range": "Ages must be between 18 and 80.",
+      "invalid": "The minimum age cannot be more than the maximum age."
+    },
+    "age_max": {
+      "out_of_range": "Ages must be between 18 and 80."
+    },
+    "height_min_cm": {
+      "invalid": "The minimum height cannot be more than the maximum height.",
+      "out_of_range": "Choose a height between 4 ft 0 in and 7 ft 0 in."
+    },
+    "height_max_cm": {
+      "out_of_range": "Choose a height between 4 ft 0 in and 7 ft 0 in."
+    },
+    "marital_statuses": {
+      "not_allowed": "This option is not available for this profile."
+    },
+    "caste_codes": {
+      "too_long": "Choose up to 30 castes."
+    },
+    "country_codes": {
+      "too_long": "Choose up to 20."
+    },
+    "region_ids": {
+      "too_long": "Choose up to 20.",
+      "mismatch": "This place is not in one of the selected countries."
+    },
+    "city_ids": {
+      "too_long": "Choose up to 20.",
+      "mismatch": "This place is not in one of the selected countries."
+    },
+    "profession_codes": {
+      "too_long": "Choose up to 20."
+    },
+    "notes": {
+      "too_short": "Write at least 30 characters, or leave it empty.",
+      "too_long": "Keep it under 1,000 characters.",
+      "contains_contact_info": "Please remove phone numbers, email addresses, links and social media names. Contact details are shared only through contact sharing.",
+      "inappropriate": "This text contains words that are not allowed. Please rephrase."
+    }
+  }
+}

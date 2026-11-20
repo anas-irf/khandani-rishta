@@ -1,0 +1,98 @@
+{
+  "title": "Interests",
+  "box": {
+    "label": "Interests",
+    "received": "Received",
+    "sent": "Sent",
+    "badge": "{{count}} new"
+  },
+  "status": {
+    "label": "Show",
+    "received": {
+      "pending": "New",
+      "accepted": "Accepted",
+      "closed": "Closed"
+    },
+    "sent": {
+      "pending": "Waiting",
+      "accepted": "Accepted",
+      "closed": "Closed"
+    }
+  },
+  "list_label": "{{box}}, {{status}}",
+  "unavailable": "This member is no longer available",
+  "message": "“{{message}}”",
+  "received_at": "Received {{time}}",
+  "sent_at": "Sent {{time}}",
+  "expires_in_one": "Expires in {{count}} day",
+  "expires_in_other": "Expires in {{count}} days",
+  "expires_today": "Expires today",
+  "display_status": {
+    "accepted": "Accepted",
+    "no_response": "No response yet",
+    "closed": "Closed",
+    "withdrawn": "Withdrawn",
+    "declined": "Declined by you"
+  },
+  "unseen": "New",
+  "actions": {
+    "accept": "Accept",
+    "decline": "Decline",
+    "withdraw": "Withdraw",
+    "open_chat": "Open chat"
+  },
+  "accept": {
+    "success": "You are now connected."
+  },
+  "decline": {
+    "title": "Decline this interest?",
+    "text": "{{name}} will not be notified.",
+    "also_block": "Also block {{name}}",
+    "confirm": "Decline",
+    "success": "Interest declined."
+  },
+  "withdraw": {
+    "title": "Withdraw your interest?",
+    "text": "You can send a new one after 7 days.",
+    "confirm": "Withdraw",
+    "success": "Interest withdrawn."
+  },
+  "limit": {
+    "accept_you": "You have reached the maximum number of connections. End one to accept.",
+    "accept_them": "This member cannot take new connections right now. Please try again later."
+  },
+  "empty": {
+    "received": {
+      "pending": {
+        "title": "No new interests.",
+        "text": "A complete profile with a photo gets noticed more.",
+        "action": "Improve my profile"
+      },
+      "accepted": {
+        "title": "Interests you accept appear here."
+      },
+      "closed": {
+        "title": "Nothing here yet."
+      }
+    },
+    "sent": {
+      "pending": {
+        "title": "You have not sent any interests.",
+        "text": "Find someone you like and send one.",
+        "action": "See my matches"
+      },
+      "accepted": {
+        "title": "When someone accepts your interest, it appears here and you can chat."
+      },
+      "closed": {
+        "title": "Nothing here yet."
+      }
+    }
+  },
+  "live": {
+    "received": "{{name}} sent you an interest.",
+    "view": "View",
+    "accepted": "{{name}} accepted your interest. You can chat now.",
+    "open_chat": "Open chat"
+  }
+}

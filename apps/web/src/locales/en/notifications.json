@@ -1,0 +1,48 @@
+{
+  "title": "Notifications",
+  "mark_all_read": "Mark all as read",
+  "list_label": "Notifications",
+  "empty": "No notifications yet.",
+  "unread": "Unread",
+  "app_icon": "Khandani Rishta",
+  "actor_fallback": "A member",
+  "text": {
+    "unknown": "You have a new notification.",
+    "interest_received": "{{actor}} sent you an interest.",
+    "interest_received_reminder_one": "An interest from {{actor}} expires in 3 days.",
+    "interest_received_reminder_other": "{{count}} interests expire in 3 days.",
+    "interest_accepted": "{{actor}} accepted your interest. You can chat now.",
+    "photo_request_received": "{{actor}} asked to see your photos.",
+    "photo_request_granted": "{{actor}} shared their photos with you.",
+    "contact_shared": "{{actor}} shared contact details with you.",
+    "stage_proposed": "{{actor}} suggests the next step: {{stage}}.",
+    "stage_confirmed": "{{actor}} confirmed: {{stage}}.",
+    "profile_approved": "Your profile is live. Members can now find you.",
+    "profile_changes_requested": "Your profile needs a few changes before it can go live.",
+    "photo_approved": "Your photo was approved.",
+    "photo_rejected": "A photo was not approved: {{reason}}.",
+    "photo_rejected_no_reason": "A photo was not approved.",
+    "text_rejected": "Part of your profile text was not approved. Please edit it.",
+    "verification_approved_id_document": "Your ID is verified.",
+    "verification_approved_selfie": "Your photo is verified.",
+    "verification_approved_other": "Your verification was approved.",
+    "verification_rejected": "Your verification could not be approved: {{reason}}.",
+    "verification_rejected_no_reason": "Your verification could not be approved.",
+    "new_matches_one": "You have {{count}} new match.",
+    "new_matches_other": "You have {{count}} new matches.",
+    "new_matches_saved_search_one": "{{count}} new profile matches your saved search \"{{name}}\".",
+    "new_matches_saved_search_other": "{{count}} new profiles match your saved search \"{{name}}\".",
+    "profile_views_summary_one": "{{count}} person viewed your profile today.",
+    "profile_views_summary_other": "{{count}} people viewed your profile today.",
+    "account_warning": "A notice about your account: {{reason}}.",
+    "account_warning_no_reason": "A notice about your account."
+  },
+  "warning": {
+    "title": "A notice about your account",
+    "guidelines": "Community Guidelines",
+    "understand": "I understand"
+  },
+  "announcement": {
+    "opens_in_new_tab": "(opens in a new tab)"
+  }
+}

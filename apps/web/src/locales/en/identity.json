@@ -1,0 +1,53 @@
+{
+  "document_label": "Document",
+  "number_label": {
+    "cnic": "CNIC number",
+    "cnic_male": "His CNIC number",
+    "cnic_female": "Her CNIC number",
+    "cnic_unknown": "Their CNIC number",
+    "nicop": "NICOP number",
+    "nicop_male": "His NICOP number",
+    "nicop_female": "Her NICOP number",
+    "nicop_unknown": "Their NICOP number",
+    "poc": "POC number",
+    "poc_male": "His POC number",
+    "poc_female": "Her POC number",
+    "poc_unknown": "Their POC number",
+    "passport": "Passport number",
+    "passport_male": "His passport number",
+    "passport_female": "Her passport number",
+    "passport_unknown": "Their passport number"
+  },
+  "managed_note": "Enter {{name}}'s number, not your own.",
+  "managed_note_unnamed": "Enter the number of the person this profile is for, not your own.",
+  "consent": {
+    "title": "Why we ask for the CNIC number",
+    "body": "We ask for the candidate's CNIC (or NICOP, POC or passport) number so that each person can have only one profile, and so that anyone removed for bad behaviour cannot come back.",
+    "point_hidden": "It is never shown on the profile or to any other member.",
+    "point_encrypted": "It is stored encrypted. Only the last four digits are ever displayed, and only to you.",
+    "point_not_shared": "We do not share it with anyone outside Khandani Rishta.",
+    "point_deleted": "It is deleted when the account is deleted."
+  },
+  "saved_label": "Saved identity number",
+  "saved_value": "{{document}}: {{number}}",
+  "change": "Change",
+  "go_basics": "Go back to the basics step",
+  "invalid_state": "This document is being verified or is already verified, so it cannot be changed here.",
+  "registered": {
+    "title": "Already registered",
+    "body": "This number is already registered with another profile. If you believe this is a mistake, contact support.",
+    "support": "Support: <mail>{{email}}</mail>",
+    "ok": "OK"
+  },
+  "failed_onboarding": "Something went wrong on our side. Your earlier steps are saved. Please try again.",
+  "failed": "Something went wrong. Please try again.",
+  "errors": {
+    "number": {
+      "required": "Enter the number.",
+      "required_continue": "Enter the identity number to continue.",
+      "invalid_cnic": "A CNIC number has 13 digits.",
+      "invalid_passport": "A passport number has 6 to 12 letters and digits.",
+      "mismatch": "This number does not match the gender on the profile. Please check the number and the gender. If both are correct, contact support."
+    }
+  }
+}

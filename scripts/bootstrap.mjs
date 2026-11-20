@@ -5,7 +5,7 @@
 // - Creates missing env files from their templates.
 // - Installs JavaScript dependencies when the lockfile has changed.
 // - Starts PostgreSQL from infra/local/docker-compose.yml. It keeps running afterwards;
-//   stop it with `pnpm db:stop`.
+//   stop it with `pnpm db:stop`. Creates the database named in apps/api/.env if it's missing.
 // - Runs the API with cargo, or inside the rust Docker image when Rust (or, on Windows, the
 //   Visual Studio C++ Build Tools) isn't installed, and restarts it whenever its code,
 //   migrations or .env change.
@@ -108,6 +108,40 @@ function readApiEnv() {
 
 function apiPort() {
   return (readApiEnv().BIND_ADDR ?? '127.0.0.1:8787').split(':').pop()
+}
+
+/**
+ * Creates the database that apps/api/.env points at when it's on the Compose server and doesn't
+ * exist yet. A checkout whose branch has different migrations (for example a git worktree) needs
+ * its own database: the API refuses to start on a database with migrations it doesn't have.
+ */
+function ensureDatabase() {
+  const { DATABASE_URL } = readApiEnv()
+  if (!DATABASE_URL) return
+  const url = new URL(DATABASE_URL)
+  const compose = ['compose', '-f', composeFile]
+  const published = spawnSync('docker', [...compose, 'port', 'postgres', '5432'], {
+    encoding: 'utf8',
+  })
+  const composePort = (published.stdout ?? '').trim().split(':').pop()
+  if (!['localhost', '127.0.0.1'].includes(url.hostname) || url.port !== composePort) return
+
+  const name = decodeURIComponent(url.pathname.slice(1))
+  const user = decodeURIComponent(url.username)
+  const exec = [...compose, 'exec', '-T', 'postgres']
+  // Sent on stdin, because psql only fills in :'name' there, not in a -c command.
+  const found = spawnSync(
+    'docker',
+    [...exec, 'psql', '-U', user, '-d', 'postgres', '-tA', '-v', `name=${name}`],
+    {
+      input: "select 1 from pg_database where datname = :'name'",
+      encoding: 'utf8',
+    },
+  )
+  if (found.status !== 0) fail(`Could not look up the ${name} database: ${found.stderr.trim()}`)
+  if (found.stdout.trim() === '1') return
+  say(`Creating the ${name} database...`)
+  runOrFail('docker', [...exec, 'createdb', '-U', user, name])
 }
 
 /** Starts a long-running process and prefixes each line of its output with its name. */
@@ -338,6 +372,7 @@ ensureDocker()
 
 say('Starting PostgreSQL...')
 runOrFail('docker', ['compose', '-f', composeFile, 'up', '-d', '--wait'])
+ensureDatabase()
 
 if (!useNativeRust) {
   const guide = noNativeRustReason.startsWith('the Visual Studio')

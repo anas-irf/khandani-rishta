@@ -2,11 +2,11 @@
  * Constants of the public pages (17 section 3.1 and 13).
  */
 
-/**
- * The support address. The domain is not decided yet (02 Q-11), so the specs' placeholder is
- * shown. Replace it here once, and every public page follows.
- */
-export const SUPPORT_EMAIL = 'support@<domain>'
+/** The production origin (02 Q-11). Used where a page needs an absolute URL. */
+export const SITE_URL = 'https://khandanirishta.app'
+
+/** The support address (02 Q-11). Every public page reads it from here. */
+export const SUPPORT_EMAIL = 'support@khandanirishta.app'
 
 /** The one static brand image used for Open Graph (17 section 13). Export a PNG before launch. */
 export const OG_IMAGE_PATH = '/og-image.svg'

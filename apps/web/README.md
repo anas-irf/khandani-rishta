@@ -78,11 +78,11 @@ src/
 | Content Security Policy | Worker-rendered pages get a per-response nonce (`src/router.tsx`, `src/lib/csp.ts`); the 8 prerendered pages get a hash-based policy written to `dist/client/_headers` at build time (`vite.config.ts`) | Prerendered pages are static files that Cloudflare serves without running the Worker. Development and mock mode run without a policy (Vite injects inline scripts) |
 | Prerendering | Only the pages 17 section 3.1 marks as prerendered; `/` and `/download` stay server-rendered | `/` redirects signed-in visitors and `/download` reads the latest release |
 | `robots.txt` | `Disallow: /p/` rather than `/p` | `/p` is a prefix match and would also hide `/privacy` |
+| Error reporting | One `VITE_SENTRY_DSN` for the browser and the Worker. `src/server.ts` wraps TanStack Start's handler with `@sentry/cloudflare`; the browser SDK loads lazily from `src/lib/monitoring.ts`. Both use the same `dataCollection` settings and scrubbers | Spec 17 section 15 defines one DSN for the web app. Nothing personal leaves the Worker or the browser (17 section 14) |
 | Photo polling | Every 3 s for the first minute after an upload, then every 15 s, only while a photo is `processing` and the socket is down (08 section 5.2 step 6) | Moderation can take a day; `photo.updated` covers it |
 
 ## Not done yet
 
-- **Sentry on the Worker.** The browser reports to Sentry when `VITE_SENTRY_DSN` is set (`src/lib/monitoring.ts`, loaded lazily, with URLs, query strings and request bodies scrubbed). Server-side reporting with `@sentry/cloudflare` is not wired yet.
 - **Urdu.** Every string is in `src/locales/en`; adding `src/locales/ur` switches it on (17 section 12).
-- **Placeholders that need the product owner (02 section 4):** the support email `support@<domain>`, the domain in `robots.txt`, the sitemap and the Organization structured data, the Android signing fingerprint in `public/.well-known/assetlinks.json`, and a PNG export of `public/og-image.svg` for social previews.
+- **Before launch:** the Android signing fingerprint in `public/.well-known/assetlinks.json` (from the release key), a PNG export of `public/og-image.svg` for social previews, and the custom-domain routes in `wrangler.jsonc` once `khandanirishta.app` is a Cloudflare zone.
 - **Landing page weight.** About 240 KB of gzipped JavaScript against the 100 KB budget of 17 section 17, measured on the production build. Clerk and the toast library are no longer loaded on public pages; what remains is React, TanStack Router and Start, TanStack Query, i18next with the English public copy (14 KB) and Zod for route search params (about 12 KB). The budget is not reachable on this stack without server components or a lighter router.

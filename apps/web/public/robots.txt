@@ -19,3 +19,5 @@ Disallow: /onboarding
 Disallow: /account
 Disallow: /admin
 Disallow: /sign-in
+
+Sitemap: https://khandanirishta.app/sitemap.xml

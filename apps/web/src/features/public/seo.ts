@@ -1,5 +1,5 @@
 import { i18n } from '~/lib/i18n'
-import { OG_IMAGE_PATH, type PublicPageKey } from './config'
+import { OG_IMAGE_PATH, type PublicPageKey, SITE_URL, SUPPORT_EMAIL } from './config'
 
 /** A JSON-LD value (schema.org structured data). */
 export type LdValue = string | number | boolean | null | LdValue[] | { [key: string]: LdValue }
@@ -45,8 +45,10 @@ export function organizationJsonLd(): LdObject {
     slogan: i18n.t('public:home.hero.title'),
     description: i18n.t('public:meta.default_description'),
     areaServed: 'PK',
-    // `url` and `logo` are added when the domain is decided (02 Q-11). Prerendered pages must
-    // not bake in the origin of the build machine, so they are left out until then.
+    // The production origin, never the build machine's: prerendered pages bake this in.
+    url: SITE_URL,
+    logo: `${SITE_URL}/favicon.svg`,
+    email: SUPPORT_EMAIL,
   }
 }
 

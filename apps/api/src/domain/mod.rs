@@ -1,5 +1,9 @@
 //! Pure product logic: no database, no network. Everything here is unit-tested.
 
+// Temporary while handlers are being built: modules land before their callers.
+// Removed once every function has a caller.
+#![allow(dead_code)]
+
 pub mod chat_safety;
 pub mod completeness;
 pub mod display;

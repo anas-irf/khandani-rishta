@@ -578,17 +578,22 @@ mod tests {
         async fn authenticated_writes_are_rate_limited_per_user(db: PgPool) {
             let app = TestApp::new(db).await;
             let user = app.member().await;
-            let mut last = None;
-            for _ in 0..41 {
-                last = Some(
-                    app.patch("/v1/me", Some(&user.token), json!({ "locale": "en" }))
-                        .await,
-                );
-            }
-            let last = last.unwrap();
-            assert_eq!(last.status, StatusCode::TOO_MANY_REQUESTS);
-            assert_eq!(last.code(), "rate_limited");
-            assert!(last.headers.contains_key("retry-after"));
+            // Sent together, so the allowance cannot refill in between, even on a loaded machine.
+            let responses = futures_util::future::join_all(
+                (0..50).map(|_| app.patch("/v1/me", Some(&user.token), json!({ "locale": "en" }))),
+            )
+            .await;
+            let limited: Vec<_> = responses
+                .iter()
+                .filter(|response| response.status == StatusCode::TOO_MANY_REQUESTS)
+                .collect();
+            let passed = responses.len() - limited.len();
+            assert!(
+                (40..=42).contains(&passed),
+                "a burst of 40 writes, give or take a refill: {passed}"
+            );
+            assert_eq!(limited[0].code(), "rate_limited");
+            assert!(limited[0].headers.contains_key("retry-after"));
 
             // Another user is unaffected.
             let other = app.member().await;

@@ -1,0 +1,12 @@
+# Settings for `typos`, the spell check that CI runs on every pull request (see docs/ci-cd.md).
+# Fix real mistakes in the text. Add a word here only when it is correct but looks like a
+# misspelling to the dictionary.
+
+[default.extend-words]
+# Keys are lower case and also cover capitalised and upper case forms.
+# Surname and honorific in the Pakistani reference data (specs/05-reference-data.md).
+mian = "mian"
+# Short for matriculation, the secondary school certificate level.
+matric = "matric"
+# Bachelor of Arts, in the list of degree abbreviations.
+ba = "ba"

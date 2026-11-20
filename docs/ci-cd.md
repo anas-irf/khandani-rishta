@@ -60,7 +60,8 @@ traces, screenshots and videos of failures, is uploaded as the `playwright-repor
 - **zizmor:** workflow security (script injection, credential leaks, cache poisoning, unpinned
   actions, broad permissions). Medium and higher fail. Policy: `.github/zizmor.yml`.
 - **ShellCheck** on `infra/azure/bin/*.sh` and the git hooks.
-- **typos** spell check.
+- **typos** spell check. Correct words that look like misspellings, such as Pakistani surnames
+  and degree names, are listed in `.typos.toml`.
 - **Dependency review:** fails on new dependencies with high or critical advisories, or under
   GPL or AGPL licenses.
 

@@ -342,7 +342,19 @@ async fn put_block(
         return Err(ApiError::NotFound);
     }
     let effects = db::block(&state.db, account.profile_id, profile_id).await?;
+    after_block(&state, account.profile_id, profile_id, &effects).await;
+    Ok(StatusCode::NO_CONTENT)
+}
 
+/// What follows a committed block: the log lines of 20 section 8.2 for what it ended or closed,
+/// and `counters` for both members (pending interests and unread chats may have changed).
+/// Shared with `POST /v1/reports` with `also_block`.
+pub(super) async fn after_block(
+    state: &AppState,
+    by: Uuid,
+    target: Uuid,
+    effects: &db::BlockEffects,
+) {
     if let Some(ended) = effects.ended {
         tracing::info!(
             event = "connection.ended",
@@ -356,10 +368,8 @@ async fn put_block(
     for interest_id in &effects.declined {
         tracing::info!(event = "interest.declined", %interest_id);
     }
-    // Pending interests and unread chats may have changed for both members.
-    counters::push(&state, account.profile_id).await;
-    counters::push(&state, profile_id).await;
-    Ok(StatusCode::NO_CONTENT)
+    counters::push(state, by).await;
+    counters::push(state, target).await;
 }
 
 /// Remove a block. Nothing else is restored.

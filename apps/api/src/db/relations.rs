@@ -1,6 +1,6 @@
 //! SQL for relations: shortlist, pass and block (15 section 13, 09 section 11).
 
-use sqlx::PgPool;
+use sqlx::{PgConnection, PgPool};
 use time::OffsetDateTime;
 use uuid::Uuid;
 
@@ -182,6 +182,14 @@ pub struct BlockEffects {
 ///    rule 2).
 pub async fn block(db: &PgPool, by: Uuid, target: Uuid) -> sqlx::Result<BlockEffects> {
     let mut tx = db.begin().await?;
+    let effects = block_in(&mut tx, by, target).await?;
+    tx.commit().await?;
+    Ok(effects)
+}
+
+/// [`block`] inside the caller's transaction, for a flow that blocks as one step of its own
+/// (`POST /v1/reports` with `also_block`, 13 section 6.4 step 5). The caller commits.
+pub async fn block_in(tx: &mut PgConnection, by: Uuid, target: Uuid) -> sqlx::Result<BlockEffects> {
     sqlx::query(
         "INSERT INTO blocks (blocker_profile_id, blocked_profile_id) VALUES ($1, $2)
          ON CONFLICT DO NOTHING",
@@ -202,7 +210,7 @@ pub async fn block(db: &PgPool, by: Uuid, target: Uuid) -> sqlx::Result<BlockEff
     .fetch_optional(&mut *tx)
     .await?;
     let ended = match connection {
-        Some(id) => lifecycle::end_connection(&mut tx, id, Some(by), "blocked").await?,
+        Some(id) => lifecycle::end_connection(tx, id, Some(by), "blocked").await?,
         None => None,
     };
 
@@ -266,7 +274,6 @@ pub async fn block(db: &PgPool, by: Uuid, target: Uuid) -> sqlx::Result<BlockEff
     .bind(target)
     .execute(&mut *tx)
     .await?;
-    tx.commit().await?;
     Ok(BlockEffects {
         ended,
         withdrawn,

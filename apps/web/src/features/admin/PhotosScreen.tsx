@@ -11,6 +11,7 @@ import { StatusBanner } from '~/components/common/StatusBanner'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { NativeSelect, NativeSelectOption } from '~/components/ui/native-select'
+import { isOneOf, PHOTO_REJECTION_REASONS } from '~/lib/api-enums'
 import { useOptions } from '~/lib/reference'
 import { AdminPhoto } from './components/AdminPhoto'
 import { TableSkeleton } from './components/DataTable'
@@ -53,7 +54,7 @@ export function PhotosScreen() {
     toast.success(t('photo.approved'))
   }
   const doReject = async (code: string) => {
-    if (!current || busy) return
+    if (!current || busy || !isOneOf(PHOTO_REJECTION_REASONS, code)) return
     await reject.mutateAsync({ photoId: current.photo_id, reason: code })
     toast.success(
       t('photo.rejected', {

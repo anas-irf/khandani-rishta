@@ -357,7 +357,7 @@ export async function catchUpMessages(queryClient: QueryClient, connectionId: st
     if (!data) return
     const after = newestServerMessageId(data)
     if (!after) return
-    const page = await http.get<MessagePage>(`/v1/connections/${seg(connectionId)}/messages`, {
+    const page = await http.get(`/v1/connections/${seg(connectionId)}/messages`, {
       query: { after, limit: AFTER_LIMIT },
     })
     mergeMessages(queryClient, connectionId, page.items)

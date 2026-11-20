@@ -4,12 +4,13 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '~/components/common/ConfirmDialog'
 import { EmptyState } from '~/components/common/EmptyState'
+import { ErrorState } from '~/components/common/ErrorState'
 import { PageHeader } from '~/components/common/PageHeader'
 import { RelativeTime } from '~/components/common/RelativeTime'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
 import { RequireAdmin } from './access'
-import { AdminList, type Column } from './components/DataTable'
+import { type Column, DataTable, TableSkeleton } from './components/DataTable'
 import { CountedTextarea, FormField } from './components/FormField'
 import { ErrorSummary, useDialogErrors } from './components/useDialogErrors'
 import { validate } from './forms'
@@ -28,7 +29,7 @@ export function ReleasesScreen() {
 function Releases() {
   const { t } = useTranslation('admin')
   const query = useAdminReleases()
-  const releases = query.data?.pages.flatMap((page) => page.items) ?? []
+  const releases = query.data ?? []
   // Newest first: the first row holds the highest version code and the current minimum.
   const latestCode = releases.reduce((max, release) => Math.max(max, release.version_code), 0)
   const currentMin = releases.reduce(
@@ -69,7 +70,7 @@ function Releases() {
     {
       id: 'created',
       header: t('releases.col.created'),
-      cell: (release) => <RelativeTime value={release.created_at} />,
+      cell: (release) => <RelativeTime value={release.released_at} />,
     },
   ]
 
@@ -77,13 +78,20 @@ function Releases() {
     <div className="flex flex-col gap-6">
       <PageHeader title={t('releases.title')} description={t('releases.description')} />
       {query.isSuccess ? <ReleaseForm latestCode={latestCode} currentMin={currentMin} /> : null}
-      <AdminList
-        caption={t('releases.caption')}
-        query={query}
-        columns={columns}
-        getKey={(release) => release.id}
-        empty={<EmptyState title={t('releases.empty')} />}
-      />
+      {query.isPending ? (
+        <TableSkeleton />
+      ) : query.isError ? (
+        <ErrorState error={query.error} onRetry={() => void query.refetch()} />
+      ) : releases.length === 0 ? (
+        <EmptyState title={t('releases.empty')} />
+      ) : (
+        <DataTable
+          caption={t('releases.caption')}
+          columns={columns}
+          rows={releases}
+          getKey={(release) => release.id}
+        />
+      )}
     </div>
   )
 }

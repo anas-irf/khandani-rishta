@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Input } from '~/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '~/components/ui/native-select'
+import { isOneOf, PHOTO_REJECTION_REASONS } from '~/lib/api-enums'
 import { useOptions } from '~/lib/reference'
 import { validate } from '../forms'
 import { sha256Hex } from '../hash'
@@ -91,7 +92,7 @@ export function RejectPhotoDialog({
   const [error, setError] = useState<string>()
 
   const submit = async () => {
-    if (!reason) {
+    if (!isOneOf(PHOTO_REJECTION_REASONS, reason)) {
       setError(t('validation.required'))
       throw new Error('invalid')
     }

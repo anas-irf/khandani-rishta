@@ -231,6 +231,26 @@ mod tests {
         }
     }
 
+    /// Operation ids are unique, as OpenAPI requires. utoipa takes the handler's function name,
+    /// and two handlers called `get_profile` once made the generated client type
+    /// `GET /v1/me/profile` with the staff console's answer.
+    #[test]
+    fn operation_ids_are_unique() {
+        let document: Value = serde_json::from_str(&super::spec_json().unwrap()).unwrap();
+        let mut seen = std::collections::BTreeMap::new();
+        for (path, operations) in document["paths"].as_object().unwrap() {
+            for (method, operation) in operations.as_object().unwrap() {
+                let Some(id) = operation["operationId"].as_str() else {
+                    continue;
+                };
+                if let Some(first) = seen.insert(id.to_owned(), format!("{method} {path}")) {
+                    panic!("operation id {id:?} is used by {first} and {method} {path}");
+                }
+            }
+        }
+        assert!(seen.contains_key("get_own_profile"));
+    }
+
     /// Each request body points at the schema of the type its handler parses. Two types with
     /// the same name once made the chat read body show the notifications one.
     #[test]
@@ -298,6 +318,77 @@ mod tests {
         assert!(required("MeUser").contains("phone_e164"));
         assert!(!required("ErrorDetail").contains("fields"));
         assert!(required("PatchMe").len() < properties("PatchMe").len());
+    }
+
+    /// The staff console's profile view carries the member objects of 15 sections 4.3 and 4.5
+    /// as typed schemas, not free-form objects, and a setting holds any JSON value (18 sections
+    /// 4.1 and 7.1). Free-form objects once left the web app to retype them by hand.
+    #[test]
+    fn admin_schemas_reference_typed_objects() {
+        let document: Value = serde_json::from_str(&super::spec_json().unwrap()).unwrap();
+        let schemas = &document["components"]["schemas"];
+        let refs_of = |schema: &str, property: &str| {
+            let mut refs = BTreeSet::new();
+            collect_refs(&schemas[schema]["properties"][property], &mut refs);
+            refs
+        };
+        let refers = |schema: &str, property: &str, target: &str| {
+            assert!(
+                refs_of(schema, property).contains(&format!("#/components/schemas/{target}")),
+                "{schema}.{property} does not refer to {target}: {}",
+                schemas[schema]["properties"][property]
+            );
+        };
+        let property_names = |name: &str| -> BTreeSet<String> {
+            schemas[name]["properties"]
+                .as_object()
+                .unwrap()
+                .keys()
+                .cloned()
+                .collect()
+        };
+
+        refers("AdminProfile", "profile", "AdminOwnProfile");
+        refers("AdminProfile", "preferences", "Preferences");
+        refers("AdminProfile", "privacy", "Privacy");
+        refers("AdminOwnProfile", "contacts", "ContactsSection");
+        assert_eq!(
+            property_names("AdminOwnProfile"),
+            property_names("OwnProfile")
+        );
+        assert!(
+            schemas["AdminOwnProfile"]["properties"]["contacts"]
+                .to_string()
+                .contains(r#""type":"null""#),
+            "contacts is null for moderators"
+        );
+
+        refers("AdminRelease", "platform", "ReleasePlatform");
+        refers(
+            "RejectVerification",
+            "reason",
+            "VerificationRejectionReason",
+        );
+        refers("RejectPhoto", "reason", "PhotoRejectionReason");
+
+        // Any JSON value: the schema holds a description and nothing that restricts it (no
+        // `type`, `enum`, `$ref`, `oneOf` and so on).
+        for (schema, property) in [
+            ("SettingItem", "value"),
+            ("SettingItem", "default"),
+            ("PutSettingBody", "value"),
+        ] {
+            let constraints: Vec<&String> = schemas[schema]["properties"][property]
+                .as_object()
+                .unwrap()
+                .keys()
+                .filter(|key| key.as_str() != "description")
+                .collect();
+            assert!(
+                constraints.is_empty(),
+                "{schema}.{property} must allow any JSON value, but is restricted by {constraints:?}"
+            );
+        }
     }
 
     /// String enums list the codes sent on the wire, not the Rust variant names. The schema of a

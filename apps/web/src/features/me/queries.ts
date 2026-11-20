@@ -1,6 +1,6 @@
 import { type InfiniteData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { http } from '~/lib/api'
-import type { Connection, ContactsSection, OwnProfile, Page, Privacy } from '~/lib/api-types'
+import type { Connection, ContactsSection, Page } from '~/lib/api-types'
 import { invalidateMe, qk, STALE } from '~/lib/query'
 
 /**
@@ -12,7 +12,7 @@ import { invalidateMe, qk, STALE } from '~/lib/query'
 export function usePrivacy() {
   return useQuery({
     queryKey: qk.privacy(),
-    queryFn: ({ signal }) => http.get<Privacy>('/v1/me/privacy', { signal }),
+    queryFn: ({ signal }) => http.get('/v1/me/privacy', { signal }),
     staleTime: STALE.none,
   })
 }
@@ -25,8 +25,7 @@ export function usePrivacy() {
 export function useSaveContacts() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: ContactsSection) =>
-      http.put<OwnProfile>('/v1/me/profile/sections/contacts', body),
+    mutationFn: (body: ContactsSection) => http.put('/v1/me/profile/sections/contacts', body),
     // The form shows network and server failures inline with "Try again" (08 section 2.5).
     meta: { handles: ['internal_error', 'service_unavailable', 'network_error'] },
     onSuccess: (profile) => {

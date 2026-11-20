@@ -16,12 +16,32 @@ import type {
   AdminUser,
   AdminUserListItem,
   AdminVerificationDetail,
+  AdminVerificationKind,
   AdminVerificationListItem,
   AuditEntry,
+  AuditTargetType,
   CasteSuggestionItem,
+  PhotoStatus,
   ReportContextMessage,
+  ReportReason,
+  ReportSource,
+  ReportStatus,
+  VerificationRejectionReason,
+  VerificationStatus,
 } from '~/features/admin/types'
-import type { ApiFieldError, Gender, OwnPhoto, OwnProfile } from '~/lib/api-types'
+import { isOneOf, USER_ROLES, VERIFICATION_REJECTION_REASONS } from '~/lib/api-enums'
+import type {
+  ApiFieldError,
+  Gender,
+  ManagedBy,
+  OwnPhoto,
+  OwnProfile,
+  ProfileStatus,
+  ReportSubject,
+  TextStatus,
+  UserRole,
+  UserStatus,
+} from '~/lib/api-types'
 import { ageFromDateOfBirth } from '~/lib/format'
 import { db } from '../db'
 import {
@@ -42,8 +62,6 @@ import { apiError, apiUrl, noContent, nowIso, paginate, readJson, validationErro
 
 const HOUR = 3_600_000
 
-type Role = 'member' | 'moderator' | 'admin'
-
 type Person = {
   index: number
   userId: string
@@ -54,11 +72,11 @@ type Person = {
   gender: Gender
   dob: string
   city: string
-  managedBy: string
+  managedBy: ManagedBy
   maritalStatus: NonNullable<OwnProfile['basics']['marital_status']>
-  role: Role
-  userStatus: string
-  profileStatus: string
+  role: UserRole
+  userStatus: UserStatus
+  profileStatus: ProfileStatus
   statusReason: string | null
   suspendedUntil: string | null
   email: string
@@ -67,7 +85,7 @@ type Person = {
   lastSeen: string | null
   onboardingCompletedAt: string | null
   texts: Record<AdminTextField, string | null>
-  textStatus: Record<AdminTextField, string>
+  textStatus: Record<AdminTextField, TextStatus>
   hue: number
   idVerified: boolean
   photoVerified: boolean
@@ -78,7 +96,7 @@ type Person = {
 type PhotoRec = {
   id: string
   profileId: string
-  status: string
+  status: PhotoStatus
   isPrimary: boolean
   createdAt: string
   hue: number
@@ -88,22 +106,22 @@ type PhotoRec = {
 type VerificationRec = {
   id: string
   profileId: string
-  kind: 'id_document' | 'selfie'
-  status: string
+  kind: AdminVerificationKind
+  status: VerificationStatus
   createdAt: string
   gesture: string
   gestureValid: boolean
   documentNumber: string | null
   purged: boolean
-  rejectionReason: string | null
+  rejectionReason: VerificationRejectionReason | null
 }
 
 type ReportRec = {
   id: string
-  source: 'member' | 'system'
-  reason: string
-  subjectType: 'profile' | 'photo' | 'message'
-  status: string
+  source: ReportSource
+  reason: ReportReason
+  subjectType: ReportSubject
+  status: ReportStatus
   targetPersonIndex: number
   reporterPersonIndex: number | null
   details: string | null
@@ -169,7 +187,7 @@ const SETTING_DEFAULTS: Record<string, unknown> = {
   'announcement.banner': null,
 }
 
-const PEOPLE: [string, string, Gender, string, string, string][] = [
+const PEOPLE: [string, string, Gender, string, string, ManagedBy][] = [
   ['Ayesha', 'Khan', 'female', '1999-04-12', 'Lahore', 'self'],
   ['Bilal', 'Rehman', 'male', '1995-09-03', 'Karachi', 'parent'],
   ['Fatima', 'Siddiqui', 'female', '1998-01-22', 'Islamabad', 'self'],
@@ -269,7 +287,7 @@ function createState(): AdminState {
   })
 
   // Staff: the signed-in user (role follows `db.me`), another moderator and another admin.
-  const staff: [string, string, Role, boolean][] = [
+  const staff: [string, string, UserRole, boolean][] = [
     [me.email?.split('@')[0] ?? 'staff', 'Member', 'member', true],
     ['Sana', 'Mirza', 'moderator', false],
     ['Imran', 'Qadir', 'admin', false],
@@ -383,7 +401,7 @@ function createState(): AdminState {
 
   const report = (
     n: number,
-    reason: string,
+    reason: ReportReason,
     subjectType: ReportRec['subjectType'],
     target: number,
     reporter: number | null,
@@ -411,7 +429,8 @@ function createState(): AdminState {
     report(2, 'harassment', 'profile', 3, 6, 20),
     report(3, 'inappropriate_photo', 'photo', 9, 13, 14, { photoId: id('a3', 901) }),
     report(4, 'fake_profile', 'profile', 5, 13, 40),
-    report(5, 'other', 'profile', 7, null, 3, { source: 'system', reason: 'banned_user_returned' }),
+    // The automatic report of 13 section 5.5.
+    report(5, 'asking_for_money', 'profile', 7, null, 3),
     report(6, 'asking_for_money', 'message', 12, 2, 8, {
       status: 'in_review',
       handledByEmail: me.email ?? 'staff@example.com',
@@ -481,19 +500,20 @@ function createState(): AdminState {
     is_active: false,
   })
 
-  const releases: AdminRelease[] = [
+  const releaseRows: [number, string, number, string | null, number][] = [
     [12, '1.3.0', 9, 'Faster chat and clearer photo requests.', 5],
     [11, '1.2.1', 9, 'Fixes for notifications.', 20],
     [9, '1.2.0', 7, null, 45],
-  ].map(([code, name, min, notes, days]) => ({
-    id: id('a9', code as number),
-    platform: 'android' as const,
-    version_code: code as number,
-    version_name: name as string,
-    min_supported_version_code: min as number,
+  ]
+  const releases: AdminRelease[] = releaseRows.map(([code, name, min, notes, days]) => ({
+    id: id('a9', code),
+    platform: 'android',
+    version_code: code,
+    version_name: name,
+    min_supported_version_code: min,
     download_url: `https://download.example.com/khandani-rishta-${name}.apk`,
-    release_notes: notes as string | null,
-    created_at: hoursAgo(now, (days as number) * 24),
+    release_notes: notes,
+    released_at: hoursAgo(now, days * 24),
   }))
 
   const state: AdminState = {
@@ -518,7 +538,7 @@ function createState(): AdminState {
   const seedAudit = (
     n: number,
     action: string,
-    type: string,
+    type: AuditTargetType,
     target: string,
     details: Record<string, unknown>,
     hours: number,
@@ -589,7 +609,7 @@ function newId(s: AdminState, prefix: string): string {
 // Access, audit and shapes
 // ---------------------------------------------------------------------------
 
-function role(): Role {
+function role(): UserRole {
   return db.me.user.role
 }
 
@@ -603,7 +623,7 @@ function denied(level: 'moderator' | 'admin') {
 
 function logAudit(
   action: string,
-  targetType: string,
+  targetType: AuditTargetType,
   targetId: string,
   details: Record<string, unknown> = {},
 ) {
@@ -632,7 +652,7 @@ function personOf(s: AdminState, key: { profileId?: string; userId?: string }): 
   return s.people.find((p) => p.profileId === key.profileId || p.userId === key.userId)
 }
 
-function roleOf(person: Person): Role {
+function roleOf(person: Person): UserRole {
   return person.isMe ? role() : person.role
 }
 
@@ -840,15 +860,7 @@ function profileDetail(s: AdminState, p: Person): AdminProfile {
     },
     reports_against: reportsAgainst(s, p, 10),
     reports_filed: reportsFiled(s, p),
-    sanctions: p.sanctions.map((sanction) => ({
-      id: sanction.id,
-      type: sanction.type,
-      reason: sanction.reason,
-      starts_at: sanction.starts_at,
-      ends_at: sanction.ends_at,
-      revoked_at: sanction.revoked_at,
-      created_by_email: sanction.created_by_email,
-    })),
+    sanctions: p.sanctions,
     verification_requests: s.verifications
       .filter((v) => v.profileId === p.profileId)
       .map((v) => ({
@@ -1065,13 +1077,7 @@ function reportDetail(s: AdminState, r: ReportRec): AdminReportDetail {
       reports_against_actioned: s.reports.filter(
         (other) => other.targetPersonIndex === target.index && other.status === 'actioned',
       ).length,
-      sanctions: target.sanctions.map((sanction) => ({
-        type: sanction.type,
-        reason: sanction.reason,
-        starts_at: sanction.starts_at,
-        ends_at: sanction.ends_at,
-        revoked_at: sanction.revoked_at,
-      })),
+      sanctions: target.sanctions,
       is_id_verified: target.idVerified,
       is_photo_verified: target.photoVerified,
     },
@@ -1476,7 +1482,8 @@ export const handlers = [
     const v = s.verifications.find((entry) => entry.id === params.requestId)
     if (!v) return apiError(404, 'not_found', 'Not found.')
     const body = await readJson<{ reason?: string; note?: string }>(request)
-    if (!body.reason || !optionCodes('verification_rejection_reason').includes(body.reason)) {
+    const reason = body.reason
+    if (!reason || !isOneOf(VERIFICATION_REJECTION_REASONS, reason)) {
       return bad({
         field: 'reason',
         code: 'unknown_code',
@@ -1485,7 +1492,7 @@ export const handlers = [
     }
     if (v.status !== 'pending') return invalidState(v.status)
     v.status = 'rejected'
-    v.rejectionReason = body.reason
+    v.rejectionReason = reason
     logAudit('verification.reject', 'verification_request', v.id, {
       profile_id: v.profileId,
       kind: v.kind,
@@ -1675,15 +1682,16 @@ export const handlers = [
     const p = personOf(state(), { userId: String(params.userId) })
     if (!p) return apiError(404, 'not_found', 'Not found.')
     const body = await readJson<{ role?: string }>(request)
-    if (!body.role || !['member', 'moderator', 'admin'].includes(body.role)) {
+    const newRole = body.role
+    if (!newRole || !isOneOf(USER_ROLES, newRole)) {
       return bad({ field: 'role', code: 'unknown_code', message: 'Choose a role.' })
     }
     // Nobody can change their own role, so the last admin cannot be removed (18 section 2).
     if (p.isMe) return apiError(403, 'forbidden', 'You cannot change your own role.')
     if (p.userStatus !== 'active') return invalidState(p.userStatus)
     const from = roleOf(p)
-    p.role = body.role as Role
-    logAudit('user.role_change', 'user', p.userId, { from, to: body.role })
+    p.role = newRole
+    logAudit('user.role_change', 'user', p.userId, { from, to: newRole })
     return noContent()
   }),
 
@@ -1952,14 +1960,14 @@ export const handlers = [
       min_supported_version_code: min as number,
       download_url: body.download_url as string,
       release_notes: body.release_notes ?? null,
-      created_at: nowIso(),
+      released_at: nowIso(),
     }
     s.releases.push(release)
     logAudit('release.create', 'app_release', release.id, {
       version_code: release.version_code,
       min_supported_version_code: release.min_supported_version_code,
     })
-    return new HttpResponse(null, { status: 201 })
+    return HttpResponse.json(release, { status: 201 })
   }),
 
   http.post(apiUrl('/v1/admin/announcements'), async ({ request }) => {

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { http } from '~/lib/api'
-import type { IdentitySummary } from '~/lib/api-types'
+import type { IdentityDocumentType, IdentitySummary } from '~/lib/api-types'
 import { db, resetDb } from '../db'
 import { maskIdentityNumber, normaliseIdentityNumber } from './identity'
 
-const put = (document_type: string, number: string) =>
-  http.put<IdentitySummary>('/v1/me/identity', { document_type, number })
+const put = (document_type: IdentityDocumentType, number: string) =>
+  http.put('/v1/me/identity', { document_type, number })
 
 describe('identity handlers (12 section 3)', () => {
   it('normalises and masks numbers', () => {

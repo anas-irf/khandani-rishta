@@ -430,6 +430,7 @@ async fn delete_message(
 /// member only when both members send read receipts (09 section 9).
 #[utoipa::path(
     post,
+    operation_id = "mark_connection_read",
     path = "/connections/{connection_id}/read",
     tag = "connections",
     security(("bearer" = [])),

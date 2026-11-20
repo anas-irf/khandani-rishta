@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { http } from '~/lib/api'
-import type { Me, OwnProfile } from '~/lib/api-types'
+import { http, seg } from '~/lib/api'
+import type { BasicsSection, OwnProfile, SectionBodies } from '~/lib/api-types'
 import { todayInKarachi } from '~/lib/format'
 import { db, resetDb } from '../db'
 import { makeOwnPhoto, makePreferences } from '../factories'
@@ -11,9 +11,10 @@ function birthDate(years: number, days = 0) {
   return new Date(Date.UTC(year - years, month - 1, day + days)).toISOString().slice(0, 10)
 }
 
-const continueStep = (step: string) => http.post<Me>('/v1/me/onboarding/continue', { step })
-const putSection = (section: string, body: unknown) =>
-  http.put<OwnProfile>(`/v1/me/profile/sections/${section}`, body)
+const continueStep = (step: OwnProfile['onboarding_step']) =>
+  http.post('/v1/me/onboarding/continue', { step })
+const putSection = <K extends keyof SectionBodies>(section: K, body: SectionBodies[K]) =>
+  http.put(`/v1/me/profile/sections/${seg(section)}`, body)
 
 function atStep(step: OwnProfile['onboarding_step']) {
   resetDb('onboarding_midway')
@@ -31,14 +32,14 @@ const basics = {
   children_count: null,
   current_wives_count: null,
   height_cm: 163,
-}
+} satisfies BasicsSection
 
 describe('GET /v1/me/profile', () => {
   it('locks gender and date of birth once onboarding is completed', async () => {
-    const profile = await http.get<OwnProfile>('/v1/me/profile')
+    const profile = await http.get('/v1/me/profile')
     expect(profile.locked_fields).toEqual(expect.arrayContaining(['gender', 'date_of_birth']))
     resetDb('new')
-    expect((await http.get<OwnProfile>('/v1/me/profile')).locked_fields).toEqual([])
+    expect((await http.get('/v1/me/profile')).locked_fields).toEqual([])
   })
 })
 
@@ -253,14 +254,14 @@ describe('POST /v1/me/onboarding/complete', () => {
 
   it('activates the profile and returns gate ok', async () => {
     readyForReview()
-    const me = await http.post<Me>('/v1/me/onboarding/complete')
+    const me = await http.post('/v1/me/onboarding/complete')
     expect(me).toMatchObject({ gate: 'ok', profile: { status: 'active', onboarding_step: 'done' } })
   })
 
   it('sends the profile to review when profile review is manual', async () => {
     readyForReview()
     db.extra.profileReview = 'manual'
-    const me = await http.post<Me>('/v1/me/onboarding/complete')
+    const me = await http.post('/v1/me/onboarding/complete')
     expect(me).toMatchObject({ gate: 'pending_review', profile: { status: 'pending_review' } })
   })
 
@@ -284,7 +285,7 @@ describe('POST /v1/me/onboarding/complete', () => {
 describe('POST /v1/me/profile/resubmit', () => {
   it('sends a profile with requested changes back to review', async () => {
     resetDb('changes_requested')
-    const me = await http.post<Me>('/v1/me/profile/resubmit')
+    const me = await http.post('/v1/me/profile/resubmit')
     expect(me).toMatchObject({ gate: 'pending_review', profile: { status_reason: null } })
   })
 
@@ -298,13 +299,10 @@ describe('POST /v1/me/profile/resubmit', () => {
 describe('GET /v1/me/profile/preview', () => {
   it('reduces the own profile for the requested tier', async () => {
     db.privacy = { ...db.privacy, income_visibility: 'connections', area_visibility: 'nobody' }
-    const asMember = await http.get<{ locked: string[]; card: { compat: number | null } }>(
-      '/v1/me/profile/preview',
-      { query: { as: 'member' } },
-    )
+    const asMember = await http.get('/v1/me/profile/preview', { query: { as: 'member' } })
     expect(asMember.locked).toEqual(expect.arrayContaining(['income', 'area']))
     expect(asMember.card.compat).toBeNull()
-    const asConnection = await http.get<{ locked: string[] }>('/v1/me/profile/preview', {
+    const asConnection = await http.get('/v1/me/profile/preview', {
       query: { as: 'connection' },
     })
     expect(asConnection.locked).not.toContain('income')

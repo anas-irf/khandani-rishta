@@ -7,7 +7,7 @@ import { qk, STALE } from './query'
 export function meQueryOptions() {
   return queryOptions({
     queryKey: qk.me(),
-    queryFn: ({ signal }) => http.get<Me>('/v1/me', { signal }),
+    queryFn: ({ signal }) => http.get('/v1/me', { signal }),
     staleTime: STALE.me,
   })
 }

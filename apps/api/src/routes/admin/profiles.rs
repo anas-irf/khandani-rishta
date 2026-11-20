@@ -103,6 +103,7 @@ async fn detail(
 /// included for admins only.
 #[utoipa::path(
     get,
+    operation_id = "admin_get_profile",
     path = "/profiles/{profile_id}",
     tag = "admin",
     security(("bearer" = [])),

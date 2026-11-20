@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { http } from '~/lib/api'
-import type { OwnProfile, Preferences } from '~/lib/api-types'
+import type { OwnProfile } from '~/lib/api-types'
 import { db, resetDb } from '../db'
 import { makeOwnProfile, makePreferences } from '../factories'
 import { preferenceDefaults } from './preferences'
@@ -79,10 +79,10 @@ describe('preference defaults (07 section 12 worked examples)', () => {
 describe('GET and PUT /v1/me/preferences', () => {
   it('answers the defaults while no row exists, then the stored row', async () => {
     resetDb('onboarding_midway')
-    const defaults = await http.get<Preferences>('/v1/me/preferences')
+    const defaults = await http.get('/v1/me/preferences')
     expect(defaults.religion_codes).toEqual(['islam'])
     expect(db.preferences).toBeNull()
-    const saved = await http.put<Preferences>('/v1/me/preferences', { ...defaults, age_min: 24 })
+    const saved = await http.put('/v1/me/preferences', { ...defaults, age_min: 24 })
     expect(saved.age_min).toBe(24)
     expect(db.preferences?.age_min).toBe(24)
   })
@@ -102,7 +102,7 @@ describe('GET and PUT /v1/me/preferences', () => {
   })
 
   it('stores the appearance array that does not apply as empty and marks new notes pending', async () => {
-    const saved = await http.put<Preferences>(
+    const saved = await http.put(
       '/v1/me/preferences',
       makePreferences({
         hijab_types: ['hijab'],

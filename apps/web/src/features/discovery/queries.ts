@@ -6,17 +6,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 import { http, seg } from '~/lib/api'
-import type {
-  Home,
-  Page,
-  RecommendationsPage,
-  SavedSearch,
-  SearchFilters,
-  SearchPage,
-  ShortlistEntry,
-  Visit,
-  VisitorsPage,
-} from '~/lib/api-types'
+import type { SearchFilters, ShortlistEntry } from '~/lib/api-types'
 import { nextCursor, qk, removeFromPages, STALE } from '~/lib/query'
 import { cleanFilters, type SearchState, searchBody } from './search-params'
 
@@ -28,7 +18,7 @@ import { cleanFilters, type SearchState, searchBody } from './search-params'
 export function useHome() {
   return useQuery({
     queryKey: qk.home(),
-    queryFn: ({ signal }) => http.get<Home>('/v1/home', { signal }),
+    queryFn: ({ signal }) => http.get('/v1/home', { signal }),
     staleTime: STALE.home,
   })
 }
@@ -37,7 +27,7 @@ export function useRecommendations() {
   return useInfiniteQuery({
     queryKey: qk.recommendations(),
     queryFn: ({ pageParam, signal }) =>
-      http.get<RecommendationsPage>('/v1/recommendations', {
+      http.get('/v1/recommendations', {
         query: { limit: 20, cursor: pageParam },
         signal,
       }),
@@ -64,8 +54,7 @@ export function useSearch(state: SearchState | null) {
   const sort = state?.sort ?? 'best_match'
   return useInfiniteQuery({
     queryKey: qk.search(filters, sort),
-    queryFn: ({ pageParam }) =>
-      http.post<SearchPage>('/v1/search', searchBody({ filters, sort }, pageParam)),
+    queryFn: ({ pageParam }) => http.post('/v1/search', searchBody({ filters, sort }, pageParam)),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: nextCursor,
     enabled: state !== null,
@@ -78,7 +67,7 @@ export function useSearch(state: SearchState | null) {
 export function useSavedSearches() {
   return useQuery({
     queryKey: qk.savedSearches(),
-    queryFn: ({ signal }) => http.get<Page<SavedSearch>>('/v1/me/saved-searches', { signal }),
+    queryFn: ({ signal }) => http.get('/v1/me/saved-searches', { signal }),
     select: (page) => page.items,
     staleTime: STALE.savedSearches,
   })
@@ -94,7 +83,7 @@ export function useCreateSavedSearch() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (body: SaveSearchBody) =>
-      http.post<SavedSearch>('/v1/me/saved-searches', {
+      http.post('/v1/me/saved-searches', {
         ...body,
         filters: cleanFilters(body.filters),
       }),
@@ -107,7 +96,7 @@ export function useUpdateSavedSearch() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, ...body }: { id: string; name?: string; notify_new?: boolean }) =>
-      http.patch<SavedSearch>(`/v1/me/saved-searches/${seg(id)}`, body),
+      http.patch(`/v1/me/saved-searches/${seg(id)}`, body),
     meta: { handles: ['validation_failed'] },
     onSuccess: () => invalidateSavedSearches(queryClient),
   })
@@ -124,8 +113,7 @@ export function useDeleteSavedSearch() {
 /** `GET /v1/profiles/by-code/{public_code}` for "Find" on `APP-SEARCH` (an action, not cached). */
 export function useFindProfileCode() {
   return useMutation({
-    mutationFn: (code: string) =>
-      http.get<{ profile_id: string }>(`/v1/profiles/by-code/${seg(code)}`),
+    mutationFn: (code: string) => http.get(`/v1/profiles/by-code/${seg(code)}`),
     meta: { handles: ['not_found'] },
   })
 }
@@ -138,7 +126,7 @@ export function useShortlist() {
   return useInfiniteQuery({
     queryKey: qk.shortlist(),
     queryFn: ({ pageParam, signal }) =>
-      http.get<Page<ShortlistEntry>>('/v1/shortlist', {
+      http.get('/v1/shortlist', {
         query: { limit: 20, cursor: pageParam },
         signal,
       }),
@@ -207,7 +195,7 @@ export function useVisitors() {
   return useInfiniteQuery({
     queryKey: qk.visitors(),
     queryFn: ({ pageParam, signal }) =>
-      http.get<VisitorsPage>('/v1/me/visitors', {
+      http.get('/v1/me/visitors', {
         query: { limit: 20, cursor: pageParam },
         signal,
       }),
@@ -221,7 +209,7 @@ export function useVisited() {
   return useInfiniteQuery({
     queryKey: qk.visited(),
     queryFn: ({ pageParam, signal }) =>
-      http.get<Page<Visit>>('/v1/me/visited', {
+      http.get('/v1/me/visited', {
         query: { limit: 20, cursor: pageParam },
         signal,
       }),

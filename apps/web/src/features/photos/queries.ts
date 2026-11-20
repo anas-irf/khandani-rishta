@@ -79,7 +79,7 @@ export function useOwnPhotos() {
     queryKey: qk.photos(),
     queryFn: async ({ signal }) => {
       const previous = queryClient.getQueryData<OwnPhoto[]>(qk.photos())
-      const photos = sortPhotos(await http.get<OwnPhoto[]>('/v1/me/photos', { signal }))
+      const photos = sortPhotos(await http.get('/v1/me/photos', { signal }))
       if (previous && statusSignature(previous) !== statusSignature(photos)) {
         invalidateAfterPhotoChange(queryClient)
       }
@@ -183,7 +183,7 @@ export async function uploadOwnPhoto({
   throwIfAborted(signal)
 
   for (let round = 0; round < UPLOAD_ROUNDS; round += 1) {
-    const ticket = await http.post<UploadTicket>(
+    const ticket = await http.post(
       '/v1/me/photos/uploads',
       { content_type: prepared.blob.type, size_bytes: prepared.blob.size },
       { signal },
@@ -197,7 +197,7 @@ export async function uploadOwnPhoto({
     // Confirming the same key twice returns the same photo, so it is safe to repeat.
     for (let attempt = 0; ; attempt += 1) {
       try {
-        return await http.post<OwnPhoto>('/v1/me/photos', { upload_key: ticket.upload_key })
+        return await http.post('/v1/me/photos', { upload_key: ticket.upload_key })
       } catch (error) {
         if (attempt >= CONFIRM_RETRIES || !isRetryableNetworkError(error)) throw error
         await wait(400 * (attempt + 1))
@@ -251,7 +251,7 @@ export function useMakePrimary() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (photoId: string) =>
-      http.patch<OwnPhoto[]>(`/v1/me/photos/${seg(photoId)}`, { is_primary: true }),
+      http.patch(`/v1/me/photos/${seg(photoId)}`, { is_primary: true }),
     meta: { handles: ['invalid_state'] },
     onSuccess: (photos) => {
       queryClient.setQueryData(qk.photos(), sortPhotos(photos))
@@ -264,8 +264,7 @@ export function useMakePrimary() {
 export function useReorderPhotos() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (photoIds: string[]) =>
-      http.put<OwnPhoto[]>('/v1/me/photos/order', { photo_ids: photoIds }),
+    mutationFn: (photoIds: string[]) => http.put('/v1/me/photos/order', { photo_ids: photoIds }),
     // Any failure shows "Could not save the new order. Try again." (08 section 5.5).
     meta: {
       handles: [

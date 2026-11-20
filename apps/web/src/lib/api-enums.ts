@@ -19,6 +19,19 @@ export function isOneOf<T extends string>(values: readonly T[], value: string): 
   return (values as readonly string[]).includes(value)
 }
 
+/** The `target_type` values of the audit log (18 section 8.3, 04 section 9.4). */
+export const AUDIT_TARGET_TYPES = enumValues<Schemas['AuditTargetType']>()([
+  'profile',
+  'photo',
+  'verification_request',
+  'report',
+  'user',
+  'caste',
+  'caste_suggestion',
+  'app_setting',
+  'app_release',
+])
+
 export const BEARDS = enumValues<Schemas['Beard']>()(['full', 'trimmed', 'none'])
 
 export const CHILDREN_ACCEPTANCES = enumValues<Schemas['ChildrenAcceptance']>()([
@@ -106,7 +119,31 @@ export const REPORT_REASONS = enumValues<Schemas['ReportReason']>()([
   'other',
 ])
 
+export const PHOTO_REJECTION_REASONS = enumValues<Schemas['PhotoRejectionReason']>()([
+  'not_a_person',
+  'face_not_visible',
+  'group_photo',
+  'inappropriate',
+  'contains_contact_info',
+  'low_quality',
+  'not_the_candidate',
+  'other',
+])
+
 export const SMOKING_OPTIONS = enumValues<Schemas['Smoking']>()(['no', 'occasionally', 'yes'])
+
+export const USER_ROLES = enumValues<Schemas['UserRole']>()(['member', 'moderator', 'admin'])
+
+export const VERIFICATION_REJECTION_REASONS = enumValues<Schemas['VerificationRejectionReason']>()([
+  'unreadable',
+  'document_mismatch',
+  'expired_document',
+  'face_mismatch',
+  'gesture_missing',
+  'underage',
+  'suspected_fraud',
+  'other',
+])
 
 export const WORK_AFTER_MARRIAGE_OPTIONS = enumValues<Schemas['WorkAfterMarriage']>()([
   'yes',

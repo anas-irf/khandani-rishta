@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { http, isApiError } from '~/lib/api'
-import type { IdentityBody, IdentitySummary } from '~/lib/api-types'
+import type { IdentityBody } from '~/lib/api-types'
 import { invalidateMe, qk, STALE } from '~/lib/query'
 
 /**
@@ -14,7 +14,7 @@ export function useIdentity() {
     queryKey: qk.identity(),
     queryFn: async ({ signal }) => {
       try {
-        return (await http.get<IdentitySummary | null>('/v1/me/identity', { signal })) ?? null
+        return (await http.get('/v1/me/identity', { signal })) ?? null
       } catch (error) {
         if (isApiError(error) && error.code === 'not_found') return null
         throw error
@@ -33,7 +33,7 @@ export function useIdentity() {
 export function useSaveIdentity() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: IdentityBody) => http.put<IdentitySummary>('/v1/me/identity', body),
+    mutationFn: (body: IdentityBody) => http.put('/v1/me/identity', body),
     meta: {
       handles: [
         'identity_already_registered',

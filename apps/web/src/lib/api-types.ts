@@ -190,6 +190,8 @@ export type InterestDisplayStatus = Schemas['DisplayStatus']
 export type Interest = Schemas['Interest']
 
 export type Stage = Schemas['ConnectionStage']
+/** The stages a member can propose: every stage after `chatting`. */
+export type ProposableStage = Schemas['ProposableStage']
 
 export type ContactShare = Schemas['ContactShare']
 

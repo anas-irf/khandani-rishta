@@ -15,10 +15,7 @@ import type {
   Connection,
   ContactShareBody,
   EndConnectionReason,
-  Message,
-  MessagePage,
-  Page,
-  Stage,
+  ProposableStage,
 } from '~/lib/api-types'
 import { formatDate } from '~/lib/format'
 import { invalidateMe, nextCursor, qk, removeFromPages, STALE } from '~/lib/query'
@@ -44,8 +41,11 @@ export type ConnectionFilter = 'active' | 'archived' | 'ended'
 export const MESSAGE_PAGE_SIZE = 30
 export const MESSAGE_MAX_LENGTH = 2000
 
-const messagesPath = (connectionId: string) => `/v1/connections/${seg(connectionId)}/messages`
-const connectionPath = (connectionId: string) => `/v1/connections/${seg(connectionId)}`
+// The return types keep the paths template literals, which `http` checks against the contract.
+const messagesPath = (connectionId: string): `/v1/connections/${string}/messages` =>
+  `/v1/connections/${seg(connectionId)}/messages`
+const connectionPath = (connectionId: string): `/v1/connections/${string}` =>
+  `/v1/connections/${seg(connectionId)}`
 
 // ---------------------------------------------------------------------------
 // Queries
@@ -55,7 +55,7 @@ export function useConnections(filter: ConnectionFilter) {
   return useInfiniteQuery({
     queryKey: qk.connections(filter),
     queryFn: ({ pageParam, signal }) =>
-      http.get<Page<Connection>>('/v1/connections', {
+      http.get('/v1/connections', {
         query: { filter, limit: 20, cursor: pageParam },
         signal,
       }),
@@ -68,7 +68,7 @@ export function useConnections(filter: ConnectionFilter) {
 export function connectionQueryOptions(connectionId: string) {
   return queryOptions({
     queryKey: qk.connection(connectionId),
-    queryFn: ({ signal }) => http.get<Connection>(connectionPath(connectionId), { signal }),
+    queryFn: ({ signal }) => http.get(connectionPath(connectionId), { signal }),
     staleTime: STALE.connection,
     meta: { handles: ['not_found'] },
   })
@@ -86,7 +86,7 @@ export function messagesQueryOptions(connectionId: string) {
   return infiniteQueryOptions({
     queryKey: qk.messages(connectionId),
     queryFn: async ({ pageParam, signal }) =>
-      (await http.get<MessagePage>(messagesPath(connectionId), {
+      (await http.get(messagesPath(connectionId), {
         query: { limit: MESSAGE_PAGE_SIZE, before: pageParam },
         signal,
       })) as MessagesData['pages'][number],
@@ -135,7 +135,7 @@ export function usePatchConnection() {
   return useMutation({
     mutationFn: (variables: { id: string; is_muted?: boolean; is_archived?: boolean }) => {
       const { id, ...body } = variables
-      return http.patch<Connection>(connectionPath(id), body)
+      return http.patch(connectionPath(id), body)
     },
     onMutate: async (variables) => {
       await queryClient.cancelQueries({ queryKey: qk.connectionsAll() })
@@ -171,7 +171,7 @@ export function useEndConnection() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (variables: { id: string; reason: EndConnectionReason; alsoBlock: boolean }) =>
-      http.post<Connection>(`${connectionPath(variables.id)}/end`, {
+      http.post(`${connectionPath(variables.id)}/end`, {
         reason: variables.reason,
         also_block: variables.alsoBlock,
       }),
@@ -203,7 +203,7 @@ export function useShareContact() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (variables: { id: string; body: ContactShareBody }) =>
-      http.put<Connection>(`${connectionPath(variables.id)}/contact-share`, variables.body),
+      http.put(`${connectionPath(variables.id)}/contact-share`, variables.body),
     meta: { handles: ['connection_ended'] },
     onSuccess: (connection) => setConnection(queryClient, connection),
     onError: (error, variables) => {
@@ -218,28 +218,28 @@ export function useStopSharing() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (connectionId: string) =>
-      http.delete<Connection>(`${connectionPath(connectionId)}/contact-share`),
+      http.delete(`${connectionPath(connectionId)}/contact-share`),
     onSuccess: (connection) => setConnection(queryClient, connection),
   })
 }
 
 export type StageAction =
-  | { kind: 'propose'; id: string; stage: Stage }
+  | { kind: 'propose'; id: string; stage: ProposableStage }
   | { kind: 'confirm'; id: string; proposalId: string }
   | { kind: 'decline'; id: string; proposalId: string }
   | { kind: 'cancel'; id: string; proposalId: string }
 
 function stageRequest(action: StageAction): Promise<Connection> {
-  const base = `${connectionPath(action.id)}/stage-proposals`
+  const base: `/v1/connections/${string}/stage-proposals` = `${connectionPath(action.id)}/stage-proposals`
   switch (action.kind) {
     case 'propose':
-      return http.post<Connection>(base, { stage: action.stage })
+      return http.post(base, { stage: action.stage })
     case 'confirm':
-      return http.post<Connection>(`${base}/${seg(action.proposalId)}/confirm`)
+      return http.post(`${base}/${seg(action.proposalId)}/confirm`)
     case 'decline':
-      return http.post<Connection>(`${base}/${seg(action.proposalId)}/decline`)
+      return http.post(`${base}/${seg(action.proposalId)}/decline`)
     case 'cancel':
-      return http.delete<Connection>(`${base}/${seg(action.proposalId)}`)
+      return http.delete(`${base}/${seg(action.proposalId)}`)
   }
 }
 
@@ -279,7 +279,7 @@ export function useDeleteMessage(connectionId: string) {
   const { t } = useTranslation('chat')
   return useMutation({
     mutationFn: (messageId: string) =>
-      http.delete<Message>(`${messagesPath(connectionId)}/${seg(messageId)}`),
+      http.delete(`${messagesPath(connectionId)}/${seg(messageId)}`),
     meta: { handles: ['invalid_state'] },
     onSuccess: (message) => {
       upsertMessage(queryClient, message)
@@ -351,7 +351,7 @@ export function useChatSender(connectionId: string) {
 
   const mutation = useMutation({
     mutationFn: (variables: { body: string; clientMessageId: string }) =>
-      http.post<Message>(messagesPath(connectionId), {
+      http.post(messagesPath(connectionId), {
         body: variables.body,
         client_message_id: variables.clientMessageId,
       }),

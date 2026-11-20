@@ -292,7 +292,7 @@ export function useUnblockMember() {
 export function useReportMember() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: ReportBody) => http.post<{ id: string }>('/v1/reports', body),
+    mutationFn: (body: ReportBody) => http.post('/v1/reports', body),
     meta: { limitText: 'shared:report.limit' },
     onSuccess: (_data, body) => {
       if (body.also_block) applyBlockEffects(queryClient, body.target_profile_id)
@@ -318,8 +318,7 @@ export function useRequestPhotoAccess() {
     queryClient.invalidateQueries({ queryKey: qk.profile(profileId) })
 
   return useMutation({
-    mutationFn: (profileId: string) =>
-      http.post<{ status: 'pending' }>(`/v1/profiles/${seg(profileId)}/photo-access`),
+    mutationFn: (profileId: string) => http.post(`/v1/profiles/${seg(profileId)}/photo-access`),
     meta: {
       handles: ['not_permitted_by_member', 'cooldown_active', 'already_exists', 'invalid_state'],
       limitText: 'shared:photo_access.limit',

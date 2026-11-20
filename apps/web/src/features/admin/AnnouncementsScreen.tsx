@@ -16,7 +16,8 @@ import { ErrorSummary, useDialogErrors } from './components/useDialogErrors'
 import { validate } from './forms'
 import { useAdminOverview, useAdminSettings, useSendAnnouncement } from './queries'
 import { announcementSchema } from './schemas'
-import type { AnnouncementBanner, AnnouncementBody } from './types'
+import { bannerText } from './settings-spec'
+import type { AnnouncementBody } from './types'
 
 export const ANNOUNCEMENT_CONFIRM_PHRASE = 'SEND'
 
@@ -42,10 +43,9 @@ function Announcements() {
 function BannerPanel() {
   const { t } = useTranslation('admin')
   const settings = useAdminSettings()
-  const banner = settings.data?.find((setting) => setting.key === 'announcement.banner')?.value as
-    | AnnouncementBanner
-    | null
-    | undefined
+  const banner = bannerText(
+    settings.data?.find((setting) => setting.key === 'announcement.banner')?.value,
+  )
 
   return (
     <Panel
@@ -59,7 +59,7 @@ function BannerPanel() {
       <p className="text-sm text-muted-foreground">{t('announce.banner_text')}</p>
       {banner ? (
         <StatusBanner variant="info" icon={Megaphone} title={t('announce.banner_current')}>
-          {banner.text_en}
+          {banner}
         </StatusBanner>
       ) : settings.isSuccess ? (
         <p className="text-sm">{t('announce.banner_none')}</p>

@@ -29,7 +29,7 @@ export function isSafeDownloadUrl(value: unknown): value is string {
  */
 export async function loadAndroidRelease(): Promise<ReleaseResult> {
   try {
-    const release = await http.get<AppRelease>('/v1/meta/app-release', {
+    const release = await http.get('/v1/meta/app-release', {
       query: { platform: 'android' },
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     })

@@ -5,14 +5,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 import { http, isApiError, seg } from '~/lib/api'
-import type {
-  AcceptInterestResult,
-  Interest,
-  InterestBox,
-  InterestListStatus,
-  Page,
-  SendInterestResult,
-} from '~/lib/api-types'
+import type { Interest, InterestBox, InterestListStatus } from '~/lib/api-types'
 import { showLimitDialog } from '~/lib/dialogs'
 import { invalidateMe, nextCursor, qk, STALE, updateInPages } from '~/lib/query'
 
@@ -25,7 +18,7 @@ export function useInterests(box: InterestBox, status: InterestListStatus) {
   return useInfiniteQuery({
     queryKey: qk.interests(box, status),
     queryFn: ({ pageParam, signal }) =>
-      http.get<Page<Interest>>('/v1/interests', {
+      http.get('/v1/interests', {
         query: { box, status, limit: 20, cursor: pageParam },
         signal,
       }),
@@ -52,7 +45,7 @@ export function useSendInterest(options: { limitText?: string } = {}) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (body: SendInterestVariables) =>
-      http.post<SendInterestResult>('/v1/interests', {
+      http.post('/v1/interests', {
         receiver_profile_id: body.receiver_profile_id,
         ...(body.message ? { message: body.message } : {}),
       }),
@@ -97,7 +90,7 @@ export function useAcceptInterest(options: { limitText?: string; handles?: strin
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (interest: { id: string; profileId?: string }) =>
-      http.post<AcceptInterestResult>(`/v1/interests/${seg(interest.id)}/accept`),
+      http.post(`/v1/interests/${seg(interest.id)}/accept`),
     meta: { limitText: options.limitText, handles: ['limit_reached', ...(options.handles ?? [])] },
     onSuccess: (result, interest) => {
       queryClient.setQueryData(qk.connection(result.connection.id), result.connection)
@@ -118,7 +111,7 @@ export function useDeclineInterest(options: { handles?: string[] } = {}) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (interest: { id: string; profileId?: string; alsoBlock?: boolean }) =>
-      http.post<Interest>(
+      http.post(
         `/v1/interests/${seg(interest.id)}/decline`,
         interest.alsoBlock ? { also_block: true } : {},
       ),
@@ -138,7 +131,7 @@ export function useWithdrawInterest(options: { handles?: string[] } = {}) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (interest: { id: string; profileId?: string }) =>
-      http.post<Interest>(`/v1/interests/${seg(interest.id)}/withdraw`),
+      http.post(`/v1/interests/${seg(interest.id)}/withdraw`),
     meta: options.handles ? { handles: options.handles } : undefined,
     onSuccess: (_result, interest) =>
       invalidateAfterInterestChange(queryClient, interest.profileId),

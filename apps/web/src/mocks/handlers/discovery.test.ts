@@ -1,23 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { ApiError, http } from '~/lib/api'
-import type {
-  Home,
-  Page,
-  ProfileDetail,
-  RecommendationsPage,
-  SavedSearch,
-  SearchFilters,
-  SearchPage,
-  Visit,
-  VisitorsPage,
-} from '~/lib/api-types'
+import type { ProfileDetail, SearchFilters, SearchSort } from '~/lib/api-types'
 import { db } from '../db'
 import { referenceBootstrap } from '../fixtures/reference'
 import { discoveryState } from './discovery'
 import { simulateProfileViewLimit } from './profiles'
 
-function search(filters: SearchFilters, sort = 'best_match', cursor?: string) {
-  return http.post<SearchPage>('/v1/search', {
+function search(filters: SearchFilters, sort: SearchSort = 'best_match', cursor?: string) {
+  return http.post('/v1/search', {
     filters,
     sort,
     limit: 50,
@@ -45,7 +35,7 @@ const rank = new Map(referenceBootstrap.education_levels.map((level) => [level.c
 
 describe('GET /v1/home', () => {
   it('builds the rows from discoverable members only', async () => {
-    const home = await http.get<Home>('/v1/home')
+    const home = await http.get('/v1/home')
     expect(home.recommendations.length).toBe(10)
     for (const card of [...home.recommendations, ...home.new_members, ...home.nearby]) {
       expect(card.relation.tier).toBe('member')
@@ -65,12 +55,12 @@ describe('GET /v1/home', () => {
   })
 
   it('leaves out passed and blocked members', async () => {
-    const first = await http.get<Home>('/v1/home')
+    const first = await http.get('/v1/home')
     const passed = first.recommendations[0]?.id ?? ''
     const blocked = first.recommendations[1]?.id ?? ''
     db.passes.add(passed)
     db.blocks.push({ profile_id: blocked, display_name: 'X', public_code: 'KR', created_at: '' })
-    const home = await http.get<Home>('/v1/home')
+    const home = await http.get('/v1/home')
     const ids = [...home.recommendations, ...home.new_members, ...home.nearby].map((c) => c.id)
     expect(ids).not.toContain(passed)
     expect(ids).not.toContain(blocked)
@@ -85,7 +75,7 @@ describe('GET /v1/home', () => {
       { dimension: 'sect', extra_profiles: 1 },
     ]
     db.privacy.record_my_visits = false
-    const home = await http.get<Home>('/v1/home')
+    const home = await http.get('/v1/home')
     expect(home.pool_exhausted).toBe(true)
     expect(home.relaxation_hints).toEqual([
       { dimension: 'caste', extra_profiles: 12 },
@@ -104,7 +94,7 @@ describe('GET /v1/home', () => {
 
 describe('recommendations', () => {
   it('pages with refreshed_at, is_refreshing, pool_exhausted and relaxation_hints', async () => {
-    const first = await http.get<RecommendationsPage>('/v1/recommendations', {
+    const first = await http.get('/v1/recommendations', {
       query: { limit: 20 },
     })
     expect(first.items).toHaveLength(20)
@@ -113,7 +103,7 @@ describe('recommendations', () => {
     expect(first.is_refreshing).toBe(false)
     expect(first.pool_exhausted).toBe(false)
     expect(first.relaxation_hints).toEqual([])
-    const second = await http.get<RecommendationsPage>('/v1/recommendations', {
+    const second = await http.get('/v1/recommendations', {
       query: { limit: 20, cursor: first.next_cursor },
     })
     expect(second.next_cursor).toBeNull()
@@ -128,9 +118,9 @@ describe('recommendations', () => {
     expect(error.code).toBe('rate_limited')
     expect(Number(error.details.retry_after_seconds)).toBeGreaterThan(0)
 
-    const during = await http.get<RecommendationsPage>('/v1/recommendations')
+    const during = await http.get('/v1/recommendations')
     expect(during.is_refreshing).toBe(true)
-    const after = await http.get<RecommendationsPage>('/v1/recommendations')
+    const after = await http.get('/v1/recommendations')
     expect(after.is_refreshing).toBe(false)
   })
 })
@@ -195,7 +185,7 @@ describe('POST /v1/search', () => {
     const firstOld = newest.items.findIndex((card) => !card.badges.includes('new'))
     expect(newest.items.slice(firstOld).some((card) => card.badges.includes('new'))).toBe(false)
 
-    const page = await http.post<SearchPage>('/v1/search', {
+    const page = await http.post('/v1/search', {
       filters: {},
       sort: 'best_match',
       limit: 10,
@@ -203,7 +193,7 @@ describe('POST /v1/search', () => {
     expect(page.items).toHaveLength(10)
     expect(page.next_cursor).toBe('10')
     expect(page.total_estimate).toBeGreaterThan(10)
-    const next = await http.post<SearchPage>('/v1/search', {
+    const next = await http.post('/v1/search', {
       filters: {},
       sort: 'best_match',
       limit: 10,
@@ -221,8 +211,10 @@ describe('POST /v1/search', () => {
     const range = await failure(search({ height_min_cm: 90 }))
     expect(range.fields[0]).toMatchObject({ field: 'filters.height_min_cm', code: 'out_of_range' })
 
+    // A key the API does not know, built outside the call because the contract refuses it.
+    const withUnknownKey = { age_min: 20, complexion: ['fair'] }
     const unknown = await failure(
-      http.post('/v1/search', { filters: { complexion: ['fair'] }, sort: 'best_match' }),
+      http.post('/v1/search', { filters: withUnknownKey, sort: 'best_match' }),
     )
     expect(unknown.code).toBe('bad_request')
   })
@@ -230,27 +222,27 @@ describe('POST /v1/search', () => {
 
 describe('saved searches', () => {
   it('creates, lists newest first, renames, toggles and deletes', async () => {
-    const first = await http.post<SavedSearch>('/v1/me/saved-searches', {
+    const first = await http.post('/v1/me/saved-searches', {
       name: 'Lahore',
       filters: { city_ids: [1001] },
       notify_new: false,
     })
-    const second = await http.post<SavedSearch>('/v1/me/saved-searches', {
+    const second = await http.post('/v1/me/saved-searches', {
       name: 'Doctors',
       filters: { profession_codes: ['doctor'] },
       notify_new: true,
     })
-    const list = await http.get<Page<SavedSearch>>('/v1/me/saved-searches')
+    const list = await http.get('/v1/me/saved-searches')
     expect(list.items.map((item) => item.id)).toEqual([second.id, first.id])
 
-    const renamed = await http.patch<SavedSearch>(`/v1/me/saved-searches/${first.id}`, {
+    const renamed = await http.patch(`/v1/me/saved-searches/${first.id}`, {
       name: 'Lahore only',
       notify_new: true,
     })
     expect(renamed).toMatchObject({ name: 'Lahore only', notify_new: true })
 
     await http.delete(`/v1/me/saved-searches/${second.id}`)
-    const after = await http.get<Page<SavedSearch>>('/v1/me/saved-searches')
+    const after = await http.get('/v1/me/saved-searches')
     expect(after.items.map((item) => item.id)).toEqual([first.id])
     const missing = await failure(http.delete(`/v1/me/saved-searches/${second.id}`))
     expect(missing.code).toBe('not_found')
@@ -280,23 +272,23 @@ describe('saved searches', () => {
 
 describe('visits', () => {
   it('lists visitors, or hides them while browsing privately', async () => {
-    const visitors = await http.get<VisitorsPage>('/v1/me/visitors')
+    const visitors = await http.get('/v1/me/visitors')
     expect(visitors.items.length).toBeGreaterThan(0)
     expect(visitors.hidden_because_private).toBe(false)
 
     db.privacy.record_my_visits = false
-    const hidden = await http.get<VisitorsPage>('/v1/me/visitors')
+    const hidden = await http.get('/v1/me/visitors')
     expect(hidden).toEqual({ items: [], next_cursor: null, hidden_because_private: true })
 
     // The member's own history still works (09 section 8.2).
-    const visited = await http.get<Page<Visit>>('/v1/me/visited')
+    const visited = await http.get('/v1/me/visited')
     expect(visited.items.length).toBeGreaterThan(0)
   })
 
   it('records a profile view in the visited list, newest first', async () => {
     const id = [...db.profiles.values()].find((p) => p.relation.tier === 'member')?.card.id ?? ''
     await http.get(`/v1/profiles/${id}`)
-    const visited = await http.get<Page<Visit>>('/v1/me/visited')
+    const visited = await http.get('/v1/me/visited')
     expect(visited.items[0]?.profile.id).toBe(id)
   })
 })
@@ -317,7 +309,7 @@ describe('GET /v1/profiles/{id} and by-code', () => {
     const id = memberId()
     db.shortlist.push({ profile_id: id, profile: null, note: 'Ask about family', created_at: '' })
     db.passes.add(id)
-    const detail = await http.get<ProfileDetail>(`/v1/profiles/${id}`)
+    const detail = await http.get(`/v1/profiles/${id}`)
     expect(detail.relation).toMatchObject({
       is_shortlisted: true,
       shortlist_note: 'Ask about family',
@@ -341,15 +333,13 @@ describe('GET /v1/profiles/{id} and by-code', () => {
     const error = await failure(http.get(`/v1/profiles/${memberId()}`))
     expect(error.code).toBe('profile_not_active')
     const connection = [...db.profiles.values()].find((p) => p.relation.tier === 'connection')
-    const detail = await http.get<ProfileDetail>(`/v1/profiles/${connection?.card.id}`)
+    const detail = await http.get(`/v1/profiles/${connection?.card.id}`)
     expect(detail.relation.tier).toBe('connection')
   })
 
   it('resolves a profile code, normalised, and answers 404 for an unknown one', async () => {
     const profile = detailOf(memberId())
-    const found = await http.get<{ profile_id: string }>(
-      `/v1/profiles/by-code/${profile.card.public_code.toLowerCase()}`,
-    )
+    const found = await http.get(`/v1/profiles/by-code/${profile.card.public_code.toLowerCase()}`)
     expect(found.profile_id).toBe(profile.card.id)
     expect((await failure(http.get('/v1/profiles/by-code/KR00000000'))).code).toBe('not_found')
   })

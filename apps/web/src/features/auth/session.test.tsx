@@ -13,7 +13,7 @@ import { TestSessionProvider } from './session'
 function FirstRequest() {
   const [result, setResult] = useState('pending')
   useEffect(() => {
-    http.get<{ ok: boolean }>('/v1/me').then(
+    http.get('/v1/me').then(
       () => setResult('sent with a token'),
       (error: unknown) => setResult(isApiError(error) ? error.code : 'failed'),
     )

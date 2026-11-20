@@ -1,13 +1,6 @@
 import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { http, seg } from '~/lib/api'
-import type {
-  Home,
-  Interest,
-  ProfileCard,
-  ProfileDetail,
-  ShortlistEntry,
-  Visit,
-} from '~/lib/api-types'
+import type { Home, Interest, ProfileCard, ShortlistEntry, Visit } from '~/lib/api-types'
 import { invalidateMe, qk, removeFromPages, STALE, updateInPages } from '~/lib/query'
 
 /**
@@ -17,7 +10,7 @@ import { invalidateMe, qk, removeFromPages, STALE, updateInPages } from '~/lib/q
 export function useProfile(profileId: string, options: { staleTime?: number } = {}) {
   return useQuery({
     queryKey: qk.profile(profileId),
-    queryFn: ({ signal }) => http.get<ProfileDetail>(`/v1/profiles/${seg(profileId)}`, { signal }),
+    queryFn: ({ signal }) => http.get(`/v1/profiles/${seg(profileId)}`, { signal }),
     staleTime: options.staleTime ?? STALE.list,
     // The screen answers these itself (16 section 6.7, "Errors on load").
     meta: { handles: ['not_found', 'limit_reached'] },
@@ -28,8 +21,7 @@ export function useProfile(profileId: string, options: { staleTime?: number } = 
 export function useProfileByCode(publicCode: string) {
   return useQuery({
     queryKey: qk.profileByCode(publicCode),
-    queryFn: ({ signal }) =>
-      http.get<{ profile_id: string }>(`/v1/profiles/by-code/${seg(publicCode)}`, { signal }),
+    queryFn: ({ signal }) => http.get(`/v1/profiles/by-code/${seg(publicCode)}`, { signal }),
     staleTime: STALE.list,
     meta: { handles: ['not_found'] },
   })

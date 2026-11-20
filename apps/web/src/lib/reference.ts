@@ -1,9 +1,9 @@
-import { queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { queryOptions, skipToken, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiRequestRaw, http } from './api'
 import { isOneOf } from './api-enums'
-import type { CityRef, ReferenceBootstrap, Region } from './api-types'
+import type { ReferenceBootstrap } from './api-types'
 import { qk, STALE } from './query'
 
 /**
@@ -37,11 +37,10 @@ function writeCache(value: CachedBootstrap) {
 
 export async function fetchReferenceBootstrap(signal?: AbortSignal): Promise<ReferenceBootstrap> {
   const cached = readCache()
-  const { data, response } = await apiRequestRaw<ReferenceBootstrap>(
-    'get',
-    '/v1/reference/bootstrap',
-    { headers: cached ? { 'If-None-Match': cached.etag } : undefined, signal },
-  )
+  const { data, response } = await apiRequestRaw('get', '/v1/reference/bootstrap', {
+    headers: cached ? { 'If-None-Match': cached.etag } : undefined,
+    signal,
+  })
   if (response.status === 304 && cached) return cached.data
   const etag = response.headers.get('etag') ?? `"${data.version}"`
   writeCache({ etag, data })
@@ -232,13 +231,12 @@ export function useIncomeBands(currencyCode: string | null | undefined) {
 export function useRegions(countryCode: string | null | undefined) {
   return useQuery({
     queryKey: qk.regions(countryCode ?? ''),
-    queryFn: ({ signal }) =>
-      http.get<{ items: Region[] }>('/v1/reference/regions', {
-        query: { country_code: countryCode },
-        signal,
-      }),
+    // Without a country there is nothing to ask for: `country_code` is required.
+    queryFn: countryCode
+      ? ({ signal }) =>
+          http.get('/v1/reference/regions', { query: { country_code: countryCode }, signal })
+      : skipToken,
     select: (data) => data.items,
-    enabled: Boolean(countryCode),
     staleTime: STALE.reference,
   })
 }
@@ -255,20 +253,23 @@ export function useCitySearch(params: CitySearchParams | null) {
   const key = params
     ? { country_code: params.country_code, region_id: params.region_id ?? null, q: query }
     : null
+  const countryCode = key?.country_code
   return useQuery({
     queryKey: qk.cities(key ?? { country_code: '' }),
-    queryFn: ({ signal }) =>
-      http.get<{ items: CityRef[] }>('/v1/reference/cities', {
-        query: {
-          country_code: key?.country_code,
-          region_id: key?.region_id ?? undefined,
-          q: key?.q,
-          limit: 20,
-        },
-        signal,
-      }),
+    // Without a country there is nothing to ask for: `country_code` is required.
+    queryFn: countryCode
+      ? ({ signal }) =>
+          http.get('/v1/reference/cities', {
+            query: {
+              country_code: countryCode,
+              region_id: key?.region_id ?? undefined,
+              q: key?.q,
+              limit: 20,
+            },
+            signal,
+          })
+      : skipToken,
     select: (data) => data.items,
-    enabled: Boolean(key?.country_code),
     staleTime: STALE.cities,
     placeholderData: (previous) => previous,
   })

@@ -14,7 +14,7 @@ import { NotificationBell } from '~/components/layout/NotificationBell'
 import { Button } from '~/components/ui/button'
 import { Skeleton } from '~/components/ui/skeleton'
 import { http } from '~/lib/api'
-import type { Home, NudgeCode, OwnProfile, ProfileCard } from '~/lib/api-types'
+import type { Home, NudgeCode, ProfileCard } from '~/lib/api-types'
 import { useCurrentMe } from '~/lib/me'
 import { qk } from '~/lib/query'
 import { cn } from '~/lib/utils'
@@ -292,7 +292,7 @@ function NearbySeeAll({ title }: { title: string }) {
     try {
       const own = await queryClient.ensureQueryData({
         queryKey: qk.ownProfile(),
-        queryFn: () => http.get<OwnProfile>('/v1/me/profile'),
+        queryFn: () => http.get('/v1/me/profile'),
       })
       cityId = own.location.city_id ?? null
     } catch {

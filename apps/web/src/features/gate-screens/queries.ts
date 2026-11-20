@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { takeReturnPath } from '~/features/auth/return-path'
 import { http } from '~/lib/api'
-import type { ConsentDocument, Me } from '~/lib/api-types'
+import type { ConsentDocument } from '~/lib/api-types'
 import { meQueryOptions } from '~/lib/me'
 import { setMe } from '~/lib/query'
 
@@ -34,7 +34,7 @@ export function useAcceptConsents() {
   const queryClient = useQueryClient()
   const router = useRouter()
   return useMutation({
-    mutationFn: (documents: ConsentDocument[]) => http.post<Me>('/v1/me/consents', { documents }),
+    mutationFn: (documents: ConsentDocument[]) => http.post('/v1/me/consents', { documents }),
     onSuccess: (me) => {
       const returnPath = takeReturnPath()
       setMe(queryClient, me)

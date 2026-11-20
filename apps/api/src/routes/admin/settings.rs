@@ -69,8 +69,7 @@ async fn list_settings(
 #[derive(Debug, Deserialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct PutSettingBody {
-    /// The new value; its type depends on the key (18 section 7.1).
-    #[schema(value_type = Object)]
+    /// The new value: any JSON value, whose type depends on the key (18 section 7.1).
     pub value: Value,
 }
 

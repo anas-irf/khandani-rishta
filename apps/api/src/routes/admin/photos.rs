@@ -86,6 +86,7 @@ pub struct PhotoQuery {
 /// pagination.
 #[utoipa::path(
     get,
+    operation_id = "admin_list_photos",
     path = "/photos",
     tag = "admin",
     security(("bearer" = [])),
@@ -239,7 +240,9 @@ fn ensure_reviewable(status: PhotoStatus) -> ApiResult<()> {
 #[derive(Debug, Deserialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct RejectPhoto {
-    /// One of the `photo_rejection_reason` codes (05 section 2.43).
+    /// One of the `photo_rejection_reason` codes (05 section 2.43). Parsed by the handler, so an
+    /// unknown code is a validation error rather than a malformed body.
+    #[schema(value_type = PhotoRejectionReason)]
     pub reason: String,
 }
 

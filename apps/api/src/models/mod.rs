@@ -13,6 +13,11 @@ pub mod verifications;
 
 use time::{Duration, OffsetDateTime};
 
+// `YYYY-MM-DD` for `time::Date` fields (15 section 1). Without this, `time` writes a date as
+// `[year, ordinal]`. Use `#[serde(with = "crate::models::iso_date")]` (or `::option`) together
+// with `#[schema(value_type = String, format = Date)]`.
+time::serde::format_description!(pub iso_date, Date, "[year]-[month]-[day]");
+
 use crate::domain::types::Badge;
 
 /// Badges of a profile (03 section 6): verification flags plus `new` for the first 7 days.

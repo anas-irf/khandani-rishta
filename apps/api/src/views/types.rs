@@ -217,7 +217,9 @@ pub struct Relation {
     pub cannot_send_reason: Option<CannotSendReason>,
     /// Set only with `not_permitted_by_member` (09 section 7).
     pub cannot_send_detail: Option<CannotSendDetail>,
-    /// The date the cooldown ends, for `cooldown`.
+    /// The date the cooldown ends, for `cooldown` (`YYYY-MM-DD`).
+    #[serde(with = "crate::models::iso_date::option")]
+    #[schema(value_type = Option<String>, format = Date)]
     pub can_send_interest_after: Option<Date>,
 }
 

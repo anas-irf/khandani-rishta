@@ -12,19 +12,8 @@ use crate::domain::options::EmailMatchDigest;
 use crate::domain::types::{DevicePlatform, NotificationType};
 use crate::error::{ApiError, FieldCode, FieldErrors};
 
-/// A photo of the actor as the recipient may see it: the shape of `PhotoView` (15 section 4.4),
-/// blurred under the rules of 09 section 6.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
-pub struct ActorPhoto {
-    pub id: Uuid,
-    pub is_primary: bool,
-    pub is_blurred: bool,
-    /// The blurred variant when `is_blurred`.
-    pub thumb_url: String,
-    pub medium_url: String,
-    /// `null` when blurred.
-    pub large_url: Option<String>,
-}
+/// The actor's photo is the shared `PhotoView` (15 section 14).
+pub use crate::views::types::PhotoView as ActorPhoto;
 
 /// Who caused a notification, rendered for the recipient (09 section 4, 14 section 3).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]

@@ -269,27 +269,52 @@ type ApiBody<M extends HttpMethod, S extends string> = JsonContent<
   NonNullable<OperationOf<M, S>['requestBody']>
 >
 
+/** The contract's query parameters of `M` on `S`; none when the operation takes none. */
+type QueryParams<M extends HttpMethod, S extends string> = [
+  NonNullable<OperationOf<M, S>['parameters']['query']>,
+] extends [never]
+  ? Record<never, never>
+  : NonNullable<OperationOf<M, S>['parameters']['query']>
+
 /**
- * The query parameters of `M` on `S`. A value may also be `null`, `undefined` or `''`: such
- * parameters are left out of the URL, so a filter that is not set can be passed as it is.
+ * The query parameters of `M` on `S`, required where the contract requires them. An optional
+ * parameter may also be `null` or `''`: such parameters are left out of the URL, so a filter
+ * that is not set can be passed as it is.
  */
 type ApiQuery<M extends HttpMethod, S extends string> = {
-  [Name in keyof NonNullable<OperationOf<M, S>['parameters']['query']>]?:
-    | NonNullable<OperationOf<M, S>['parameters']['query']>[Name]
-    | ''
-    | null
+  [Name in keyof QueryParams<M, S>]: undefined extends QueryParams<M, S>[Name]
+    ? QueryParams<M, S>[Name] | '' | null
+    : QueryParams<M, S>[Name]
 }
 
-export type RequestOptions<M extends HttpMethod, S extends string> = {
-  query?: ApiQuery<M, S>
+/** Whether `M` on `S` has a required query parameter. */
+type QueryRequired<M extends HttpMethod, S extends string> =
+  Record<never, never> extends ApiQuery<M, S> ? false : true
+
+export type RequestOptions<M extends HttpMethod, S extends string> = (QueryRequired<
+  M,
+  S
+> extends true
+  ? { query: ApiQuery<M, S> }
+  : { query?: ApiQuery<M, S> }) & {
   headers?: Record<string, string>
   signal?: AbortSignal
 }
 
+/** The options argument: required when the operation has a required query parameter. */
+type OptionsArgs<M extends HttpMethod, S extends string> =
+  QueryRequired<M, S> extends true
+    ? [options: RequestOptions<M, S>]
+    : [options?: RequestOptions<M, S>]
+
 /** The arguments after the path of a method that sends a body. */
 type BodyArgs<M extends HttpMethod, S extends string> = [ApiBody<M, S>] extends [undefined]
-  ? [body?: undefined, options?: RequestOptions<M, S>]
-  : [body: ApiBody<M, S>, options?: RequestOptions<M, S>]
+  ? QueryRequired<M, S> extends true
+    ? [body: undefined, options: RequestOptions<M, S>]
+    : [body?: undefined, options?: RequestOptions<M, S>]
+  : QueryRequired<M, S> extends true
+    ? [body: ApiBody<M, S>, options: RequestOptions<M, S>]
+    : [body: ApiBody<M, S>, options?: RequestOptions<M, S>]
 
 /** What every request carries once its types are checked. */
 type RawOptions = {
@@ -341,9 +366,9 @@ async function sendForData<T>(method: HttpMethod, path: string, options: RawOpti
 export function apiRequestRaw<M extends HttpMethod, P extends ApiPath<M>>(
   method: M,
   path: P,
-  options: RequestOptions<M, P> = {},
+  ...[options]: OptionsArgs<M, P>
 ) {
-  return send<ApiResponse<M, P>>(method, path, options)
+  return send<ApiResponse<M, P>>(method, path, options ?? {})
 }
 
 /**
@@ -352,7 +377,7 @@ export function apiRequestRaw<M extends HttpMethod, P extends ApiPath<M>>(
  * against the contract.
  */
 export const http = {
-  get: <P extends ApiPath<'get'>>(path: P, options?: RequestOptions<'get', P>) =>
+  get: <P extends ApiPath<'get'>>(path: P, ...[options]: OptionsArgs<'get', P>) =>
     sendForData<ApiResponse<'get', P>>('get', path, options),
   post: <P extends ApiPath<'post'>>(path: P, ...[body, options]: BodyArgs<'post', P>) =>
     sendForData<ApiResponse<'post', P>>('post', path, { ...options, body }),
@@ -360,7 +385,7 @@ export const http = {
     sendForData<ApiResponse<'put', P>>('put', path, { ...options, body }),
   patch: <P extends ApiPath<'patch'>>(path: P, ...[body, options]: BodyArgs<'patch', P>) =>
     sendForData<ApiResponse<'patch', P>>('patch', path, { ...options, body }),
-  delete: <P extends ApiPath<'delete'>>(path: P, options?: RequestOptions<'delete', P>) =>
+  delete: <P extends ApiPath<'delete'>>(path: P, ...[options]: OptionsArgs<'delete', P>) =>
     sendForData<ApiResponse<'delete', P>>('delete', path, options),
 }
 

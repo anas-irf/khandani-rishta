@@ -12,6 +12,7 @@ import {
   http,
   isGateError,
   type OverlappingPaths,
+  type RequestOptions,
   setTokenGetter,
   setUnauthenticatedHandler,
 } from './api'
@@ -217,6 +218,17 @@ describe('http paths typed from the contract', () => {
     expectTypeOf<Parameters<typeof http.post<`/v1/connections/${string}/read`>>[1]>().toEqualTypeOf<
       components['schemas']['ChatReadBody']
     >()
+  })
+
+  it('requires the query parameters the contract requires', () => {
+    expectTypeOf<RequestOptions<'get', '/v1/reference/regions'>['query']>().toEqualTypeOf<{
+      country_code: string
+    }>()
+    // The options argument itself is required there, and optional where nothing is required.
+    expectTypeOf<
+      Parameters<typeof http.get<'/v1/reference/regions'>>['length']
+    >().toEqualTypeOf<2>()
+    expectTypeOf<Parameters<typeof http.get<'/v1/me'>>['length']>().toEqualTypeOf<1 | 2>()
   })
 
   it('accepts only paths of the contract', () => {

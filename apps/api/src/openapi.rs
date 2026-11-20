@@ -371,16 +371,22 @@ mod tests {
         );
         refers("RejectPhoto", "reason", "PhotoRejectionReason");
 
+        // Any JSON value: the schema holds a description and nothing that restricts it (no
+        // `type`, `enum`, `$ref`, `oneOf` and so on).
         for (schema, property) in [
             ("SettingItem", "value"),
             ("SettingItem", "default"),
             ("PutSettingBody", "value"),
         ] {
+            let constraints: Vec<&String> = schemas[schema]["properties"][property]
+                .as_object()
+                .unwrap()
+                .keys()
+                .filter(|key| key.as_str() != "description")
+                .collect();
             assert!(
-                schemas[schema]["properties"][property]
-                    .get("type")
-                    .is_none(),
-                "{schema}.{property} must allow any JSON value, not only objects"
+                constraints.is_empty(),
+                "{schema}.{property} must allow any JSON value, but is restricted by {constraints:?}"
             );
         }
     }

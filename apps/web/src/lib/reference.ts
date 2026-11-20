@@ -1,4 +1,4 @@
-import { queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { queryOptions, skipToken, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiRequestRaw, http } from './api'
@@ -231,13 +231,12 @@ export function useIncomeBands(currencyCode: string | null | undefined) {
 export function useRegions(countryCode: string | null | undefined) {
   return useQuery({
     queryKey: qk.regions(countryCode ?? ''),
-    queryFn: ({ signal }) =>
-      http.get('/v1/reference/regions', {
-        query: { country_code: countryCode },
-        signal,
-      }),
+    // Without a country there is nothing to ask for: `country_code` is required.
+    queryFn: countryCode
+      ? ({ signal }) =>
+          http.get('/v1/reference/regions', { query: { country_code: countryCode }, signal })
+      : skipToken,
     select: (data) => data.items,
-    enabled: Boolean(countryCode),
     staleTime: STALE.reference,
   })
 }
@@ -254,20 +253,23 @@ export function useCitySearch(params: CitySearchParams | null) {
   const key = params
     ? { country_code: params.country_code, region_id: params.region_id ?? null, q: query }
     : null
+  const countryCode = key?.country_code
   return useQuery({
     queryKey: qk.cities(key ?? { country_code: '' }),
-    queryFn: ({ signal }) =>
-      http.get('/v1/reference/cities', {
-        query: {
-          country_code: key?.country_code,
-          region_id: key?.region_id ?? undefined,
-          q: key?.q,
-          limit: 20,
-        },
-        signal,
-      }),
+    // Without a country there is nothing to ask for: `country_code` is required.
+    queryFn: countryCode
+      ? ({ signal }) =>
+          http.get('/v1/reference/cities', {
+            query: {
+              country_code: countryCode,
+              region_id: key?.region_id ?? undefined,
+              q: key?.q,
+              limit: 20,
+            },
+            signal,
+          })
+      : skipToken,
     select: (data) => data.items,
-    enabled: Boolean(key?.country_code),
     staleTime: STALE.cities,
     placeholderData: (previous) => previous,
   })

@@ -3,7 +3,10 @@
   "name": "khandani-web",
   "compatibility_date": "2026-11-18",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "@tanstack/react-start/server-entry",
+  // src/server.ts wraps TanStack Start's handler with Sentry (17 section 15).
+  "main": "src/server.ts",
+  // Gives Sentry the deployed version id as the release name.
+  "version_metadata": { "binding": "CF_VERSION_METADATA" },
   // Non-secret variables for the Worker (17 section 15). CLERK_SECRET_KEY is a secret:
   // `wrangler secret put CLERK_SECRET_KEY --env <env>`.
   "vars": {
@@ -15,10 +18,10 @@
   "observability": {
     "enabled": true
   },
-  // Production. Add the custom domains once the domain is on Cloudflare:
+  // Production. Uncomment once khandanirishta.app is a zone in the Cloudflare account:
   // "routes": [
-  //   { "pattern": "example.com", "custom_domain": true },
-  //   { "pattern": "www.example.com", "custom_domain": true }
+  //   { "pattern": "khandanirishta.app", "custom_domain": true },
+  //   { "pattern": "www.khandanirishta.app", "custom_domain": true }
   // ],
   "env": {
     // Built with CLOUDFLARE_ENV=staging, then deployed with `wrangler deploy`.
@@ -30,7 +33,7 @@
         "CLERK_SIGN_IN_FALLBACK_REDIRECT_URL": "/home",
         "CLERK_SIGN_UP_FALLBACK_REDIRECT_URL": "/home"
       }
-      // "routes": [{ "pattern": "staging.example.com", "custom_domain": true }]
+      // "routes": [{ "pattern": "staging.khandanirishta.app", "custom_domain": true }]
     }
   }
 }

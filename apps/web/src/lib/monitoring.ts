@@ -25,6 +25,61 @@ export function scrubUrl(url: string): string {
   return index === -1 ? url : url.slice(0, index)
 }
 
+type ScrubbableBreadcrumb = { data?: { [key: string]: unknown } }
+
+/** Strips query strings from the URLs a breadcrumb carries (17 section 14). */
+export function scrubBreadcrumb<T extends ScrubbableBreadcrumb>(breadcrumb: T): T {
+  const data = breadcrumb.data
+  if (data && typeof data.url === 'string') data.url = scrubUrl(data.url)
+  if (data && typeof data.from === 'string') data.from = scrubUrl(data.from)
+  if (data && typeof data.to === 'string') data.to = scrubUrl(data.to)
+  return breadcrumb
+}
+
+type ScrubbableEvent = {
+  request?: {
+    data?: unknown
+    query_string?: unknown
+    cookies?: unknown
+    url?: string
+    headers?: { [key: string]: string }
+  }
+}
+
+/**
+ * Removes the request body, query string, cookies and credentials from an event before it is
+ * sent, in the browser and on the Worker (17 section 14, 20 section 7).
+ */
+export function scrubEvent<T extends ScrubbableEvent>(event: T): T {
+  const request = event.request
+  if (request) {
+    request.data = undefined
+    request.query_string = undefined
+    request.cookies = undefined
+    if (request.url) request.url = scrubUrl(request.url)
+    if (request.headers) {
+      for (const name of Object.keys(request.headers)) {
+        if (/^(authorization|cookie|set-cookie|x-clerk-.*)$/i.test(name)) {
+          delete request.headers[name]
+        }
+      }
+    }
+  }
+  return event
+}
+
+/**
+ * What the SDK may collect (Sentry 11 `dataCollection`): no user fields, cookies, bodies or query
+ * strings, and only a few harmless request headers (20 section 7).
+ */
+export const sentryDataCollection = {
+  userInfo: false,
+  cookies: false,
+  httpBodies: [],
+  urlQueryParams: false,
+  httpHeaders: { request: { allow: ['user-agent', 'accept-language', 'cf-ray'] }, response: false },
+}
+
 let started = false
 
 /** Starts Sentry in the browser when a DSN is configured. Safe to call more than once. */
@@ -35,22 +90,9 @@ export async function initMonitoring(): Promise<void> {
   Sentry.init({
     dsn: sentryDsn,
     environment: appEnv,
-    beforeBreadcrumb(breadcrumb) {
-      const data = breadcrumb.data
-      if (data && typeof data.url === 'string') data.url = scrubUrl(data.url)
-      if (data && typeof data.from === 'string') data.from = scrubUrl(data.from)
-      if (data && typeof data.to === 'string') data.to = scrubUrl(data.to)
-      return breadcrumb
-    },
-    beforeSend(event) {
-      if (event.request) {
-        event.request.data = undefined
-        event.request.query_string = undefined
-        event.request.cookies = undefined
-        if (event.request.url) event.request.url = scrubUrl(event.request.url)
-      }
-      return event
-    },
+    dataCollection: sentryDataCollection,
+    beforeBreadcrumb: scrubBreadcrumb,
+    beforeSend: scrubEvent,
   })
   reporter = (error, context) => {
     Sentry.captureException(error, context ? { extra: context } : undefined)

@@ -195,7 +195,7 @@ The app opens the screen named in `target`, passing `connection_id`, `interest_i
 
 ### 5.1 Sending
 
-Emails are sent by the `send_email` job through the Resend API. Sender: `Khandani Rishta <no-reply@<domain>>`, with `Reply-To` set to `support.email`. Emails are plain, mobile-friendly HTML with a text alternative, in English at launch. They contain no photos and no chat content. Names are display names rendered for the recipient (09 section 4). Every email ends with the support address and, for the optional kinds, a "Change email preferences" link to `SET-NOTIFS`.
+Emails are sent by the `send_email` job through the Resend API. Sender: `Khandani Rishta <no-reply@khandanirishta.app>`, with `Reply-To` set to `support.email`. Emails are plain, mobile-friendly HTML with a text alternative, in English at launch. They contain no photos and no chat content. Names are display names rendered for the recipient (09 section 4). Every email ends with the support address and, for the optional kinds, a "Change email preferences" link to `SET-NOTIFS`.
 
 An email is sent only when `users.email` is set. Emails to an address that hard-bounces twice stop: the job records the bounce and skips that user until the address changes.
 

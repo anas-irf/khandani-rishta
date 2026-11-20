@@ -95,7 +95,10 @@ async fn an_email_is_rendered_and_sent_with_the_job_id_as_idempotency_key(db: Pg
     let email = &sent[0];
     assert_eq!(email.to, email_of(&w, &w.him).await);
     assert_eq!(email.subject, "A notice about your Khandani Rishta account");
-    assert_eq!(email.reply_to.as_deref(), Some("support@<domain>"));
+    assert_eq!(
+        email.reply_to.as_deref(),
+        Some("support@khandanirishta.app")
+    );
     assert!(email.text.contains("Please <b>be</b> respectful & kind"));
     assert!(
         email

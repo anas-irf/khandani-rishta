@@ -91,7 +91,7 @@ Dotted lines are the staging path, which mirrors production on a smaller VM.
 Request paths:
 
 1. **Pages:** the browser loads the web app from Cloudflare Workers. Static assets come from Cloudflare's edge. Public pages are rendered on the Worker, signed-in screens render in the browser.
-2. **API:** the browser and the Android app call `https://api.<domain>/v1/...` with a Clerk session token. Cloudflare forwards the request through the production Tunnel to Axum on the production VM, which queries PostgreSQL in the same region.
+2. **API:** the browser and the Android app call `https://api.khandanirishta.app/v1/...` with a Clerk session token. Cloudflare forwards the request through the production Tunnel to Axum on the production VM, which queries PostgreSQL in the same region.
 3. **Files:** the API hands out short-lived presigned URLs. Clients upload to and download from R2 directly, so file bytes never pass through the VMs.
 4. **Auth:** Clerk handles sign-in on both clients. The API verifies Clerk tokens locally and receives Clerk webhooks to keep its own user records in sync.
 
@@ -104,8 +104,8 @@ Ground rules:
 
 | | Local | Staging | Production |
 |---|---|---|---|
-| Web | Vite dev server (`pnpm dev`) | Workers `staging` environment at `staging.<domain>` | Workers at `<domain>` and `www.<domain>` |
-| API | `cargo run` on port 8787 | Azure VM `B1s` at `api-staging.<domain>` | Azure VM `B2ats_v2` at `api.<domain>` |
+| Web | Vite dev server (`pnpm dev`) | Workers `staging` environment at `staging.khandanirishta.app` | Workers at `khandanirishta.app` and `www.khandanirishta.app` |
+| API | `cargo run` on port 8787 | Azure VM `B1s` at `api-staging.khandanirishta.app` | Azure VM `B2ats_v2` at `api.khandanirishta.app` |
 | Database | PostgreSQL 18 in Docker | `khandani_staging` database on the shared Flexible Server | `khandani_prod` database on the shared Flexible Server |
 | Files | R2 bucket `kr-dev-media` | R2 bucket `kr-staging-media` | R2 bucket `kr-prod-media` |
 | Auth | Clerk Development instance | Clerk Development instance | Clerk Production instance |
@@ -259,7 +259,7 @@ Rendering:
 
 - Public pages are server-rendered or prerendered on the Worker for SEO and fast first paint.
 - Signed-in screens use TanStack Start's selective SSR (`ssr: false`) and render in the browser. Their data is per-user anyway, and this keeps each request well inside the Workers Free CPU limit.
-- The browser calls the API directly at `api.<domain>`. Server functions only fetch data for server-rendered pages, forwarding the user's Clerk token.
+- The browser calls the API directly at `api.khandanirishta.app`. Server functions only fetch data for server-rendered pages, forwarding the user's Clerk token.
 
 Cloudflare Workers hosting:
 
@@ -291,7 +291,7 @@ Cloudflare Workers hosting:
 
 Distribution (no Play Store for now):
 
-- On an `android-v*` tag, CI builds a signed release APK and uploads it to the public R2 bucket, served at `download.<domain>`, and attaches it to a GitHub Release. The version name comes from the tag and the version code from the workflow run number, so every release installs over the previous one.
+- On an `android-v*` tag, CI builds a signed release APK and uploads it to the public R2 bucket, served at `download.khandanirishta.app`, and attaches it to a GitHub Release. The version name comes from the tag and the version code from the workflow run number, so every release installs over the previous one.
 - The app checks the API for the latest version and prompts users to update.
 - One release keystore for the life of the app, stored in 1Password and as an encrypted GitHub Actions secret. Losing it means users must uninstall and reinstall to get updates.
 - Register on the Android Developer Console for developer verification before it is enforced in our users' countries (rolling out globally in 2027). Without it, users can only install through Android's advanced sideloading flow.
@@ -302,7 +302,9 @@ Distribution (no Play Store for now):
 ## 10. Authentication (Clerk)
 
 - Clerk runs sign-up, sign-in, sessions, email verification, Google sign-in and MFA for both clients. Its built-in bot protection (Cloudflare Turnstile) guards sign-ups.
-- **Instances:** Development (local and staging) and Production. The Production instance needs Clerk-provided DNS records on our domain (Frontend API, Account Portal and email records).
+- **Instances:** Development (local and staging) and Production, in the Clerk application "Khandani Rishta" (`app_3MNual4Fg0860GLX8xfhawZOecL`). The Development instance's Frontend API is `https://eminent-mutt-4798.clerk.accounts.dev` (the API's `CLERK_ISSUER`). The Production instance is created with `clerk deploy` and needs Clerk-provided DNS records on `khandanirishta.app` (Frontend API, Account Portal and email records), plus Google OAuth custom credentials (specs/06 section 4.3).
+- **Settings:** applied from the checklist in specs/06 section 2.1. Most are set with `clerk config patch`; two are dashboard-only toggles: "Allow users to delete their accounts" (off) and bot sign-up protection (on).
+- **Local keys:** `clerk env pull --app app_3MNual4Fg0860GLX8xfhawZOecL` prints the Development keys for `apps/web/.env.local`, `apps/web/.dev.vars` and `apps/api/.env`.
 - **Web:** `@clerk/tanstack-react-start`.
 - **Android:** Clerk Android SDK, with the Native API enabled in the Clerk dashboard.
 - **Tokens:** Clerk session tokens are short-lived JWTs (about 60 seconds) that the SDKs refresh automatically. Clients send them as `Authorization: Bearer <token>`.
@@ -316,7 +318,7 @@ Distribution (no Play Store for now):
 | Bucket | Access | Contents |
 |---|---|---|
 | `kr-dev-media`, `kr-staging-media`, `kr-prod-media` | Private, presigned URLs only | User uploads, one bucket per environment |
-| `kr-public` | Public through the custom domain `download.<domain>` | APKs and other public files |
+| `kr-public` | Public through the custom domain `download.khandanirishta.app` | APKs and other public files |
 | `kr-backups` | Private, 30-day lifecycle rule | Nightly database dumps |
 
 - Create the buckets with the location hint closest to most users (for example Asia-Pacific).
@@ -371,7 +373,7 @@ Both VMs get the same setup. Only the env file, the Tunnel hostnames and the bac
 | Component | Details |
 |---|---|
 | `khandani-api.service` | systemd unit running `/opt/khandani/current/khandani-api` as an unprivileged user, with `EnvironmentFile=/etc/khandani/api.env` and `Restart=always` |
-| `cloudflared.service` | A remotely managed Tunnel, installed with its token. Hostnames are set in the Cloudflare dashboard. Production: `api.<domain>` and `ssh.<domain>`. Staging: `api-staging.<domain>` and `ssh-staging.<domain>`. The API route points to `http://localhost:8080`, the SSH route to `ssh://localhost:22` behind Cloudflare Access |
+| `cloudflared.service` | A remotely managed Tunnel, installed with its token. Hostnames are set in the Cloudflare dashboard. Production: `api.khandanirishta.app` and `ssh.khandanirishta.app`. Staging: `api-staging.khandanirishta.app` and `ssh-staging.khandanirishta.app`. The API route points to `http://localhost:8080`, the SSH route to `ssh://localhost:22` behind Cloudflare Access |
 | `pg-backup.timer` | Production VM only: nightly `pg_dump` of `khandani_prod`, uploaded to R2 `kr-backups` with `rclone` |
 | Env files | `/etc/khandani/api.env` on both VMs, plus `/etc/khandani/backup.env` on production. Owned by root, readable only by the service's group, edited over SSH (section 15) |
 | OS upkeep | `unattended-upgrades` for security patches, a 2 GiB swap file, journald capped at 1 GiB |
@@ -393,7 +395,7 @@ Domain: the free first-year domain from the Student Pack (Name.com, Namecheap `.
 
 | Hostname | Target | Purpose |
 |---|---|---|
-| `<domain>`, `www` | Workers custom domain | Web app, production |
+| `khandanirishta.app`, `www` | Workers custom domain | Web app, production |
 | `staging` | Workers custom domain (staging environment) | Web app, staging |
 | `api` | Cloudflare Tunnel to the production VM | Production API |
 | `api-staging` | Cloudflare Tunnel to the staging VM | Staging API |
@@ -563,7 +565,7 @@ Both environments run on the same free allowances, so they end together. Options
 2. Move production to Heroku with the student credit, if its 24 months are still running: Basic dyno + Postgres Essential-1 (10 GB) is about $16/month, $3 over the credit. This needs a Dockerfile for the API (Heroku's container stack). Staging would pause until there's budget for it.
 3. Stay on Azure and pay. Estimate with the Azure pricing calculator first.
 
-Moving is a deploy change, not a rewrite: `pg_dump` and `pg_restore`, point `api.<domain>` at the new host, copy the env file.
+Moving is a deploy change, not a rewrite: `pg_dump` and `pg_restore`, point `api.khandanirishta.app` at the new host, copy the env file.
 
 ### Key dates
 

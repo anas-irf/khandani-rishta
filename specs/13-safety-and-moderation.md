@@ -649,7 +649,7 @@ This section is operational guidance drawn from research into Pakistani law (the
 | Duty | Practice |
 |---|---|
 | Remove unlawful content quickly | Content that is plainly unlawful (intimate images, threats, blackmail, impersonation with someone's identity) is removed within 24 hours of a report, and the account is suspended pending review. |
-| A working complaint mechanism | The in-app report flow, plus an abuse contact: `abuse@<domain>` shown on `PUB-SAFETY`, `PUB-CONTACT` and `SET-HELP`. It forwards to the admins. |
+| A working complaint mechanism | The in-app report flow, plus an abuse contact: `abuse@khandanirishta.app` shown on `PUB-SAFETY`, `PUB-CONTACT` and `SET-HELP`. It forwards to the admins. |
 | Protect identity information | Identity numbers and images are collected with consent, encrypted, access-logged and deleted on schedule (12). They are never shared. |
 | Preserve evidence | When a report concerns a possible crime, the admin exports the report with its context and the target's account record before any deletion, and keeps it for the retention period of 04 section 12 (2 years). |
 | Law-enforcement requests | Handled by an admin only. Accept requests only in writing from an official channel of the competent agency (for cyber crime, the National Cyber Crime Investigation Agency) or by court order. Verify the sender through a publicly listed contact, never through contact details in the request itself. Disclose the minimum that the request lawfully requires. Record the request, the verification and what was disclosed in a private log outside the product. Never act on a phone call or a WhatsApp message. |

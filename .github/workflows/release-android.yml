@@ -1,5 +1,5 @@
 # Android release. Pushing a tag like android-v1.2.0 runs the Android checks, then builds a
-# signed release APK and publishes it to R2 (download.<domain>) and to a GitHub Release.
+# signed release APK and publishes it to R2 (download.khandanirishta.app) and to a GitHub Release.
 # Publishing stays off until the repository variable DEPLOY_ENABLED is 'true'.
 name: Android release
 

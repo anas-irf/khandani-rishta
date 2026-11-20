@@ -16,6 +16,8 @@ pub mod catalogue;
 pub mod feed;
 pub mod templates;
 
+#[cfg(test)]
+mod tests;
 
 use serde_json::{Value, json};
 use sqlx::{PgExecutor, PgPool};

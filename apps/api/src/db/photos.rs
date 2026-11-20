@@ -8,16 +8,8 @@
 
 use serde_json::json;
 use sqlx::{PgConnection, PgExecutor};
-use time::Date;
 use uuid::Uuid;
 
-use crate::domain::completeness::{self, CompletenessInput, FamilyColumns};
-use crate::domain::options::{
-    EmploymentType, FamilyClass, FamilyType, FamilyValues, Gender, HomeOwnership,
-    LivingArrangement, ManagedBy, MaritalStatus, MarriageTimeline, ParentStatus, PrayerFrequency,
-    Religiosity, Relocation, WorkAfterMarriage,
-};
-use crate::domain::types::{IdentityStatus, TextStatus};
 use crate::models::photos::{OwnPhoto, PHOTO_COLUMNS, PhotoRow, own_photo};
 use crate::realtime::hub::{Realtime, ServerEvent};
 use crate::state::AppState;
@@ -291,139 +283,18 @@ pub async fn settle(
     })
 }
 
-/// Everything the completeness rules read, as one row (08 section 6.1).
-#[derive(sqlx::FromRow)]
-#[allow(clippy::struct_excessive_bools)] // One field per selected column.
-struct CompletenessRow {
-    managed_by: Option<ManagedBy>,
-    first_name: Option<String>,
-    last_name: Option<String>,
-    gender: Option<Gender>,
-    date_of_birth: Option<Date>,
-    marital_status: Option<MaritalStatus>,
-    height_cm: Option<i16>,
-    religion_code: Option<String>,
-    mother_tongue_code: Option<String>,
-    country_code: Option<String>,
-    city_id: Option<i32>,
-    city_other: Option<String>,
-    education_level_code: Option<String>,
-    employment_type: Option<EmploymentType>,
-    approved_photos: i64,
-    about_me: Option<String>,
-    about_me_status: TextStatus,
-    education_field_code: Option<String>,
-    degree_title: Option<String>,
-    institute_name: Option<String>,
-    profession_code: Option<String>,
-    income_band_code: Option<String>,
-    father_status: Option<ParentStatus>,
-    mother_status: Option<ParentStatus>,
-    brothers_count: Option<i16>,
-    sisters_count: Option<i16>,
-    family_type: Option<FamilyType>,
-    family_class: Option<FamilyClass>,
-    family_values: Option<FamilyValues>,
-    home_ownership: Option<HomeOwnership>,
-    religiosity: Option<Religiosity>,
-    prayer_frequency: Option<PrayerFrequency>,
-    living_arrangement: Option<LivingArrangement>,
-    work_after_marriage: Option<WorkAfterMarriage>,
-    marriage_timeline: Option<MarriageTimeline>,
-    relocation: Option<Relocation>,
-    hobbies: i64,
-    has_partner_preferences: bool,
-    identity_status: Option<IdentityStatus>,
-    is_id_verified: bool,
-    is_photo_verified: bool,
-}
-
-/// Recomputes `profiles.completeness` from the stored profile (08 section 6.3) with the pure
-/// rules of [`crate::domain::completeness`]. Returns the new score, or `None` for an unknown
-/// profile.
+/// Recomputes `profiles.completeness` (08 section 6.3). Delegates to the single loader in
+/// [`crate::db::profiles::recompute_completeness`]; returns the new score, or `None` for an
+/// unknown profile.
 pub async fn recompute_completeness(
     tx: &mut PgConnection,
     profile_id: Uuid,
 ) -> sqlx::Result<Option<i16>> {
-    let row: Option<CompletenessRow> = sqlx::query_as(
-        "SELECT p.managed_by, p.first_name, p.last_name, p.gender, p.date_of_birth,
-                p.marital_status, p.height_cm, p.religion_code, p.mother_tongue_code,
-                p.country_code, p.city_id, p.city_other, p.education_level_code,
-                p.employment_type,
-                (SELECT count(*) FROM profile_photos ph
-                  WHERE ph.profile_id = p.id AND ph.status = 'approved') AS approved_photos,
-                p.about_me, p.about_me_status, p.education_field_code, p.degree_title,
-                p.institute_name, p.profession_code, p.income_band_code,
-                f.father_status, f.mother_status, f.brothers_count, f.sisters_count,
-                f.family_type, f.family_class, f.family_values, f.home_ownership,
-                p.religiosity, p.prayer_frequency, p.living_arrangement, p.work_after_marriage,
-                p.marriage_timeline, p.relocation,
-                (SELECT count(*) FROM profile_hobbies h WHERE h.profile_id = p.id) AS hobbies,
-                EXISTS (SELECT 1 FROM partner_preferences pp
-                         WHERE pp.profile_id = p.id) AS has_partner_preferences,
-                i.status AS identity_status, p.is_id_verified, p.is_photo_verified
-         FROM profiles p
-         LEFT JOIN profile_family f ON f.profile_id = p.id
-         LEFT JOIN profile_identity i ON i.profile_id = p.id
-         WHERE p.id = $1",
-    )
-    .bind(profile_id)
-    .fetch_optional(&mut *tx)
-    .await?;
-    let Some(row) = row else { return Ok(None) };
-    let score = completeness::compute(&CompletenessInput {
-        managed_by: row.managed_by,
-        first_name: row.first_name.as_deref(),
-        last_name: row.last_name.as_deref(),
-        gender: row.gender,
-        date_of_birth: row.date_of_birth,
-        marital_status: row.marital_status,
-        height_cm: row.height_cm,
-        religion_code: row.religion_code.as_deref(),
-        mother_tongue_code: row.mother_tongue_code.as_deref(),
-        country_code: row.country_code.as_deref(),
-        city_id: row.city_id,
-        city_other: row.city_other.as_deref(),
-        education_level_code: row.education_level_code.as_deref(),
-        employment_type: row.employment_type,
-        approved_photos: usize::try_from(row.approved_photos).unwrap_or_default(),
-        about_me: row.about_me.as_deref(),
-        about_me_status: row.about_me_status,
-        education_field_code: row.education_field_code.as_deref(),
-        degree_title: row.degree_title.as_deref(),
-        institute_name: row.institute_name.as_deref(),
-        profession_code: row.profession_code.as_deref(),
-        income_band_code: row.income_band_code.as_deref(),
-        family: FamilyColumns {
-            father_status: row.father_status,
-            mother_status: row.mother_status,
-            brothers_count: row.brothers_count,
-            sisters_count: row.sisters_count,
-            family_type: row.family_type,
-            family_class: row.family_class,
-            family_values: row.family_values,
-            home_ownership: row.home_ownership,
-        },
-        religiosity: row.religiosity,
-        prayer_frequency: row.prayer_frequency,
-        living_arrangement: row.living_arrangement,
-        work_after_marriage: row.work_after_marriage,
-        marriage_timeline: row.marriage_timeline,
-        relocation: row.relocation,
-        hobbies: usize::try_from(row.hobbies).unwrap_or_default(),
-        has_partner_preferences: row.has_partner_preferences,
-        identity: row.identity_status,
-        is_id_verified: row.is_id_verified,
-        is_photo_verified: row.is_photo_verified,
-    })
-    .score;
-    let score = i16::from(score);
-    sqlx::query("UPDATE profiles SET completeness = $2 WHERE id = $1")
-        .bind(profile_id)
-        .bind(score)
-        .execute(tx)
-        .await?;
-    Ok(Some(score))
+    match crate::db::profiles::recompute_completeness(tx, profile_id).await {
+        Ok(result) => Ok(Some(i16::from(result.score))),
+        Err(sqlx::Error::RowNotFound) => Ok(None),
+        Err(error) => Err(error),
+    }
 }
 
 /// Sends `photo.updated` (19 section 4.6) to the owner for each photo, after the transaction

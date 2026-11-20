@@ -327,14 +327,7 @@ pub async fn warn(
         json!({ "reason": reason, "report_id": report_id, "sanction_id": sanction_id }),
     )
     .await?;
-    queue_email(
-        &mut *tx,
-        user_id,
-        "account_warning",
-        json!({ "sanction_id": sanction_id, "reason": reason }),
-        Some(format!("account_warning:{sanction_id}")),
-    )
-    .await?;
+    // The email comes from the `account_warning` notification below (14 section 2).
     tx.commit().await?;
 
     if let Err(error) = notify(

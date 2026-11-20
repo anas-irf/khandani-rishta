@@ -233,16 +233,18 @@ impl ActivityTracker {
         }
         self.recent.insert(profile_id, ());
         let db = db.clone();
+        // Two separate statements, each its own transaction holding one row lock at a time, so
+        // the stamp can never form a lock cycle with a transaction that locks both rows.
         tokio::spawn(async move {
-            let result = sqlx::query(
-                "WITH u AS (UPDATE users SET last_seen_at = now() WHERE id = $1)
-                 UPDATE profiles SET last_active_at = now() WHERE id = $2",
-            )
-            .bind(user_id)
-            .bind(profile_id)
-            .execute(&db)
-            .await;
-            if let Err(error) = result {
+            let profile = sqlx::query("UPDATE profiles SET last_active_at = now() WHERE id = $1")
+                .bind(profile_id)
+                .execute(&db)
+                .await;
+            let user = sqlx::query("UPDATE users SET last_seen_at = now() WHERE id = $1")
+                .bind(user_id)
+                .execute(&db)
+                .await;
+            if let Err(error) = profile.and(user) {
                 tracing::debug!(%error, "activity stamp failed");
             }
         });

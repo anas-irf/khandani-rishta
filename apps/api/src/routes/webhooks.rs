@@ -157,7 +157,10 @@ mod tests {
         let event = json!({ "type": "user.created", "data": { "id": "user_1" } });
         let response = deliver(&app, "msg_1", &event, false).await;
         assert_eq!(response.status, StatusCode::BAD_REQUEST);
-        assert_eq!(app.queued_jobs("sync_clerk_user").await, Vec::<Value>::new());
+        assert_eq!(
+            app.queued_jobs("sync_clerk_user").await,
+            Vec::<Value>::new()
+        );
     }
 
     #[sqlx::test]
@@ -191,7 +194,10 @@ mod tests {
             deliver(&app, "msg_2", &event, true).await.status,
             StatusCode::NO_CONTENT
         );
-        assert_eq!(app.queued_jobs("sync_clerk_user").await, Vec::<Value>::new());
+        assert_eq!(
+            app.queued_jobs("sync_clerk_user").await,
+            Vec::<Value>::new()
+        );
     }
 
     #[sqlx::test]

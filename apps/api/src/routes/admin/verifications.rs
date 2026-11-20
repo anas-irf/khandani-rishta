@@ -36,7 +36,7 @@ use crate::domain::types::{
 use crate::error::{ApiError, ApiResult, ErrorBody, FieldCode};
 use crate::extract::{ApiJson, ApiPath, ApiQuery};
 use crate::models::verifications::challenge_for;
-use crate::notify::{notify, queue_email};
+use crate::notify::notify;
 use crate::state::AppState;
 
 // `time` writes a `Date` as `[year, ordinal]` unless told otherwise; the API contract has
@@ -495,15 +495,7 @@ async fn approve_verification(
         json!({ "profile_id": request.profile_id, "kind": request.kind, "photos_match": photos_match }),
     )
     .await?;
-    let outcome = json!({ "request_id": request.id, "kind": request.kind, "result": "approved" });
-    queue_email(
-        &mut *tx,
-        request.user_id,
-        "verification_result",
-        outcome,
-        Some(format!("verification_result:{}", request.id)),
-    )
-    .await?;
+    // The `verification_result` email comes from the notification sent after commit.
     tx.commit().await?;
     state.jobs.wake();
 
@@ -579,18 +571,7 @@ async fn reject_verification(
         json!({ "profile_id": request.profile_id, "kind": request.kind, "reason": reason }),
     )
     .await?;
-    let outcome = json!({
-        "request_id": request.id, "kind": request.kind, "result": "rejected",
-        "rejection_reason": reason,
-    });
-    queue_email(
-        &mut *tx,
-        request.user_id,
-        "verification_result",
-        outcome,
-        Some(format!("verification_result:{}", request.id)),
-    )
-    .await?;
+    // The `verification_result` email comes from the notification sent after commit.
     tx.commit().await?;
     state.jobs.wake();
 

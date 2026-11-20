@@ -25,7 +25,7 @@ use crate::models::admin::{
 };
 use crate::models::photos::{PHOTO_COLUMNS, PhotoRow, own_photo};
 use crate::models::reference::cities_by_ids;
-use crate::notify::{notify, queue_email};
+use crate::notify::notify;
 use crate::state::AppState;
 
 // ---- The queue and the search ----
@@ -678,7 +678,7 @@ async fn lock_profile(
 /// `pending_review` to `active` (18 section 4.1). Returns the owner's user id.
 pub async fn approve(state: &AppState, actor: Uuid, profile_id: Uuid) -> Result<Uuid, ApiError> {
     let mut tx = state.db.begin().await?;
-    let (user_id, status, first_activated_at) = lock_profile(&mut tx, profile_id).await?;
+    let (user_id, status, _first_activated_at) = lock_profile(&mut tx, profile_id).await?;
     if status != ProfileStatus::PendingReview {
         return Err(ApiError::invalid_state(status));
     }
@@ -709,16 +709,7 @@ pub async fn approve(state: &AppState, actor: Uuid, profile_id: Uuid) -> Result<
         .dedupe(profile_id.to_string()),
     )
     .await?;
-    if first_activated_at.is_none() {
-        queue_email(
-            &mut *tx,
-            user_id,
-            "welcome",
-            json!({}),
-            Some(format!("welcome:{user_id}")),
-        )
-        .await?;
-    }
+    // The `welcome` email comes from the `profile_approved` notification below (14 section 2).
     tx.commit().await?;
 
     after_gate_change(state, user_id).await;
@@ -766,14 +757,7 @@ pub async fn request_changes(
         json!({ "reason": reason }),
     )
     .await?;
-    queue_email(
-        &mut *tx,
-        user_id,
-        "profile_changes_requested",
-        json!({ "reason": reason }),
-        None,
-    )
-    .await?;
+    // The email comes from the `profile_changes_requested` notification below (14 section 2).
     tx.commit().await?;
 
     after_gate_change(state, user_id).await;

@@ -6,21 +6,12 @@ use time::{Date, OffsetDateTime};
 use utoipa::ToSchema;
 use uuid::Uuid;
 
-use crate::domain::options::{DocumentType, VerificationRejectionReason};
+use crate::domain::options::VerificationRejectionReason;
 use crate::domain::text_enum;
-use crate::domain::types::{Gesture, IdentityStatus, VerificationKind, VerificationStatus};
+use crate::domain::types::{Gesture, VerificationKind, VerificationStatus};
 
-/// The registered identity as its owner may see it (15 section 4.3). The number is never
-/// returned; only its last four characters are kept for display (12 section 2.3).
-#[derive(Debug, Clone, Serialize, ToSchema)]
-pub struct IdentitySummary {
-    pub document_type: DocumentType,
-    /// For example `*********1234`.
-    pub number_masked: String,
-    pub status: IdentityStatus,
-    #[serde(with = "time::serde::rfc3339::option")]
-    pub verified_at: Option<OffsetDateTime>,
-}
+/// The identity summary is shared with the own-profile response (15 section 4.3).
+pub use crate::models::profile::IdentitySummary;
 
 /// One verification request as its owner sees it. The reviewer's note stays with staff.
 #[derive(Debug, Clone, Serialize, ToSchema, sqlx::FromRow)]

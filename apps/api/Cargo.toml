@@ -41,6 +41,7 @@ unicode-normalization = "0.1.26"
 utoipa = { version = "6.0.0", features = ["time", "uuid"] }
 utoipa-axum = "0.3.0"
 uuid = { version = "1.29.3", features = ["serde", "v7"] }
+zeroize = "1.9.2"
 
 # Smaller and faster debug builds: no debug info for dependencies.
 [profile.dev.package."*"]

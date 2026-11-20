@@ -10,7 +10,7 @@
     }
   },
   "scripts": {
-    "generate": "openapi-typescript ./openapi.json --output ./src/schema.d.ts"
+    "generate": "openapi-typescript ./openapi.json --output ./src/schema.d.ts --empty-objects-unknown"
   },
   "devDependencies": {
     "openapi-typescript": "^7.13.0",

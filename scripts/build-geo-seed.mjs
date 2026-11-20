@@ -306,8 +306,7 @@ function renderSql({ countries, regions, cities, pkThreshold }) {
   ].join('\n')
 
   const countryRows = countries.map(
-    (c) =>
-      `${quote(c.code)}, ${quote(c.name)}, NULL, ${quote(c.dialCode)}, ${c.sortOrder}, true`,
+    (c) => `${quote(c.code)}, ${quote(c.name)}, NULL, ${quote(c.dialCode)}, ${c.sortOrder}, true`,
   )
   const regionRows = regions.map((r) => `${r.id}, ${quote(r.countryCode)}, ${quote(r.name)}`)
   const cityRows = cities.map((c) => {

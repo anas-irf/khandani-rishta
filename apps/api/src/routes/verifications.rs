@@ -79,6 +79,7 @@ async fn selfie_challenge(account: Open) -> Json<SelfieChallenge> {
 /// A profile that is `closed` cannot verify (03 section 5).
 #[utoipa::path(
     post,
+    operation_id = "create_verification_upload",
     path = "/me/verifications/uploads",
     tag = "verification",
     security(("bearer" = [])),

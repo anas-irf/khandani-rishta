@@ -62,6 +62,7 @@ pub fn router() -> OpenApiRouter<AppState> {
 /// photos, the identity summary, the verification state and the status of the moderated texts.
 #[utoipa::path(
     get,
+    operation_id = "get_own_profile",
     path = "/me/profile",
     tag = "profile",
     security(("bearer" = [])),

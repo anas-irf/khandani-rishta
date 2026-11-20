@@ -10,6 +10,7 @@ use utoipa_axum::routes;
 
 use crate::auth::Admin;
 use crate::db::admin::releases::{self, NewRelease};
+use crate::domain::types::ReleasePlatform;
 use crate::error::{ApiResult, ErrorBody};
 use crate::extract::ApiJson;
 use crate::models::admin::{AdminRelease, Items};
@@ -34,13 +35,6 @@ async fn list_releases(
     Ok(Json(Items {
         items: releases::list(&state.db).await?,
     }))
-}
-
-/// The platforms a release can be for.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, ToSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum ReleasePlatform {
-    Android,
 }
 
 #[derive(Debug, Deserialize, ToSchema)]

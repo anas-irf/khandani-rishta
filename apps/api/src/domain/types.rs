@@ -48,6 +48,11 @@ text_enum! {
 }
 
 text_enum! {
+    /// `app_releases.platform`.
+    ReleasePlatform { Android = "android" }
+}
+
+text_enum! {
     /// `profiles.status` (03 section 4.2).
     ProfileStatus {
         Draft = "draft",

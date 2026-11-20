@@ -664,7 +664,7 @@
           "admin"
         ],
         "summary": "The photo queue: photos the automatic check flagged first, then oldest first. Cursor\npagination.",
-        "operationId": "list_photos",
+        "operationId": "admin_list_photos",
         "parameters": [
           {
             "name": "status",
@@ -941,7 +941,7 @@
           "admin"
         ],
         "summary": "One profile in full: private fields, history, reports, sanctions. Contact details are\nincluded for admins only.",
-        "operationId": "get_profile",
+        "operationId": "admin_get_profile",
         "parameters": [
           {
             "name": "profile_id",
@@ -3628,7 +3628,7 @@
           "connections"
         ],
         "summary": "Mark messages as read up to a message of this connection. The stored pointer never moves\nbackwards, and `unread_count` is recomputed from the data. `message.read` reaches the other\nmember only when both members send read receipts (09 section 9).",
-        "operationId": "mark_read",
+        "operationId": "mark_connection_read",
         "parameters": [
           {
             "name": "connection_id",
@@ -5066,7 +5066,7 @@
           "notifications"
         ],
         "summary": "The caller's notification settings (14 section 6.1).",
-        "operationId": "get_preferences",
+        "operationId": "get_notification_preferences",
         "responses": {
           "200": {
             "content": {
@@ -5098,7 +5098,7 @@
           "notifications"
         ],
         "summary": "Replaces the notification settings. Every switch is required; the quiet hours are both set\nor both `null` (14 section 6.2).",
-        "operationId": "put_preferences",
+        "operationId": "put_notification_preferences",
         "requestBody": {
           "content": {
             "application/json": {
@@ -5713,7 +5713,7 @@
         ],
         "summary": "Asks for an upload URL. The key is `tmp/photos/{profile_id}/{uuid}`.",
         "description": "Answers `payload_too_large` over 10 MiB, `limit_reached` when the profile already holds\n`limits.photos_max` photos that are not `rejected` or `failed`, and `503` when storage is\nnot available.",
-        "operationId": "create_upload",
+        "operationId": "create_photo_upload",
         "requestBody": {
           "content": {
             "application/json": {
@@ -6067,7 +6067,7 @@
           "profile"
         ],
         "summary": "The owner's complete view of the profile: every section, `missing`, `locked_fields`, the\nphotos, the identity summary, the verification state and the status of the moderated texts.",
-        "operationId": "get_profile",
+        "operationId": "get_own_profile",
         "responses": {
           "200": {
             "content": {
@@ -6796,7 +6796,7 @@
           "verification"
         ],
         "summary": "A presigned `PUT` for one verification image. The key is `verification/{profile_id}/{uuid}`.\nA profile that is `closed` cannot verify (03 section 5).",
-        "operationId": "create_upload",
+        "operationId": "create_verification_upload",
         "requestBody": {
           "content": {
             "application/json": {
@@ -7167,7 +7167,7 @@
           "notifications"
         ],
         "summary": "Marks notifications as read: `{ \"ids\": [...] }` or `{ \"all\": true }`. Ids that are not the\ncaller's are ignored. The `counters` event goes to the caller's sockets.",
-        "operationId": "mark_read",
+        "operationId": "mark_notifications_read",
         "requestBody": {
           "content": {
             "application/json": {
@@ -8324,6 +8324,125 @@
           }
         }
       },
+      "AdminOwnProfile": {
+        "type": "object",
+        "description": "`OwnProfile` (15 section 4.3) as the staff console receives it: the same fields, with\n`contacts` `null` for moderators (18 section 4.1).",
+        "required": [
+          "account_for",
+          "basics",
+          "community",
+          "completeness",
+          "contacts",
+          "education_career",
+          "family",
+          "id",
+          "identity",
+          "lifestyle",
+          "location",
+          "locked_fields",
+          "missing",
+          "onboarding_step",
+          "photos",
+          "public_code",
+          "status",
+          "status_reason",
+          "text_status",
+          "verification"
+        ],
+        "properties": {
+          "account_for": {
+            "$ref": "#/components/schemas/AccountForSection"
+          },
+          "basics": {
+            "$ref": "#/components/schemas/BasicsSection"
+          },
+          "community": {
+            "$ref": "#/components/schemas/CommunitySection"
+          },
+          "completeness": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "contacts": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ContactsSection",
+                "description": "`null` for moderators: only admins see contact details."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "education_career": {
+            "$ref": "#/components/schemas/EducationCareerSection"
+          },
+          "family": {
+            "$ref": "#/components/schemas/FamilySection"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "identity": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/IdentitySummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lifestyle": {
+            "$ref": "#/components/schemas/LifestyleSection"
+          },
+          "location": {
+            "$ref": "#/components/schemas/OwnLocation"
+          },
+          "locked_fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Fields the owner can no longer edit (03 section 8 rule 15)."
+          },
+          "missing": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CompletenessItem"
+            },
+            "description": "Completeness items not yet met, most valuable first (08 section 6.2)."
+          },
+          "onboarding_step": {
+            "$ref": "#/components/schemas/OnboardingStep"
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OwnPhoto"
+            }
+          },
+          "public_code": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ProfileStatus"
+          },
+          "status_reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "text_status": {
+            "$ref": "#/components/schemas/TextStatuses"
+          },
+          "verification": {
+            "$ref": "#/components/schemas/OwnVerification"
+          }
+        }
+      },
       "AdminPhotoItem": {
         "type": "object",
         "description": "A photo in the review queue (18 section 4.2).",
@@ -8448,7 +8567,7 @@
       },
       "AdminProfile": {
         "type": "object",
-        "description": "`GET /v1/admin/profiles/{profile_id}`.\n\n`profile`, `preferences` and `privacy` carry the objects of 15 sections 4.3 and 4.5 exactly\n(`OwnProfile`, `Preferences`, `Privacy`); the unblurred photo URLs and, for admins, the\ncontact details are included.",
+        "description": "`GET /v1/admin/profiles/{profile_id}`.\n\n`profile`, `preferences` and `privacy` carry the objects of 15 sections 4.3 and 4.5\n(`OwnProfile`, `Preferences`, `Privacy`), with the unblurred photo URLs and, for admins only,\nthe contact details.",
         "required": [
           "audit",
           "first_activated_at",
@@ -8486,22 +8605,29 @@
             "format": "date-time"
           },
           "preferences": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "description": "`Preferences` (15 section 4.5), `null` when the profile has none."
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Preferences",
+                "description": "`null` when the profile has no partner preferences yet."
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "privacy": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "description": "`Privacy` (15 section 4.5). `null` only after the account was purged."
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Privacy",
+                "description": "`null` only after the account was purged."
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "profile": {
-            "type": "object",
-            "description": "`OwnProfile` (15 section 4.3). `contacts` is `null` for moderators."
+            "$ref": "#/components/schemas/AdminOwnProfile"
           },
           "reports_against": {
             "type": "array",
@@ -8772,7 +8898,7 @@
             "format": "int32"
           },
           "platform": {
-            "type": "string"
+            "$ref": "#/components/schemas/ReleasePlatform"
           },
           "release_notes": {
             "type": [
@@ -12665,7 +12791,7 @@
                   "format": "int32"
                 },
                 "platform": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/ReleasePlatform"
                 },
                 "release_notes": {
                   "type": [
@@ -12709,7 +12835,7 @@
               ],
               "properties": {
                 "default": {
-                  "type": "object"
+                  "description": "The value used while no row exists."
                 },
                 "key": {
                   "type": "string"
@@ -12728,7 +12854,7 @@
                   ]
                 },
                 "value": {
-                  "type": "object"
+                  "description": "Any JSON value; its type depends on the key (18 section 7.1)."
                 }
               }
             }
@@ -16482,8 +16608,7 @@
         ],
         "properties": {
           "value": {
-            "type": "object",
-            "description": "The new value; its type depends on the key (18 section 7.1)."
+            "description": "The new value: any JSON value, whose type depends on the key (18 section 7.1)."
           }
         },
         "additionalProperties": false
@@ -16692,8 +16817,8 @@
         ],
         "properties": {
           "reason": {
-            "type": "string",
-            "description": "One of the `photo_rejection_reason` codes (05 section 2.43)."
+            "$ref": "#/components/schemas/PhotoRejectionReason",
+            "description": "One of the `photo_rejection_reason` codes (05 section 2.43). Parsed by the handler, so an\nunknown code is a validation error rather than a malformed body."
           }
         },
         "additionalProperties": false
@@ -16732,8 +16857,8 @@
             "description": "Staff only, never shown to the member."
           },
           "reason": {
-            "type": "string",
-            "description": "One of the `verification_rejection_reason` codes (05 section 2)."
+            "$ref": "#/components/schemas/VerificationRejectionReason",
+            "description": "One of the `verification_rejection_reason` codes (05 section 2). Parsed by the handler, so\nan unknown code is a validation error rather than a malformed body."
           }
         },
         "additionalProperties": false
@@ -16895,7 +17020,7 @@
       },
       "ReleasePlatform": {
         "type": "string",
-        "description": "The platforms a release can be for.",
+        "description": "`app_releases.platform`.",
         "enum": [
           "android"
         ]
@@ -17778,7 +17903,7 @@
         ],
         "properties": {
           "default": {
-            "type": "object"
+            "description": "The value used while no row exists."
           },
           "key": {
             "type": "string"
@@ -17797,7 +17922,7 @@
             ]
           },
           "value": {
-            "type": "object"
+            "description": "Any JSON value; its type depends on the key (18 section 7.1)."
           }
         }
       },

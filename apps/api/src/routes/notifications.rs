@@ -56,6 +56,7 @@ async fn list_notifications(
 /// caller's are ignored. The `counters` event goes to the caller's sockets.
 #[utoipa::path(
     post,
+    operation_id = "mark_notifications_read",
     path = "/notifications/read",
     tag = "notifications",
     security(("bearer" = [])),
@@ -102,6 +103,7 @@ impl From<store::PrefsRow> for NotificationPreferences {
 /// The caller's notification settings (14 section 6.1).
 #[utoipa::path(
     get,
+    operation_id = "get_notification_preferences",
     path = "/me/notification-preferences",
     tag = "notifications",
     security(("bearer" = [])),
@@ -123,6 +125,7 @@ async fn get_preferences(
 /// or both `null` (14 section 6.2).
 #[utoipa::path(
     put,
+    operation_id = "put_notification_preferences",
     path = "/me/notification-preferences",
     tag = "notifications",
     security(("bearer" = [])),

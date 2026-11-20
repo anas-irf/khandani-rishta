@@ -189,7 +189,7 @@ export interface paths {
          * The photo queue: photos the automatic check flagged first, then oldest first. Cursor
          *     pagination.
          */
-        get: operations["list_photos"];
+        get: operations["admin_list_photos"];
         put?: never;
         post?: never;
         delete?: never;
@@ -268,7 +268,7 @@ export interface paths {
          * One profile in full: private fields, history, reports, sanctions. Contact details are
          *     included for admins only.
          */
-        get: operations["get_profile"];
+        get: operations["admin_get_profile"];
         put?: never;
         post?: never;
         delete?: never;
@@ -948,7 +948,7 @@ export interface paths {
          *     backwards, and `unread_count` is recomputed from the data. `message.read` reaches the other
          *     member only when both members send read receipts (09 section 9).
          */
-        post: operations["mark_read"];
+        post: operations["mark_connection_read"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1380,12 +1380,12 @@ export interface paths {
             cookie?: never;
         };
         /** The caller's notification settings (14 section 6.1). */
-        get: operations["get_preferences"];
+        get: operations["get_notification_preferences"];
         /**
          * Replaces the notification settings. Every switch is required; the quiet hours are both set
          *     or both `null` (14 section 6.2).
          */
-        put: operations["put_preferences"];
+        put: operations["put_notification_preferences"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1595,7 +1595,7 @@ export interface paths {
          *     `limits.photos_max` photos that are not `rejected` or `failed`, and `503` when storage is
          *     not available.
          */
-        post: operations["create_upload"];
+        post: operations["create_photo_upload"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1686,7 +1686,7 @@ export interface paths {
          * The owner's complete view of the profile: every section, `missing`, `locked_fields`, the
          *     photos, the identity summary, the verification state and the status of the moderated texts.
          */
-        get: operations["get_profile"];
+        get: operations["get_own_profile"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1937,7 +1937,7 @@ export interface paths {
          * A presigned `PUT` for one verification image. The key is `verification/{profile_id}/{uuid}`.
          *     A profile that is `closed` cannot verify (03 section 5).
          */
-        post: operations["create_upload"];
+        post: operations["create_verification_upload"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2072,7 +2072,7 @@ export interface paths {
          * Marks notifications as read: `{ "ids": [...] }` or `{ "all": true }`. Ids that are not the
          *     caller's are ignored. The `counters` event goes to the caller's sockets.
          */
-        post: operations["mark_read"];
+        post: operations["mark_notifications_read"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2456,6 +2456,36 @@ export interface components {
             metrics: components["schemas"]["OverviewMetrics"];
             queues: components["schemas"]["OverviewQueues"];
         };
+        /**
+         * @description `OwnProfile` (15 section 4.3) as the staff console receives it: the same fields, with
+         *     `contacts` `null` for moderators (18 section 4.1).
+         */
+        AdminOwnProfile: {
+            account_for: components["schemas"]["AccountForSection"];
+            basics: components["schemas"]["BasicsSection"];
+            community: components["schemas"]["CommunitySection"];
+            /** Format: int32 */
+            completeness: number;
+            contacts: components["schemas"]["ContactsSection"] | null;
+            education_career: components["schemas"]["EducationCareerSection"];
+            family: components["schemas"]["FamilySection"];
+            /** Format: uuid */
+            id: string;
+            identity: components["schemas"]["IdentitySummary"] | null;
+            lifestyle: components["schemas"]["LifestyleSection"];
+            location: components["schemas"]["OwnLocation"];
+            /** @description Fields the owner can no longer edit (03 section 8 rule 15). */
+            locked_fields: string[];
+            /** @description Completeness items not yet met, most valuable first (08 section 6.2). */
+            missing: components["schemas"]["CompletenessItem"][];
+            onboarding_step: components["schemas"]["OnboardingStep"];
+            photos: components["schemas"]["OwnPhoto"][];
+            public_code: string;
+            status: components["schemas"]["ProfileStatus"];
+            status_reason: string | null;
+            text_status: components["schemas"]["TextStatuses"];
+            verification: components["schemas"]["OwnVerification"];
+        };
         /** @description A photo in the review queue (18 section 4.2). */
         AdminPhotoItem: {
             /** Format: int32 */
@@ -2491,9 +2521,9 @@ export interface components {
         /**
          * @description `GET /v1/admin/profiles/{profile_id}`.
          *
-         *     `profile`, `preferences` and `privacy` carry the objects of 15 sections 4.3 and 4.5 exactly
-         *     (`OwnProfile`, `Preferences`, `Privacy`); the unblurred photo URLs and, for admins, the
-         *     contact details are included.
+         *     `profile`, `preferences` and `privacy` carry the objects of 15 sections 4.3 and 4.5
+         *     (`OwnProfile`, `Preferences`, `Privacy`), with the unblurred photo URLs and, for admins only,
+         *     the contact details.
          */
         AdminProfile: {
             /** @description Newest 20 entries whose target is this profile or its user. */
@@ -2502,12 +2532,9 @@ export interface components {
             first_activated_at: string | null;
             /** Format: date-time */
             last_active_at: string | null;
-            /** @description `Preferences` (15 section 4.5), `null` when the profile has none. */
-            preferences: Record<string, unknown> | null;
-            /** @description `Privacy` (15 section 4.5). `null` only after the account was purged. */
-            privacy: Record<string, unknown> | null;
-            /** @description `OwnProfile` (15 section 4.3). `contacts` is `null` for moderators. */
-            profile: Record<string, unknown>;
+            preferences: components["schemas"]["Preferences"] | null;
+            privacy: components["schemas"]["Privacy"] | null;
+            profile: components["schemas"]["AdminOwnProfile"];
             /** @description Newest 10. */
             reports_against: components["schemas"]["AdminReportListItem"][];
             reports_filed: components["schemas"]["ReportsFiled"];
@@ -2585,7 +2612,7 @@ export interface components {
             id: string;
             /** Format: int32 */
             min_supported_version_code: number;
-            platform: string;
+            platform: components["schemas"]["ReleasePlatform"];
             release_notes: string | null;
             /** Format: date-time */
             released_at: string;
@@ -3717,7 +3744,7 @@ export interface components {
                 id: string;
                 /** Format: int32 */
                 min_supported_version_code: number;
-                platform: string;
+                platform: components["schemas"]["ReleasePlatform"];
                 release_notes: string | null;
                 /** Format: date-time */
                 released_at: string;
@@ -3729,12 +3756,14 @@ export interface components {
         /** @description A list that is returned whole instead of paged (`GET /castes`, `/settings`, `/releases`). */
         Items_SettingItem: {
             items: {
-                default: Record<string, unknown>;
+                /** @description The value used while no row exists. */
+                default: unknown;
                 key: string;
                 /** Format: date-time */
                 updated_at: string | null;
                 updated_by_email: string | null;
-                value: Record<string, unknown>;
+                /** @description Any JSON value; its type depends on the key (18 section 7.1). */
+                value: unknown;
             }[];
         };
         /**
@@ -4793,8 +4822,8 @@ export interface components {
          */
         ProposableStage: "families_talking" | "engaged" | "nikah_done";
         PutSettingBody: {
-            /** @description The new value; its type depends on the key (18 section 7.1). */
-            value: Record<string, unknown>;
+            /** @description The new value: any JSON value, whose type depends on the key (18 section 7.1). */
+            value: unknown;
         };
         /** @description Body of `POST /v1/notifications/read`: `{ "ids": [...] }` or `{ "all": true }`. */
         ReadBody: {
@@ -4841,8 +4870,11 @@ export interface components {
             items: components["schemas"]["RegionItem"][];
         };
         RejectPhoto: {
-            /** @description One of the `photo_rejection_reason` codes (05 section 2.43). */
-            reason: string;
+            /**
+             * @description One of the `photo_rejection_reason` codes (05 section 2.43). Parsed by the handler, so an
+             *     unknown code is a validation error rather than a malformed body.
+             */
+            reason: components["schemas"]["PhotoRejectionReason"];
         };
         RejectText: {
             /** @description Shown to the member, at most 300 characters. */
@@ -4853,8 +4885,11 @@ export interface components {
         RejectVerification: {
             /** @description Staff only, never shown to the member. */
             note?: string | null;
-            /** @description One of the `verification_rejection_reason` codes (05 section 2). */
-            reason: string;
+            /**
+             * @description One of the `verification_rejection_reason` codes (05 section 2). Parsed by the handler, so
+             *     an unknown code is a validation error rather than a malformed body.
+             */
+            reason: components["schemas"]["VerificationRejectionReason"];
         };
         /** @description What links the viewer to the owner, and what the viewer may do next (15 section 4.6). */
         Relation: {
@@ -4904,7 +4939,7 @@ export interface components {
             extra_profiles: number;
         };
         /**
-         * @description The platforms a release can be for.
+         * @description `app_releases.platform`.
          * @enum {string}
          */
         ReleasePlatform: "android";
@@ -5165,12 +5200,14 @@ export interface components {
             interest: components["schemas"]["Interest"];
         };
         SettingItem: {
-            default: Record<string, unknown>;
+            /** @description The value used while no row exists. */
+            default: unknown;
             key: string;
             /** Format: date-time */
             updated_at: string | null;
             updated_by_email: string | null;
-            value: Record<string, unknown>;
+            /** @description Any JSON value; its type depends on the key (18 section 7.1). */
+            value: unknown;
         };
         /**
          * @description The other member's contact details shared with the caller: only the selected items, the
@@ -5868,7 +5905,7 @@ export interface operations {
             };
         };
     };
-    list_photos: {
+    admin_list_photos: {
         parameters: {
             query?: {
                 /**
@@ -6049,7 +6086,7 @@ export interface operations {
             };
         };
     };
-    get_profile: {
+    admin_get_profile: {
         parameters: {
             query?: never;
             header?: never;
@@ -7870,7 +7907,7 @@ export interface operations {
             };
         };
     };
-    mark_read: {
+    mark_connection_read: {
         parameters: {
             query?: never;
             header?: never;
@@ -8902,7 +8939,7 @@ export interface operations {
             };
         };
     };
-    get_preferences: {
+    get_notification_preferences: {
         parameters: {
             query?: never;
             header?: never;
@@ -8929,7 +8966,7 @@ export interface operations {
             };
         };
     };
-    put_preferences: {
+    put_notification_preferences: {
         parameters: {
             query?: never;
             header?: never;
@@ -9371,7 +9408,7 @@ export interface operations {
             };
         };
     };
-    create_upload: {
+    create_photo_upload: {
         parameters: {
             query?: never;
             header?: never;
@@ -9636,7 +9673,7 @@ export interface operations {
             };
         };
     };
-    get_profile: {
+    get_own_profile: {
         parameters: {
             query?: never;
             header?: never;
@@ -10172,7 +10209,7 @@ export interface operations {
             };
         };
     };
-    create_upload: {
+    create_verification_upload: {
         parameters: {
             query?: never;
             header?: never;
@@ -10433,7 +10470,7 @@ export interface operations {
             };
         };
     };
-    mark_read: {
+    mark_notifications_read: {
         parameters: {
             query?: never;
             header?: never;

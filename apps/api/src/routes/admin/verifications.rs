@@ -406,7 +406,9 @@ pub struct ApproveVerification {
 #[derive(Debug, Deserialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct RejectVerification {
-    /// One of the `verification_rejection_reason` codes (05 section 2).
+    /// One of the `verification_rejection_reason` codes (05 section 2). Parsed by the handler, so
+    /// an unknown code is a validation error rather than a malformed body.
+    #[schema(value_type = VerificationRejectionReason)]
     pub reason: String,
     /// Staff only, never shown to the member.
     pub note: Option<String>,

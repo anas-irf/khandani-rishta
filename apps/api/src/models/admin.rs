@@ -9,11 +9,20 @@ use time::OffsetDateTime;
 use utoipa::ToSchema;
 use uuid::Uuid;
 
+use crate::domain::completeness::CompletenessItem;
 use crate::domain::options::{Gender, ManagedBy, ReportReason, VerificationRejectionReason};
+use crate::domain::preferences::Preferences;
+use crate::domain::privacy::Privacy;
 use crate::domain::types::{
-    AuditTargetType, CasteSuggestionStatus, ConsentDocument, DevicePlatform, Locale, ProfileStatus,
-    ReportSource, ReportStatus, ReportSubject, SanctionType, UserRole, UserStatus,
-    VerificationKind, VerificationStatus,
+    AuditTargetType, CasteSuggestionStatus, ConsentDocument, DevicePlatform, Locale,
+    OnboardingStep, ProfileStatus, ReleasePlatform, ReportSource, ReportStatus, ReportSubject,
+    SanctionType, UserRole, UserStatus, VerificationKind, VerificationStatus,
+};
+use crate::models::photos::OwnPhoto;
+use crate::models::profile::{
+    AccountForSection, BasicsSection, CommunitySection, ContactsSection, EducationCareerSection,
+    FamilySection, IdentitySummary, LifestyleSection, OwnLocation, OwnProfile, OwnVerification,
+    TextStatuses,
 };
 
 /// A list that is returned whole instead of paged (`GET /castes`, `/settings`, `/releases`).
@@ -382,23 +391,99 @@ pub struct AdminVerificationRequest {
     pub reviewed_at: Option<OffsetDateTime>,
 }
 
+/// `OwnProfile` (15 section 4.3) as the staff console receives it: the same fields, with
+/// `contacts` `null` for moderators (18 section 4.1).
+#[derive(Debug, Clone, Serialize, ToSchema)]
+pub struct AdminOwnProfile {
+    pub id: Uuid,
+    pub public_code: String,
+    pub status: ProfileStatus,
+    pub status_reason: Option<String>,
+    pub onboarding_step: OnboardingStep,
+    pub completeness: i16,
+    /// Completeness items not yet met, most valuable first (08 section 6.2).
+    pub missing: Vec<CompletenessItem>,
+    /// Fields the owner can no longer edit (03 section 8 rule 15).
+    pub locked_fields: Vec<String>,
+    pub account_for: AccountForSection,
+    pub basics: BasicsSection,
+    pub community: CommunitySection,
+    pub location: OwnLocation,
+    pub education_career: EducationCareerSection,
+    pub family: FamilySection,
+    pub lifestyle: LifestyleSection,
+    /// `null` for moderators: only admins see contact details.
+    pub contacts: Option<ContactsSection>,
+    pub photos: Vec<OwnPhoto>,
+    pub identity: Option<IdentitySummary>,
+    pub verification: OwnVerification,
+    pub text_status: TextStatuses,
+}
+
+impl AdminOwnProfile {
+    /// The owner's view of the profile, with the contact details only when `include_contacts`.
+    pub fn new(profile: OwnProfile, include_contacts: bool) -> Self {
+        // Every field is named, so a field added to `OwnProfile` must be added here too.
+        let OwnProfile {
+            id,
+            public_code,
+            status,
+            status_reason,
+            onboarding_step,
+            completeness,
+            missing,
+            locked_fields,
+            account_for,
+            basics,
+            community,
+            location,
+            education_career,
+            family,
+            lifestyle,
+            contacts,
+            photos,
+            identity,
+            verification,
+            text_status,
+        } = profile;
+        Self {
+            id,
+            public_code,
+            status,
+            status_reason,
+            onboarding_step,
+            completeness,
+            missing,
+            locked_fields,
+            account_for,
+            basics,
+            community,
+            location,
+            education_career,
+            family,
+            lifestyle,
+            contacts: include_contacts.then_some(contacts),
+            photos,
+            identity,
+            verification,
+            text_status,
+        }
+    }
+}
+
 /// `GET /v1/admin/profiles/{profile_id}`.
 ///
-/// `profile`, `preferences` and `privacy` carry the objects of 15 sections 4.3 and 4.5 exactly
-/// (`OwnProfile`, `Preferences`, `Privacy`); the unblurred photo URLs and, for admins, the
-/// contact details are included.
+/// `profile`, `preferences` and `privacy` carry the objects of 15 sections 4.3 and 4.5
+/// (`OwnProfile`, `Preferences`, `Privacy`), with the unblurred photo URLs and, for admins only,
+/// the contact details.
 #[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct AdminProfile {
     pub user: AdminProfileUser,
-    /// `OwnProfile` (15 section 4.3). `contacts` is `null` for moderators.
-    #[schema(value_type = Object)]
-    pub profile: Value,
-    /// `Preferences` (15 section 4.5), `null` when the profile has none.
-    #[schema(value_type = Option<Object>)]
-    pub preferences: Option<Value>,
-    /// `Privacy` (15 section 4.5). `null` only after the account was purged.
-    #[schema(value_type = Option<Object>)]
-    pub privacy: Option<Value>,
+    pub profile: AdminOwnProfile,
+    /// `null` when the profile has no partner preferences yet.
+    pub preferences: Option<Preferences>,
+    /// `null` only after the account was purged.
+    pub privacy: Option<Privacy>,
     #[serde(with = "time::serde::rfc3339::option")]
     pub first_activated_at: Option<OffsetDateTime>,
     #[serde(with = "time::serde::rfc3339::option")]
@@ -461,9 +546,9 @@ pub struct PromotedCaste {
 #[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct SettingItem {
     pub key: String,
-    #[schema(value_type = Object)]
+    /// Any JSON value; its type depends on the key (18 section 7.1).
     pub value: Value,
-    #[schema(value_type = Object)]
+    /// The value used while no row exists.
     pub default: Value,
     pub updated_by_email: Option<String>,
     #[serde(with = "time::serde::rfc3339::option")]
@@ -473,7 +558,7 @@ pub struct SettingItem {
 #[derive(Debug, Clone, Serialize, ToSchema, sqlx::FromRow)]
 pub struct AdminRelease {
     pub id: Uuid,
-    pub platform: String,
+    pub platform: ReleasePlatform,
     pub version_code: i32,
     pub version_name: String,
     pub min_supported_version_code: i32,

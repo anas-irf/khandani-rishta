@@ -123,6 +123,7 @@ pub struct UploadRequest {
 /// not available.
 #[utoipa::path(
     post,
+    operation_id = "create_photo_upload",
     path = "/me/photos/uploads",
     tag = "photos",
     security(("bearer" = [])),

@@ -8,6 +8,7 @@ pub mod discovery;
 pub mod interests;
 pub mod notifications;
 pub mod pagination;
+pub mod photo_access;
 pub mod photos;
 pub mod profiles;
 pub mod relations;

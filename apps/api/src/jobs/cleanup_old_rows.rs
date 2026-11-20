@@ -433,7 +433,11 @@ mod tests {
                 ("ready".to_owned(), Some("exports/new.json".to_owned()))
             ]
         );
-        let deletions = app.queued_jobs("delete_objects").await;
+        let deletions: Vec<serde_json::Value> =
+            sqlx::query_scalar("SELECT payload FROM jobs WHERE kind = 'delete_objects'")
+                .fetch_all(app.db())
+                .await
+                .unwrap();
         assert_eq!(
             deletions,
             vec![serde_json::json!({ "keys": ["exports/old.json"] })]

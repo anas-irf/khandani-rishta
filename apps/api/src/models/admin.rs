@@ -194,6 +194,14 @@ pub struct ReportsFiled {
     pub dismissed: i64,
 }
 
+/// How many reports a reporter filed and how they were decided (`reporter_summary`).
+#[derive(Debug, Clone, Serialize, ToSchema)]
+pub struct ReporterSummary {
+    pub filed: i64,
+    pub actioned: i64,
+    pub dismissed: i64,
+}
+
 /// `GET /v1/admin/reports/{report_id}`.
 #[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct AdminReportDetail {
@@ -209,7 +217,7 @@ pub struct AdminReportDetail {
     pub handled_at: Option<OffsetDateTime>,
     pub target_summary: ReportTargetSummary,
     /// `null` for a system report.
-    pub reporter_summary: Option<ReportsFiled>,
+    pub reporter_summary: Option<ReporterSummary>,
     /// Other `open` or `in_review` reports on the same target.
     pub related_reports: Vec<AdminReportListItem>,
 }

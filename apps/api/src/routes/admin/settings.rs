@@ -293,7 +293,12 @@ mod unit_tests {
             check("matching.recommendations_size", &json!(601)),
             Err(FieldCode::OutOfRange)
         );
-        assert_eq!(check("matching.candidate_pool_size", &json!(150)), Ok(()));
+        assert_eq!(
+            check("matching.candidate_pool_size", &json!(150)),
+            Err(FieldCode::OutOfRange),
+            "the pool cannot be smaller than the recommendations kept from it"
+        );
+        assert_eq!(check("matching.candidate_pool_size", &json!(250)), Ok(()));
     }
 
     #[test]
@@ -362,7 +367,10 @@ mod tests {
         assert_eq!(items[0]["value"], 10);
         assert_eq!(items[0]["default"], 10);
         assert!(items[0]["updated_by_email"].is_null());
-        assert!(items[0]["updated_at"].is_null());
+        assert!(
+            items[0]["updated_at"].is_string(),
+            "the seed migration wrote the row"
+        );
         assert_eq!(
             app.get("/v1/admin/settings", Some(&moderator.token))
                 .await

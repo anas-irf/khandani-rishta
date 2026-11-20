@@ -182,7 +182,7 @@ mod tests {
                 Some(&admin.token),
             )
             .await;
-        assert!(none.json["items"].as_array().unwrap().is_empty());
+        assert_eq!(none.json["items"], json!([]));
         assert_eq!(
             app.get("/v1/admin/audit-log?target_type=planet", Some(&admin.token))
                 .await
@@ -244,9 +244,9 @@ mod tests {
         method: &str,
         path: &str,
         token: Option<&str>,
-        body: &Option<Value>,
+        body: Option<&Value>,
     ) -> crate::test_support::TestResponse {
-        app.request(method, path, token, body.clone()).await
+        app.request(method, path, token, body.cloned()).await
     }
 
     /// Every staff route refuses a member with 403, and the admin-only routes refuse a moderator.
@@ -374,19 +374,20 @@ mod tests {
         for (method, path, body, admin_only) in &routes {
             let label = format!("{method} {path}");
 
-            let anonymous = call(&app, method, path, None, body).await;
+            let anonymous = call(&app, method, path, None, body.as_ref()).await;
             assert_eq!(anonymous.status, StatusCode::UNAUTHORIZED, "{label}");
-            let as_member = call(&app, method, path, Some(&member.token), body).await;
+            let as_member = call(&app, method, path, Some(&member.token), body.as_ref()).await;
             assert_eq!(as_member.status, StatusCode::FORBIDDEN, "{label}");
             assert_eq!(as_member.code(), "forbidden", "{label}");
-            let as_moderator = call(&app, method, path, Some(&moderator.token), body).await;
+            let as_moderator =
+                call(&app, method, path, Some(&moderator.token), body.as_ref()).await;
             if *admin_only {
                 assert_eq!(as_moderator.status, StatusCode::FORBIDDEN, "{label}");
             } else {
                 assert_ne!(as_moderator.status, StatusCode::FORBIDDEN, "{label}");
                 assert_ne!(as_moderator.status, StatusCode::UNAUTHORIZED, "{label}");
             }
-            let as_admin = call(&app, method, path, Some(&admin.token), body).await;
+            let as_admin = call(&app, method, path, Some(&admin.token), body.as_ref()).await;
             assert_ne!(as_admin.status, StatusCode::FORBIDDEN, "{label}");
             assert_ne!(as_admin.status, StatusCode::UNAUTHORIZED, "{label}");
             assert!(as_admin.status.as_u16() < 500, "{label}: {}", as_admin.text);

@@ -64,6 +64,7 @@ pub async fn request_deletion(
 ) -> Result<(), ApiError> {
     let grace_days = i32::try_from(grace_days).unwrap_or(30);
     let mut tx = state.db.begin().await?;
+    crate::sanctions::lock_profile_of(&mut tx, user_id).await?;
     let current: Option<(UserStatus, Option<OffsetDateTime>)> =
         sqlx::query_as("SELECT status, purge_after FROM users WHERE id = $1 FOR UPDATE")
             .bind(user_id)
@@ -119,6 +120,7 @@ pub async fn request_deletion(
 /// `409 invalid_state` when no deletion is scheduled.
 pub async fn cancel_deletion(state: &AppState, user_id: Uuid) -> Result<(), ApiError> {
     let mut tx = state.db.begin().await?;
+    crate::sanctions::lock_profile_of(&mut tx, user_id).await?;
     let current: Option<(UserStatus, Option<OffsetDateTime>)> =
         sqlx::query_as("SELECT status, purge_after FROM users WHERE id = $1 FOR UPDATE")
             .bind(user_id)

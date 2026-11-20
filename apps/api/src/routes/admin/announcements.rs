@@ -174,7 +174,10 @@ mod tests {
             "bad_request"
         );
         assert_eq!(audit_total(app.db()).await, 0);
-        assert!(app.queued_jobs("announcement_fanout").await.is_empty());
+        assert_eq!(
+            app.queued_jobs("announcement_fanout").await,
+            Vec::<serde_json::Value>::new()
+        );
 
         let response = app.post(url, Some(&admin.token), body).await;
         assert_eq!(response.status, StatusCode::ACCEPTED, "{}", response.text);

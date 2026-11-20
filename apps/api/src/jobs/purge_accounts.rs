@@ -84,6 +84,7 @@ pub async fn run(state: &AppState, _job: &ClaimedJob) -> anyhow::Result<JobOutco
 #[allow(clippy::too_many_lines)] // Steps 1 to 6 of 04 section 12, in order.
 async fn purge_user(state: &AppState, user_id: Uuid) -> anyhow::Result<bool> {
     let mut tx = state.db.begin().await?;
+    crate::sanctions::lock_profile_of(&mut tx, user_id).await?;
     let row: Option<(String, Uuid)> = sqlx::query_as(
         "SELECT u.clerk_user_id, p.id
          FROM users u JOIN profiles p ON p.user_id = u.id

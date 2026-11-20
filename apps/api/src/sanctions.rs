@@ -65,11 +65,26 @@ fn rfc3339(at: OffsetDateTime) -> String {
     at.format(&Rfc3339).unwrap_or_default()
 }
 
+/// Locks the profile row of a user. The activity stamp (`auth/extractors.rs`) updates the
+/// profile first and the user second, so every transaction that locks both takes them in that
+/// order; the other way round can deadlock with it.
+pub(crate) async fn lock_profile_of(
+    tx: &mut sqlx::PgConnection,
+    user_id: Uuid,
+) -> sqlx::Result<()> {
+    sqlx::query("SELECT id FROM profiles WHERE user_id = $1 FOR UPDATE")
+        .bind(user_id)
+        .fetch_optional(tx)
+        .await?;
+    Ok(())
+}
+
 /// Locks the user row and returns its status and Clerk id.
 async fn lock_user(
     tx: &mut sqlx::PgConnection,
     user_id: Uuid,
 ) -> Result<(UserStatus, String), SanctionError> {
+    lock_profile_of(&mut *tx, user_id).await?;
     sqlx::query_as("SELECT status, clerk_user_id FROM users WHERE id = $1 FOR UPDATE")
         .bind(user_id)
         .fetch_optional(tx)
@@ -349,6 +364,7 @@ pub async fn lift(
     lifted_by: Option<Uuid>,
 ) -> Result<Lifted, SanctionError> {
     let mut tx = state.db.begin().await?;
+    lock_profile_of(&mut tx, user_id).await?;
     let current: Option<(UserStatus, Option<OffsetDateTime>, String)> = sqlx::query_as(
         "SELECT status, purge_after, clerk_user_id FROM users WHERE id = $1 FOR UPDATE",
     )

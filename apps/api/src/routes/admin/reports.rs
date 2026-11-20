@@ -15,7 +15,7 @@ use crate::domain::types::{ReportStatus, ReportSubject};
 use crate::error::{ApiError, ApiResult, ErrorBody, FieldCode};
 use crate::extract::{ApiJson, ApiPath, ApiQuery};
 use crate::models::admin::{
-    AdminReportDetail, AdminReportListItem, ReportPhoto, from_micros, to_micros,
+    AdminReportDetail, AdminReportListItem, ReportPhoto, ReporterSummary, from_micros, to_micros,
 };
 use crate::models::photos::sign;
 use crate::state::AppState;
@@ -78,7 +78,14 @@ async fn build_detail(state: &AppState, row: ReportRow) -> ApiResult<AdminReport
         None
     };
     let reporter_summary = match row.reporter_profile_id {
-        Some(profile_id) => Some(reports::filed_by(db, profile_id).await?),
+        Some(profile_id) => {
+            let filed = reports::filed_by(db, profile_id).await?;
+            Some(ReporterSummary {
+                filed: filed.total,
+                actioned: filed.actioned,
+                dismissed: filed.dismissed,
+            })
+        }
         None => None,
     };
     Ok(AdminReportDetail {

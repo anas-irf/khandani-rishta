@@ -7,14 +7,15 @@
   },
   "files": {
     "includes": [
-      "apps/web/**",
-      "packages/**",
-      "scripts/**",
+      "**",
+      "!apps/android",
+      "!apps/api",
       "!**/routeTree.gen.ts",
       "!**/worker-configuration.d.ts",
       "!packages/api-contract/src/schema.d.ts",
       "!packages/api-contract/openapi.json",
-      "!**/*.md"
+      "!**/*.md",
+      "!**/*.{yaml,yml}"
     ]
   },
   "css": {
@@ -37,9 +38,22 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "preset": "recommended"
+      "preset": "recommended",
+      "suspicious": {
+        "noConsole": { "level": "warn", "options": { "allow": ["error", "warn"] } }
+      }
     }
   },
+  "overrides": [
+    {
+      "includes": ["scripts/**", "**/*.config.{js,mjs,ts}"],
+      "linter": {
+        "rules": {
+          "suspicious": { "noConsole": "off" }
+        }
+      }
+    }
+  ],
   "assist": {
     "actions": {
       "source": {

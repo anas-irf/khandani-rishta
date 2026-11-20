@@ -1,0 +1,13 @@
+# zizmor (https://docs.zizmor.sh) audits the workflows and actions for security problems:
+# script injection, leaked credentials, cache poisoning, unpinned actions, broad permissions.
+# CI runs it on every pull request (ci.yml) and weekly (security.yml); locally: `zizmor .`
+#
+# Only consciously accepted findings belong here. Prefer an inline
+# `# zizmor: ignore[<audit>] <reason>` on the line a finding is about.
+rules:
+  unpinned-uses:
+    config:
+      # Every action, GitHub's own included, is pinned to a full commit SHA. Dependabot
+      # updates the SHA and the version comment after it.
+      policies:
+        "*": hash-pin

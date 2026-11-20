@@ -1,0 +1,46 @@
+# cargo-deny policy for the API's dependencies. CI runs `cargo deny check` on every change,
+# and the weekly security workflow re-checks advisories. Docs: https://embarkstudios.github.io/cargo-deny/
+
+[graph]
+targets = ["x86_64-unknown-linux-gnu"]
+
+# Known vulnerabilities, unmaintained crates and yanked releases (RustSec advisory database).
+[advisories]
+yanked = "deny"
+unmaintained = "workspace"
+# Each ignored advisory needs a reason and a date to revisit, for example:
+# { id = "RUSTSEC-0000-0000", reason = "no fix released yet; not reachable from our code" },
+ignore = []
+
+# The API is closed source, so dependencies must use permissive licenses.
+[licenses]
+confidence-threshold = 0.93
+allow = [
+  "Apache-2.0",
+  "Apache-2.0 WITH LLVM-exception",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "CC0-1.0",
+  "CDLA-Permissive-2.0",
+  "ISC",
+  "MIT",
+  "MIT-0",
+  "OpenSSL",
+  "Unicode-3.0",
+  "Zlib",
+]
+
+[licenses.private]
+# Our own crate isn't published and has no license field.
+ignore = true
+
+[bans]
+# Two versions of one crate bloat the binary; worth knowing, not worth failing over.
+multiple-versions = "warn"
+wildcards = "deny"
+
+# Only crates.io. A git or other registry dependency has to be allowed here on purpose.
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

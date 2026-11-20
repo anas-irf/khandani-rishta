@@ -84,5 +84,64 @@ fn cors_layer(origins: Vec<HeaderValue>) -> CorsLayer {
         ])
         .allow_headers([header::AUTHORIZATION, header::CONTENT_TYPE])
         .expose_headers([REQUEST_ID_HEADER])
-        .max_age(Duration::from_secs(60 * 60))
+        .max_age(Duration::from_hours(1))
+}
+
+#[cfg(test)]
+mod tests {
+    use axum::body::{Body, to_bytes};
+    use axum::http::{Request, StatusCode};
+    use sqlx::PgPool;
+    use tower::ServiceExt;
+
+    use super::*;
+    use crate::config::Config;
+
+    /// Sends a GET request through the full middleware stack and returns the status, the
+    /// request ID header and the body.
+    async fn get(db: PgPool, path: &str) -> (StatusCode, Option<HeaderValue>, String) {
+        let app = app(AppState::new(Config::for_tests(), db));
+        let request = Request::get(path).body(Body::empty()).unwrap();
+
+        let response = app.oneshot(request).await.unwrap();
+
+        let status = response.status();
+        let request_id = response.headers().get(&REQUEST_ID_HEADER).cloned();
+        let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        (
+            status,
+            request_id,
+            String::from_utf8(body.to_vec()).unwrap(),
+        )
+    }
+
+    #[sqlx::test]
+    async fn healthz_reports_ok(db: PgPool) {
+        let (status, _, body) = get(db, "/healthz").await;
+
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(body, r#"{"status":"ok"}"#);
+    }
+
+    #[sqlx::test]
+    async fn readyz_reports_ok_when_the_database_answers(db: PgPool) {
+        let (status, _, body) = get(db, "/readyz").await;
+
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(body, r#"{"status":"ok"}"#);
+    }
+
+    #[sqlx::test]
+    async fn every_response_carries_a_request_id(db: PgPool) {
+        let (_, request_id, _) = get(db, "/healthz").await;
+
+        assert!(request_id.is_some_and(|id| !id.is_empty()));
+    }
+
+    #[sqlx::test]
+    async fn unknown_routes_return_404(db: PgPool) {
+        let (status, _, _) = get(db, "/v1/does-not-exist").await;
+
+        assert_eq!(status, StatusCode::NOT_FOUND);
+    }
 }

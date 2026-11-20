@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "biomejs.biome",
+    "editorconfig.editorconfig",
+    "github.vscode-github-actions",
+    "ms-playwright.playwright",
+    "rust-lang.rust-analyzer",
+    "tamasfe.even-better-toml",
+    "vitest.explorer"
+  ]
+}

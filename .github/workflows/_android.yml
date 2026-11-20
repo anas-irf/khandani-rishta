@@ -1,0 +1,76 @@
+# Checks for the Android app: ktlint (through Spotless), Android Lint with warnings as errors,
+# unit tests and a debug build. Called by ci.yml, cd.yml and release-android.yml.
+name: Android
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Lint, test and build
+    runs-on: ubuntu-26.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: apps/android
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # JDK 25 is what gradle/gradle-daemon-jvm.properties asks for, so Gradle doesn't
+      # download its own.
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: 25
+
+      # Validates the Gradle wrapper and caches Gradle's files. Only main writes the cache.
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+
+      - name: Format (ktlint)
+        run: ./gradlew spotlessCheck --console=plain
+
+      - name: Lint
+        run: ./gradlew lintDebug --console=plain
+
+      - name: Unit tests
+        run: ./gradlew testDebugUnitTest --console=plain
+
+      - name: Build
+        run: ./gradlew assembleDebug --console=plain
+
+      - name: Test report
+        if: ${{ !cancelled() }}
+        uses: mikepenz/action-junit-report@a16be3a69023e9bd7e748ede768b3282ea7b30ce # v6.7.1
+        with:
+          report_paths: apps/android/app/build/test-results/testDebugUnitTest/*.xml
+          check_name: Android unit tests
+          annotate_only: true
+          skip_annotations: true
+          detailed_summary: true
+          require_tests: false
+          fail_on_failure: false
+
+      - name: Upload the lint report
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: android-lint-report
+          path: apps/android/app/build/reports/lint-results-debug.*
+          if-no-files-found: ignore
+          retention-days: 14
+          overwrite: true
+
+      # Lets reviewers install the change on a phone.
+      - name: Upload the debug APK
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: android-debug-apk
+          path: apps/android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 7
+          overwrite: true

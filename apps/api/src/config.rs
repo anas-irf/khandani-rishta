@@ -105,9 +105,10 @@ impl Config {
         let log_format = match get("LOG_FORMAT").as_deref() {
             Some("json") => LogFormat::Json,
             Some("pretty") => LogFormat::Pretty,
+            Some(other) => bail!("LOG_FORMAT must be json or pretty, got {other:?}"),
+            // Readable logs locally, JSON for journald on the servers.
             None if app_env == AppEnv::Local => LogFormat::Pretty,
             None => LogFormat::Json,
-            Some(other) => bail!("LOG_FORMAT must be json or pretty, got {other:?}"),
         };
 
         Ok(Self {
@@ -119,6 +120,15 @@ impl Config {
             log_format,
             sentry_dsn: get("SENTRY_DSN"),
         })
+    }
+}
+
+#[cfg(test)]
+impl Config {
+    /// Local defaults, for tests that build the app around a test database pool.
+    pub fn for_tests() -> Self {
+        Self::from_lookup(|key| (key == "DATABASE_URL").then(|| "postgres://unused".to_owned()))
+            .expect("the test configuration is valid")
     }
 }
 
@@ -159,7 +169,7 @@ mod tests {
         assert_eq!(config.bind_addr.to_string(), "127.0.0.1:8080");
         assert_eq!(config.database_max_connections, 10);
         assert_eq!(config.log_format, LogFormat::Pretty);
-        assert!(config.cors_allowed_origins.is_empty());
+        assert_eq!(config.cors_allowed_origins, Vec::<HeaderValue>::new());
         assert!(config.sentry_dsn.is_none());
     }
 

@@ -27,10 +27,17 @@ inputs:
 runs:
   using: composite
   steps:
+    # A pinned release, checked against the SHA-256 GitHub records for it, so a replaced or
+    # tampered download never runs with the deploy key. Bump both values together.
     - name: Install cloudflared
       shell: bash
+      env:
+        VERSION: 2026.11.1
+        SHA256: 744ce90be92adb361103d51c85f78646314c47e4a68bbaadfe12ab5acc16c9b6
       run: |
-        curl -fsSL -o "$RUNNER_TEMP/cloudflared.deb" https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+        curl -fsSL -o "$RUNNER_TEMP/cloudflared.deb" \
+          "https://github.com/cloudflare/cloudflared/releases/download/${VERSION}/cloudflared-linux-amd64.deb"
+        echo "${SHA256}  $RUNNER_TEMP/cloudflared.deb" | sha256sum --check --strict
         sudo dpkg -i "$RUNNER_TEMP/cloudflared.deb"
 
     - name: Configure SSH
@@ -45,14 +52,14 @@ runs:
         printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
         chmod 600 ~/.ssh/deploy_key
         printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-        cat > ~/.ssh/config <<EOF
+        cat > ~/.ssh/config <<CONFIG
         Host deploy-target
           HostName ${SSH_HOST}
           User ${SSH_USER}
           IdentityFile ~/.ssh/deploy_key
           IdentitiesOnly yes
           ProxyCommand cloudflared access ssh --hostname %h --service-token-id \$TUNNEL_SERVICE_TOKEN_ID --service-token-secret \$TUNNEL_SERVICE_TOKEN_SECRET
-        EOF
+        CONFIG
 
     - name: Upload and activate the release
       shell: bash
@@ -64,3 +71,9 @@ runs:
         release_id="${GITHUB_SHA}"
         ssh deploy-target "mkdir -p /opt/khandani/releases/${release_id} && tar -xzf - -C /opt/khandani/releases/${release_id}" < "$RELEASE_ARCHIVE"
         ssh deploy-target "/opt/khandani/releases/${release_id}/bin/deploy.sh ${release_id}"
+
+    # The runner is discarded after the job, but the key shouldn't outlive the deploy anyway.
+    - name: Remove the SSH key
+      if: always()
+      shell: bash
+      run: rm -f ~/.ssh/deploy_key

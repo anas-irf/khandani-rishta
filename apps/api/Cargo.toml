@@ -25,3 +25,14 @@ utoipa-axum = "0.3.0"
 lto = "thin"
 codegen-units = 1
 strip = true
+
+[dev-dependencies]
+tower = { version = "0.5.3", features = ["util"] }
+
+# Stricter Clippy lints on top of the defaults. CI fails on any warning (`-D warnings`).
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+# Noise for application code that isn't published as a library.
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+module_name_repetitions = "allow"

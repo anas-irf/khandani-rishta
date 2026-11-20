@@ -1,0 +1,13 @@
+# cargo-nextest settings. CI runs `cargo nextest run --profile ci`.
+
+[profile.ci]
+# Run every test even after a failure, so one run shows all of them.
+fail-fast = false
+# Retry a failing test once: a pass on retry is reported as flaky instead of failing the build.
+retries = 1
+# Kill tests that hang instead of waiting for the job timeout.
+slow-timeout = { period = "30s", terminate-after = 4 }
+
+[profile.ci.junit]
+# Written to target/nextest/ci/junit.xml for the CI job summary.
+path = "junit.xml"

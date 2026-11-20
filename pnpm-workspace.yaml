@@ -1,13 +1,14 @@
 packages:
   - apps/web
+  - e2e
   - packages/*
-allowBuilds:
-  esbuild: true
-  workerd: true
-peerDependencyRules:
-  allowedVersions:
-    # TypeScript 7 has no compiler API yet, so code generators get TypeScript 6.
-    openapi-typescript>typescript: '6'
+
+# Supply-chain age gate: pnpm refuses to resolve a package version published less than
+# 1 day (1,440 minutes) ago, the window in which most compromised releases are caught and
+# pulled. Dependabot waits longer (`cooldown` in .github/dependabot.yml), so its update pull
+# requests never propose a version pnpm would refuse. To take a newer release early (an
+# urgent security fix, say), add it to `minimumReleaseAgeExclude` below.
+minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   - '@cloudflare/kv-asset-handler@0.5.1'
   - '@cloudflare/vite-plugin@1.70.1'
@@ -19,3 +20,14 @@ minimumReleaseAgeExclude:
   - '@tanstack/start-plugin-core@1.172.0'
   - miniflare@5.20261118.0-beta
   - wrangler@4.165.0
+
+# Packages allowed to run install scripts. Everything else is blocked, so a compromised
+# dependency can't run code on `pnpm install`. Review new entries with `pnpm approve-builds`.
+allowBuilds:
+  esbuild: true
+  workerd: true
+
+peerDependencyRules:
+  allowedVersions:
+    # TypeScript 7 has no compiler API yet, so code generators get TypeScript 6.
+    openapi-typescript>typescript: '6'

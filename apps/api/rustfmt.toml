@@ -1,0 +1,3 @@
+# Read by `cargo fmt` and by the pre-commit hook, which runs rustfmt on single files
+# (rustfmt alone doesn't know the crate's edition).
+edition = "2024"

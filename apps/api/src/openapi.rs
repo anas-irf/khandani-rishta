@@ -60,20 +60,20 @@ pub fn spec_json() -> anyhow::Result<String> {
 /// Response properties the API leaves out instead of sending `null`.
 const OMITTED_WHEN_EMPTY: &[(&str, &str)] = &[("ErrorDetail", "fields")];
 
-/// Marks every property of response-only schemas as required.
+/// Marks every property of the schemas that no request uses as required.
 ///
 /// utoipa documents an `Option` field as not required, but responses always carry every field,
 /// with `null` for "no value" (15 section 1). Without this, generated clients would type each
-/// such field as possibly missing. Schemas that also appear in a request body or parameter keep
-/// utoipa's reading, because there a missing field is allowed.
+/// such field as possibly missing. Schemas that appear in a request body or parameter keep
+/// utoipa's reading, because there a missing field is allowed. Schemas no path refers to are
+/// included: they are the item types of generic pages, which paths reach through inline
+/// `Page_*` copies.
 fn require_response_fields(api: &mut utoipa::openapi::OpenApi) -> anyhow::Result<()> {
     use std::collections::BTreeSet;
-    use utoipa::openapi::{RefOr, schema::Schema};
 
     let document = serde_json::to_value(&*api)?;
     let schemas = &document["components"]["schemas"];
     let mut in_requests = BTreeSet::new();
-    let mut in_responses = BTreeSet::new();
     for path in document["paths"]
         .as_object()
         .into_iter()
@@ -82,7 +82,6 @@ fn require_response_fields(api: &mut utoipa::openapi::OpenApi) -> anyhow::Result
         for operation in path.as_object().into_iter().flat_map(|item| item.values()) {
             schema_names(&operation["requestBody"], schemas, &mut in_requests);
             schema_names(&operation["parameters"], schemas, &mut in_requests);
-            schema_names(&operation["responses"], schemas, &mut in_responses);
         }
     }
 
@@ -90,21 +89,55 @@ fn require_response_fields(api: &mut utoipa::openapi::OpenApi) -> anyhow::Result
         return Ok(());
     };
     for (name, schema) in &mut components.schemas {
-        if !in_responses.contains(name) || in_requests.contains(name) {
-            continue;
-        }
-        if let RefOr::T(Schema::Object(object)) = schema {
-            object.required = object
-                .properties
-                .keys()
-                .filter(|property| {
-                    !OMITTED_WHEN_EMPTY.contains(&(name.as_str(), property.as_str()))
-                })
-                .cloned()
-                .collect();
+        if !in_requests.contains(name) {
+            require_all(name, schema);
         }
     }
     Ok(())
+}
+
+/// Requires every property of `schema` and of the objects written inline inside it, such as the
+/// items of a generic `Page<T>`, which utoipa copies into each `Page_*` schema.
+fn require_all(name: &str, schema: &mut utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>) {
+    use utoipa::openapi::{
+        RefOr,
+        schema::{ArrayItems, Schema},
+    };
+
+    let RefOr::T(schema) = schema else {
+        return;
+    };
+    match schema {
+        Schema::Object(object) => {
+            object.required = object
+                .properties
+                .keys()
+                .filter(|property| !OMITTED_WHEN_EMPTY.contains(&(name, property.as_str())))
+                .cloned()
+                .collect();
+            for property in object.properties.values_mut() {
+                require_all(name, property);
+            }
+        }
+        Schema::Array(array) => {
+            if let ArrayItems::RefOrSchema(items) = &mut array.items {
+                require_all(name, items);
+            }
+        }
+        Schema::OneOf(one_of) => one_of
+            .items
+            .iter_mut()
+            .for_each(|item| require_all(name, item)),
+        Schema::AllOf(all_of) => all_of
+            .items
+            .iter_mut()
+            .for_each(|item| require_all(name, item)),
+        Schema::AnyOf(any_of) => any_of
+            .items
+            .iter_mut()
+            .for_each(|item| require_all(name, item)),
+        _ => {}
+    }
 }
 
 /// Collects the names of the component schemas `value` refers to, directly or through other
@@ -193,6 +226,47 @@ mod tests {
                         .as_array()
                         .is_some_and(|tags| !tags.is_empty()),
                     "{method} {path} has no tag"
+                );
+            }
+        }
+    }
+
+    /// Each request body points at the schema of the type its handler parses. Two types with
+    /// the same name once made the chat read body show the notifications one.
+    #[test]
+    fn chat_and_notification_read_bodies_are_distinct() {
+        let document: Value = serde_json::from_str(&super::spec_json().unwrap()).unwrap();
+        let body_schema = |path: &str| {
+            let reference = document["paths"][path]["post"]["requestBody"]["content"]
+                ["application/json"]["schema"]["$ref"]
+                .as_str()
+                .unwrap()
+                .rsplit('/')
+                .next()
+                .unwrap()
+                .to_owned();
+            document["components"]["schemas"][reference].clone()
+        };
+        let chat = body_schema("/v1/connections/{connection_id}/read");
+        assert_eq!(chat["required"], serde_json::json!(["up_to_message_id"]));
+        let notifications = body_schema("/v1/notifications/read");
+        assert!(notifications["properties"]["ids"].is_object());
+    }
+
+    /// Objects written inline in a response schema, such as the items of a `Page_*` copy of a
+    /// generic page, require their fields too.
+    #[test]
+    fn inline_response_objects_require_their_fields() {
+        let document: Value = serde_json::from_str(&super::spec_json().unwrap()).unwrap();
+        let schemas = document["components"]["schemas"].as_object().unwrap();
+        for (name, schema) in schemas.iter().filter(|(name, _)| name.starts_with("Page_")) {
+            let item = &schema["properties"]["items"]["items"];
+            if let Some(properties) = item["properties"].as_object() {
+                let required = item["required"].as_array().map_or(0, Vec::len);
+                assert_eq!(
+                    required,
+                    properties.len(),
+                    "{name} items leave fields optional"
                 );
             }
         }

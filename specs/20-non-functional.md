@@ -71,7 +71,7 @@ Existing variables (`APP_ENV`, `BIND_ADDR`, `DATABASE_URL`, `DATABASE_MAX_CONNEC
 | `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | Yes | An R2 API token limited to that bucket |
 | `AZURE_CONTENT_SAFETY_ENDPOINT`, `AZURE_CONTENT_SAFETY_KEY` | Key: yes | Empty disables automatic moderation; everything then goes to the manual queue |
 | `RESEND_API_KEY` | Yes | Empty disables email (jobs succeed without sending and log a warning) |
-| `EMAIL_FROM` | No | For example `Khandani Rishta <no-reply@<domain>>` |
+| `EMAIL_FROM` | No | For example `Khandani Rishta <no-reply@khandanirishta.app>` |
 | `FCM_PROJECT_ID` | No | Firebase project |
 | `FCM_SERVICE_ACCOUNT_JSON` | Yes | The service account key as one line of JSON. Empty disables push. |
 | `WEB_BASE_URL` | No | Origin of the web app, used in emails and share links |

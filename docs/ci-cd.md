@@ -73,7 +73,7 @@ traces, screenshots and videos of failures, is uploaded as the `playwright-repor
 | Fix formatting and safe lint issues | `pnpm format` |
 | Unit tests | `pnpm test` (coverage: `pnpm --filter @khandani/web test:coverage`) |
 | End-to-end tests (builds the web app first) | `pnpm test:e2e` |
-| End-to-end tests against a deployed site | `E2E_BASE_URL=https://staging.<domain> pnpm --filter @khandani/e2e e2e:smoke` |
+| End-to-end tests against a deployed site | `E2E_BASE_URL=https://staging.khandanirishta.app pnpm --filter @khandani/e2e e2e:smoke` |
 | Playwright report of the last run | `pnpm --filter @khandani/e2e e2e:report` |
 | API | `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo nextest run` (or `cargo test`), `cargo deny check`, `cargo shear` (in `apps/api`, database running) |
 | Android | `./gradlew spotlessCheck lintDebug testDebugUnitTest assembleDebug` (in `apps/android`); `./gradlew spotlessApply` fixes formatting |

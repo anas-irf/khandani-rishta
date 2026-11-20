@@ -64,14 +64,14 @@ Afterwards, add each VM's public IP to the PostgreSQL firewall.
 
    | Hostname | Production | Staging |
    |---|---|---|
-   | API | `api.<domain>` to `http://localhost:8080` | `api-staging.<domain>` to `http://localhost:8080` |
-   | SSH | `ssh.<domain>` to `ssh://localhost:22` | `ssh-staging.<domain>` to `ssh://localhost:22` |
+   | API | `api.khandanirishta.app` to `http://localhost:8080` | `api-staging.khandanirishta.app` to `http://localhost:8080` |
+   | SSH | `ssh.khandanirishta.app` to `ssh://localhost:22` | `ssh-staging.khandanirishta.app` to `ssh://localhost:22` |
 
 4. Zero Trust > Access > Applications: add a self-hosted application for each SSH hostname. Allow your own email (one-time PIN), plus a Service Auth rule for a service token used by GitHub Actions (Access > Service credentials > Service tokens).
 5. Remove the SSH rule from the VM's network security group. From now on, connect through Access (install `cloudflared` locally first):
 
    ```sh
-   ssh -o ProxyCommand="cloudflared access ssh --hostname %h" azureuser@ssh.<domain>
+   ssh -o ProxyCommand="cloudflared access ssh --hostname %h" azureuser@ssh.khandanirishta.app
    ```
 
 ## 5. Env files
@@ -91,12 +91,12 @@ Create the environments `staging` and `production` (Settings > Environments). Li
 
 | Name | Kind | Where | Value |
 |---|---|---|---|
-| `SSH_HOST` | Variable | Each environment | `ssh.<domain>` or `ssh-staging.<domain>` |
+| `SSH_HOST` | Variable | Each environment | `ssh.khandanirishta.app` or `ssh-staging.khandanirishta.app` |
 | `SSH_USER` | Variable | Each environment | `azureuser` |
-| `API_BASE_URL` | Variable | Each environment | `https://api.<domain>` or `https://api-staging.<domain>`. Also the target of the API smoke test after each deploy |
-| `WEB_URL` | Variable | Each environment | `https://<domain>` or `https://staging.<domain>` (or the `workers.dev` address until the domain exists). The web smoke tests run against it after each deploy; leave it unset to skip them |
+| `API_BASE_URL` | Variable | Each environment | `https://api.khandanirishta.app` or `https://api-staging.khandanirishta.app`. Also the target of the API smoke test after each deploy |
+| `WEB_URL` | Variable | Each environment | `https://khandanirishta.app` or `https://staging.khandanirishta.app` (or the `workers.dev` address until the domain exists). The web smoke tests run against it after each deploy; leave it unset to skip them |
 | `SSH_PRIVATE_KEY` | Secret | Each environment | A deploy key whose public half is in the VM's `~/.ssh/authorized_keys` |
-| `SSH_KNOWN_HOSTS` | Secret | Each environment | `ssh.<domain> ` followed by the VM's `/etc/ssh/ssh_host_ed25519_key.pub` |
+| `SSH_KNOWN_HOSTS` | Secret | Each environment | `ssh.khandanirishta.app ` followed by the VM's `/etc/ssh/ssh_host_ed25519_key.pub` |
 | `CF_ACCESS_CLIENT_ID`, `CF_ACCESS_CLIENT_SECRET` | Secret | Each environment | The Access service token |
 | `CLOUDFLARE_API_TOKEN` | Secret | Each environment | API token with Workers Scripts Edit and R2 Edit |
 | `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | Secret | `production` | Android release signing |

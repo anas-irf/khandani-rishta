@@ -104,7 +104,7 @@ pub fn defaults() -> Vec<(&'static str, Value)> {
         ("legal.terms_version", json!("2026-11-20")),
         ("legal.privacy_version", json!("2026-11-20")),
         ("legal.guidelines_version", json!("2026-11-20")),
-        ("support.email", json!("support@<domain>")),
+        ("support.email", json!("support@khandanirishta.app")),
         ("announcement.banner", Value::Null),
     ]
 }

@@ -420,7 +420,7 @@ Delivery is best effort and at most once. Events sent while a client is disconne
 
 | Item | Value |
 |---|---|
-| URL | `wss://api.<domain>/v1/ws` (`ws://localhost:8787/v1/ws` locally) |
+| URL | `wss://api.khandanirishta.app/v1/ws` (`ws://localhost:8787/v1/ws` locally) |
 | Subprotocol | None |
 | Frames | UTF-8 JSON text frames. Binary frames close the connection with 4400. |
 | Origin check | The `Origin` header, when present, must be one of the allowed web origins; otherwise the upgrade is refused with `403`. Android sends no `Origin`. |

@@ -150,10 +150,10 @@ Rules:
 | Source | Form | Resolves to |
 |---|---|---|
 | Push notification tap | Intent extras `target` and parameters, copied from the push `data` keys defined in 14 section 4 | The screen ID's key with its arguments, on top of the matching tab root |
-| App Link | `https://<domain>/profiles/{profileId}` | `Profile(profileId)` |
-| App Link | `https://<domain>/p/{publicCode}` | Call `GET /v1/profiles/by-code/{publicCode}`, then `Profile(profileId)` |
-| App Link | `https://<domain>/chats/{connectionId}` | `Chat(connectionId)` on the Chats tab |
-| App Link | `https://<domain>/interests` | `Interests("received")` |
+| App Link | `https://khandanirishta.app/profiles/{profileId}` | `Profile(profileId)` |
+| App Link | `https://khandanirishta.app/p/{publicCode}` | Call `GET /v1/profiles/by-code/{publicCode}`, then `Profile(profileId)` |
+| App Link | `https://khandanirishta.app/chats/{connectionId}` | `Chat(connectionId)` on the Chats tab |
+| App Link | `https://khandanirishta.app/interests` | `Interests("received")` |
 
 App Links need `android:autoVerify="true"` intent filters for the production and staging hosts, and a `/.well-known/assetlinks.json` file served by the web app listing the package name and the release certificate's SHA-256 fingerprint. Other URLs of the site open in the browser. A push whose `target` this build does not know opens `Notifications` (16 section 4.2).
 

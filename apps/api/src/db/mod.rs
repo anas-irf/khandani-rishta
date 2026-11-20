@@ -12,4 +12,5 @@ pub mod photos;
 pub mod profiles;
 pub mod relations;
 pub mod reports;
+pub mod review;
 pub mod verifications;

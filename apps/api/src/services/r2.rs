@@ -62,6 +62,18 @@ pub trait ObjectStore: Send + Sync {
     /// `Ok(None)` when the object does not exist.
     async fn get(&self, key: &str) -> Result<Option<Vec<u8>>, ServiceError>;
     async fn put(&self, key: &str, bytes: Vec<u8>, content_type: &str) -> Result<(), ServiceError>;
+    /// Like [`ObjectStore::put`], and stores a `Cache-Control` header with the object (the
+    /// photo variants use `private, max-age=3600`, 08 section 5.3 step 10). A store that cannot
+    /// keep the header writes the object without it.
+    async fn put_cached(
+        &self,
+        key: &str,
+        bytes: Vec<u8>,
+        content_type: &str,
+        _cache_control: &str,
+    ) -> Result<(), ServiceError> {
+        self.put(key, bytes, content_type).await
+    }
     /// Deletes keys; missing objects are not an error.
     async fn delete(&self, keys: &[String]) -> Result<(), ServiceError>;
     /// Every object under a prefix, all pages.
@@ -256,6 +268,28 @@ impl ObjectStore for R2Store {
         Ok(())
     }
 
+    async fn put_cached(
+        &self,
+        key: &str,
+        bytes: Vec<u8>,
+        content_type: &str,
+        cache_control: &str,
+    ) -> Result<(), ServiceError> {
+        self.client
+            .put_object()
+            .bucket(&self.bucket)
+            .key(key)
+            .content_type(content_type)
+            .cache_control(cache_control)
+            .body(ByteStream::from(bytes))
+            .send()
+            .await
+            .map_err(|error| {
+                s3_error("put object", aws_sdk_s3::error::DisplayErrorContext(error))
+            })?;
+        Ok(())
+    }
+
     async fn delete(&self, keys: &[String]) -> Result<(), ServiceError> {
         // One call per key keeps this simple and works on every S3-compatible store.
         for key in keys {
@@ -374,6 +408,7 @@ pub struct MemoryStore {
 struct StoredObject {
     bytes: Vec<u8>,
     content_type: String,
+    cache_control: Option<String>,
     last_modified: OffsetDateTime,
 }
 
@@ -390,10 +425,20 @@ impl MemoryStore {
                 StoredObject {
                     bytes,
                     content_type: content_type.to_owned(),
+                    cache_control: None,
                     last_modified: at,
                 },
             );
         }
+    }
+
+    /// The `Cache-Control` header stored with an object, for assertions.
+    pub fn cache_control(&self, key: &str) -> Option<String> {
+        self.objects.lock().ok().and_then(|objects| {
+            objects
+                .get(key)
+                .and_then(|object| object.cache_control.clone())
+        })
     }
 
     /// Every stored key, for assertions.
@@ -462,6 +507,22 @@ impl ObjectStore for MemoryStore {
 
     async fn put(&self, key: &str, bytes: Vec<u8>, content_type: &str) -> Result<(), ServiceError> {
         self.insert_at(key, bytes, content_type, OffsetDateTime::now_utc());
+        Ok(())
+    }
+
+    async fn put_cached(
+        &self,
+        key: &str,
+        bytes: Vec<u8>,
+        content_type: &str,
+        cache_control: &str,
+    ) -> Result<(), ServiceError> {
+        self.insert_at(key, bytes, content_type, OffsetDateTime::now_utc());
+        if let Ok(mut objects) = self.objects.lock()
+            && let Some(object) = objects.get_mut(key)
+        {
+            object.cache_control = Some(cache_control.to_owned());
+        }
         Ok(())
     }
 

@@ -6,20 +6,44 @@ rust-version = "1.100"
 publish = false
 
 [dependencies]
+aes-gcm = "0.11.1"
 anyhow = "1.0.104"
-axum = "0.8.9"
+async-trait = "0.1.89"
+aws-sdk-s3 = { version = "1.161.0", default-features = false, features = ["behavior-version-latest", "default-https-client", "http-1x", "rt-tokio", "rustls"] }
+axum = { version = "0.8.9", features = ["ws"] }
+base64 = "0.23.1"
 dotenvy = "0.15.7"
+futures-util = { version = "0.3.31", default-features = false, features = ["sink", "std"] }
+gcp_auth = { version = "0.12.7", default-features = false, features = ["aws-lc-rs"] }
+hmac = "0.13.0"
+image = { version = "0.25.10", default-features = false, features = ["jpeg", "png", "webp"] }
+jsonwebtoken = { version = "12.0.0", default-features = false, features = ["aws_lc_rs", "use_pem"] }
+moka = { version = "0.12.16", features = ["sync"] }
+rand = "0.10.4"
+regex = "1.13.2"
+reqwest = { version = "0.13.5", default-features = false, features = ["json", "query", "rustls"] }
 sentry = { version = "0.49.6", default-features = false, features = ["backtrace", "contexts", "panic", "reqwest", "rustls", "tracing"] }
 sentry-tower = { version = "0.49.6", features = ["http", "axum-matched-path"] }
 serde = { version = "1.0.229", features = ["derive"] }
-sqlx = { version = "0.9.1", default-features = false, features = ["runtime-tokio", "tls-rustls-aws-lc-rs", "postgres", "macros", "migrate"] }
-tokio = { version = "1.54.1", features = ["macros", "net", "rt-multi-thread", "signal", "time"] }
+serde_json = "1.0.154"
+sha2 = "0.11.1"
+sqlx = { version = "0.9.1", default-features = false, features = ["runtime-tokio", "tls-rustls-aws-lc-rs", "postgres", "macros", "migrate", "uuid", "time", "json"] }
+svix = "2.10.0"
+thiserror = "2.0.21"
+time = { version = "0.3.55", features = ["formatting", "macros", "parsing", "serde"] }
+tokio = { version = "1.54.1", features = ["macros", "net", "rt-multi-thread", "signal", "sync", "time"] }
 tower = "0.5.3"
-tower-http = { version = "0.7.1", features = ["catch-panic", "compression-full", "cors", "request-id", "timeout", "trace"] }
+tower-http = { version = "0.7.1", features = ["catch-panic", "compression-full", "cors", "limit", "request-id", "timeout", "trace"] }
+tower_governor = "0.8.0"
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter", "json"] }
-utoipa = "6.0.0"
+utoipa = { version = "6.0.0", features = ["time", "uuid"] }
 utoipa-axum = "0.3.0"
+uuid = { version = "1.29.3", features = ["serde", "v7"] }
+
+# Smaller and faster debug builds: no debug info for dependencies.
+[profile.dev.package."*"]
+debug = false
 
 [profile.release]
 lto = "thin"
@@ -28,6 +52,7 @@ strip = true
 
 [dev-dependencies]
 tower = { version = "0.5.3", features = ["util"] }
+wiremock = "0.6.5"
 
 # Stricter Clippy lints on top of the defaults. CI fails on any warning (`-D warnings`).
 [lints.clippy]

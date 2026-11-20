@@ -6,7 +6,9 @@
 #![forbid(unsafe_code)]
 
 mod config;
+mod domain;
 mod openapi;
+mod reference;
 mod routes;
 mod state;
 mod telemetry;

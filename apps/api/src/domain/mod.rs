@@ -12,6 +12,8 @@ pub mod identity_number;
 pub mod matching;
 pub mod options;
 pub mod preference_defaults;
+pub mod preferences;
+pub mod privacy;
 pub mod text_rules;
 pub mod time;
 pub mod types;

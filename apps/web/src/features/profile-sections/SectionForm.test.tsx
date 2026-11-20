@@ -4,6 +4,7 @@ import { delay, HttpResponse, http } from 'msw'
 import { describe, expect, it, vi } from 'vitest'
 import { ApiError } from '~/lib/api'
 import type { OwnProfile } from '~/lib/api-types'
+import { todayInKarachi } from '~/lib/format'
 import { qk } from '~/lib/query'
 import { db, type MockScenario, resetDb } from '~/mocks/db'
 import { currentMe } from '~/mocks/handlers/account'
@@ -27,10 +28,9 @@ function setup(
 
 /** YYYY-MM-DD `years` years ago, shifted by `days`. */
 function birth(years: number, days = 0) {
-  const now = new Date()
-  return new Date(
-    Date.UTC(now.getUTCFullYear() - years, now.getUTCMonth(), now.getUTCDate() + days),
-  )
+  // Today in Asia/Karachi, like the age rule, so the test holds at any hour of the UTC day.
+  const [year, month, day] = todayInKarachi().split('-').map(Number)
+  return new Date(Date.UTC(year - years, month - 1, day + days))
 }
 
 async function chooseDate(user: ReturnType<typeof userEvent.setup>, date: Date) {

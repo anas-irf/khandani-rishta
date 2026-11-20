@@ -1,17 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { http } from '~/lib/api'
 import type { Me, OwnProfile } from '~/lib/api-types'
+import { todayInKarachi } from '~/lib/format'
 import { db, resetDb } from '../db'
 import { makeOwnPhoto, makePreferences } from '../factories'
 
-/** YYYY-MM-DD for someone who turns `years` old `days` days from now. */
+/** YYYY-MM-DD for someone who turns `years` old `days` days from today in Asia/Karachi. */
 function birthDate(years: number, days = 0) {
-  const now = new Date()
-  return new Date(
-    Date.UTC(now.getUTCFullYear() - years, now.getUTCMonth(), now.getUTCDate() + days),
-  )
-    .toISOString()
-    .slice(0, 10)
+  const [year, month, day] = todayInKarachi().split('-').map(Number)
+  return new Date(Date.UTC(year - years, month - 1, day + days)).toISOString().slice(0, 10)
 }
 
 const continueStep = (step: string) => http.post<Me>('/v1/me/onboarding/continue', { step })

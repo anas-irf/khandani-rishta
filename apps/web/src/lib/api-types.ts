@@ -12,8 +12,8 @@ import type { components, operations } from '@khandani/api-contract'
 type Schemas = components['schemas']
 
 /**
- * openapi-typescript turns a free-form JSON object (`{ "type": "object" }`) into
- * `Record<string, never>`, which no real value fits. Such fields are typed as plain JSON objects.
+ * The contract types a free-form JSON object (`{ "type": "object" }`) as `unknown`. The fields
+ * below always hold a JSON object (or `null`), so they are narrowed to one here.
  */
 type JsonObject = Record<string, unknown>
 type WithJsonObject<T, K extends keyof T> = Omit<T, K> & {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { EMPTY_CITY_VALUE } from '~/components/common/fields'
-import { feetInchesToCm } from '~/lib/format'
+import { feetInchesToCm, todayInKarachi } from '~/lib/format'
 import { i18n } from '~/lib/i18n'
 import { makeOwnProfile } from '~/mocks/factories'
 import { stepForField } from './field-steps'
@@ -40,11 +40,13 @@ const key = (path: string) => `profile_sections:errors.${path}`
 const issuesOf = (list: { path: string; message: string }[]) =>
   Object.fromEntries(list.map((issue) => [issue.path, issue.message]))
 
-/** YYYY-MM-DD for the date `years` years before `now`, shifted by `days`. */
+/**
+ * YYYY-MM-DD for the date `years` years before today, shifted by `days`. "Today" is the date in
+ * Asia/Karachi, like the age rule, so the tests hold at any hour of the UTC day.
+ */
 function birthDate(years: number, days = 0, now = new Date()) {
-  const date = new Date(
-    Date.UTC(now.getUTCFullYear() - years, now.getUTCMonth(), now.getUTCDate() + days),
-  )
+  const [year, month, day] = todayInKarachi(now).split('-').map(Number)
+  const date = new Date(Date.UTC(year - years, month - 1, day + days))
   return date.toISOString().slice(0, 10)
 }
 

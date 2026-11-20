@@ -515,19 +515,30 @@ mod tests {
         assert_eq!(response.status, StatusCode::OK, "{}", response.text);
         assert_eq!(response.json["user"]["status"], "deletion_scheduled");
 
-        sqlx::query("INSERT INTO jobs (kind, payload) VALUES ('purge_accounts', '{}')")
-            .execute(app.db())
+        // The purge claims users with `FOR UPDATE SKIP LOCKED` (06 section 9.4), so a run that
+        // meets the row locked by the request's activity stamp skips it and a later run takes
+        // it. Run it the way the scheduler would, a few times.
+        let mut row: (String, Option<String>, Option<String>) = (String::new(), None, None);
+        for _ in 0..5 {
+            sqlx::query("INSERT INTO jobs (kind, payload) VALUES ('purge_accounts', '{}')")
+                .execute(app.db())
+                .await
+                .unwrap();
+            app.drain_jobs().await;
+            row = sqlx::query_as(
+                "SELECT u.status, u.email, p.first_name
+                 FROM users u JOIN profiles p ON p.user_id = u.id WHERE u.id = $1",
+            )
+            .bind(member.user_id)
+            .fetch_one(app.db())
             .await
             .unwrap();
-        app.drain_jobs().await;
-        let (status, email, first_name): (String, Option<String>, Option<String>) = sqlx::query_as(
-            "SELECT u.status, u.email, p.first_name
-             FROM users u JOIN profiles p ON p.user_id = u.id WHERE u.id = $1",
-        )
-        .bind(member.user_id)
-        .fetch_one(app.db())
-        .await
-        .unwrap();
+            if row.0 == "deleted" {
+                break;
+            }
+            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+        }
+        let (status, email, first_name) = row;
         assert_eq!(
             (status.as_str(), email, first_name),
             ("deleted", None, None)

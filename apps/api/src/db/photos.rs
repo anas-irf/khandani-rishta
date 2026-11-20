@@ -171,6 +171,19 @@ pub fn variant_keys(photo: &PhotoRow) -> Vec<String> {
     .collect()
 }
 
+/// True when the photo has an `open` or `in_review` report. Its files are then kept 30 more
+/// days after the owner deletes it (13 section 6.3 rule 3). Ask before deleting the row:
+/// deleting it clears `reports.photo_id`.
+pub async fn has_unresolved_report(tx: &mut PgConnection, photo_id: Uuid) -> sqlx::Result<bool> {
+    sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM reports
+                        WHERE photo_id = $1 AND status IN ('open', 'in_review'))",
+    )
+    .bind(photo_id)
+    .fetch_one(tx)
+    .await
+}
+
 /// Deletes a photo of the profile and returns it.
 pub async fn delete_owned(
     tx: &mut PgConnection,

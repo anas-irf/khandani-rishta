@@ -937,3 +937,54 @@ async fn members_only_ever_see_their_own_photos(db: PgPool) {
     assert!(list(&app, &user).await.is_empty());
     assert_eq!(list(&app, &other).await.len(), 1);
 }
+
+/// 13 section 6.3 rule 3: a deleted photo with an unresolved report keeps its files for 30 days;
+/// one without a report, or with a resolved report, has them deleted at once.
+#[sqlx::test]
+async fn a_reported_photo_keeps_its_files_for_thirty_days(db: PgPool) {
+    let app = TestApp::new(db).await;
+    let owner = app.member().await;
+    let reporter = app.member_of(crate::domain::options::Gender::Female).await;
+    let reported = add_photo(&app, &owner, "approved").await;
+    let resolved = add_photo(&app, &owner, "approved").await;
+    for (photo, status) in [(reported, "open"), (resolved, "dismissed")] {
+        sqlx::query(
+            "INSERT INTO reports (reporter_profile_id, target_profile_id, subject_type, photo_id,
+                                  reason, status)
+             VALUES ($1, $2, 'photo', $3, 'inappropriate_photo', $4)",
+        )
+        .bind(reporter.profile_id)
+        .bind(owner.profile_id)
+        .bind(photo)
+        .bind(status)
+        .execute(app.db())
+        .await
+        .unwrap();
+    }
+
+    for photo in [reported, resolved] {
+        let response = app
+            .delete(&format!("/v1/me/photos/{photo}"), Some(&owner.token))
+            .await;
+        assert_eq!(response.status, StatusCode::NO_CONTENT);
+    }
+    let due_in_days: Vec<(Value, f64)> = sqlx::query_as(
+        "SELECT payload, EXTRACT(EPOCH FROM run_at - now())::float8 / 86400
+         FROM jobs WHERE kind = 'delete_objects' ORDER BY created_at",
+    )
+    .fetch_all(app.db())
+    .await
+    .unwrap();
+    assert_eq!(due_in_days.len(), 2);
+    let holds = |(payload, _): &(Value, f64), photo: Uuid| {
+        payload["keys"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|key| key.as_str().unwrap().contains(&photo.to_string()))
+    };
+    let kept = due_in_days.iter().find(|job| holds(job, reported)).unwrap();
+    assert!((29.9..=30.1).contains(&kept.1), "kept 30 days: {}", kept.1);
+    let gone = due_in_days.iter().find(|job| holds(job, resolved)).unwrap();
+    assert!(gone.1 < 0.01, "deleted at once: {}", gone.1);
+}

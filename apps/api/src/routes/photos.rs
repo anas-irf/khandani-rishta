@@ -37,6 +37,10 @@ pub const ALLOWED_CONTENT_TYPES: [&str; 3] = ["image/jpeg", "image/png", "image/
 /// The name of the limit in `limit_reached` (03 section 7).
 const PHOTOS_LIMIT: &str = "limits.photos_max";
 
+/// How long the files of a deleted photo with an unresolved report are kept
+/// (13 section 6.3 rule 3).
+const REPORTED_PHOTO_RETENTION: time::Duration = time::Duration::days(30);
+
 pub fn router() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(create_upload))
@@ -399,15 +403,17 @@ async fn delete_photo(
 ) -> ApiResult<StatusCode> {
     let mut tx = state.db.begin().await?;
     db::lock_profile(&mut tx, account.profile_id).await?;
+    let reported = db::has_unresolved_report(&mut tx, photo_id).await?;
     let deleted = db::delete_owned(&mut tx, photo_id, account.profile_id)
         .await?
         .ok_or(ApiError::NotFound)?;
     let settled = db::settle(&mut tx, account.profile_id, deleted.photo.is_primary).await?;
-    enqueue(
-        &mut *tx,
-        NewJob::new("delete_objects", json!({ "keys": deleted.object_keys() })),
-    )
-    .await?;
+    let mut job = NewJob::new("delete_objects", json!({ "keys": deleted.object_keys() }));
+    if reported {
+        // A moderator still needs the files (13 section 6.3 rule 3).
+        job = job.run_at(OffsetDateTime::now_utc() + REPORTED_PHOTO_RETENTION);
+    }
+    enqueue(&mut *tx, job).await?;
     tx.commit().await?;
     state.jobs.wake();
 

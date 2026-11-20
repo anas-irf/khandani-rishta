@@ -1,0 +1,31 @@
+name: Set up Node.js and pnpm
+description: >-
+  Installs pnpm (the version in package.json `packageManager`), Node.js (the version in .nvmrc)
+  and the workspace dependencies exactly as locked in pnpm-lock.yaml.
+
+inputs:
+  cache:
+    description: >-
+      Restore and save the pnpm store cache. Pass 'false' in jobs that hold deploy credentials,
+      so they never restore a cache that another run could have tampered with.
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    # pnpm has to be on the PATH before setup-node, which looks up pnpm's store for the cache.
+    - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version-file: .nvmrc
+        cache: ${{ inputs.cache == 'true' && 'pnpm' || '' }}
+        package-manager-cache: ${{ inputs.cache == 'true' }}
+
+    - name: Install dependencies
+      shell: bash
+      env:
+        # Git hooks are for local commits only.
+        HUSKY: "0"
+      run: pnpm install --frozen-lockfile

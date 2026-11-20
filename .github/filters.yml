@@ -1,0 +1,34 @@
+# Which apps a change touches, for dorny/paths-filter in ci.yml and cd.yml. Each app's checks
+# (and deploy) run only when one of its paths changed.
+
+web:
+  - apps/web/**
+  - e2e/**
+  - packages/api-contract/**
+  - scripts/**
+  - package.json
+  - pnpm-lock.yaml
+  - pnpm-workspace.yaml
+  - biome.json
+  - knip.jsonc
+  - .nvmrc
+  - .github/actions/setup-node-pnpm/**
+  - .github/workflows/_web.yml
+
+api:
+  - apps/api/**
+  - infra/azure/**
+  - packages/api-contract/openapi.json
+  - .github/actions/deploy-api/**
+  - .github/workflows/_api.yml
+
+android:
+  - apps/android/**
+  - .github/workflows/_android.yml
+  - .github/workflows/release-android.yml
+
+# Changes to the pipeline itself run every app's checks.
+pipeline:
+  - .github/filters.yml
+  - .github/workflows/ci.yml
+  - .github/workflows/cd.yml

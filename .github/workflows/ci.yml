@@ -1,0 +1,152 @@
+# Pull request checks. Repository-wide checks always run; each app's checks run only when the
+# pull request touches that app (see .github/filters.yml). The final "CI passed" job is the one
+# status check to require in branch protection: it fails if any other job failed and passes
+# when skipped jobs had nothing to check.
+name: CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read # paths-filter lists the pull request's files through the API
+    outputs:
+      web: ${{ steps.filter.outputs.web == 'true' || steps.filter.outputs.pipeline == 'true' }}
+      api: ${{ steps.filter.outputs.api == 'true' || steps.filter.outputs.pipeline == 'true' }}
+      android: ${{ steps.filter.outputs.android == 'true' || steps.filter.outputs.pipeline == 'true' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: .github
+
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: filter
+        with:
+          filters: .github/filters.yml
+
+  pr-title:
+    name: Pull request title
+    # Dependabot writes its own titles (chore(deps): bump ...).
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-node-pnpm
+
+      # Squash merges use the title as the commit message on main, so it follows the same
+      # Conventional Commits rules as local commits (commitlint.config.mjs).
+      - name: Check the title follows Conventional Commits
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: printf '%s\n' "$TITLE" | pnpm exec commitlint --verbose
+
+  repository:
+    name: Workflows, scripts and spelling
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Prebuilt binaries, verified against their published checksums.
+      - uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
+        with:
+          tool: zizmor@1.32.0,typos@1.52.2,shellcheck@0.11.0
+          fallback: none
+
+      - name: Install actionlint
+        env:
+          VERSION: 1.7.12
+          SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+        run: |
+          archive="actionlint_${VERSION}_linux_amd64.tar.gz"
+          curl -fsSL -o "$RUNNER_TEMP/$archive" \
+            "https://github.com/rhysd/actionlint/releases/download/v${VERSION}/${archive}"
+          echo "${SHA256}  $RUNNER_TEMP/$archive" | sha256sum --check --strict
+          tar -xzf "$RUNNER_TEMP/$archive" -C "$RUNNER_TEMP" actionlint
+
+      # Syntax, expressions and contexts in the workflows, plus ShellCheck on their run: blocks.
+      - name: Lint workflows (actionlint)
+        run: |
+          echo "::add-matcher::.github/matchers/actionlint.json"
+          "$RUNNER_TEMP/actionlint"
+
+      # Script injection, credential leaks, cache poisoning, unpinned actions (.github/zizmor.yml).
+      - name: Audit workflow security (zizmor)
+        env:
+          GH_TOKEN: ${{ github.token }} # enables the online audits, such as known-vulnerable actions
+        run: zizmor --format github --min-severity medium .
+
+      - name: Lint shell scripts (ShellCheck)
+        run: |
+          shellcheck infra/azure/bin/*.sh
+          find .husky -maxdepth 1 -type f -print0 | xargs -0 shellcheck --shell=sh
+
+      - name: Check spelling (typos)
+        run: typos
+
+  dependency-review:
+    name: Dependency review
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      # Fails when the pull request adds a dependency with a known high or critical
+      # vulnerability, or under a copyleft license that a closed-source app can't ship.
+      - uses: actions/dependency-review-action@bbc44d14a204704ccc493733616cd1e93a0321ec # v5.0.1
+        with:
+          fail-on-severity: high
+          deny-licenses: GPL-2.0-only, GPL-2.0-or-later, GPL-3.0-only, GPL-3.0-or-later, AGPL-3.0-only, AGPL-3.0-or-later
+          comment-summary-in-pr: never
+
+  web:
+    name: Web
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    uses: ./.github/workflows/_web.yml
+
+  api:
+    name: API
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
+    uses: ./.github/workflows/_api.yml
+
+  android:
+    name: Android
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
+    uses: ./.github/workflows/_android.yml
+
+  ci-passed:
+    name: CI passed
+    if: always()
+    needs: [changes, pr-title, repository, dependency-review, web, api, android]
+    runs-on: ubuntu-26.04
+    timeout-minutes: 2
+    steps:
+      - name: Check that no job failed
+        env:
+          RESULTS: ${{ toJSON(needs.*.result) }}
+        run: |
+          echo "Job results: $RESULTS"
+          if jq -e 'any(.[]; . == "failure" or . == "cancelled")' <<<"$RESULTS" >/dev/null; then
+            echo "::error::At least one CI job failed or was cancelled."
+            exit 1
+          fi

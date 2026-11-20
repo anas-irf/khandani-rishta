@@ -1,33 +1,67 @@
+# Dependabot keeps every ecosystem on current releases with weekly pull requests.
+#
+# - Cooldown: a release must be 7 days old before Dependabot proposes it, which gives the
+#   community time to catch a compromised or broken release. pnpm refuses versions under 1 day
+#   old (pnpm-workspace.yaml), so Dependabot's picks always install. Security updates skip the
+#   cooldown.
+# - Minor and patch updates are grouped into one pull request per ecosystem. Major updates get
+#   their own pull requests, so one breaking upgrade can't hold back the rest.
+# - Titles follow Conventional Commits (chore(deps): ..., ci(deps): ...), like every other
+#   pull request (commitlint.config.mjs).
 version: 2
 updates:
-  - package-ecosystem: cargo
-    directory: /apps/api
-    schedule:
-      interval: weekly
-    groups:
-      rust:
-        patterns: ["*"]
-
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+      include: scope
     groups:
       javascript:
-        patterns: ["*"]
+        update-types: [minor, patch]
+
+  - package-ecosystem: cargo
+    directory: /apps/api
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      rust:
+        update-types: [minor, patch]
 
   - package-ecosystem: gradle
     directory: /apps/android
     schedule:
       interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+      include: scope
     groups:
       android:
-        patterns: ["*"]
+        update-types: [minor, patch]
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: ci
+      include: scope
     groups:
       actions:
-        patterns: ["*"]
+        update-types: [minor, patch]

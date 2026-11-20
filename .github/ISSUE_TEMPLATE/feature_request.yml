@@ -1,0 +1,31 @@
+name: Feature request
+description: Suggest something new or an improvement.
+title: "feat: "
+labels: [enhancement]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [Web app, Android app, API, Deploys and infrastructure, Not sure]
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Who needs this, and what can't they do today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: How it could work. Mention alternatives you considered.
+  - type: textarea
+    id: done
+    attributes:
+      label: Done when
+      description: What has to be true for this to count as finished.
+      placeholder: |
+        - [ ] ...

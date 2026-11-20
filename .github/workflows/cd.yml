@@ -1,0 +1,214 @@
+# Continuous delivery from main.
+#
+# - Every push to main re-runs the checks for the apps it changed, then deploys those apps to
+#   staging: the API first, then the web app, each followed by a smoke test.
+# - Running this workflow by hand (Actions > CD > Run workflow, on main) checks and deploys the
+#   chosen apps to staging or production.
+#
+# Deploys stay off until the repository variable DEPLOY_ENABLED is 'true'. Until then this
+# workflow only runs the checks. Setup steps: infra/azure/README.md.
+name: CD
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment to deploy to
+        type: choice
+        options: [staging, production]
+        default: staging
+      apps:
+        description: Apps to deploy
+        type: choice
+        options: [web and api, web, api]
+        default: web and api
+
+permissions:
+  contents: read
+
+# Deploys never cancel each other. A newer run waits until the current one finishes.
+concurrency:
+  group: cd-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    outputs:
+      environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'staging' }}
+      web: >-
+        ${{ (github.event_name == 'workflow_dispatch' && inputs.apps != 'api')
+        || steps.filter.outputs.web == 'true' || steps.filter.outputs.pipeline == 'true' }}
+      api: >-
+        ${{ (github.event_name == 'workflow_dispatch' && inputs.apps != 'web')
+        || steps.filter.outputs.api == 'true' || steps.filter.outputs.pipeline == 'true' }}
+      android: ${{ steps.filter.outputs.android == 'true' || steps.filter.outputs.pipeline == 'true' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: github.event_name == 'push'
+        with:
+          persist-credentials: false
+          # The filter compares against the commit main pointed at before this push.
+          fetch-depth: 0
+
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: filter
+        if: github.event_name == 'push'
+        with:
+          filters: .github/filters.yml
+
+  web:
+    name: Web
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    uses: ./.github/workflows/_web.yml
+
+  api:
+    name: API
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
+    uses: ./.github/workflows/_api.yml
+    with:
+      release: true
+
+  android:
+    name: Android
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
+    uses: ./.github/workflows/_android.yml
+
+  # GitHub can't read Gradle's version catalog on its own. Submitting the resolved dependencies
+  # gives Dependabot alerts and dependency review full coverage of the Android app.
+  android-dependencies:
+    name: Submit Android dependencies
+    needs: changes
+    if: needs.changes.outputs.android == 'true' && github.event_name == 'push'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    permissions:
+      contents: write # required by the dependency submission API
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - uses: gradle/actions/dependency-submission@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          build-root-directory: apps/android
+          # This job can write to the repository, so it never restores a shared cache.
+          cache-disabled: true
+
+  deploy-api:
+    name: Deploy API (${{ needs.changes.outputs.environment }})
+    needs: [changes, api]
+    if: vars.DEPLOY_ENABLED == 'true' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    environment:
+      name: ${{ needs.changes.outputs.environment }}
+      url: ${{ vars.API_BASE_URL }}
+    concurrency:
+      group: deploy-api-${{ needs.changes.outputs.environment }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # The release built and tested by the API job above.
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: khandani-api
+
+      - uses: ./.github/actions/deploy-api
+        with:
+          ssh-host: ${{ vars.SSH_HOST }}
+          ssh-user: ${{ vars.SSH_USER }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-known-hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
+          access-client-id: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          access-client-secret: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+          release-archive: khandani-api.tar.gz
+
+      # deploy.sh already checks /readyz on the VM. This checks the public route through
+      # Cloudflare too.
+      - name: Smoke test
+        if: vars.API_BASE_URL != ''
+        env:
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+        run: curl --fail --silent --show-error --retry 5 --retry-delay 5 --retry-all-errors "$API_BASE_URL/readyz"
+
+  deploy-web:
+    name: Deploy web (${{ needs.changes.outputs.environment }})
+    needs: [changes, web, deploy-api]
+    # Runs after the API deploy, or without it when the API had nothing to deploy.
+    if: >-
+      !cancelled() && vars.DEPLOY_ENABLED == 'true' && github.ref == 'refs/heads/main'
+      && needs.web.result == 'success'
+      && (needs.deploy-api.result == 'success' || needs.deploy-api.result == 'skipped')
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    environment:
+      name: ${{ needs.changes.outputs.environment }}
+      url: ${{ vars.WEB_URL }}
+    concurrency:
+      group: deploy-web-${{ needs.changes.outputs.environment }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # This job holds deploy credentials, so it never restores a shared cache.
+      - uses: ./.github/actions/setup-node-pnpm
+        with:
+          cache: "false"
+
+      # Each environment needs its own build: the API address is baked into the browser bundle.
+      - name: Build
+        env:
+          DEPLOY_ENVIRONMENT: ${{ needs.changes.outputs.environment }}
+          VITE_API_BASE_URL: ${{ vars.API_BASE_URL }}
+        run: |
+          if [ "$DEPLOY_ENVIRONMENT" = staging ]; then export CLOUDFLARE_ENV=staging; fi
+          pnpm build:web
+
+      - name: Deploy to Cloudflare Workers
+        working-directory: apps/web
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: pnpm exec wrangler deploy
+
+      - name: Install Chromium
+        if: vars.WEB_URL != ''
+        run: pnpm --filter @khandani/e2e exec playwright install --with-deps --only-shell chromium
+
+      # The end-to-end tests tagged @smoke, against the site that was just deployed.
+      - name: Smoke test
+        id: smoke
+        if: vars.WEB_URL != ''
+        env:
+          E2E_BASE_URL: ${{ vars.WEB_URL }}
+        run: pnpm --filter @khandani/e2e e2e:smoke
+
+      - name: Upload the smoke test report
+        if: ${{ failure() && steps.smoke.outcome == 'failure' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: smoke-test-report-${{ needs.changes.outputs.environment }}
+          path: |
+            e2e/playwright-report/
+            e2e/test-results/
+          if-no-files-found: ignore
+          retention-days: 30
+          overwrite: true

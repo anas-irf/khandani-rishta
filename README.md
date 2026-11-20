@@ -12,14 +12,15 @@ The technologies and where each part runs are described in [docs/tech-stack.md](
 | `apps/web` | TanStack Start web app, deployed to Cloudflare Workers |
 | `apps/android` | Kotlin and Jetpack Compose Android app |
 | `packages/api-contract` | OpenAPI spec exported from the API, plus generated TypeScript types |
+| `e2e` | Playwright end-to-end tests for the web app |
 | `infra/local` | Local PostgreSQL (Docker Compose) |
 | `infra/azure` | VM setup, systemd units, deploy and backup scripts ([runbook](infra/azure/README.md)) |
-| `docs` | Project documentation |
+| `docs` | Project documentation, including the [CI/CD guide](docs/ci-cd.md) |
 
 ## Prerequisites
 
 - Git and Docker Desktop
-- Node.js 26 LTS and [pnpm](https://pnpm.io/installation)
+- Node.js 26 LTS (the version in `.nvmrc`) and [pnpm](https://pnpm.io/installation)
 - Rust through [rustup](https://rustup.rs) (on Windows, also the Visual Studio C++ Build Tools). The pinned version in `apps/api/rust-toolchain.toml` installs automatically. Optional for running the project: without it, `pnpm bootstrap` builds the API in Docker.
 - Android Studio (latest stable)
 
@@ -50,11 +51,16 @@ For the Android app, open `apps/android` in Android Studio and run the `app` con
 | Start or stop only the database | `pnpm db:start`, `pnpm db:stop` (repository root) |
 | Run only the API | `cargo run` (in `apps/api`, with the database running) |
 | Run only the web app | `pnpm dev:web` (repository root) |
-| Check and format the web code | `pnpm check` and `pnpm format` (repository root) |
-| Check the API | `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test` (in `apps/api`) |
-| Check the Android app | `./gradlew lintDebug testDebugUnitTest assembleDebug` (in `apps/android`; `gradlew.bat` on Windows) |
+| Check the JavaScript code (Biome, types, Knip, unit tests) | `pnpm check`; fix formatting with `pnpm format` (repository root) |
+| Run the end-to-end tests | `pnpm test:e2e` (repository root; first time: `pnpm --filter @khandani/e2e exec playwright install chromium`) |
+| Check the API | `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test`, `cargo deny check` (in `apps/api`, database running) |
+| Check the Android app | `./gradlew spotlessCheck lintDebug testDebugUnitTest assembleDebug` (in `apps/android`; `gradlew.bat` on Windows); fix formatting with `./gradlew spotlessApply` |
 | Update the API contract after changing routes | `cargo run -- openapi > ../../packages/api-contract/openapi.json` (in `apps/api`), then `pnpm generate:api-client` (repository root) |
+
+## Contributing
+
+Work on a branch and open a pull request; `main` only changes through merged pull requests. Commit messages and pull request titles follow Conventional Commits, for example `feat(web): add the sign-in page`. Git hooks (installed by `pnpm install`) format staged files and check commit messages, and CI checks every pull request. Details: [docs/ci-cd.md](docs/ci-cd.md).
 
 ## Deployment
 
-GitHub Actions deploy every merge to `main` to staging. Production deploys are started by hand from the Actions tab. Deploys stay switched off until the repository variable `DEPLOY_ENABLED` is `true`; the steps to get there are in the [Azure runbook](infra/azure/README.md).
+GitHub Actions deploy every merge to `main` to staging, then smoke-test it. Production deploys are started by hand from the Actions tab (CD > Run workflow). Deploys stay switched off until the repository variable `DEPLOY_ENABLED` is `true`; the steps to get there are in the [Azure runbook](infra/azure/README.md).

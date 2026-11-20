@@ -1,0 +1,121 @@
+# Checks for the Rust API: formatting, unused dependencies, dependency policy (cargo-deny),
+# Clippy, tests against PostgreSQL, and the committed OpenAPI spec. With `release: true` it
+# also builds and packages the release binary for deploys. Called by ci.yml and cd.yml.
+name: API
+
+on:
+  workflow_call:
+    inputs:
+      release:
+        description: Also build the release binary and upload it as the khandani-api artifact
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    name: Lint, test and build
+    runs-on: ubuntu-26.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: apps/api
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: khandani
+          POSTGRES_PASSWORD: khandani
+          POSTGRES_DB: khandani_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U khandani -d khandani_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      # `#[sqlx::test]` creates a throwaway database per test on this server.
+      DATABASE_URL: postgres://khandani:khandani@localhost:5432/khandani_test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install the pinned Rust toolchain
+        run: |
+          channel="$(grep -oP '^channel = "\K[^"]+' rust-toolchain.toml)"
+          rustup toolchain install "$channel" --profile minimal --component clippy,rustfmt
+
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          workspaces: apps/api
+          cache-bin: false
+          # Only main writes the cache. Pull requests read it, so they can't poison it.
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      # Prebuilt binaries, verified against their published checksums.
+      - uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
+        with:
+          tool: cargo-deny@0.21.0,cargo-nextest@0.9.152,cargo-shear@1.14.1
+          fallback: none
+
+      - name: Format
+        run: cargo fmt --check
+
+      - name: Unused dependencies (cargo-shear)
+        run: cargo shear
+
+      - name: Advisories, licenses and sources (cargo-deny)
+        run: cargo deny check
+
+      - name: Lint (Clippy)
+        run: cargo clippy --all-targets --locked -- -D warnings
+
+      - name: Test
+        run: cargo nextest run --profile ci --locked
+
+      - name: Test report
+        if: ${{ !cancelled() }}
+        uses: mikepenz/action-junit-report@a16be3a69023e9bd7e748ede768b3282ea7b30ce # v6.7.1
+        with:
+          report_paths: apps/api/target/nextest/ci/junit.xml
+          check_name: API tests
+          annotate_only: true
+          skip_annotations: true
+          detailed_summary: true
+          require_tests: false
+          fail_on_failure: false
+
+      - name: Check the committed OpenAPI spec is current
+        run: |
+          cargo run --locked --quiet -- openapi > ../../packages/api-contract/openapi.json
+          git diff --exit-code -- ../../packages/api-contract/openapi.json
+
+      - name: Build the release binary
+        if: inputs.release
+        run: cargo build --release --locked
+
+      - name: Package the release
+        if: inputs.release
+        run: |
+          mkdir -p release/bin release/systemd
+          cp target/release/khandani-api release/
+          cp ../../infra/azure/bin/*.sh release/bin/
+          cp ../../infra/azure/systemd/* release/systemd/
+          chmod +x release/khandani-api release/bin/*.sh
+          tar -czf khandani-api.tar.gz -C release .
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: inputs.release
+        with:
+          name: khandani-api
+          path: apps/api/khandani-api.tar.gz
+          if-no-files-found: error
+          retention-days: 14
+          overwrite: true

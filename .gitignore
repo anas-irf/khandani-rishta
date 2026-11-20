@@ -7,6 +7,12 @@ build/
 .tanstack/
 *.tsbuildinfo
 
+# Test output
+coverage/
+test-results/
+playwright-report/
+blob-report/
+
 # Env files and secrets: never commit real values
 .env
 .env.*

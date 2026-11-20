@@ -57,6 +57,16 @@ android {
     buildFeatures {
         compose = true
     }
+
+    lint {
+        // Any lint warning fails the build, so problems get fixed instead of piling up.
+        warningsAsErrors = true
+        abortOnError = true
+        checkDependencies = true
+        // These checks fail whenever a newer library or SDK is released, which would break
+        // unrelated builds. Dependabot keeps versions current instead.
+        disable += setOf("GradleDependency", "AndroidGradlePluginVersion", "NewerVersionAvailable", "OldTargetApi")
+    }
 }
 
 dependencies {

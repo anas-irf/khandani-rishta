@@ -1,0 +1,21 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  // Finds unused files, exports and dependencies. Run with `pnpm knip`.
+  "workspaces": {
+    ".": {
+      "entry": ["scripts/**/*.mjs"],
+      // bootstrap.mjs resolves Vite from apps/web; the scripts call Rust and Java tools directly.
+      "ignoreDependencies": ["vite"],
+      "ignoreBinaries": ["rustc", "rustfmt", "java"]
+    },
+    "apps/web": {
+      // The typed API client is part of the scaffold; routes start using it as features land.
+      "entry": ["src/lib/api.ts"],
+      "project": ["src/**/*.{ts,tsx,css}"]
+    },
+    "e2e": {
+      "project": ["**/*.ts"]
+    },
+    "packages/api-contract": {}
+  }
+}

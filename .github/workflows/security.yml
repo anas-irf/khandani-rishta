@@ -1,0 +1,67 @@
+# Weekly security sweep of main. New advisories appear without any code change, so this
+# re-checks the locked dependencies and the workflows every Monday. GitHub emails the
+# repository owner when a scheduled run fails. Also runnable from the Actions tab.
+name: Security
+
+on:
+  schedule:
+    - cron: "17 4 * * 1" # Mondays 04:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  javascript:
+    name: JavaScript advisories (pnpm audit)
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-node-pnpm
+
+      - name: Audit
+        run: pnpm audit --audit-level high
+
+  rust:
+    name: Rust advisories (cargo-deny)
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
+        with:
+          tool: cargo-deny@0.21.0
+          fallback: none
+
+      - name: Audit
+        run: cargo deny check advisories
+
+  workflows:
+    name: Workflow audit (zizmor)
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
+        with:
+          tool: zizmor@1.32.0
+          fallback: none
+
+      # Includes the online audits, such as actions with newly published vulnerabilities.
+      - name: Audit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: zizmor --format github --min-severity medium .

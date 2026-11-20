@@ -93,7 +93,8 @@ Create the environments `staging` and `production` (Settings > Environments). Li
 |---|---|---|---|
 | `SSH_HOST` | Variable | Each environment | `ssh.<domain>` or `ssh-staging.<domain>` |
 | `SSH_USER` | Variable | Each environment | `azureuser` |
-| `API_BASE_URL` | Variable | Each environment | `https://api.<domain>` or `https://api-staging.<domain>` |
+| `API_BASE_URL` | Variable | Each environment | `https://api.<domain>` or `https://api-staging.<domain>`. Also the target of the API smoke test after each deploy |
+| `WEB_URL` | Variable | Each environment | `https://<domain>` or `https://staging.<domain>` (or the `workers.dev` address until the domain exists). The web smoke tests run against it after each deploy; leave it unset to skip them |
 | `SSH_PRIVATE_KEY` | Secret | Each environment | A deploy key whose public half is in the VM's `~/.ssh/authorized_keys` |
 | `SSH_KNOWN_HOSTS` | Secret | Each environment | `ssh.<domain> ` followed by the VM's `/etc/ssh/ssh_host_ed25519_key.pub` |
 | `CF_ACCESS_CLIENT_ID`, `CF_ACCESS_CLIENT_SECRET` | Secret | Each environment | The Access service token |
@@ -104,8 +105,8 @@ Create the environments `staging` and `production` (Settings > Environments). Li
 
 ## 7. First deploy
 
-- Staging: merge to `main`. The API and Web workflows deploy automatically.
-- Production: Actions > API (and Web) > Run workflow on `main`, with "Deploy this commit to production" ticked.
+- Staging: merge to `main`. The CD workflow checks and deploys the changed apps automatically.
+- Production: Actions > CD > Run workflow on `main`, with environment `production`.
 - Then turn on backups on the production VM and test them once:
 
   ```sh

@@ -1,0 +1,93 @@
+# Android release. Pushing a tag like android-v1.2.0 runs the Android checks, then builds a
+# signed release APK and publishes it to R2 (download.<domain>) and to a GitHub Release.
+# Publishing stays off until the repository variable DEPLOY_ENABLED is 'true'.
+name: Android release
+
+on:
+  push:
+    tags: ["android-v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-release
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Android
+    uses: ./.github/workflows/_android.yml
+
+  release:
+    name: Publish signed APK
+    needs: check
+    if: vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 30
+    environment: production
+    permissions:
+      contents: write # creates the GitHub Release
+    steps:
+      - name: Check the tag is a version number
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          if ! [[ "$TAG" =~ ^android-v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Release tags look like android-v1.2.0, got $TAG"
+            exit 1
+          fi
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: 25
+
+      # Release builds never restore a shared cache, so a tampered cache can't reach users.
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          cache-disabled: true
+
+      - name: Build the signed release APK
+        working-directory: apps/android
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/release.jks"
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$ANDROID_KEYSTORE_PATH"
+          ./gradlew assembleRelease --console=plain \
+            -PversionCode="$GITHUB_RUN_NUMBER" \
+            -PversionName="${GITHUB_REF_NAME#android-v}"
+          rm -f "$ANDROID_KEYSTORE_PATH"
+
+      - name: Name the APK and write its checksum
+        run: |
+          apk="khandani-rishta-${GITHUB_REF_NAME#android-v}.apk"
+          cp apps/android/app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/$apk"
+          (cd "$RUNNER_TEMP" && sha256sum "$apk" > "$apk.sha256")
+          echo "APK=$apk" >> "$GITHUB_ENV"
+
+      # Wrangler at the version in pnpm-lock.yaml.
+      - uses: ./.github/actions/setup-node-pnpm
+        with:
+          cache: "false"
+
+      - name: Publish to R2 and GitHub Releases
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for key in "android/$APK" "android/khandani-rishta-latest.apk"; do
+            pnpm --filter @khandani/web exec wrangler r2 object put "kr-public/$key" \
+              --file "$RUNNER_TEMP/$APK" --content-type application/vnd.android.package-archive --remote
+          done
+          gh release create "$GITHUB_REF_NAME" "$RUNNER_TEMP/$APK" "$RUNNER_TEMP/$APK.sha256" \
+            --verify-tag --title "Android ${GITHUB_REF_NAME#android-v}" --generate-notes

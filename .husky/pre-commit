@@ -1,0 +1,9 @@
+# Work happens on branches and reaches main through pull requests.
+branch="$(git rev-parse --abbrev-ref HEAD)"
+if [ "$branch" = "main" ] && [ -z "$ALLOW_COMMIT_TO_MAIN" ]; then
+  echo "Commits to main are blocked. Create a branch first, for example:"
+  echo "  git switch -c feat/short-description"
+  exit 1
+fi
+
+pnpm exec lint-staged

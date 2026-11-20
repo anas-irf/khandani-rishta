@@ -1,0 +1,67 @@
+# Banned words and phrases (13 section 3.6).
+#
+# One lowercase phrase per line. Lines starting with # are comments. Matching is on the
+# normalised text, whole words or whole phrases only. The file is compiled into the binary.
+# Keep it short: the asynchronous check and member reports catch the rest.
+# Changes are ordinary code changes with review.
+
+# Intent that does not belong on a marriage platform
+hookup
+hook up
+one night stand
+friends with benefits
+sugar daddy
+sugar mommy
+sugar baby
+escort
+call girl
+time pass
+timepass
+casual relationship
+no strings attached
+girlfriend wanted
+boyfriend wanted
+
+# Commercial solicitation
+marriage bureau
+rishta service
+rishta center
+rishta centre
+matchmaking service
+fees apply
+registration fee
+contact our office
+
+# Profanity and slurs, English
+fuck
+fucker
+fucking
+motherfucker
+shit
+bitch
+bastard
+asshole
+dickhead
+cunt
+slut
+whore
+porn
+nudes
+sexting
+sex chat
+
+# Profanity and slurs, Roman Urdu
+harami
+haramzada
+haramzadi
+haramkhor
+kamina
+kameena
+kameeni
+chutiya
+madarchod
+behenchod
+bhenchod
+bhosdike
+gandu
+randi

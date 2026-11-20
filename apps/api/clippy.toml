@@ -1,2 +1,2 @@
 # Names Clippy's doc_markdown lint accepts without backticks. ".." keeps Clippy's defaults.
-doc-valid-idents = ["OpenAPI", ".."]
+doc-valid-idents = ["OpenAPI", "WebSocket", "WebSockets", ".."]

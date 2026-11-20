@@ -41,3 +41,4 @@ captures/
 !.vscode/extensions.json
 .DS_Store
 Thumbs.db
+scripts/.geo-cache/

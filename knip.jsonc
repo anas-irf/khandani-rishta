@@ -13,7 +13,7 @@
     "apps/web": {
       "entry": [
         // Public APIs whose unused exports are deliberate: the shadcn/ui primitives, the form
-        // fields barrel and the transcribed API contract (src/lib/api-types.ts header).
+        // fields barrel and the API type aliases over the generated contract (src/lib/api-types.ts).
         "src/components/ui/*.tsx",
         "src/components/common/fields/index.ts",
         "src/lib/api-types.ts",

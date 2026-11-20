@@ -15,8 +15,7 @@ import { useTranslation } from 'react-i18next'
 import type { z } from 'zod'
 import { Alert, AlertDescription } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
-import { ApiError, isApiError } from '~/lib/api'
-import type { ApiFieldError } from '~/lib/api-types'
+import { ApiError, type ClientFieldError, isApiError } from '~/lib/api'
 import { focusFirstInvalid, useAppForm } from '~/lib/form'
 import { applyServerErrors } from '~/lib/form-context'
 import { reportError } from '~/lib/monitoring'
@@ -76,9 +75,9 @@ export type ManagedFormOptions<V> = {
   /** API field keys that belong to a differently named form field. */
   aliases?: Record<string, string>
   /** Adjusts API errors before they are shown (for example, messages chosen by the API). */
-  rewrite?: (error: ApiFieldError) => ApiFieldError
+  rewrite?: (error: ClientFieldError) => ClientFieldError
   /** Field errors to show when the form opens (a failed completion, 07 section 14.2). */
-  initialErrors?: ApiFieldError[]
+  initialErrors?: ClientFieldError[]
   onDirtyChange?: (dirty: boolean) => void
 }
 
@@ -86,7 +85,7 @@ export type ManagedFormOptions<V> = {
 export function useManagedForm<V extends object>(options: ManagedFormOptions<V>) {
   const latest = useRef(options)
   latest.current = options
-  const [unmatched, setUnmatched] = useState<ApiFieldError[]>([])
+  const [unmatched, setUnmatched] = useState<ClientFieldError[]>([])
   const [failure, setFailure] = useState<unknown>(null)
 
   const form = useAppForm({
@@ -105,7 +104,7 @@ export function useManagedForm<V extends object>(options: ManagedFormOptions<V>)
     },
   })
 
-  function showFieldErrors(fields: ApiFieldError[]) {
+  function showFieldErrors(fields: ClientFieldError[]) {
     const { namespace, aliases, rewrite } = latest.current
     const shown = new ApiError({
       status: 400,
@@ -166,7 +165,7 @@ type ShellForm = {
   handleSubmit: () => Promise<void>
   AppForm: ComponentType<{ children?: ReactNode }>
   SubmitButton: ComponentType<{ label: string; className?: string; disabled?: boolean }>
-  FormErrorSummary: ComponentType<{ serverErrors?: ApiFieldError[]; className?: string }>
+  FormErrorSummary: ComponentType<{ serverErrors?: ClientFieldError[]; className?: string }>
 }
 
 /** The form element: summary, fields, inline failure, the submit button, then the footer. */
@@ -184,7 +183,7 @@ export function FormShell({
 }: {
   form: ShellForm
   controls: FormControls
-  unmatched: ApiFieldError[]
+  unmatched: ClientFieldError[]
   failure: unknown
   submitLabel: string
   footer?: ReactNode

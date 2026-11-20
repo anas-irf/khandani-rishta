@@ -16,11 +16,14 @@ import {
   type CommunityValues,
   communityToBody,
   dateOfBirthCode,
+  educationCareerFromProfile,
   educationCareerToBody,
   type FamilyValues,
+  familyFromProfile,
   familyToBody,
   type LifestyleValues,
   type LocationValues,
+  lifestyleFromProfile,
   lifestyleToBody,
   locationToBody,
   validateAccountFor,
@@ -212,7 +215,7 @@ describe('basics (07 section 4)', () => {
   })
 
   it('asks for wives, children and their count only when they apply', () => {
-    const married = { ...valid, gender: 'male' as const, marital_status: 'married' }
+    const married = { ...valid, gender: 'male' as const, marital_status: 'married' as const }
     expect(issuesOf(validateBasics(married, self))).toEqual({
       current_wives_count: key('current_wives_count.required'),
       children_status: key('children_status.required'),
@@ -384,7 +387,7 @@ describe('location (07 section 6)', () => {
 })
 
 describe('education_career (07 section 7)', () => {
-  const valid = makeOwnProfile().education_career
+  const valid = educationCareerFromProfile(makeOwnProfile())
 
   it('requires the level and the employment type', () => {
     expect(validateEducationCareer(valid)).toEqual([])
@@ -424,7 +427,7 @@ describe('education_career (07 section 7)', () => {
 describe('family (07 section 8)', () => {
   const profile = makeOwnProfile()
   const valid: FamilyValues = {
-    ...profile.family,
+    ...familyFromProfile(profile),
     family_elsewhere: false,
     family_place: { ...EMPTY_CITY_VALUE, country_code: 'PK' },
     home_size_value: null,
@@ -490,7 +493,7 @@ describe('family (07 section 8)', () => {
 })
 
 describe('lifestyle (07 section 9)', () => {
-  const valid: LifestyleValues = makeOwnProfile().lifestyle
+  const valid: LifestyleValues = lifestyleFromProfile(makeOwnProfile())
 
   it('checks weight, details, hobbies and the about text', () => {
     expect(validateLifestyle(valid)).toEqual([])
@@ -517,7 +520,7 @@ describe('lifestyle (07 section 9)', () => {
   })
 
   it('sends hidden fields as null (hijab for women, beard for men, Islam-only fields)', () => {
-    const answers = {
+    const answers: LifestyleValues = {
       ...valid,
       hijab: 'hijab',
       beard: 'full',

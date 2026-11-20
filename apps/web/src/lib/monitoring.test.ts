@@ -27,7 +27,9 @@ describe('scrubEvent', () => {
   })
 
   it('leaves events without a request alone', () => {
-    expect(scrubEvent({ message: 'boom' } as { message: string })).toEqual({ message: 'boom' })
+    const event = {}
+    expect(scrubEvent(event)).toBe(event)
+    expect(event).toEqual({})
   })
 })
 

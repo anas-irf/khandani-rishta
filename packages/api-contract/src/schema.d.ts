@@ -38,6 +38,1973 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/announcements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sends one notification to every active member (admin only). At most one per 24 hours; it
+         *     cannot be recalled. Answers `202`: the `announcement_fanout` job does the work.
+         */
+        post: operations["send_announcement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/audit-log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Audit entries, newest first. */
+        get: operations["list_audit_log"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/caste-suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Suggested castes, most used first, with similar existing castes. */
+        get: operations["list_suggestions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/caste-suggestions/{id}/promote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Promotes a suggestion to a caste (admin only) and rewrites the profiles that typed it. */
+        post: operations["promote_suggestion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/caste-suggestions/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rejects a pending suggestion. */
+        post: operations["reject_suggestion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/castes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every caste and sub-caste, including inactive ones. */
+        get: operations["list_castes"];
+        put?: never;
+        /** Adds a caste or sub-caste (admin only). */
+        post: operations["create_caste"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/castes/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Renames, re-orders, changes the aliases of, or (de)activates a caste (admin only). */
+        patch: operations["patch_caste"];
+        trace?: never;
+    };
+    "/v1/admin/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Queue sizes and headline numbers, cached in memory for 60 seconds. */
+        get: operations["get_overview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/photos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The photo queue: photos the automatic check flagged first, then oldest first. Cursor
+         *     pagination.
+         */
+        get: operations["list_photos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/photos/{photo_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approves a photo that is `pending_review` or `approved` (18 section 4.2). The profile's first
+         *     approved photo becomes its main photo; completeness and recommendations are refreshed; the
+         *     owner gets a `photo_approved` notification; `photo.approve` is audited. Answers `204`.
+         */
+        post: operations["approve_photo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/photos/{photo_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rejects a photo that is `pending_review` or `approved`. A rejected main photo is replaced by
+         *     the next approved photo; the files are deleted after 30 days; the owner gets a
+         *     `photo_rejected` notification; `photo.reject` is audited. Answers `204`.
+         */
+        post: operations["reject_photo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/profiles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The review queue and profile search, longest waiting first. */
+        get: operations["list_profiles"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/profiles/{profile_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One profile in full: private fields, history, reports, sanctions. Contact details are
+         *     included for admins only.
+         */
+        get: operations["get_profile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/profiles/{profile_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** `pending_review` to `active`. */
+        post: operations["approve_profile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/profiles/{profile_id}/locked-fields": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Corrects name, gender or date of birth on the owner's behalf (admin only). */
+        patch: operations["change_locked_fields"];
+        trace?: never;
+    };
+    "/v1/admin/profiles/{profile_id}/request-changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** `pending_review` to `changes_requested`. */
+        post: operations["request_changes"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/releases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The release records, newest first. */
+        get: operations["list_releases"];
+        put?: never;
+        /**
+         * Records a build that CI has already uploaded (admin only). Rows are never edited or deleted:
+         *     to correct a mistake, publish a new record.
+         */
+        post: operations["create_release"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The report queue: by priority (13 section 6.5), then oldest first. */
+        get: operations["list_reports"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/reports/{report_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One report with its context, the target's history and related reports. */
+        get: operations["get_report"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/reports/{report_id}/claim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** `open` to `in_review`. `409` when someone else claimed it. */
+        post: operations["claim_report"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/reports/{report_id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Decides a report. Allowed from `in_review`, and from `open` only as `dismissed` (bulk
+         *     dismissal of duplicates).
+         */
+        post: operations["resolve_report"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every setting of 03 section 7, whether or not a row exists yet. */
+        get: operations["list_settings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/settings/{key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Changes one setting (admin only): validates it, stores it, refreshes the settings cache at
+         *     once and, for a legal version, drops every account snapshot so members are asked to accept
+         *     the new document. An unknown key answers `404`.
+         */
+        put: operations["put_setting"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/texts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Pending texts that no queued or running `moderate_text` job is about to decide, oldest
+         *     first. Cursor pagination.
+         */
+        get: operations["list_texts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/texts/{profile_id}/{field}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approves a pending text. No notification (18 section 4.3); `text.approve` is audited.
+         *     Answers `204`. `409 invalid_state` when the text changed or was decided already.
+         */
+        post: operations["approve_text"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/texts/{profile_id}/{field}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rejects a pending text. The owner gets a `text_rejected` notification carrying the field and
+         *     the note; `text.reject` is audited. Answers `204`. `409 invalid_state` when the text changed
+         *     or was decided already.
+         */
+        post: operations["reject_text"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Searches accounts. At least one of `q`, `status` and `role` is required: the console has no
+         *     "browse members" screen on purpose (18 section 10).
+         */
+        get: operations["search_users"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/users/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One account: sanctions, devices, consents, reports and history. */
+        get: operations["get_user"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/users/{user_id}/ban": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Bans an `active` or `suspended` member (admin only): connections end and the identity
+         *     number, email and phone go on the block list.
+         */
+        post: operations["ban_user"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/users/{user_id}/role": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Changes a role (admin only). An admin cannot change their own role; the target must be
+         *     `active`.
+         */
+        patch: operations["change_role"];
+        trace?: never;
+    };
+    "/v1/admin/users/{user_id}/suspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Suspends an `active` member for a number of days. */
+        post: operations["suspend_user"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/users/{user_id}/unban": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Lifts a ban (admin only). */
+        post: operations["unban_user"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/users/{user_id}/unsuspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Lifts a suspension. */
+        post: operations["unsuspend_user"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/users/{user_id}/warn": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Warns an `active` member: a notification and an email, no status change. */
+        post: operations["warn_user"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/verifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The verification queue, oldest first. Cursor pagination. */
+        get: operations["list_verifications"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/verifications/{request_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A request with its images, the registered number and the profile to compare with. Every call
+         *     writes a `verification.view` audit row, also for requests already decided; the row and the
+         *     response stand or fall together. The response is not cacheable.
+         */
+        get: operations["get_verification"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/verifications/{request_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approves a pending request (12 sections 4.5 and 5.4). An identity check verifies the number,
+         *     sets `is_id_verified` (which also locks the names) and, with `photos_match`, the photo badge;
+         *     a selfie sets `is_photo_verified` and needs an approved photo. The member gets a
+         *     `verification_approved` notification and email; `verification.approve` is audited. Answers
+         *     `204`; `409 invalid_state` unless the request is pending.
+         */
+        post: operations["approve_verification"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/verifications/{request_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rejects a pending request with a reason (12 sections 4.5 and 5.4). A rejected identity check
+         *     leaves the identity `rejected`; the member may submit again at once. The member gets a
+         *     `verification_rejected` notification and email with the reason (never the note);
+         *     `verification.reject` is audited. Answers `204`; `409 invalid_state` unless pending.
+         */
+        post: operations["reject_verification"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/blocks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Profiles the caller blocked, newest first. No photo and no other data. */
+        get: operations["list_blocks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/blocks/{profile_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Block a profile. In one transaction: the block, the active connection ended with reason
+         *     `blocked`, pending interests closed, photo access revoked both ways, shortlist entries and
+         *     recommendations deleted both ways, notifications about each other removed. The other
+         *     member is not told; each simply disappears for the other.
+         */
+        put: operations["put_block"];
+        post?: never;
+        /** Remove a block. Nothing else is restored. */
+        delete: operations["delete_block"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/connections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The chat list. `filter` is `active` (default, without archived chats), `archived` or
+         *     `ended`. Ordered by `last_message_at` descending; connections without messages by
+         *     `created_at`.
+         */
+        get: operations["list_connections"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/connections/{connection_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One connection of the caller. */
+        get: operations["get_connection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Mute or archive a chat. Both flags are the caller's own and invisible to the other member.
+         *     A muted chat sends no push and does not count in `counters.unread_chats`; an archived chat
+         *     moves to the Archived tab until the next message arrives.
+         */
+        patch: operations["patch_connection"];
+        trace?: never;
+    };
+    "/v1/connections/{connection_id}/contact-share": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Share contact details with the other member, or change which items are shared.
+         * @description At least one item must be selected, and each selected item must have a value in the
+         *     caller's contact details (`validation_failed` with field code `required` on the share flag,
+         *     so the client can open the contact form). The share is a reference: later edits of the
+         *     details are what the other member sees. Posts a `contact_shared` system message and
+         *     notifies the other member.
+         */
+        put: operations["put_contact_share"];
+        post?: never;
+        /**
+         * Stop sharing contact details. The other member no longer sees them from the next fetch;
+         *     anything they saved is out of reach. Posts a `contact_share_revoked` system message. Without
+         *     an active share nothing changes.
+         */
+        delete: operations["delete_contact_share"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/connections/{connection_id}/end": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * End the connection with a reason, and optionally block the other member.
+         * @description Both contact shares and the photo access between the pair are revoked, a pending stage
+         *     proposal is cancelled and a `connection_ended` system message is posted. The other member is
+         *     not notified and never sees the reason. Neither may send the other an interest for
+         *     `connection.cooldown_after_end_days` (90).
+         */
+        post: operations["end_connection"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/connections/{connection_id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Message history: the newest `limit` (default 30, at most 100) messages newest first, or
+         *     those older than `before` (newest first), or those newer than `after` (oldest first; repeat
+         *     while `has_more`). Ended connections stay readable.
+         */
+        get: operations["list_messages"];
+        put?: never;
+        /**
+         * Send a text message.
+         * @description `client_message_id` is a UUID made by the client and reused on every retry: sending it
+         *     again returns the original message with `200` and changes nothing. Errors:
+         *     `connection_ended`; `invalid_state` with `details.status = 'other_unavailable'` when the
+         *     other member can no longer be opened (suspended, banned, scheduled for deletion);
+         *     `rate_limited` (`limits.messages_per_minute`) and `limit_reached`
+         *     (`limits.messages_per_day`). Messages are never blocked for their content: the safety
+         *     patterns only add a notice for the receiver (13 section 5).
+         */
+        post: operations["send_message"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/connections/{connection_id}/messages/{message_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove one of the caller's own text messages, within 15 minutes of sending (`invalid_state`
+         *     with `details.status = 'delete_window_passed'` after). The body is cleared; both members see
+         *     "Message removed". A message that is already removed is returned as it is.
+         */
+        delete: operations["delete_message"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/connections/{connection_id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark messages as read up to a message of this connection. The stored pointer never moves
+         *     backwards, and `unread_count` is recomputed from the data. `message.read` reaches the other
+         *     member only when both members send read receipts (09 section 9).
+         */
+        post: operations["mark_read"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/connections/{connection_id}/stage-proposals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Propose the next stage: later than the current one (`invalid_state`), with no proposal
+         *     pending (`already_exists`), and not a stage this member proposed and saw declined in the
+         *     last 7 days (`cooldown_active`). Posts a `stage_proposed` system message and notifies the
+         *     other member.
+         */
+        post: operations["propose_stage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/connections/{connection_id}/stage-proposals/{proposal_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Withdraw the caller's own pending proposal. Posts a `stage_declined` system message with
+         *     `cancelled: true`.
+         */
+        delete: operations["cancel_proposal"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/connections/{connection_id}/stage-proposals/{proposal_id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm the other member's proposal: the connection moves to its stage. Reaching
+         *     `nikah_done` closes both profiles (`found_match_here`), expires their pending interests and
+         *     ends their other connections (`found_someone_else`); the couple's chat stays readable.
+         *     Reaching `engaged` only makes the clients suggest pausing the profile.
+         */
+        post: operations["confirm_proposal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/connections/{connection_id}/stage-proposals/{proposal_id}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Decline the other member's proposal. The stage stays; a `stage_declined` system message is
+         *     posted and nobody is notified. The proposer may suggest the same stage again after 7 days.
+         */
+        post: operations["decline_proposal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record client-side product events as log lines (20 section 8.3). Always `204`. */
+        post: operations["post_events"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/home": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Everything the home screen needs in one call (15 section 10, 10 section 10). */
+        get: operations["get_home"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/interests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Received or sent interests, newest first. `status` is `pending` (default), `accepted` or
+         *     `closed`. A sender sees a declined interest as "no response" under `pending` until it would
+         *     have expired, then under `closed`.
+         */
+        get: operations["list_interests"];
+        put?: never;
+        /**
+         * Send an interest.
+         * @description The checks of 15 section 11 run in order: the receiver must be `active` and openable
+         *     (`not_found`), not connected (`already_connected`), no pending interest from the caller
+         *     (`interest_already_pending`, also during a quiet decline), no cooldown (`cooldown_active`),
+         *     the receiver's `interest_permission` (`not_permitted_by_member`), the pending, connection and
+         *     daily limits (`limit_reached`), and the text rules on `message` (`validation_failed`).
+         *
+         *     When the receiver already has a pending interest to the caller, that interest is accepted
+         *     instead (mutual interest): checks 5, 6 and 8 are skipped, the message is ignored, and
+         *     `connection` is set in the answer.
+         */
+        post: operations["send_interest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/interests/seen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark received interests as seen (once per id). Ids that are not the caller's received
+         *     interests are ignored.
+         */
+        post: operations["mark_seen"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/interests/{interest_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One interest the caller sent or received. */
+        get: operations["get_interest"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/interests/{interest_id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept a received interest: only the receiver, only `pending`.
+         * @description The sender must still be openable (otherwise the interest expires and `invalid_state`), and
+         *     both members must be under `limits.active_connections_max` (`limit_reached` with
+         *     `details.side` `you` or `them`). Creates the connection, both member rows and the
+         *     `connected` system message in one transaction.
+         */
+        post: operations["accept_interest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/interests/{interest_id}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Decline a received interest: only the receiver, only `pending`. The sender is not told; they
+         *     see "No response yet" until the interest would have expired. With `also_block`, the sender
+         *     is also blocked (15 section 13).
+         */
+        post: operations["decline_interest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/interests/{interest_id}/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Withdraw a sent interest: only the sender, only `pending`. The receiver is not told; their
+         *     notification for it is removed. An interest that was quietly declined answers as withdrawn
+         *     too, so the decline never shows (11 section 3.5 rule 2).
+         */
+        post: operations["withdraw_interest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Session bootstrap: user, profile summary, gate, counters. Never fails with a gate error;
+         *     creates the account rows on the first call (06 section 5).
+         */
+        get: operations["get_me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change `locale` or `timezone`. */
+        patch: operations["patch_me"];
+        trace?: never;
+    };
+    "/v1/me/consents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accept new versions of legal documents. */
+        post: operations["post_consents"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/deletion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Schedules the deletion of the account. The profile is hidden at once and purged after
+         *     `account.deletion_grace_days`. A banned or suspended account keeps its status.
+         */
+        post: operations["post_deletion"];
+        /**
+         * Cancels a scheduled deletion. The account is `active` again; a banned or suspended account
+         *     keeps that status and only the deletion is cancelled.
+         */
+        delete: operations["delete_deletion"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Registers a push token. The token is unique: one already registered to another user moves
+         *     to the caller (14 section 4.4).
+         */
+        post: operations["register_device"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/devices/{push_token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Removes the caller's registration of a push token, on sign-out. Answers `204` also when the
+         *     token is not registered, so that signing out never fails.
+         */
+        delete: operations["remove_device"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/exports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Requests a download of the member's data. At most one request per 24 hours. */
+        post: operations["post_export"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/exports/latest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Status and download link of the latest export. */
+        get: operations["get_latest_export"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/identity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The identity document summary, or `null` while no number was registered. The number is
+         *     never returned.
+         */
+        get: operations["get_identity"];
+        /**
+         * Register or replace the identity document number.
+         * @description Rules of 12 section 3: the number is normalised and checked against the document type and
+         *     the profile's gender, hashed with the pepper and compared with `banned_identities` and the
+         *     other profiles, then stored encrypted with the profile id as associated data. A `pending`
+         *     or `verified` identity cannot be changed (`invalid_state`); a `rejected` one is replaced and
+         *     goes back to `unverified`.
+         */
+        put: operations["put_identity"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/notification-preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The caller's notification settings (14 section 6.1). */
+        get: operations["get_preferences"];
+        /**
+         * Replaces the notification settings. Every switch is required; the quiet hours are both set
+         *     or both `null` (14 section 6.2).
+         */
+        put: operations["put_preferences"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/onboarding/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Finish onboarding.
+         * @description Requires `onboarding_step = review`. Re-validates every required field and the 18+ rule,
+         *     then sets the status to `active`, or to `pending_review` when `moderation.profile_review` is
+         *     `manual` or a system report about the profile is open (13 section 2.3). Enqueues the first
+         *     recommendations refresh and, for a profile that goes live, the `welcome` email. Returns `Me`.
+         */
+        post: operations["post_complete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/onboarding/continue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark the current onboarding step as done.
+         * @description `step` must equal the current `onboarding_step` and must not be `review` or `done`. The
+         *     step's requirement (03 section 4.3) is checked against the saved profile; on failure the
+         *     answer is `validation_failed` naming the missing fields. Returns `Me`.
+         */
+        post: operations["post_continue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/photo-access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Requests received or sent, newest first. `box=received` (default) lists the requests for the
+         *     caller's photos and, with `status=granted`, the access the caller gave; `box=sent` lists the
+         *     caller's own requests. `status` defaults to `pending`.
+         * @description A member is never told that a request was denied or that access was removed (09 sections
+         *     6.3 and 6.4), so `box=sent` lists only `pending` and `granted` rows: with `status=denied` or
+         *     `status=revoked` it answers an empty page.
+         */
+        get: operations["list_access"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/photo-access/grants/{profile_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Let a member see the caller's photos without a request. Allowed from no row, `denied`,
+         *     `revoked` and `pending` (which approves the request), and only when the caller may open the
+         *     target (`404` otherwise; for a `paused` caller that means members they are related to).
+         *     Granting twice changes nothing and answers `204`. The target receives
+         *     `photo_request_granted`.
+         */
+        put: operations["put_grant"];
+        post?: never;
+        /**
+         * Take access back: `granted` to `revoked`. The viewer is not told; the photos are blurred
+         *     again on their next request, and they may ask again after `photo_access.retry_days`. `404`
+         *     when the caller has no row for the member, `409 invalid_state` when the row is not
+         *     `granted`.
+         */
+        delete: operations["delete_grant"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/photo-access/{id}/deny": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Deny a request: `pending` to `denied`. The requester is not told, and may ask again after
+         *     `photo_access.retry_days`. Any other state answers `409 invalid_state`; a request that is
+         *     not the caller's answers `404`.
+         */
+        post: operations["deny_request"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/photo-access/{id}/grant": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve a request: `pending` to `granted`. Any other state answers `409 invalid_state`
+         *     with the current `status`; a request that is not the caller's answers `404`. The requester
+         *     receives `photo_request_granted`.
+         */
+        post: operations["grant_request"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/photos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The caller's photos in display order, every status, with signed URLs for the clear
+         *     variants (`null` while processing and after a failure).
+         */
+        get: operations["list_photos"];
+        put?: never;
+        /**
+         * Confirms an upload and starts processing.
+         * @description The key must be one this profile was given (anything else is `404`), and the object must
+         *     exist and be at most 10 MiB (`404` and `413`; an oversized object is deleted). Confirming
+         *     the same key again returns the existing photo with `200`; a new photo is `201` with status
+         *     `processing` and a `process_photo` job.
+         */
+        post: operations["confirm_photo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/photos/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Sets the display order. The list must name every photo of the profile once; otherwise
+         *     `validation_failed` on `photo_ids`. Does not change which photo is primary.
+         */
+        put: operations["put_order"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/photos/uploads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Asks for an upload URL. The key is `tmp/photos/{profile_id}/{uuid}`.
+         * @description Answers `payload_too_large` over 10 MiB, `limit_reached` when the profile already holds
+         *     `limits.photos_max` photos that are not `rejected` or `failed`, and `503` when storage is
+         *     not available.
+         */
+        post: operations["create_upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/photos/{photo_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Deletes a photo. The R2 objects go through a `delete_objects` job. Deleting the primary
+         *     hands it to the approved photo with the lowest position; a profile left without an approved
+         *     photo loses `has_approved_photo`; a new primary clears `is_photo_verified`.
+         */
+        delete: operations["delete_photo"];
+        options?: never;
+        head?: never;
+        /**
+         * Makes an approved photo the primary one (03 section 4.4). A different primary clears
+         *     `is_photo_verified`, because the badge vouches for the face others see first (12 section 4.6).
+         *     Choosing the photo that is already primary changes nothing. Returns every photo.
+         */
+        patch: operations["patch_photo"];
+        trace?: never;
+    };
+    "/v1/me/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The partner preferences: the stored row, or the computed defaults (07 section 12) until the
+         *     first `PUT`.
+         */
+        get: operations["get_preferences"];
+        /**
+         * Replace the partner preferences. Creates the row when it is missing, validates codes, ranges
+         *     and array sizes, sets `match_stale`, and holds a changed `notes` text for review (13 section
+         *     3.7). Returns what was stored.
+         */
+        put: operations["put_preferences"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/privacy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The privacy settings (09 section 3). */
+        get: operations["get_privacy"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Change some privacy settings. Takes effect immediately for every viewer. Changing the
+         *     visibility of caste, income or family marks the recommendations stale (10 section 8.2).
+         *     Returns the full settings.
+         */
+        patch: operations["patch_privacy"];
+        trace?: never;
+    };
+    "/v1/me/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The owner's complete view of the profile: every section, `missing`, `locked_fields`, the
+         *     photos, the identity summary, the verification state and the status of the moderated texts.
+         */
+        get: operations["get_profile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/profile/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Close the profile: `active` or `paused` to `closed`.
+         * @description Every pending interest sent or received by the profile expires (03 section 4.2); the
+         *     connections stay and become read-only.
+         */
+        post: operations["post_close"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/profile/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Hide the profile from discovery: `active` to `paused`.
+         * @description Pending interests stay and can still be answered (03 section 4.2). `invalid_state` from any
+         *     other status.
+         */
+        post: operations["post_pause"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/profile/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The caller's own profile as another member would see it, at the tier `as` (15 section 7,
+         *     08 section 4). Works in every profile status and records no view.
+         */
+        get: operations["get_preview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/profile/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Open a closed profile again: `closed` to `active`.
+         * @description `confirm` must be `true`. When the profile was closed after a confirmed nikah, reopening
+         *     ends that connection with the reason `other` (03 section 4.2); the clients ask the member to
+         *     type a confirmation first.
+         */
+        post: operations["post_reopen"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/profile/resubmit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send a `changes_requested` profile back to review.
+         * @description Requires `status = changes_requested` (`invalid_state` otherwise). Re-validates every
+         *     required field as `complete` does, sets the status to `pending_review` and clears
+         *     `status_reason`. Returns `Me`.
+         */
+        post: operations["post_resubmit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/profile/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Go live again: `paused` to `active`. The recommendations are marked stale (10 section 8.2). */
+        post: operations["post_resume"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/profile/sections/{section}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Replace one section of the profile.
+         * @description `{section}` is one of `account_for`, `basics`, `community`, `location`, `education_career`,
+         *     `family`, `lifestyle` and `contacts`. The body is the matching section type of `OwnProfile`;
+         *     a key sent as `null` clears the value. While the profile is a `draft`, required fields may
+         *     be `null`; afterwards they can no longer be cleared. Fields in `locked_fields` must be sent
+         *     with their current value. Recomputes `completeness`, marks the recommendations stale (not
+         *     for `contacts`) and holds a changed free text for review. Returns the updated `OwnProfile`.
+         */
+        put: operations["put_section"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/saved-searches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The caller's saved searches, newest first. */
+        get: operations["list_saved_searches"];
+        put?: never;
+        /** Save a search. At most `limits.saved_searches_max` (10) per profile (`limit_reached`). */
+        post: operations["create_saved_search"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/saved-searches/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a saved search. */
+        delete: operations["delete_saved_search"];
+        options?: never;
+        head?: never;
+        /** Rename a saved search or switch its notifications. */
+        patch: operations["patch_saved_search"];
+        trace?: never;
+    };
+    "/v1/me/verifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The state of the caller's checks and their latest requests. */
+        get: operations["get_verifications"];
+        put?: never;
+        /**
+         * Submits a verification request.
+         * @description Field errors: `gesture` must be today's or yesterday's challenge (`mismatch`); every key must
+         *     be one of the caller's uploads that exists (`invalid`); `back_key` is required for `cnic`,
+         *     `nicop` and `poc` (`required`). `already_exists` when a request of the kind is pending,
+         *     `invalid_state` when an identity check has no identity number to check or a selfie has no
+         *     approved photo to compare with, `profile_not_active` when the profile is `closed`.
+         */
+        post: operations["submit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/verifications/selfie-challenge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The gesture to perform in today's selfie, derived from the profile id and the date in
+         *     `Asia/Karachi` (12 section 4.2).
+         */
+        get: operations["selfie_challenge"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/verifications/uploads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * A presigned `PUT` for one verification image. The key is `verification/{profile_id}/{uuid}`.
+         *     A profile that is `closed` cannot verify (03 section 5).
+         */
+        post: operations["create_upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/verifications/{request_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Cancels a pending request. An identity check goes back to `unverified`, and the images are
+         *     deleted by the next `purge_verification_media` run (12 section 5.4).
+         */
+        delete: operations["cancel"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/visited": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The caller's own viewing history for the last 30 days (09 section 8.2 rule 4). Profiles the
+         *     caller can no longer open are left out.
+         */
+        get: operations["get_visited"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/visitors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Who viewed the caller's profile in the last 30 days, without private visits and without
+         *     viewers the caller can no longer open (09 section 8.3). Empty with
+         *     `hidden_because_private` when the caller browses privately (09 section 8.2).
+         */
+        get: operations["get_visitors"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/meta": {
         parameters: {
             query?: never;
@@ -55,13 +2022,1953 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/meta/app-release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The latest Android release, for the in-app update prompt. */
+        get: operations["app_release"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The notification feed, newest first. Rows whose actor the caller can no longer open are
+         *     left out (14 section 7.3 rule 3).
+         */
+        get: operations["list_notifications"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/notifications/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Marks notifications as read: `{ "ids": [...] }` or `{ "all": true }`. Ids that are not the
+         *     caller's are ignored. The `counters` event goes to the caller's sockets.
+         */
+        post: operations["mark_read"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/passes/{profile_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Mark a profile as not interested for `pass.duration_days` (180): it leaves the caller's
+         *     recommendations and search, and any shortlist entry is removed. A pending sent interest
+         *     is not withdrawn (11 section 12).
+         */
+        put: operations["put_pass"];
+        post?: never;
+        /** Undo a pass. */
+        delete: operations["delete_pass"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/profiles/by-code/{public_code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Resolves a profile code to an id, under the same visibility rules (09 section 4.3 rule 8). */
+        get: operations["get_profile_by_code"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/profiles/{profile_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Another member's profile. `404` whenever the caller may not open it (09 section 2). Records
+         *     a profile view and counts it against `limits.profile_views_per_day`, except for connections
+         *     (09 section 8.1).
+         */
+        get: operations["get_profile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/profiles/{profile_id}/photo-access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask to see a member's photos. The checks run in the order of 09 section 6.3:
+         * @description 1. The caller is `active` (access level `browse`) and may open the owner (`404` otherwise).
+         *     2. The caller currently gets blurred photos and the owner has an approved photo, otherwise
+         *        `409 invalid_state` with `details.status = "visible"`.
+         *     3. The owner accepts requests, otherwise `409 not_permitted_by_member` with
+         *        `details.reason = "requests_off"`.
+         *     4. No request is pending (`409 already_exists`).
+         *     5. A denial or revocation is older than `photo_access.retry_days`
+         *        (`409 cooldown_active` with `retry_after_date`).
+         *     6. Fewer than `limits.photo_requests_per_day` requests were sent today
+         *        (`429 limit_reached`).
+         *
+         *     The owner receives a `photo_request_received` notification and a `counters` event.
+         */
+        post: operations["request_access"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/recommendations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ranked matches, paginated. A stale list is refreshed first when that takes under 2
+         *     seconds; otherwise the old list is served with `is_refreshing: true` (10 section 8.6).
+         *     Each returned candidate's `shown_count` grows, at most once every 6 hours.
+         */
+        get: operations["get_recommendations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/recommendations/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Recompute recommendations now: marks them stale and enqueues the refresh job. At most once
+         *     per 10 minutes (`rate_limited`).
+         */
+        post: operations["post_refresh"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reference/bootstrap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** All small lookup lists and option labels. Supports `ETag` / `If-None-Match`. */
+        get: operations["bootstrap"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reference/cities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * City search. Without `q`: major cities first, then by population. With `q`: names that start
+         *     with it first, then by similarity (15 section 5).
+         */
+        get: operations["cities"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reference/regions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Regions of a country, sorted by name. */
+        get: operations["regions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Report a member, a photo or a message. The caller must be able to see the subject, else
+         *     `404 not_found` (13 section 6.1): the target through the visibility rules for a profile or
+         *     a photo (an `approved` photo of the target), a connection the caller belongs to for a
+         *     message (one the target sent; an ended connection counts).
+         * @description The context is captured at filing time (13 section 6.3): the profile text fields, the photo
+         *     keys, or for a message the 20 messages before it, the message and the 5 after it from that
+         *     connection only. At most `limits.reports_per_day` reports a day (`429 limit_reached`); a
+         *     report on a subject the caller already has an `open` or `in_review` report on returns that
+         *     report's id and creates nothing. With `also_block` the block is applied in the same
+         *     transaction, also for that repeated report. Answers `201` with the report id. The reported
+         *     member is not told and nothing changes for them.
+         */
+        post: operations["file_report"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Search with filters (10 section 9). The stored preferences are not applied; E1 to E9 are. */
+        post: operations["post_search"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/shortlist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Shortlisted profiles, newest first. */
+        get: operations["list_shortlist"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/shortlist/{profile_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Add a profile to the shortlist, or replace its note. At most 200 entries (`limit_reached`).
+         *     The other member is never told.
+         */
+        put: operations["put_shortlist"];
+        post?: never;
+        /** Remove a profile from the shortlist. Works even when the profile is no longer visible. */
+        delete: operations["delete_shortlist"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ws": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Opens the realtime socket. An `Origin` header, when present, must be an allowed web origin
+         *     (Android sends none). Then send `{"type":"auth","token":"<Clerk token>"}` within 10 seconds.
+         */
+        get: operations["upgrade"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/webhooks/clerk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Clerk user events. `204` on success and on duplicates; `400` on a bad signature. */
+        post: operations["clerk_webhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description The answer of `POST /v1/interests/{interest_id}/accept`. */
+        AcceptedInterest: {
+            connection: components["schemas"]["Connection"];
+            interest: components["schemas"]["Interest"];
+        };
+        /**
+         * @description The body of `PUT .../sections/account_for`: the section plus the consents ticked on the
+         *     screen, recorded at their current versions (07 section 3.4 rule 3).
+         */
+        AccountForBody: {
+            consents?: components["schemas"]["ConsentDocument"][];
+            managed_by?: components["schemas"]["ManagedBy"] | null;
+            manager_name?: string | null;
+        };
+        /** @description Who manages the profile. */
+        AccountForSection: {
+            managed_by: components["schemas"]["ManagedBy"] | null;
+            /** @description Never shown to other members. Always `null` when `managed_by` is `self`. */
+            manager_name: string | null;
+        };
+        AdminApprovedPhoto: {
+            is_primary: boolean;
+            large_url: string;
+            /** Format: uuid */
+            photo_id: string;
+            status: components["schemas"]["PhotoStatus"];
+        };
+        /** @description A caste or sub-caste, active or not. */
+        AdminCaste: {
+            aliases: string[];
+            code: string;
+            is_active: boolean;
+            name: string;
+            name_ur: string | null;
+            parent_code: string | null;
+            /** Format: int32 */
+            sort_order: number;
+        };
+        AdminConsent: {
+            /** Format: date-time */
+            accepted_at: string;
+            document: components["schemas"]["ConsentDocument"];
+            version: string;
+        };
+        AdminDevice: {
+            app_version: string | null;
+            device_model: string | null;
+            /** Format: date-time */
+            last_seen_at: string;
+            platform: components["schemas"]["DevicePlatform"];
+        };
+        /** @description Another photo of the same profile, shown beside the one under review. */
+        AdminOtherPhoto: {
+            is_primary: boolean;
+            medium_url: string;
+            /** Format: uuid */
+            photo_id: string;
+            status: components["schemas"]["PhotoStatus"];
+        };
+        /** @description `GET /v1/admin/overview`. */
+        AdminOverview: {
+            /** Format: date-time */
+            generated_at: string;
+            metrics: components["schemas"]["OverviewMetrics"];
+            queues: components["schemas"]["OverviewQueues"];
+        };
+        /** @description A photo in the review queue (18 section 4.2). */
+        AdminPhotoItem: {
+            /** Format: int32 */
+            age?: number | null;
+            /** Format: date-time */
+            created_at: string;
+            first_name?: string | null;
+            gender?: components["schemas"]["Gender"] | null;
+            /** @description The unblurred large variant, signed. */
+            large_url: string;
+            /** @description `profile_photos.moderation` (13 section 4.2). */
+            moderation?: Record<string, never> | null;
+            other_photos: components["schemas"]["AdminOtherPhoto"][];
+            /** Format: uuid */
+            photo_id: string;
+            /** Format: uuid */
+            profile_id: string;
+            profile_is_photo_verified: boolean;
+            public_code: string;
+            status: components["schemas"]["PhotoStatus"];
+            /** @description The profile has no approved photo yet, so approving this one makes it the main photo. */
+            would_be_primary: boolean;
+        };
+        AdminPreviousRequest: {
+            /** Format: date-time */
+            created_at: string;
+            /** Format: uuid */
+            id: string;
+            kind: components["schemas"]["VerificationKind"];
+            rejection_reason: components["schemas"]["VerificationRejectionReason"] | null;
+            status: components["schemas"]["VerificationStatus"];
+        };
+        /**
+         * @description `GET /v1/admin/profiles/{profile_id}`.
+         *
+         *     `profile`, `preferences` and `privacy` carry the objects of 15 sections 4.3 and 4.5 exactly
+         *     (`OwnProfile`, `Preferences`, `Privacy`); the unblurred photo URLs and, for admins, the
+         *     contact details are included.
+         */
+        AdminProfile: {
+            /** @description Newest 20 entries whose target is this profile or its user. */
+            audit: components["schemas"]["AuditEntry"][];
+            /** Format: date-time */
+            first_activated_at: string | null;
+            /** Format: date-time */
+            last_active_at: string | null;
+            /** @description `Preferences` (15 section 4.5), `null` when the profile has none. */
+            preferences: Record<string, never> | null;
+            /** @description `Privacy` (15 section 4.5). `null` only after the account was purged. */
+            privacy: Record<string, never> | null;
+            /** @description `OwnProfile` (15 section 4.3). `contacts` is `null` for moderators. */
+            profile: Record<string, never>;
+            /** @description Newest 10. */
+            reports_against: components["schemas"]["AdminReportListItem"][];
+            reports_filed: components["schemas"]["ReportsFiled"];
+            sanctions: components["schemas"]["AdminSanction"][];
+            stats: components["schemas"]["AdminProfileStats"];
+            user: components["schemas"]["AdminProfileUser"];
+            verification_requests: components["schemas"]["AdminVerificationRequest"][];
+        };
+        /** @description A row of the profile search and review queue. */
+        AdminProfileListItem: {
+            /** Format: int32 */
+            age?: number | null;
+            city_name?: string | null;
+            /** Format: date-time */
+            created_at: string;
+            first_name?: string | null;
+            gender?: components["schemas"]["Gender"] | null;
+            last_name?: string | null;
+            managed_by?: components["schemas"]["ManagedBy"] | null;
+            /** Format: date-time */
+            onboarding_completed_at?: string | null;
+            /** Format: int64 */
+            open_system_reports: number;
+            /** @description First photo of any status, unblurred. */
+            photo_thumb_url?: string | null;
+            /** Format: uuid */
+            profile_id: string;
+            public_code: string;
+            status: components["schemas"]["ProfileStatus"];
+            /** Format: uuid */
+            user_id: string;
+        };
+        AdminProfileStats: {
+            /** Format: int64 */
+            active_connections: number;
+            /** Format: int64 */
+            blocks_received: number;
+            /** Format: int64 */
+            connections_ended_by_others: number;
+            /**
+             * Format: int64
+             * @description Sent interests that were accepted.
+             */
+            interests_accepted_by_others: number;
+            /** Format: int64 */
+            interests_received: number;
+            /** Format: int64 */
+            interests_sent: number;
+            /**
+             * Format: int64
+             * @description Messages with `safety_flag = 'money'` sent in the last 30 days.
+             */
+            money_flags_30d: number;
+        };
+        AdminProfileUser: {
+            /** Format: date-time */
+            created_at: string;
+            email: string | null;
+            email_verified: boolean;
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            last_seen_at: string | null;
+            /** @description `null` for moderators. */
+            phone_e164: string | null;
+            role: components["schemas"]["UserRole"];
+            status: components["schemas"]["UserStatus"];
+            status_reason: string | null;
+            /** Format: date-time */
+            suspended_until: string | null;
+        };
+        AdminRelease: {
+            download_url: string;
+            /** Format: uuid */
+            id: string;
+            /** Format: int32 */
+            min_supported_version_code: number;
+            platform: string;
+            release_notes: string | null;
+            /** Format: date-time */
+            released_at: string;
+            /** Format: int32 */
+            version_code: number;
+            version_name: string;
+        };
+        /** @description `GET /v1/admin/reports/{report_id}`. */
+        AdminReportDetail: components["schemas"]["AdminReportListItem"] & {
+            /** @description The snapshot taken at filing time (13 section 6.3 and 5.5). */
+            context?: Record<string, never> | null;
+            details?: string | null;
+            /** Format: date-time */
+            handled_at?: string | null;
+            photo?: components["schemas"]["ReportPhoto"] | null;
+            /** @description Other `open` or `in_review` reports on the same target. */
+            related_reports: components["schemas"]["AdminReportListItem"][];
+            reporter_summary?: components["schemas"]["ReporterSummary"] | null;
+            resolution_note?: string | null;
+            target_summary: components["schemas"]["ReportTargetSummary"];
+        };
+        /** @description A row of the report queue. */
+        AdminReportListItem: {
+            /** Format: date-time */
+            created_at: string;
+            handled_by_email: string | null;
+            /**
+             * Format: int64
+             * @description Reports on the same target that are `open` or `in_review`.
+             */
+            open_reports_on_target: number;
+            /**
+             * Format: int32
+             * @description 1 (most urgent) to 3 (13 section 6.5).
+             */
+            priority: number;
+            reason: components["schemas"]["ReportReason"];
+            /** Format: uuid */
+            report_id: string;
+            reporter: components["schemas"]["ReportReporter"] | null;
+            source: components["schemas"]["ReportSource"];
+            status: components["schemas"]["ReportStatus"];
+            subject_type: components["schemas"]["ReportSubject"];
+            target: components["schemas"]["ReportTarget"];
+        };
+        /** @description A row of `sanctions` with the staff emails resolved. */
+        AdminSanction: {
+            /** @description `null` when the system applied it. */
+            created_by_email: string | null;
+            /** Format: date-time */
+            ends_at: string | null;
+            /** Format: uuid */
+            id: string;
+            reason: string;
+            /** Format: uuid */
+            report_id: string | null;
+            /** Format: date-time */
+            revoked_at: string | null;
+            revoked_by_email: string | null;
+            /** Format: date-time */
+            starts_at: string;
+            type: components["schemas"]["SanctionType"];
+        };
+        /** @description A text waiting for a person (18 section 4.3). */
+        AdminTextItem: {
+            field: components["schemas"]["ModeratedField"];
+            first_name?: string | null;
+            gender?: components["schemas"]["Gender"] | null;
+            /** Format: uuid */
+            profile_id: string;
+            public_code: string;
+            text: string;
+            /** @description Hex SHA-256 of `text`. Send it back with the decision. */
+            text_sha256: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        /** @description `GET /v1/admin/users/{user_id}`. */
+        AdminUser: components["schemas"]["AdminUserListItem"] & {
+            /** @description Newest 50 entries whose target is this user or their profile. */
+            audit: components["schemas"]["AuditEntry"][];
+            consents: components["schemas"]["AdminConsent"][];
+            /** Format: date-time */
+            deletion_requested_at?: string | null;
+            devices: components["schemas"]["AdminDevice"][];
+            email_verified: boolean;
+            flags: components["schemas"]["UserFlags"];
+            locale: components["schemas"]["Locale"];
+            /** @description `null` for moderators. */
+            phone_e164?: string | null;
+            phone_verified: boolean;
+            /** Format: date-time */
+            purge_after?: string | null;
+            /** @description Newest 20. */
+            reports_against: components["schemas"]["AdminReportListItem"][];
+            reports_filed: components["schemas"]["ReportsFiled"];
+            sanctions: components["schemas"]["AdminSanction"][];
+            status_reason?: string | null;
+            /** Format: date-time */
+            suspended_until?: string | null;
+        };
+        /** @description A row of the user search. */
+        AdminUserListItem: {
+            /** Format: date-time */
+            created_at: string;
+            email: string | null;
+            first_name: string | null;
+            gender: components["schemas"]["Gender"] | null;
+            last_name: string | null;
+            /** Format: date-time */
+            last_seen_at: string | null;
+            /** Format: uuid */
+            profile_id: string;
+            profile_status: components["schemas"]["ProfileStatus"];
+            public_code: string;
+            role: components["schemas"]["UserRole"];
+            status: components["schemas"]["UserStatus"];
+            /** Format: uuid */
+            user_id: string;
+        };
+        /** @description One request in full (18 section 4.4). */
+        AdminVerificationDetail: {
+            /** Format: date-time */
+            created_at: string;
+            gesture: string;
+            /** @description The gesture equals the challenge of the submission day or the day before. */
+            gesture_valid: boolean;
+            identity: components["schemas"]["AdminVerificationIdentity"] | null;
+            images: components["schemas"]["AdminVerificationImages"];
+            kind: components["schemas"]["VerificationKind"];
+            media_purged: boolean;
+            previous_requests: components["schemas"]["AdminPreviousRequest"][];
+            profile: components["schemas"]["AdminVerificationProfile"];
+            /** Format: uuid */
+            request_id: string;
+            status: components["schemas"]["VerificationStatus"];
+        };
+        /** @description The registered identity of an `id_document` request. */
+        AdminVerificationIdentity: {
+            document_type: components["schemas"]["DocumentType"];
+            /** @description Decrypted, formatted `#####-#######-#` for the 13-digit document types. */
+            number: string;
+            status: components["schemas"]["IdentityStatus"];
+        };
+        /**
+         * @description Signed image URLs, valid for 10 minutes. `null` when the slot was not used or the image has
+         *     been purged.
+         */
+        AdminVerificationImages: {
+            back_url: string | null;
+            front_url: string | null;
+            selfie_url: string | null;
+        };
+        /** @description A request in the queue (18 section 4.4). */
+        AdminVerificationListItem: {
+            /** Format: date-time */
+            created_at: string;
+            first_name?: string | null;
+            kind: components["schemas"]["VerificationKind"];
+            /** Format: uuid */
+            profile_id: string;
+            public_code: string;
+            /** Format: uuid */
+            request_id: string;
+            status: components["schemas"]["VerificationStatus"];
+        };
+        /** @description The profile data to compare with the documents. */
+        AdminVerificationProfile: {
+            /** Format: int32 */
+            age: number | null;
+            /**
+             * Format: date
+             * @description `YYYY-MM-DD`.
+             */
+            date_of_birth: string | null;
+            first_name: string | null;
+            gender: components["schemas"]["Gender"] | null;
+            last_name: string | null;
+            managed_by: components["schemas"]["ManagedBy"] | null;
+            manager_name: string | null;
+            marital_status: components["schemas"]["MaritalStatus"] | null;
+            /** @description The approved photos, for comparison with the selfie. */
+            photos: components["schemas"]["AdminApprovedPhoto"][];
+            /** Format: uuid */
+            profile_id: string;
+            public_code: string;
+        };
+        AdminVerificationRequest: {
+            /** Format: date-time */
+            created_at: string;
+            /** Format: uuid */
+            id: string;
+            kind: components["schemas"]["VerificationKind"];
+            rejection_reason: components["schemas"]["VerificationRejectionReason"] | null;
+            /** Format: date-time */
+            reviewed_at: string | null;
+            status: components["schemas"]["VerificationStatus"];
+        };
+        /** @description The answer of `POST /v1/admin/announcements` (`202`). */
+        AnnouncementAccepted: {
+            /**
+             * Format: int64
+             * @description Users who are `active` with an `active` or `paused` profile.
+             */
+            recipients_estimate: number;
+        };
+        /** @description The optional home-screen banner (`announcement.banner`). */
+        AnnouncementBanner: {
+            text_en: string;
+            text_ur: string | null;
+            url: string | null;
+        };
+        AnnouncementBody: {
+            /** @description 1 to 300 characters. */
+            text_en: string;
+            /** @description Up to 300 characters, shown to members who use Urdu. */
+            text_ur?: string | null;
+            /** @description Must start with `https://`. */
+            url?: string | null;
+        };
+        /** @description The newest Android release (04 section 11, `app_releases`). */
+        AppRelease: {
+            download_url: string;
+            /** Format: int32 */
+            min_supported_version_code: number;
+            release_notes: string | null;
+            /** Format: int32 */
+            version_code: number;
+            version_name: string;
+        };
+        ApproveText: {
+            /** @description The hash of the text the moderator read. */
+            text_sha256: string;
+        };
+        ApproveVerification: {
+            /**
+             * @description On an `id_document` request: the moderator confirmed that the selfie matches the profile
+             *     photos, which also earns the photo badge (12 section 5.4).
+             */
+            photos_match?: boolean | null;
+        };
+        AuditActor: {
+            email: string | null;
+            /** Format: uuid */
+            user_id: string;
+        };
+        /** @description One row of `admin_audit_log`. */
+        AuditEntry: {
+            /** @description An action code of 18 section 8.3. */
+            action: string;
+            actor: components["schemas"]["AuditActor"];
+            /** Format: date-time */
+            created_at: string;
+            /** @description Never holds an identity number, a contact detail or private message text. */
+            details: Record<string, never>;
+            /** Format: uuid */
+            id: string;
+            target_id: string;
+            target_type: components["schemas"]["AuditTargetType"];
+        };
+        /**
+         * @description `admin_audit_log.target_type`.
+         * @enum {string}
+         */
+        AuditTargetType: "user" | "profile" | "photo" | "verification_request" | "report" | "caste" | "caste_suggestion" | "app_setting" | "app_release";
+        /**
+         * @description Profile badges (03 section 6).
+         * @enum {string}
+         */
+        Badge: "phone_verified" | "photo_verified" | "id_verified" | "new";
+        BanBody: {
+            /** @description Shown to the member. 3 to 500 characters. */
+            reason: string;
+            /** Format: uuid */
+            report_id?: string | null;
+        };
+        BasicsSection: {
+            /** Format: int32 */
+            children_count?: number | null;
+            children_status?: components["schemas"]["ChildrenStatus"] | null;
+            /** Format: int32 */
+            current_wives_count?: number | null;
+            /**
+             * Format: date
+             * @description `YYYY-MM-DD`. A string in the request so that an impossible date is a field error
+             *     (`invalid`) and not a malformed body.
+             * @example 1998-04-12
+             */
+            date_of_birth?: string | null;
+            first_name?: string | null;
+            gender?: components["schemas"]["Gender"] | null;
+            /** Format: int32 */
+            height_cm?: number | null;
+            last_name?: string | null;
+            marital_status?: components["schemas"]["MaritalStatus"] | null;
+        };
+        /**
+         * @description `beard` (05 section 2).
+         * @enum {string}
+         */
+        Beard: "full" | "trimmed" | "none";
+        /** @description One blocked profile: only the name at tier `member` and the code (15 section 13). */
+        BlockItem: {
+            /** Format: date-time */
+            created_at: string;
+            display_name: string;
+            /** Format: uuid */
+            profile_id: string;
+            public_code: string;
+        };
+        BlocksPage: {
+            items: components["schemas"]["BlockItem"][];
+            next_cursor: string | null;
+        };
+        /**
+         * @description `blood_group` (05 section 2).
+         * @enum {string}
+         */
+        BloodGroup: "a_pos" | "a_neg" | "b_pos" | "b_neg" | "ab_pos" | "ab_neg" | "o_pos" | "o_neg";
+        /**
+         * @description `body_type` (05 section 2).
+         * @enum {string}
+         */
+        BodyType: "slim" | "average" | "athletic" | "heavy";
+        BootstrapCaste: {
+            aliases: string[];
+            code: string;
+            name: string;
+            name_ur: string | null;
+            sub_castes: components["schemas"]["NamedItem"][];
+        };
+        BootstrapCountry: {
+            code: string;
+            dial_code: string | null;
+            name: string;
+            name_ur: string | null;
+        };
+        BootstrapEducationLevel: {
+            code: string;
+            name: string;
+            name_ur: string | null;
+            /** Format: int32 */
+            rank: number;
+        };
+        BootstrapHobby: {
+            category: string;
+            code: string;
+            name: string;
+            name_ur: string | null;
+        };
+        BootstrapIncomeBand: {
+            code: string;
+            currency_code: string;
+            label: string;
+            label_ur: string | null;
+            /** Format: int32 */
+            rank: number;
+        };
+        BootstrapReligion: {
+            code: string;
+            name: string;
+            name_ur: string | null;
+            sects: components["schemas"]["NamedItem"][];
+        };
+        /**
+         * @description `Relation.cannot_send_detail`, and `details.reason` of `409 not_permitted_by_member`
+         *     (09 section 7).
+         * @enum {string}
+         */
+        CannotSendDetail: "verified_only" | "preference_match";
+        /**
+         * @description `Relation.cannot_send_reason` (09 section 7.2, 15 section 4.6).
+         * @enum {string}
+         */
+        CannotSendReason: "already_pending" | "already_connected" | "cooldown" | "daily_limit" | "pending_limit" | "connection_limit" | "not_permitted_by_member" | "own_profile_not_active";
+        /** @description `ProfileCard.relation`: the short form of [`Relation`]. */
+        CardRelation: {
+            /** @description The same result as `Relation.can_send_interest`, so lists can offer "Send interest". */
+            can_send_interest: boolean;
+            /** Format: uuid */
+            connection_id: string | null;
+            interest_direction: components["schemas"]["InterestDirection"] | null;
+            interest_status: components["schemas"]["InterestStatus"] | null;
+            is_shortlisted: boolean;
+            tier: components["schemas"]["Tier"];
+        };
+        CasteSimilar: {
+            code: string;
+            name: string;
+        };
+        CasteSuggestionItem: {
+            /** Format: date-time */
+            created_at: string;
+            /** Format: uuid */
+            id: string;
+            name: string;
+            normalized_name: string;
+            parent_code: string | null;
+            parent_name: string | null;
+            /** @description Existing castes whose name or alias has a trigram similarity of 0.4 or more. */
+            similar: components["schemas"]["CasteSimilar"][];
+            status: components["schemas"]["CasteSuggestionStatus"];
+            /** Format: int32 */
+            usage_count: number;
+        };
+        /**
+         * @description `caste_suggestions.status`.
+         * @enum {string}
+         */
+        CasteSuggestionStatus: "pending" | "promoted" | "rejected";
+        /**
+         * @description `children_acceptance` (05 section 2).
+         * @enum {string}
+         */
+        ChildrenAcceptance: "any" | "not_living_with_partner" | "none";
+        /**
+         * @description `children_status` (05 section 2).
+         * @enum {string}
+         */
+        ChildrenStatus: "none" | "living_with_me" | "not_living_with_me";
+        CityList: {
+            items: components["schemas"]["CityRef"][];
+        };
+        /** @description A city with its region, as every response shows it. */
+        CityRef: {
+            country_code: string;
+            /** Format: int32 */
+            id: number;
+            name: string;
+            /** Format: int32 */
+            region_id: number | null;
+            region_name: string | null;
+        };
+        /** @description The body of `POST /v1/me/profile/close`. */
+        CloseBody: {
+            reason: components["schemas"]["ClosedReason"];
+        };
+        /**
+         * @description `closed_reason` (05 section 2).
+         * @enum {string}
+         */
+        ClosedReason: "found_match_here" | "found_match_elsewhere" | "taking_a_break" | "other";
+        CommunitySection: {
+            caste_code?: string | null;
+            caste_other?: string | null;
+            /** @description Languages besides the mother tongue, at most 6. */
+            language_codes?: string[];
+            mother_tongue_code?: string | null;
+            religion_code?: string | null;
+            sect_code?: string | null;
+            sub_caste_code?: string | null;
+            sub_caste_other?: string | null;
+        };
+        /** @description The compatibility block of the profile screen (15 section 4.6 `Compatibility`). */
+        Compatibility: {
+            /**
+             * Format: int32
+             * @description 0..100 (10 section 5.3).
+             */
+            compat: number;
+            /** @description One entry per dimension set in the viewer's preferences, in the fixed order. */
+            dimensions: components["schemas"]["CompatibilityDimension"][];
+            /**
+             * Format: int32
+             * @description 0..100: how well the viewer fits the owner's preferences.
+             */
+            owner_fit: number;
+            /** @description Reason codes, at most 3 (10 section 7). */
+            reasons: string[];
+            /**
+             * Format: int32
+             * @description 0..100: how well the owner fits the viewer's preferences.
+             */
+            viewer_fit: number;
+        };
+        /** @description One entry of [`Compatibility::dimensions`]. */
+        CompatibilityDimension: {
+            /** @description Dimension key from 10 section 4. */
+            dimension: string;
+            /** @description The viewer's importance for it. */
+            importance: components["schemas"]["Importance"];
+            /** @description `score >= 0.999`. */
+            matched: boolean;
+            /**
+             * Format: double
+             * @description 0..1: how well the owner satisfies the viewer on it.
+             */
+            score: number;
+        };
+        /**
+         * @description Completeness items of 08 section 6.1, in table order. The code is the key sent in
+         *     `OwnProfile.missing`.
+         * @enum {string}
+         */
+        CompletenessItem: "core" | "photo" | "more_photos" | "about_me" | "education_details" | "career_details" | "income" | "family" | "religious_practice" | "plans" | "relocation" | "hobbies" | "partner_preferences" | "identity" | "id_verified" | "photo_verified";
+        /**
+         * @description `complexion` (05 section 2).
+         * @enum {string}
+         */
+        Complexion: "very_fair" | "fair" | "wheatish" | "brown" | "dark";
+        ConfirmRequest: {
+            /** @description The `upload_key` returned by `POST /v1/me/photos/uploads`. */
+            upload_key: string;
+        };
+        /** @description A connection as one of its members sees it (15 section 4.7). */
+        Connection: {
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            ended_at: string | null;
+            ended_by: components["schemas"]["EndedBy"] | null;
+            ended_reason: components["schemas"]["ConnectionEndReason"] | null;
+            /** Format: uuid */
+            id: string;
+            is_archived: boolean;
+            is_muted: boolean;
+            /** Format: date-time */
+            last_message_at: string | null;
+            last_message_preview: string | null;
+            my_contact_share: components["schemas"]["ContactShare"] | null;
+            other: components["schemas"]["ProfileCard"] | null;
+            pending_stage_proposal: components["schemas"]["PendingStageProposal"] | null;
+            stage: components["schemas"]["ConnectionStage"];
+            status: components["schemas"]["ConnectionStatus"];
+            their_contact: components["schemas"]["SharedContact"] | null;
+            /**
+             * Format: uuid
+             * @description `null` unless both members have `send_read_receipts` on (09 section 9).
+             */
+            their_last_read_message_id: string | null;
+            /** Format: int32 */
+            unread_count: number;
+        };
+        /**
+         * @description `connection_end_reason` (05 section 2).
+         * @enum {string}
+         */
+        ConnectionEndReason: "not_compatible" | "family_declined" | "no_response" | "found_someone_else" | "inappropriate_behaviour" | "other" | "blocked" | "account_closed";
+        /** @description A page of connections, latest activity first. */
+        ConnectionPage: {
+            items: components["schemas"]["Connection"][];
+            /** @description `null` on the last page. */
+            next_cursor: string | null;
+        };
+        /**
+         * @description `connection_stage` (05 section 2).
+         * @enum {string}
+         */
+        ConnectionStage: "chatting" | "families_talking" | "engaged" | "nikah_done";
+        /**
+         * @description `connections.status` (03 section 4.8).
+         * @enum {string}
+         */
+        ConnectionStatus: "active" | "ended";
+        /**
+         * @description `user_consents.document`.
+         * @enum {string}
+         */
+        ConsentDocument: "terms" | "privacy" | "community_guidelines" | "age_declaration" | "candidate_consent";
+        ConsentsBody: {
+            documents: components["schemas"]["ConsentDocument"][];
+        };
+        /** @description The caller's own contact share on a connection (15 section 4.7). */
+        ContactShare: {
+            /** Format: date-time */
+            created_at: string;
+            share_email: boolean;
+            share_guardian: boolean;
+            share_phone: boolean;
+            share_whatsapp: boolean;
+            status: components["schemas"]["ContactShareStatus"];
+        };
+        /** @description `PUT /v1/connections/{connection_id}/contact-share`: at least one item. */
+        ContactShareBody: {
+            share_email: boolean;
+            share_guardian: boolean;
+            share_phone: boolean;
+            share_whatsapp: boolean;
+        };
+        /**
+         * @description `contact_shares.status` (03 section 4.10).
+         * @enum {string}
+         */
+        ContactShareStatus: "active" | "revoked";
+        /** @description Private contact details (08 section 3). Never part of another member's response. */
+        ContactsSection: {
+            best_time_to_call?: string | null;
+            contact_email?: string | null;
+            guardian_name?: string | null;
+            guardian_phone_e164?: string | null;
+            guardian_relation?: components["schemas"]["GuardianRelation"] | null;
+            phone_e164?: string | null;
+            /** @description `self` when left out. */
+            preferred_contact?: components["schemas"]["PreferredContact"];
+            whatsapp_e164?: string | null;
+        };
+        /** @description The body of `POST /v1/me/onboarding/continue`. */
+        ContinueBody: {
+            /** @description Must equal the current `onboarding_step`, and must not be `review` or `done`. */
+            step: components["schemas"]["OnboardingStep"];
+        };
+        Counters: {
+            /**
+             * Format: int64
+             * @description Received pending interests whose sender can still be opened.
+             */
+            pending_interests: number;
+            /**
+             * Format: int64
+             * @description Received pending photo access requests.
+             */
+            pending_photo_requests: number;
+            /**
+             * Format: int64
+             * @description Active, unmuted connections with unread messages.
+             */
+            unread_chats: number;
+            /** Format: int64 */
+            unread_notifications: number;
+        };
+        CreateCasteBody: {
+            aliases?: string[];
+            code: string;
+            name: string;
+            name_ur?: string | null;
+            /** @description A top-level caste: makes this a sub-caste (two levels only). */
+            parent_code?: string | null;
+            /** Format: int32 */
+            sort_order?: number | null;
+        };
+        CreateReleaseBody: {
+            /** @description Must start with `https://download.`. */
+            download_url: string;
+            /**
+             * Format: int32
+             * @description Not greater than `version_code`, not lower than the current minimum. Builds below it
+             *     are forced to update (`426 upgrade_required`).
+             */
+            min_supported_version_code: number;
+            platform: components["schemas"]["ReleasePlatform"];
+            /** @description Up to 1,000 characters, shown in the update prompt. */
+            release_notes?: string | null;
+            /**
+             * Format: int32
+             * @description Must be greater than every existing `version_code`.
+             */
+            version_code: number;
+            /** @description For example `1.3.0`. */
+            version_name: string;
+        };
+        /** @description `POST /v1/interests/{interest_id}/decline`. */
+        DeclineBody: {
+            /** @description Also block the sender (15 section 13). */
+            also_block?: boolean | null;
+        };
+        DeletionBody: {
+            /** @description Must be the text `DELETE`. */
+            confirm: string;
+            /** @description Optional, up to 300 characters. Only logged, never stored. */
+            reason?: string | null;
+        };
+        /** @description `ProfileDetail.basics`. */
+        DetailBasics: {
+            body_type: components["schemas"]["BodyType"] | null;
+            /** Format: int32 */
+            children_count: number | null;
+            children_status: components["schemas"]["ChildrenStatus"] | null;
+            complexion: components["schemas"]["Complexion"] | null;
+            /** Format: int32 */
+            current_wives_count: number | null;
+            /** Format: int32 */
+            height_cm: number;
+            marital_status: components["schemas"]["MaritalStatus"];
+            /** Format: int32 */
+            weight_kg: number | null;
+        };
+        /** @description `ProfileDetail.community`. */
+        DetailCommunity: {
+            /** @description Group `caste`. */
+            caste_label: string | null;
+            language_codes: string[];
+            mother_tongue_code: string;
+            religion_code: string;
+            sect_code: string | null;
+            /** @description Group `caste`. */
+            sub_caste_label: string | null;
+        };
+        /** @description `ProfileDetail.education_career`. */
+        DetailEducationCareer: {
+            /** @description Group `career_details`. */
+            degree_title: string | null;
+            education_field_code: string | null;
+            education_level_code: string;
+            /** @description Group `career_details`. */
+            employer_name: string | null;
+            employment_type: components["schemas"]["EmploymentType"];
+            /** @description Group `income`. */
+            income_band_code: string | null;
+            /** @description Group `career_details`. */
+            institute_name: string | null;
+            /** @description Group `career_details`. */
+            job_title: string | null;
+            profession_code: string | null;
+        };
+        /**
+         * @description `ProfileDetail.family`: the fields of group `family`, except `about_family`, and the home
+         *     fields of group `home`. A hidden group's fields are `null`.
+         */
+        DetailFamily: {
+            /** Format: int32 */
+            brothers_count: number | null;
+            /** Format: int32 */
+            brothers_married: number | null;
+            family_city_name: string | null;
+            family_class: components["schemas"]["FamilyClass"] | null;
+            family_country_code: string | null;
+            family_type: components["schemas"]["FamilyType"] | null;
+            family_values: components["schemas"]["FamilyValues"] | null;
+            father_occupation: string | null;
+            father_status: components["schemas"]["ParentStatus"] | null;
+            home_ownership: components["schemas"]["HomeOwnership"] | null;
+            home_size_unit: components["schemas"]["HomeSizeUnit"] | null;
+            /** Format: double */
+            home_size_value: number | null;
+            home_type: components["schemas"]["HomeType"] | null;
+            mother_occupation: string | null;
+            mother_status: components["schemas"]["ParentStatus"] | null;
+            /** Format: int32 */
+            sisters_count: number | null;
+            /** Format: int32 */
+            sisters_married: number | null;
+        };
+        /**
+         * @description `ProfileDetail.lifestyle`: the lifestyle section without the appearance fields and
+         *     `about_me`. The health fields belong to group `health`.
+         */
+        DetailLifestyle: {
+            beard: components["schemas"]["Beard"] | null;
+            blood_group: components["schemas"]["BloodGroup"] | null;
+            disability: components["schemas"]["Disability"] | null;
+            disability_details: string | null;
+            hijab: components["schemas"]["Hijab"] | null;
+            hobby_codes: string[];
+            jahez_stance: components["schemas"]["JahezStance"] | null;
+            living_arrangement: components["schemas"]["LivingArrangement"] | null;
+            marriage_timeline: components["schemas"]["MarriageTimeline"] | null;
+            prayer_frequency: components["schemas"]["PrayerFrequency"] | null;
+            religiosity: components["schemas"]["Religiosity"] | null;
+            religious_education: components["schemas"]["ReligiousEducation"] | null;
+            smoking: components["schemas"]["Smoking"] | null;
+            work_after_marriage: components["schemas"]["WorkAfterMarriage"] | null;
+        };
+        /** @description `ProfileDetail.location`. */
+        DetailLocation: {
+            /** @description Group `area`. */
+            area: string | null;
+            city_name: string;
+            country_code: string;
+            nationality_code: string | null;
+            /** @description The family's home town: a city name or the owner's typed value. */
+            origin_label: string | null;
+            region_name: string | null;
+            relocation: components["schemas"]["Relocation"] | null;
+            residency_status: components["schemas"]["ResidencyStatus"] | null;
+        };
+        /** @description Body of `POST /v1/me/devices`. */
+        DeviceBody: {
+            app_version?: string | null;
+            device_model?: string | null;
+            platform: components["schemas"]["DevicePlatform"];
+            push_token: string;
+        };
+        /**
+         * @description `user_devices.platform`.
+         * @enum {string}
+         */
+        DevicePlatform: "android" | "web";
+        /**
+         * @description `disability` (05 section 2).
+         * @enum {string}
+         */
+        Disability: "none" | "physical" | "visual" | "hearing" | "speech" | "chronic_illness" | "other";
+        /**
+         * @description `discovery_visibility` (05 section 2).
+         * @enum {string}
+         */
+        DiscoveryVisibility: "everyone" | "preference_match" | "hidden";
+        /**
+         * @description `Interest.display_status` (15 section 4.7): what the client shows. Declines are hidden from
+         *     senders.
+         * @enum {string}
+         */
+        DisplayStatus: "pending" | "accepted" | "no_response" | "closed" | "withdrawn" | "declined";
+        /**
+         * @description `document_type` (05 section 2).
+         * @enum {string}
+         */
+        DocumentType: "cnic" | "nicop" | "poc" | "passport";
+        EducationCareerSection: {
+            degree_title?: string | null;
+            education_field_code?: string | null;
+            education_level_code?: string | null;
+            employer_name?: string | null;
+            employment_type?: components["schemas"]["EmploymentType"] | null;
+            income_band_code?: string | null;
+            institute_name?: string | null;
+            job_title?: string | null;
+            profession_code?: string | null;
+        };
+        /**
+         * @description `email_match_digest` (05 section 2).
+         * @enum {string}
+         */
+        EmailMatchDigest: "off" | "daily" | "weekly";
+        /**
+         * @description `employment_type` (05 section 2).
+         * @enum {string}
+         */
+        EmploymentType: "private_job" | "government_job" | "armed_forces" | "business_owner" | "self_employed" | "student" | "homemaker" | "not_working" | "retired";
+        /** @description `POST /v1/connections/{connection_id}/end`. */
+        EndConnectionBody: {
+            /** @description Also block the other member (15 section 13). */
+            also_block?: boolean | null;
+            reason: components["schemas"]["MemberEndReason"];
+        };
+        /**
+         * @description `Connection.ended_by`.
+         * @enum {string}
+         */
+        EndedBy: "me" | "them" | "system";
+        /** @description The error body (15 section 2). */
+        ErrorBody: {
+            error: components["schemas"]["ErrorDetail"];
+        };
+        ErrorDetail: {
+            /** @description Stable code clients branch on (15 section 2.1). */
+            code: string;
+            /** @description Extra data for some codes. */
+            details: Record<string, never>;
+            /** @description Present only for `validation_failed`. */
+            fields?: components["schemas"]["FieldError"][] | null;
+            /** @description English text suitable for display as a fallback. */
+            message: string;
+            request_id: string;
+        };
+        EventsBody: {
+            events: Record<string, never>[];
+        };
+        /** @description The answer of `POST /v1/me/exports`. */
+        ExportQueued: {
+            status: components["schemas"]["ExportStatus"];
+        };
+        /**
+         * @description `data_exports.status`.
+         * @enum {string}
+         */
+        ExportStatus: "queued" | "ready" | "failed" | "expired";
+        /**
+         * @description `family_class` (05 section 2).
+         * @enum {string}
+         */
+        FamilyClass: "lower_middle" | "middle" | "upper_middle" | "affluent";
+        FamilySection: {
+            about_family?: string | null;
+            /** Format: int32 */
+            brothers_count?: number | null;
+            /** Format: int32 */
+            brothers_married?: number | null;
+            /** Format: int32 */
+            family_city_id?: number | null;
+            family_class?: components["schemas"]["FamilyClass"] | null;
+            family_country_code?: string | null;
+            family_type?: components["schemas"]["FamilyType"] | null;
+            family_values?: components["schemas"]["FamilyValues"] | null;
+            father_occupation?: string | null;
+            father_status?: components["schemas"]["ParentStatus"] | null;
+            home_ownership?: components["schemas"]["HomeOwnership"] | null;
+            home_size_unit?: components["schemas"]["HomeSizeUnit"] | null;
+            /**
+             * Format: double
+             * @description Greater than 0, at most 99,999.99, at most two decimal places.
+             */
+            home_size_value?: number | null;
+            home_type?: components["schemas"]["HomeType"] | null;
+            mother_occupation?: string | null;
+            mother_status?: components["schemas"]["ParentStatus"] | null;
+            /** Format: int32 */
+            sisters_count?: number | null;
+            /** Format: int32 */
+            sisters_married?: number | null;
+        };
+        /**
+         * @description `family_type` (05 section 2).
+         * @enum {string}
+         */
+        FamilyType: "joint" | "nuclear";
+        /**
+         * @description `family_values` (05 section 2).
+         * @enum {string}
+         */
+        FamilyValues: "religious" | "traditional" | "moderate" | "liberal";
+        /**
+         * @description Field error codes (15 section 2.2).
+         * @enum {string}
+         */
+        FieldCode: "required" | "invalid" | "too_short" | "too_long" | "out_of_range" | "unknown_code" | "not_allowed" | "too_young" | "contains_contact_info" | "inappropriate" | "mismatch" | "locked";
+        /** @description One invalid field of a request body. */
+        FieldError: {
+            code: components["schemas"]["FieldCode"];
+            /** @description JSON key of the request body, dot-separated for nested keys. */
+            field: string;
+            message: string;
+        };
+        /**
+         * @description `field_visibility` (05 section 2).
+         * @enum {string}
+         */
+        FieldVisibility: "members" | "connections" | "nobody";
+        /** @description `POST /v1/reports`. */
+        FileReportBody: {
+            /** @description Block the target in the same transaction. Default `false`. */
+            also_block?: boolean | null;
+            /**
+             * @description Optional, at most 1,000 characters. Length is the only rule: a report may need to quote
+             *     a phone number or abusive words (13 section 3.1, "Not checked").
+             */
+            details?: string | null;
+            /**
+             * Format: uuid
+             * @description Required for `message`, not allowed otherwise: a message the target sent in a
+             *     connection the caller belongs to.
+             */
+            message_id?: string | null;
+            /**
+             * Format: uuid
+             * @description Required for `photo`, not allowed otherwise: an approved photo of the target.
+             */
+            photo_id?: string | null;
+            /** @description A `report_reason` code (05 section 2.42). */
+            reason: components["schemas"]["ReportReason"];
+            subject_type: components["schemas"]["ReportSubject"];
+            /**
+             * Format: uuid
+             * @description The reported member.
+             */
+            target_profile_id: string;
+        };
+        /**
+         * @description The gate returned by `GET /v1/me` (03 section 5.1).
+         * @enum {string}
+         */
+        Gate: "banned" | "suspended" | "deletion_scheduled" | "consent_required" | "onboarding" | "changes_requested" | "pending_review" | "ok";
+        /**
+         * @description `gender` (05 section 2).
+         * @enum {string}
+         */
+        Gender: "male" | "female";
+        /**
+         * @description `verification_requests.gesture`.
+         * @enum {string}
+         */
+        Gesture: "peace_sign" | "thumbs_up" | "open_palm" | "hand_on_head";
+        /**
+         * @description `guardian_relation` (05 section 2).
+         * @enum {string}
+         */
+        GuardianRelation: "father" | "mother" | "brother" | "sister" | "uncle" | "aunt" | "other";
         Health: {
             /** @description `ok` when healthy, `unavailable` otherwise. */
             status: string;
+        };
+        /**
+         * @description `hijab` (05 section 2).
+         * @enum {string}
+         */
+        Hijab: "niqab" | "hijab" | "dupatta" | "occasionally" | "none";
+        /** @description `GET /v1/home`. */
+        Home: {
+            /** Format: int32 */
+            completeness: number;
+            /** @description Up to 10, same city, then same region. */
+            nearby: components["schemas"]["ProfileCard"][];
+            /** @description Up to 10, joined in the last 7 days, passing the must-haves in both directions. */
+            new_members: components["schemas"]["ProfileCard"][];
+            /** @description At most 3, highest priority first. */
+            nudges: components["schemas"]["Nudge"][];
+            /** Format: int64 */
+            pending_interests: number;
+            pool_exhausted: boolean;
+            /** @description Up to 5. */
+            recent_visitors: components["schemas"]["ProfileCard"][];
+            /** @description Top 10. */
+            recommendations: components["schemas"]["ProfileCard"][];
+            /** @description At most 2; empty unless `pool_exhausted`. */
+            relaxation_hints: components["schemas"]["RelaxationHint"][];
+            /** Format: int64 */
+            visitors_count_7d: number;
+        };
+        /**
+         * @description `home_ownership` (05 section 2).
+         * @enum {string}
+         */
+        HomeOwnership: "owned" | "rented" | "ancestral" | "employer_provided" | "other";
+        /**
+         * @description `home_size_unit` (05 section 2).
+         * @enum {string}
+         */
+        HomeSizeUnit: "marla" | "kanal" | "sq_yard" | "sq_ft" | "sq_m";
+        /**
+         * @description `home_type` (05 section 2).
+         * @enum {string}
+         */
+        HomeType: "house" | "apartment" | "portion" | "other";
+        /**
+         * @description A request that carries an identity number. The number is kept out of `Debug` output and
+         *     zeroed on drop (12 section 2.3), and a body of the wrong type is refused without echoing the
+         *     value.
+         */
+        IdentityBody: {
+            document_type: components["schemas"]["DocumentType"];
+            /** @example 35202-1234567-1 */
+            number: string;
+        };
+        /**
+         * @description `profile_identity.status`.
+         * @enum {string}
+         */
+        IdentityStatus: "unverified" | "pending" | "verified" | "rejected";
+        /** @description An identity document the owner registered. The number is never returned (12 section 2.3). */
+        IdentitySummary: {
+            document_type: components["schemas"]["DocumentType"];
+            /** @description For example `*********1234`. */
+            number_masked: string;
+            status: components["schemas"]["IdentityStatus"];
+            /** Format: date-time */
+            verified_at: string | null;
+        };
+        /**
+         * @description `importance` (05 section 2).
+         * @enum {string}
+         */
+        Importance: "must" | "high" | "medium" | "low";
+        /** @description An interest as one of its two members sees it (15 section 4.7). */
+        Interest: {
+            /**
+             * Format: int32
+             * @description The compatibility of the pair when the interest was sent (0..100).
+             */
+            compat_score: number | null;
+            /**
+             * Format: uuid
+             * @description The connection created when the interest was accepted.
+             */
+            connection_id: string | null;
+            /** Format: date-time */
+            created_at: string;
+            direction: components["schemas"]["InterestDirection"];
+            display_status: components["schemas"]["DisplayStatus"];
+            /** Format: date-time */
+            expires_at: string;
+            /** Format: uuid */
+            id: string;
+            message: string | null;
+            profile: components["schemas"]["ProfileCard"] | null;
+            /**
+             * Format: date-time
+             * @description `null` for the sender of a declined interest, which must still look unanswered.
+             */
+            responded_at: string | null;
+            /**
+             * @description The receiver always sees their own state; the sender sees `true` only when both members
+             *     send read receipts (09 section 9).
+             */
+            seen: boolean;
+            /**
+             * @description For the sender a `declined` interest is reported as `pending` until `expires_at`, then as
+             *     `expired`: the real value never reaches the sender.
+             */
+            status: components["schemas"]["InterestStatus"];
+        };
+        /**
+         * @description Direction of an interest seen from the viewer: `sent` by the viewer to the owner, or
+         *     `received` by the viewer from the owner (15 section 4.6 `interest_direction`).
+         * @enum {string}
+         */
+        InterestDirection: "sent" | "received";
+        /** @description A page of interests, newest first. */
+        InterestPage: {
+            items: components["schemas"]["Interest"][];
+            /** @description `null` on the last page. */
+            next_cursor: string | null;
+        };
+        /**
+         * @description `interest_permission` (05 section 2).
+         * @enum {string}
+         */
+        InterestPermission: "everyone" | "verified_only" | "preference_match";
+        /**
+         * @description `interests.status` (03 section 4.7).
+         * @enum {string}
+         */
+        InterestStatus: "pending" | "accepted" | "declined" | "withdrawn" | "expired";
+        /** @description A list that is returned whole instead of paged (`GET /castes`, `/settings`, `/releases`). */
+        Items_AdminCaste: {
+            items: {
+                aliases: string[];
+                code: string;
+                is_active: boolean;
+                name: string;
+                name_ur?: string | null;
+                parent_code?: string | null;
+                /** Format: int32 */
+                sort_order: number;
+            }[];
+        };
+        /** @description A list that is returned whole instead of paged (`GET /castes`, `/settings`, `/releases`). */
+        Items_AdminRelease: {
+            items: {
+                download_url: string;
+                /** Format: uuid */
+                id: string;
+                /** Format: int32 */
+                min_supported_version_code: number;
+                platform: string;
+                release_notes?: string | null;
+                /** Format: date-time */
+                released_at: string;
+                /** Format: int32 */
+                version_code: number;
+                version_name: string;
+            }[];
+        };
+        /** @description A list that is returned whole instead of paged (`GET /castes`, `/settings`, `/releases`). */
+        Items_SettingItem: {
+            items: {
+                default: Record<string, never>;
+                key: string;
+                /** Format: date-time */
+                updated_at?: string | null;
+                updated_by_email?: string | null;
+                value: Record<string, never>;
+            }[];
+        };
+        /**
+         * @description `jahez_stance` (05 section 2).
+         * @enum {string}
+         */
+        JahezStance: "against" | "no_demand" | "family_custom";
+        /**
+         * @description Last active label (03 section 6). Never an exact time.
+         * @enum {string}
+         */
+        LastActive: "online" | "today" | "this_week" | "this_month" | "earlier";
+        /** @description The status of the latest export, with a download link once it is ready. */
+        LatestExport: {
+            /** @description A signed link, only while `status` is `ready`. */
+            download_url: string | null;
+            /** Format: date-time */
+            expires_at: string | null;
+            status: components["schemas"]["ExportStatus"];
+        };
+        LegalVersions: {
+            guidelines_version: string;
+            privacy_version: string;
+            terms_version: string;
+        };
+        LifestyleSection: {
+            about_me?: string | null;
+            beard?: components["schemas"]["Beard"] | null;
+            blood_group?: components["schemas"]["BloodGroup"] | null;
+            body_type?: components["schemas"]["BodyType"] | null;
+            complexion?: components["schemas"]["Complexion"] | null;
+            disability?: components["schemas"]["Disability"] | null;
+            disability_details?: string | null;
+            hijab?: components["schemas"]["Hijab"] | null;
+            /** @description At most 10. */
+            hobby_codes?: string[];
+            jahez_stance?: components["schemas"]["JahezStance"] | null;
+            living_arrangement?: components["schemas"]["LivingArrangement"] | null;
+            marriage_timeline?: components["schemas"]["MarriageTimeline"] | null;
+            prayer_frequency?: components["schemas"]["PrayerFrequency"] | null;
+            religiosity?: components["schemas"]["Religiosity"] | null;
+            religious_education?: components["schemas"]["ReligiousEducation"] | null;
+            smoking?: components["schemas"]["Smoking"] | null;
+            /** Format: int32 */
+            weight_kg?: number | null;
+            work_after_marriage?: components["schemas"]["WorkAfterMarriage"] | null;
+        };
+        /**
+         * @description `living_arrangement` (05 section 2).
+         * @enum {string}
+         */
+        LivingArrangement: "with_family" | "separate" | "flexible";
+        /**
+         * @description `users.locale`.
+         * @enum {string}
+         */
+        Locale: "en" | "ur";
+        LocationSection: {
+            area?: string | null;
+            /** Format: int32 */
+            city_id?: number | null;
+            city_other?: string | null;
+            country_code?: string | null;
+            nationality_code?: string | null;
+            /** Format: int32 */
+            origin_city_id?: number | null;
+            origin_other?: string | null;
+            /**
+             * Format: int32
+             * @description Overwritten with the region of `city_id` when a listed city is chosen.
+             */
+            region_id?: number | null;
+            relocation?: components["schemas"]["Relocation"] | null;
+            residency_status?: components["schemas"]["ResidencyStatus"] | null;
+        };
+        LockedFieldsBody: {
+            /** @description `YYYY-MM-DD`. The candidate must be 18 or older today. */
+            date_of_birth?: string | null;
+            first_name?: string | null;
+            gender?: components["schemas"]["Gender"] | null;
+            last_name?: string | null;
+            /** @description Staff only. 10 to 500 characters. */
+            reason: string;
+        };
+        /**
+         * @description Groups of fields that privacy settings can hide (09 section 5).
+         * @enum {string}
+         */
+        LockedGroup: "full_name" | "photos" | "caste" | "income" | "family" | "career_details" | "home" | "area" | "health";
+        /**
+         * @description What the owner is looking for, as display lines, each marked with whether the viewer fits
+         *     (15 section 4.6 `LookingFor`).
+         */
+        LookingFor: {
+            lines: components["schemas"]["LookingForLine"][];
+            /**
+             * Format: int32
+             * @description Lines where `viewer_matches` is `true`.
+             */
+            matched: number;
+            /**
+             * Format: int32
+             * @description Lines where `viewer_matches` is not `null`.
+             */
+            total: number;
+        };
+        /** @description One line of [`LookingFor`]. */
+        LookingForLine: {
+            /** @description Dimension key from 10 section 4, for example `age`. */
+            dimension: string;
+            /** @description The owner's importance for the dimension. */
+            importance: components["schemas"]["Importance"];
+            /** @description Codes or formatted values, for example `["25", "32"]` for an age range (10 section 11.1). */
+            summary_values: string[];
+            /**
+             * @description `true` when the viewer scores 1 on it, `null` when the viewer's value is unknown,
+             *     otherwise `false`.
+             */
+            viewer_matches: boolean | null;
+        };
+        /**
+         * @description `managed_by` (05 section 2).
+         * @enum {string}
+         */
+        ManagedBy: "self" | "parent" | "sibling" | "relative" | "friend";
+        /**
+         * @description `marital_status` (05 section 2).
+         * @enum {string}
+         */
+        MaritalStatus: "never_married" | "divorced" | "widowed" | "separated" | "nikah_ended_before_rukhsati" | "married";
+        /**
+         * @description `marriage_timeline` (05 section 2).
+         * @enum {string}
+         */
+        MarriageTimeline: "within_6_months" | "within_1_year" | "within_2_years" | "not_decided";
+        Me: {
+            config: components["schemas"]["MeConfig"];
+            consents_required: components["schemas"]["ConsentDocument"][];
+            counters: components["schemas"]["Counters"];
+            gate: components["schemas"]["Gate"];
+            profile: components["schemas"]["MeProfile"];
+            usage: components["schemas"]["MeUsage"];
+            user: components["schemas"]["MeUser"];
+        };
+        MeConfig: {
+            announcement: components["schemas"]["AnnouncementBanner"] | null;
+            /**
+             * Format: int64
+             * @description `account.deletion_grace_days`, for the text of the delete dialog.
+             */
+            deletion_grace_days: number;
+            identity_required: boolean;
+            legal: components["schemas"]["LegalVersions"];
+            photo_required: boolean;
+            /** Format: int64 */
+            photos_max: number;
+            support_email: string;
+        };
+        MeProfile: {
+            badges: components["schemas"]["Badge"][];
+            /** Format: int32 */
+            completeness: number;
+            first_name: string | null;
+            gender: components["schemas"]["Gender"] | null;
+            /** Format: uuid */
+            id: string;
+            managed_by: components["schemas"]["ManagedBy"] | null;
+            onboarding_step: components["schemas"]["OnboardingStep"];
+            photo: components["schemas"]["OwnPhoto"] | null;
+            public_code: string;
+            status: components["schemas"]["ProfileStatus"];
+            status_reason: string | null;
+        };
+        MeUsage: {
+            /**
+             * Format: int64
+             * @description The daily limit that applies to this profile.
+             */
+            interests_per_day: number;
+            /** Format: int64 */
+            interests_sent_today: number;
+        };
+        MeUser: {
+            /** Format: date-time */
+            created_at: string;
+            email: string | null;
+            email_verified: boolean;
+            /** Format: uuid */
+            id: string;
+            locale: components["schemas"]["Locale"];
+            phone_e164: string | null;
+            phone_verified: boolean;
+            /** Format: date-time */
+            purge_after: string | null;
+            role: components["schemas"]["UserRole"];
+            status: components["schemas"]["UserStatus"];
+            status_reason: string | null;
+            /** Format: date-time */
+            suspended_until: string | null;
+            timezone: string;
+        };
+        /**
+         * @description The reasons a member may give for ending a connection (15 section 12). `blocked` and
+         *     `account_closed` are set only by the system.
+         * @enum {string}
+         */
+        MemberEndReason: "not_compatible" | "family_declined" | "no_response" | "found_someone_else" | "inappropriate_behaviour" | "other";
+        /** @description A chat message as one member sees it (15 section 4.7). */
+        Message: {
+            /** @description `null` when deleted, and for system messages. */
+            body: string | null;
+            /** @description The sender's idempotency key; set only on the caller's own messages. */
+            client_message_id: string | null;
+            /** Format: uuid */
+            connection_id: string;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: uuid */
+            id: string;
+            is_deleted: boolean;
+            kind: components["schemas"]["MessageKind"];
+            safety_notice: components["schemas"]["SafetyFlag"] | null;
+            sender: components["schemas"]["MessageSender"];
+            system_data: Record<string, never> | null;
+            system_event: components["schemas"]["SystemEvent"] | null;
+        };
+        /**
+         * @description `messages.kind`.
+         * @enum {string}
+         */
+        MessageKind: "text" | "system";
+        /**
+         * @description `Message.sender`.
+         * @enum {string}
+         */
+        MessageSender: "me" | "them" | "system";
+        /** @description One page of the message history. */
+        MessagesPage: {
+            /** @description More messages exist in the same direction. */
+            has_more: boolean;
+            /** @description Newest first; oldest first with `after`. */
+            items: components["schemas"]["Message"][];
         };
         Meta: {
             /** @description Deployment the API runs in: `local`, `staging` or `production`. */
@@ -71,6 +3978,1424 @@ export interface components {
             /** @description Version of the running build. */
             version: string;
         };
+        /**
+         * @description The three moderated free-text fields (13 section 3.7).
+         * @enum {string}
+         */
+        ModeratedField: "about_me" | "about_family" | "partner_notes";
+        /**
+         * @description `name_display` (05 section 2).
+         * @enum {string}
+         */
+        NameDisplay: "full_name" | "first_name_last_initial" | "first_name_only" | "initials" | "code_only";
+        NamedItem: {
+            code: string;
+            name: string;
+            name_ur: string | null;
+        };
+        /** @description `POST /v1/me/saved-searches`. */
+        NewSavedSearch: {
+            filters: components["schemas"]["SearchFilters"];
+            /** @description 1 to 60 characters. */
+            name: string;
+            notify_new: boolean;
+        };
+        /** @description One row of the feed, also the body of the `notification.new` event (15 section 14). */
+        Notification: {
+            actor?: components["schemas"]["NotificationActor"] | null;
+            /** Format: date-time */
+            created_at: string;
+            /** @description Shape per type, see 14 section 3. */
+            data: Record<string, never>;
+            /** Format: uuid */
+            id: string;
+            is_read: boolean;
+            /** @description A `notifications.type` value. */
+            type: components["schemas"]["NotificationType"];
+        };
+        /** @description Who caused a notification, rendered for the recipient (09 section 4, 14 section 3). */
+        NotificationActor: {
+            /** @description Reduced according to the actor's `name_display` and the relation (09 section 4.1). */
+            display_name: string;
+            photo: components["schemas"]["PhotoView"] | null;
+            /** Format: uuid */
+            profile_id: string;
+        };
+        /** @description `notification_preferences` without the key and timestamps (15 section 6). */
+        NotificationPreferences: {
+            email_announcements: boolean;
+            email_interests: boolean;
+            email_match_digest: components["schemas"]["EmailMatchDigest"];
+            email_messages: boolean;
+            push_interests: boolean;
+            push_matches: boolean;
+            push_messages: boolean;
+            push_photo_requests: boolean;
+            push_profile_views: boolean;
+            /** @example 07:00 */
+            quiet_hours_end: string | null;
+            /**
+             * @description Local time in `users.timezone`, `HH:MM`. Both quiet hours are set or both are `null`.
+             * @example 22:00
+             */
+            quiet_hours_start: string | null;
+        };
+        /**
+         * @description `notifications.type` (14 section 2).
+         * @enum {string}
+         */
+        NotificationType: "interest_received" | "interest_accepted" | "photo_request_received" | "photo_request_granted" | "contact_shared" | "stage_proposed" | "stage_confirmed" | "profile_approved" | "profile_changes_requested" | "photo_approved" | "photo_rejected" | "text_rejected" | "verification_approved" | "verification_rejected" | "new_matches" | "profile_views_summary" | "account_warning" | "announcement";
+        /** @description One entry of `nudges` in `GET /v1/home` (15 section 10). */
+        Nudge: {
+            code: components["schemas"]["NudgeCode"];
+            /** Format: int32 */
+            priority: number;
+        };
+        /**
+         * @description A nudge code (10 section 10.1). [`NudgeCode::ALL`] is in priority order, highest first.
+         * @enum {string}
+         */
+        NudgeCode: "add_photo" | "verify_identity" | "add_about_me" | "set_preferences" | "verify_photo" | "add_contact_details" | "complete_profile";
+        /** @description Created time of the longest-waiting item of each queue, `null` when the queue is empty. */
+        OldestWaiting: {
+            /** Format: date-time */
+            photos: string | null;
+            /** Format: date-time */
+            profiles: string | null;
+            /** Format: date-time */
+            reports: string | null;
+            /** Format: date-time */
+            verifications: string | null;
+        };
+        /**
+         * @description `profiles.onboarding_step` (03 section 4.3), in order.
+         * @enum {string}
+         */
+        OnboardingStep: "account_for" | "basics" | "community" | "location" | "education_career" | "family" | "lifestyle" | "photos" | "preferences" | "identity" | "review" | "done";
+        OptionItem: {
+            code: string;
+            label: string;
+            label_ur: string | null;
+        };
+        OrderRequest: {
+            /** @description Every photo of the profile exactly once, in the new order. */
+            photo_ids: string[];
+        };
+        /**
+         * @description How a report was decided.
+         * @enum {string}
+         */
+        Outcome: "actioned" | "dismissed";
+        OverviewMetrics: {
+            /** Format: int64 */
+            active_female: number;
+            /** Format: int64 */
+            active_id_verified: number;
+            /**
+             * Format: int64
+             * @description Active profiles with `last_active_at` in the last 7 days.
+             */
+            active_last_7d: number;
+            /** Format: int64 */
+            active_male: number;
+            /** Format: int64 */
+            active_photo_verified: number;
+            /** Format: int64 */
+            connections_active: number;
+            /** Format: int64 */
+            connections_created_7d: number;
+            /** Format: int64 */
+            deletions_scheduled: number;
+            /** Format: int64 */
+            interests_accepted_7d: number;
+            /** Format: int64 */
+            interests_sent_7d: number;
+            /** Format: int64 */
+            interests_sent_today: number;
+            /**
+             * Format: int64
+             * @description Above zero means a background job failed permanently and needs a developer.
+             */
+            jobs_dead: number;
+            /** Format: int64 */
+            messages_7d: number;
+            profiles_by_status: components["schemas"]["ProfilesByStatus"];
+            /** Format: int64 */
+            reports_filed_7d: number;
+            /** Format: int64 */
+            signups_7d: number;
+            /** Format: int64 */
+            signups_today: number;
+            stage_counts: components["schemas"]["StageCounts"];
+            /** Format: int64 */
+            users_banned: number;
+            /** Format: int64 */
+            users_suspended: number;
+            /** Format: int64 */
+            users_total: number;
+        };
+        OverviewQueues: {
+            /** Format: int64 */
+            caste_suggestions_pending: number;
+            oldest_waiting: components["schemas"]["OldestWaiting"];
+            /**
+             * Format: int64
+             * @description Subset of `photos_pending` whose automatic result is `flag`.
+             */
+            photos_flagged: number;
+            /** Format: int64 */
+            photos_pending: number;
+            /** Format: int64 */
+            profiles_pending: number;
+            /** Format: int64 */
+            reports_in_review: number;
+            /** Format: int64 */
+            reports_open: number;
+            /** Format: int64 */
+            texts_pending: number;
+            /** Format: int64 */
+            verifications_pending: number;
+        };
+        /** @description `LocationSection` with the two cities resolved, as `OwnProfile.location` shows it. */
+        OwnLocation: components["schemas"]["LocationSection"] & {
+            city?: components["schemas"]["CityRef"] | null;
+            origin_city?: components["schemas"]["CityRef"] | null;
+        };
+        /** @description A member's own photo. */
+        OwnPhoto: {
+            /** Format: date-time */
+            created_at: string;
+            /** Format: uuid */
+            id: string;
+            is_primary: boolean;
+            large_url: string | null;
+            medium_url: string | null;
+            /** Format: int32 */
+            position: number;
+            rejection_reason: components["schemas"]["PhotoRejectionReason"] | null;
+            status: components["schemas"]["PhotoStatus"];
+            /** @description `null` while processing or after a failure. */
+            thumb_url: string | null;
+        };
+        /** @description The owner's complete view of the profile (15 section 4.3). */
+        OwnProfile: {
+            account_for: components["schemas"]["AccountForSection"];
+            basics: components["schemas"]["BasicsSection"];
+            community: components["schemas"]["CommunitySection"];
+            /** Format: int32 */
+            completeness: number;
+            contacts: components["schemas"]["ContactsSection"];
+            education_career: components["schemas"]["EducationCareerSection"];
+            family: components["schemas"]["FamilySection"];
+            /** Format: uuid */
+            id: string;
+            identity: components["schemas"]["IdentitySummary"] | null;
+            lifestyle: components["schemas"]["LifestyleSection"];
+            location: components["schemas"]["OwnLocation"];
+            /** @description Fields the owner can no longer edit (03 section 8 rule 15). */
+            locked_fields: string[];
+            /** @description Completeness items not yet met, most valuable first (08 section 6.2). */
+            missing: components["schemas"]["CompletenessItem"][];
+            onboarding_step: components["schemas"]["OnboardingStep"];
+            photos: components["schemas"]["OwnPhoto"][];
+            public_code: string;
+            status: components["schemas"]["ProfileStatus"];
+            status_reason: string | null;
+            text_status: components["schemas"]["TextStatuses"];
+            verification: components["schemas"]["OwnVerification"];
+        };
+        /** @description Verification flags and the requests still waiting for a moderator. */
+        OwnVerification: {
+            id_verified: boolean;
+            pending: components["schemas"]["PendingVerification"];
+            phone_verified: boolean;
+            photo_verified: boolean;
+        };
+        /** @description One page of a list. */
+        Page_AdminPhotoItem: {
+            items: {
+                /** Format: int32 */
+                age?: number | null;
+                /** Format: date-time */
+                created_at: string;
+                first_name?: string | null;
+                gender?: components["schemas"]["Gender"] | null;
+                /** @description The unblurred large variant, signed. */
+                large_url: string;
+                /** @description `profile_photos.moderation` (13 section 4.2). */
+                moderation?: Record<string, never> | null;
+                other_photos: components["schemas"]["AdminOtherPhoto"][];
+                /** Format: uuid */
+                photo_id: string;
+                /** Format: uuid */
+                profile_id: string;
+                profile_is_photo_verified: boolean;
+                public_code: string;
+                status: components["schemas"]["PhotoStatus"];
+                /** @description The profile has no approved photo yet, so approving this one makes it the main photo. */
+                would_be_primary: boolean;
+            }[];
+            /** @description `null` on the last page. */
+            next_cursor: string | null;
+        };
+        /** @description One page of a list. */
+        Page_AdminProfileListItem: {
+            items: {
+                /** Format: int32 */
+                age?: number | null;
+                city_name?: string | null;
+                /** Format: date-time */
+                created_at: string;
+                first_name?: string | null;
+                gender?: components["schemas"]["Gender"] | null;
+                last_name?: string | null;
+                managed_by?: components["schemas"]["ManagedBy"] | null;
+                /** Format: date-time */
+                onboarding_completed_at?: string | null;
+                /** Format: int64 */
+                open_system_reports: number;
+                /** @description First photo of any status, unblurred. */
+                photo_thumb_url?: string | null;
+                /** Format: uuid */
+                profile_id: string;
+                public_code: string;
+                status: components["schemas"]["ProfileStatus"];
+                /** Format: uuid */
+                user_id: string;
+            }[];
+            /** @description `null` on the last page. */
+            next_cursor: string | null;
+        };
+        /** @description One page of a list. */
+        Page_AdminReportListItem: {
+            items: {
+                /** Format: date-time */
+                created_at: string;
+                handled_by_email?: string | null;
+                /**
+                 * Format: int64
+                 * @description Reports on the same target that are `open` or `in_review`.
+                 */
+                open_reports_on_target: number;
+                /**
+                 * Format: int32
+                 * @description 1 (most urgent) to 3 (13 section 6.5).
+                 */
+                priority: number;
+                reason: components["schemas"]["ReportReason"];
+                /** Format: uuid */
+                report_id: string;
+                reporter?: components["schemas"]["ReportReporter"] | null;
+                source: components["schemas"]["ReportSource"];
+                status: components["schemas"]["ReportStatus"];
+                subject_type: components["schemas"]["ReportSubject"];
+                target: components["schemas"]["ReportTarget"];
+            }[];
+            /** @description `null` on the last page. */
+            next_cursor: string | null;
+        };
+        /** @description One page of a list. */
+        Page_AdminTextItem: {
+            items: {
+                field: components["schemas"]["ModeratedField"];
+                first_name?: string | null;
+                gender?: components["schemas"]["Gender"] | null;
+                /** Format: uuid */
+                profile_id: string;
+                public_code: string;
+                text: string;
+                /** @description Hex SHA-256 of `text`. Send it back with the decision. */
+                text_sha256: string;
+                /** Format: date-time */
+                updated_at: string;
+            }[];
+            /** @description `null` on the last page. */
+            next_cursor: string | null;
+        };
+        /** @description One page of a list. */
+        Page_AdminUserListItem: {
+            items: {
+                /** Format: date-time */
+                created_at: string;
+                email?: string | null;
+                first_name?: string | null;
+                gender?: components["schemas"]["Gender"] | null;
+                last_name?: string | null;
+                /** Format: date-time */
+                last_seen_at?: string | null;
+                /** Format: uuid */
+                profile_id: string;
+                profile_status: components["schemas"]["ProfileStatus"];
+                public_code: string;
+                role: components["schemas"]["UserRole"];
+                status: components["schemas"]["UserStatus"];
+                /** Format: uuid */
+                user_id: string;
+            }[];
+            /** @description `null` on the last page. */
+            next_cursor: string | null;
+        };
+        /** @description One page of a list. */
+        Page_AdminVerificationListItem: {
+            items: {
+                /** Format: date-time */
+                created_at: string;
+                first_name?: string | null;
+                kind: components["schemas"]["VerificationKind"];
+                /** Format: uuid */
+                profile_id: string;
+                public_code: string;
+                /** Format: uuid */
+                request_id: string;
+                status: components["schemas"]["VerificationStatus"];
+            }[];
+            /** @description `null` on the last page. */
+            next_cursor: string | null;
+        };
+        /** @description One page of a list. */
+        Page_AuditEntry: {
+            items: {
+                /** @description An action code of 18 section 8.3. */
+                action: string;
+                actor: components["schemas"]["AuditActor"];
+                /** Format: date-time */
+                created_at: string;
+                /** @description Never holds an identity number, a contact detail or private message text. */
+                details: Record<string, never>;
+                /** Format: uuid */
+                id: string;
+                target_id: string;
+                target_type: components["schemas"]["AuditTargetType"];
+            }[];
+            /** @description `null` on the last page. */
+            next_cursor: string | null;
+        };
+        /** @description One page of a list. */
+        Page_CasteSuggestionItem: {
+            items: {
+                /** Format: date-time */
+                created_at: string;
+                /** Format: uuid */
+                id: string;
+                name: string;
+                normalized_name: string;
+                parent_code?: string | null;
+                parent_name?: string | null;
+                /** @description Existing castes whose name or alias has a trigram similarity of 0.4 or more. */
+                similar: components["schemas"]["CasteSimilar"][];
+                status: components["schemas"]["CasteSuggestionStatus"];
+                /** Format: int32 */
+                usage_count: number;
+            }[];
+            /** @description `null` on the last page. */
+            next_cursor: string | null;
+        };
+        /** @description One page of a list. */
+        Page_Notification: {
+            items: {
+                actor?: components["schemas"]["NotificationActor"] | null;
+                /** Format: date-time */
+                created_at: string;
+                /** @description Shape per type, see 14 section 3. */
+                data: Record<string, never>;
+                /** Format: uuid */
+                id: string;
+                is_read: boolean;
+                /** @description A `notifications.type` value. */
+                type: components["schemas"]["NotificationType"];
+            }[];
+            /** @description `null` on the last page. */
+            next_cursor: string | null;
+        };
+        /** @description One page of a list. */
+        Page_PhotoAccessItem: {
+            items: {
+                /** Format: date-time */
+                created_at: string;
+                /**
+                 * Format: uuid
+                 * @description The `photo_access` row, for `POST /v1/me/photo-access/{id}/grant` and `.../deny`.
+                 */
+                id: string;
+                profile?: components["schemas"]["ProfileCard"] | null;
+                /**
+                 * Format: uuid
+                 * @description The other profile: the requester in `received`, the owner in `sent`. Present even when
+                 *     `profile` is `null`, so a grant can still be revoked.
+                 */
+                profile_id: string;
+                status: components["schemas"]["PhotoAccessStatus"];
+            }[];
+            /** @description `null` on the last page. */
+            next_cursor: string | null;
+        };
+        /**
+         * @description `parent_status` (05 section 2).
+         * @enum {string}
+         */
+        ParentStatus: "alive" | "deceased";
+        /**
+         * @description Which member did something, seen from the caller.
+         * @enum {string}
+         */
+        Party: "me" | "them";
+        PatchCasteBody: {
+            aliases?: string[] | null;
+            /** @description Deactivating a caste that has active sub-castes is refused. */
+            is_active?: boolean | null;
+            name?: string | null;
+            /** @description An empty string removes the Urdu name. */
+            name_ur?: string | null;
+            /** Format: int32 */
+            sort_order?: number | null;
+        };
+        /** @description `PATCH /v1/connections/{connection_id}`. */
+        PatchConnectionBody: {
+            is_archived?: boolean | null;
+            is_muted?: boolean | null;
+        };
+        PatchMe: {
+            locale?: components["schemas"]["Locale"] | null;
+            /** @description An IANA time zone name such as `Asia/Karachi`. */
+            timezone?: string | null;
+        };
+        PatchPhoto: {
+            /** @description Only `true` is accepted: a photo stops being primary when another one becomes it. */
+            is_primary: boolean;
+        };
+        /** @description The pending stage proposal of a connection. */
+        PendingStageProposal: {
+            /** Format: date-time */
+            created_at: string;
+            /** Format: uuid */
+            id: string;
+            proposed_by: components["schemas"]["Party"];
+            stage: components["schemas"]["ConnectionStage"];
+        };
+        PendingVerification: {
+            id_document: boolean;
+            selfie: boolean;
+        };
+        /** @description One request or grant. */
+        PhotoAccessItem: {
+            /** Format: date-time */
+            created_at: string;
+            /**
+             * Format: uuid
+             * @description The `photo_access` row, for `POST /v1/me/photo-access/{id}/grant` and `.../deny`.
+             */
+            id: string;
+            profile?: components["schemas"]["ProfileCard"] | null;
+            /**
+             * Format: uuid
+             * @description The other profile: the requester in `received`, the owner in `sent`. Present even when
+             *     `profile` is `null`, so a grant can still be revoked.
+             */
+            profile_id: string;
+            status: components["schemas"]["PhotoAccessStatus"];
+        };
+        /**
+         * @description `photo_access.status` (03 section 4.9).
+         * @enum {string}
+         */
+        PhotoAccessStatus: "pending" | "granted" | "denied" | "revoked";
+        /**
+         * @description `photo_rejection_reason` (05 section 2).
+         * @enum {string}
+         */
+        PhotoRejectionReason: "not_a_person" | "face_not_visible" | "group_photo" | "inappropriate" | "contains_contact_info" | "low_quality" | "not_the_candidate" | "other";
+        /** @description The answer to a photo request: always `pending`. */
+        PhotoRequested: {
+            status: components["schemas"]["PhotoAccessStatus"];
+        };
+        /**
+         * @description `profile_photos.status` (03 section 4.4).
+         * @enum {string}
+         */
+        PhotoStatus: "processing" | "pending_review" | "approved" | "rejected" | "failed";
+        /**
+         * @description Another member's photo as the viewer may see it (15 section 4.4). In blurred mode the URLs
+         *     point at the separate blurred files and `large_url` is `null` (09 section 6.2).
+         */
+        PhotoView: {
+            /** Format: uuid */
+            id: string;
+            is_blurred: boolean;
+            is_primary: boolean;
+            /** @description `null` when `is_blurred`. */
+            large_url: string | null;
+            /** @description The blurred variant when `is_blurred`. */
+            medium_url: string;
+            /** @description The blurred variant when `is_blurred`. */
+            thumb_url: string;
+        };
+        /**
+         * @description `photo_visibility` (05 section 2).
+         * @enum {string}
+         */
+        PhotoVisibility: "members" | "interests_and_connections" | "connections" | "approved_only";
+        /**
+         * @description `prayer_frequency` (05 section 2).
+         * @enum {string}
+         */
+        PrayerFrequency: "five_times" | "most_prayers" | "sometimes" | "jummah_only" | "rarely";
+        /**
+         * @description Every column of `partner_preferences` except `profile_id`, `notes_status` and the timestamps.
+         *     An empty array or a `null` bound means "no preference" for that dimension.
+         */
+        Preferences: {
+            age_importance: components["schemas"]["Importance"];
+            /** Format: int32 */
+            age_max: number;
+            /** Format: int32 */
+            age_min: number;
+            appearance_importance: components["schemas"]["Importance"];
+            /** @description Used when the candidate seeks a man. */
+            beard_types: components["schemas"]["Beard"][];
+            /** @description Top-level caste codes only. */
+            caste_codes: string[];
+            caste_importance: components["schemas"]["Importance"];
+            children_acceptance: components["schemas"]["ChildrenAcceptance"];
+            children_importance: components["schemas"]["Importance"];
+            city_ids: number[];
+            country_codes: string[];
+            education_importance: components["schemas"]["Importance"];
+            /**
+             * Format: int32
+             * @description `education_levels.rank`.
+             */
+            education_min_rank?: number | null;
+            employment_types: components["schemas"]["EmploymentType"][];
+            family_importance: components["schemas"]["Importance"];
+            family_types: components["schemas"]["FamilyType"][];
+            family_values: components["schemas"]["FamilyValues"][];
+            height_importance: components["schemas"]["Importance"];
+            /** Format: int32 */
+            height_max_cm?: number | null;
+            /** Format: int32 */
+            height_min_cm?: number | null;
+            /** @description Used when the candidate seeks a woman. */
+            hijab_types: components["schemas"]["Hijab"][];
+            income_importance: components["schemas"]["Importance"];
+            /**
+             * Format: int32
+             * @description `income_bands.rank`.
+             */
+            income_min_rank?: number | null;
+            living_arrangement_importance: components["schemas"]["Importance"];
+            living_arrangements: components["schemas"]["LivingArrangement"][];
+            location_importance: components["schemas"]["Importance"];
+            marital_status_importance: components["schemas"]["Importance"];
+            marital_statuses: components["schemas"]["MaritalStatus"][];
+            mother_tongue_codes: string[];
+            mother_tongue_importance: components["schemas"]["Importance"];
+            /** @description "What I am looking for", shown on the profile once approved (13 section 3). */
+            notes?: string | null;
+            profession_codes: string[];
+            profession_importance: components["schemas"]["Importance"];
+            region_ids: number[];
+            religion_codes: string[];
+            religion_importance: components["schemas"]["Importance"];
+            religiosity_importance: components["schemas"]["Importance"];
+            religiosity_levels: components["schemas"]["Religiosity"][];
+            sect_codes: string[];
+            sect_importance: components["schemas"]["Importance"];
+            smoking_importance: components["schemas"]["Importance"];
+            smoking_options: components["schemas"]["Smoking"][];
+            work_after_marriage_importance: components["schemas"]["Importance"];
+            work_after_marriage_options: components["schemas"]["WorkAfterMarriage"][];
+        };
+        /** @description Body of `PUT /v1/me/notification-preferences`: the complete object (16 section 6.26). */
+        PreferencesBody: {
+            email_announcements?: boolean | null;
+            email_interests?: boolean | null;
+            email_match_digest?: components["schemas"]["EmailMatchDigest"] | null;
+            email_messages?: boolean | null;
+            push_interests?: boolean | null;
+            push_matches?: boolean | null;
+            push_messages?: boolean | null;
+            push_photo_requests?: boolean | null;
+            push_profile_views?: boolean | null;
+            /** @example 07:00 */
+            quiet_hours_end?: string | null;
+            /** @example 22:00 */
+            quiet_hours_start?: string | null;
+        };
+        /**
+         * @description `preferred_contact` (05 section 2).
+         * @enum {string}
+         */
+        PreferredContact: "self" | "guardian";
+        /** @description Every column of `profile_privacy` except `profile_id` and the timestamps. */
+        Privacy: {
+            allow_photo_requests: boolean;
+            /** @description Neighbourhood; the city is always visible. */
+            area_visibility: components["schemas"]["FieldVisibility"];
+            /** @description Job title, employer, institute. */
+            career_details_visibility: components["schemas"]["FieldVisibility"];
+            caste_visibility: components["schemas"]["FieldVisibility"];
+            discovery_visibility: components["schemas"]["DiscoveryVisibility"];
+            family_visibility: components["schemas"]["FieldVisibility"];
+            /** @description Disability, blood group. */
+            health_visibility: components["schemas"]["FieldVisibility"];
+            /** @description Home ownership, type, size. */
+            home_visibility: components["schemas"]["FieldVisibility"];
+            income_visibility: components["schemas"]["FieldVisibility"];
+            interest_permission: components["schemas"]["InterestPermission"];
+            name_display: components["schemas"]["NameDisplay"];
+            photo_visibility: components["schemas"]["PhotoVisibility"];
+            /** @description `false`: browse privately. */
+            record_my_visits: boolean;
+            send_read_receipts: boolean;
+            show_last_active: boolean;
+            show_online_status: boolean;
+        };
+        /** @description The body of `PATCH /v1/me/privacy`: any subset of `Privacy` (15 section 7). */
+        PrivacyPatch: {
+            allow_photo_requests?: boolean | null;
+            area_visibility?: components["schemas"]["FieldVisibility"] | null;
+            career_details_visibility?: components["schemas"]["FieldVisibility"] | null;
+            caste_visibility?: components["schemas"]["FieldVisibility"] | null;
+            discovery_visibility?: components["schemas"]["DiscoveryVisibility"] | null;
+            family_visibility?: components["schemas"]["FieldVisibility"] | null;
+            health_visibility?: components["schemas"]["FieldVisibility"] | null;
+            home_visibility?: components["schemas"]["FieldVisibility"] | null;
+            income_visibility?: components["schemas"]["FieldVisibility"] | null;
+            interest_permission?: components["schemas"]["InterestPermission"] | null;
+            name_display?: components["schemas"]["NameDisplay"] | null;
+            photo_visibility?: components["schemas"]["PhotoVisibility"] | null;
+            record_my_visits?: boolean | null;
+            send_read_receipts?: boolean | null;
+            show_last_active?: boolean | null;
+            show_online_status?: boolean | null;
+        };
+        /** @description The compact form of another member's profile, used in every list (15 section 4.6). */
+        ProfileCard: {
+            /** Format: int32 */
+            age: number;
+            badges: components["schemas"]["Badge"][];
+            /** @description The caste name or the owner's typed value; `null` when hidden or not stated. */
+            caste_label: string | null;
+            city_name: string;
+            /**
+             * Format: int32
+             * @description 0..100 (10 section 5.3), computed at read time.
+             */
+            compat: number | null;
+            country_code: string;
+            /** @description Already reduced according to the owner's `name_display` (09 section 4). */
+            display_name: string;
+            education_level_code: string;
+            employment_type: components["schemas"]["EmploymentType"];
+            gender: components["schemas"]["Gender"];
+            /** Format: int32 */
+            height_cm: number;
+            /** Format: uuid */
+            id: string;
+            last_active: components["schemas"]["LastActive"] | null;
+            managed_by: components["schemas"]["ManagedBy"];
+            marital_status: components["schemas"]["MaritalStatus"];
+            mother_tongue_code: string;
+            photo: components["schemas"]["PhotoView"] | null;
+            /**
+             * Format: int64
+             * @description Approved photos, in both modes.
+             */
+            photo_count: number;
+            profession_code: string | null;
+            public_code: string;
+            /** @description Reason codes, at most 3 (10 section 7). */
+            reasons: string[];
+            region_name: string | null;
+            relation: components["schemas"]["CardRelation"];
+            religion_code: string;
+            sect_code: string | null;
+        };
+        /**
+         * @description The full form of another member's profile (15 section 4.6). A hidden value is `null`; the
+         *     groups listed in `locked` are those that connecting would reveal (09 section 5.5).
+         */
+        ProfileDetail: {
+            about_family: string | null;
+            about_me: string | null;
+            basics: components["schemas"]["DetailBasics"];
+            card: components["schemas"]["ProfileCard"];
+            community: components["schemas"]["DetailCommunity"];
+            compatibility: components["schemas"]["Compatibility"] | null;
+            education_career: components["schemas"]["DetailEducationCareer"];
+            family: components["schemas"]["DetailFamily"] | null;
+            is_online: boolean | null;
+            lifestyle: components["schemas"]["DetailLifestyle"];
+            location: components["schemas"]["DetailLocation"];
+            locked: components["schemas"]["LockedGroup"][];
+            looking_for: components["schemas"]["LookingFor"];
+            partner_notes: string | null;
+            photos: components["schemas"]["PhotoView"][];
+            relation: components["schemas"]["Relation"];
+        };
+        /** @description `GET /v1/profiles/by-code/{public_code}`. */
+        ProfileIdResponse: {
+            /** Format: uuid */
+            profile_id: string;
+        };
+        /**
+         * @description `profiles.status` (03 section 4.2).
+         * @enum {string}
+         */
+        ProfileStatus: "draft" | "pending_review" | "changes_requested" | "active" | "paused" | "closed" | "suspended" | "deleted";
+        ProfilesByStatus: {
+            /** Format: int64 */
+            active: number;
+            /** Format: int64 */
+            changes_requested: number;
+            /** Format: int64 */
+            closed: number;
+            /** Format: int64 */
+            draft: number;
+            /** Format: int64 */
+            paused: number;
+            /** Format: int64 */
+            pending_review: number;
+            /** Format: int64 */
+            suspended: number;
+        };
+        PromoteBody: {
+            /**
+             * @description Lower case letters, digits and underscores, starting with a letter. A sub-caste's code
+             *     starts with `<parent_code>_`.
+             */
+            code: string;
+            name: string;
+            name_ur?: string | null;
+            /** @description Must be the suggestion's own parent, when it has one. */
+            parent_code?: string | null;
+        };
+        /** @description The result of promoting a caste suggestion. */
+        PromotedCaste: {
+            caste: components["schemas"]["AdminCaste"];
+            /**
+             * Format: int64
+             * @description Profiles whose typed caste was replaced by the new code.
+             */
+            profiles_updated: number;
+        };
+        /**
+         * @description The stages a member may propose.
+         * @enum {string}
+         */
+        ProposableStage: "families_talking" | "engaged" | "nikah_done";
+        PutSettingBody: {
+            /** @description The new value; its type depends on the key (18 section 7.1). */
+            value: Record<string, never>;
+        };
+        /** @description Body of `POST /v1/notifications/read`: `{ "ids": [...] }` or `{ "all": true }`. */
+        ReadBody: {
+            all?: boolean | null;
+            ids?: string[] | null;
+        };
+        /** @description `GET /v1/recommendations`. */
+        RecommendationsPage: {
+            /** @description The list was stale and is still being recomputed in the background. */
+            is_refreshing: boolean;
+            items: components["schemas"]["ProfileCard"][];
+            next_cursor: string | null;
+            pool_exhausted: boolean;
+            /** Format: date-time */
+            refreshed_at: string | null;
+            /** @description At most 2; empty unless `pool_exhausted` (10 section 8.7). */
+            relaxation_hints: components["schemas"]["RelaxationHint"][];
+        };
+        /** @description Everything a client needs to render pickers. */
+        ReferenceBootstrap: {
+            castes: components["schemas"]["BootstrapCaste"][];
+            countries: components["schemas"]["BootstrapCountry"][];
+            education_fields: components["schemas"]["NamedItem"][];
+            education_levels: components["schemas"]["BootstrapEducationLevel"][];
+            hobbies: components["schemas"]["BootstrapHobby"][];
+            income_bands: components["schemas"]["BootstrapIncomeBand"][];
+            languages: components["schemas"]["NamedItem"][];
+            /** @description One entry per closed list, keyed by list name (05 section 2). */
+            options: {
+                [key: string]: components["schemas"]["OptionItem"][];
+            };
+            profession_categories: components["schemas"]["NamedItem"][];
+            religions: components["schemas"]["BootstrapReligion"][];
+            /** @description Changes whenever any list changes; equals the `ETag`. */
+            version: string;
+        };
+        RegionItem: {
+            /** Format: int32 */
+            id: number;
+            name: string;
+            name_ur: string | null;
+        };
+        RegionList: {
+            items: components["schemas"]["RegionItem"][];
+        };
+        RejectPhoto: {
+            /** @description One of the `photo_rejection_reason` codes (05 section 2.43). */
+            reason: string;
+        };
+        RejectText: {
+            /** @description Shown to the member, at most 300 characters. */
+            note?: string | null;
+            /** @description The hash of the text the moderator read. */
+            text_sha256: string;
+        };
+        RejectVerification: {
+            /** @description Staff only, never shown to the member. */
+            note?: string | null;
+            /** @description One of the `verification_rejection_reason` codes (05 section 2). */
+            reason: string;
+        };
+        /** @description What links the viewer to the owner, and what the viewer may do next (15 section 4.6). */
+        Relation: {
+            can_send_interest: boolean;
+            /**
+             * Format: date
+             * @description The date the cooldown ends, for `cooldown` (`YYYY-MM-DD`).
+             */
+            can_send_interest_after: string | null;
+            cannot_send_detail: components["schemas"]["CannotSendDetail"] | null;
+            cannot_send_reason: components["schemas"]["CannotSendReason"] | null;
+            /** Format: uuid */
+            connection_id: string | null;
+            interest: components["schemas"]["RelationInterest"] | null;
+            is_passed: boolean;
+            is_shortlisted: boolean;
+            photo_access: components["schemas"]["RelationPhotoAccess"];
+            shortlist_note: string | null;
+            tier: components["schemas"]["Tier"];
+        };
+        /** @description `Relation.interest`: the pending interest between the two members. */
+        RelationInterest: {
+            /** Format: date-time */
+            created_at: string;
+            direction: components["schemas"]["InterestDirection"];
+            /** Format: date-time */
+            expires_at: string;
+            /** Format: uuid */
+            id: string;
+            message: string | null;
+            /** @description Always `pending`. */
+            status: components["schemas"]["InterestStatus"];
+        };
+        /**
+         * @description `Relation.photo_access` (09 section 6.4, 15 section 4.6).
+         * @enum {string}
+         */
+        RelationPhotoAccess: "visible" | "can_request" | "requested" | "denied" | "requests_off";
+        /**
+         * @description Which must-have to loosen, and how many more profiles that would show (15 section 10,
+         *     `relaxation_hints`).
+         */
+        RelaxationHint: {
+            /** @description Dimension key from 10 section 4. */
+            dimension: string;
+            /** Format: int32 */
+            extra_profiles: number;
+        };
+        /**
+         * @description The platforms a release can be for.
+         * @enum {string}
+         */
+        ReleasePlatform: "android";
+        /**
+         * @description `religiosity` (05 section 2).
+         * @enum {string}
+         */
+        Religiosity: "very_practising" | "practising" | "moderately_practising" | "not_practising";
+        /**
+         * @description `religious_education` (05 section 2).
+         * @enum {string}
+         */
+        ReligiousEducation: "none" | "nazra" | "hafiz" | "alim";
+        /**
+         * @description `relocation` (05 section 2).
+         * @enum {string}
+         */
+        Relocation: "not_willing" | "within_country" | "abroad" | "anywhere";
+        /** @description The body of `POST /v1/me/profile/reopen`. */
+        ReopenBody: {
+            /** @description Must be `true`. */
+            confirm: boolean;
+        };
+        /** @description The filed report. */
+        ReportFiled: {
+            /** Format: uuid */
+            id: string;
+        };
+        /** @description The reported photo of a `photo` report. */
+        ReportPhoto: {
+            /** @description Signed, unblurred. `null` when the object is gone. */
+            large_url: string | null;
+            /** Format: uuid */
+            photo_id: string;
+            status: string | null;
+        };
+        /**
+         * @description `report_reason` (05 section 2).
+         * @enum {string}
+         */
+        ReportReason: "fake_profile" | "already_married" | "misleading_information" | "inappropriate_photo" | "harassment" | "asking_for_money" | "marriage_bureau_or_agent" | "underage" | "impersonation" | "offensive_content" | "other";
+        ReportReporter: {
+            first_name: string | null;
+            /** Format: uuid */
+            profile_id: string;
+            public_code: string;
+        };
+        /**
+         * @description `reports.source`.
+         * @enum {string}
+         */
+        ReportSource: "member" | "system";
+        /**
+         * @description `reports.status` (03 section 4.11).
+         * @enum {string}
+         */
+        ReportStatus: "open" | "in_review" | "actioned" | "dismissed";
+        /**
+         * @description `reports.subject_type`.
+         * @enum {string}
+         */
+        ReportSubject: "profile" | "photo" | "message";
+        ReportTarget: {
+            first_name: string | null;
+            /** Format: uuid */
+            profile_id: string;
+            public_code: string;
+            /** Format: uuid */
+            user_id: string;
+        };
+        ReportTargetSummary: {
+            is_id_verified: boolean;
+            is_photo_verified: boolean;
+            profile_status: components["schemas"]["ProfileStatus"];
+            /** Format: int64 */
+            reports_against_actioned: number;
+            /** Format: int64 */
+            reports_against_total: number;
+            sanctions: components["schemas"]["AdminSanction"][];
+            user_status: components["schemas"]["UserStatus"];
+        };
+        /** @description How many reports a reporter filed and how they were decided (`reporter_summary`). */
+        ReporterSummary: {
+            /** Format: int64 */
+            actioned: number;
+            /** Format: int64 */
+            dismissed: number;
+            /** Format: int64 */
+            filed: number;
+        };
+        ReportsFiled: {
+            /** Format: int64 */
+            actioned: number;
+            /** Format: int64 */
+            dismissed: number;
+            /** Format: int64 */
+            total: number;
+        };
+        RequestChangesBody: {
+            /** @description Shown to the member on the fix-your-profile screen. 10 to 500 characters. */
+            reason: string;
+        };
+        /**
+         * @description `residency_status` (05 section 2).
+         * @enum {string}
+         */
+        ResidencyStatus: "citizen" | "permanent_resident" | "work_visa" | "student_visa" | "dependent_visa" | "visit_visa" | "other";
+        ResolveBody: {
+            /** @description For staff only. 10 to 1,000 characters. */
+            note: string;
+            outcome: components["schemas"]["Outcome"];
+        };
+        RoleBody: {
+            role: components["schemas"]["UserRole"];
+        };
+        /**
+         * @description `messages.safety_flag` (13 section 5).
+         * @enum {string}
+         */
+        SafetyFlag: "money" | "off_platform" | "contact_info";
+        /**
+         * @description `sanctions.type`.
+         * @enum {string}
+         */
+        SanctionType: "warning" | "suspension" | "ban";
+        /** @description A saved search (15 section 10). */
+        SavedSearch: {
+            /** Format: date-time */
+            created_at: string;
+            filters: components["schemas"]["SearchFilters"];
+            /** Format: uuid */
+            id: string;
+            name: string;
+            notify_new: boolean;
+        };
+        /** @description `PATCH /v1/me/saved-searches/{id}`. */
+        SavedSearchPatch: {
+            name?: string | null;
+            notify_new?: boolean | null;
+        };
+        /** @description `GET /v1/me/saved-searches`: at most 10 entries, so always one page. */
+        SavedSearchesPage: {
+            items: components["schemas"]["SavedSearch"][];
+            next_cursor: string | null;
+        };
+        /**
+         * @description Search filters (15 section 4.8). Keys match `Preferences`. A missing key, `null` or an
+         *     empty array means no filter.
+         */
+        SearchFilters: {
+            /**
+             * Format: int32
+             * @description 1, 7 or 30.
+             */
+            active_within_days?: number | null;
+            /** Format: int32 */
+            age_max?: number | null;
+            /** Format: int32 */
+            age_min?: number | null;
+            beard_types?: components["schemas"]["Beard"][] | null;
+            caste_codes?: string[] | null;
+            children_acceptance?: components["schemas"]["ChildrenAcceptance"] | null;
+            city_ids?: number[] | null;
+            country_codes?: string[] | null;
+            /** Format: int32 */
+            education_min_rank?: number | null;
+            employment_types?: components["schemas"]["EmploymentType"][] | null;
+            family_types?: components["schemas"]["FamilyType"][] | null;
+            family_values?: components["schemas"]["FamilyValues"][] | null;
+            has_photo?: boolean | null;
+            /** Format: int32 */
+            height_max_cm?: number | null;
+            /** Format: int32 */
+            height_min_cm?: number | null;
+            hijab_types?: components["schemas"]["Hijab"][] | null;
+            /** Format: int32 */
+            income_min_rank?: number | null;
+            /**
+             * Format: int32
+             * @description 7 or 30.
+             */
+            joined_within_days?: number | null;
+            living_arrangements?: components["schemas"]["LivingArrangement"][] | null;
+            managed_by?: components["schemas"]["ManagedBy"][] | null;
+            marital_statuses?: components["schemas"]["MaritalStatus"][] | null;
+            mother_tongue_codes?: string[] | null;
+            profession_codes?: string[] | null;
+            /** @description Exact profile code; when set, every other filter is ignored. */
+            public_code?: string | null;
+            region_ids?: number[] | null;
+            religion_codes?: string[] | null;
+            religiosity_levels?: components["schemas"]["Religiosity"][] | null;
+            sect_codes?: string[] | null;
+            smoking_options?: components["schemas"]["Smoking"][] | null;
+            /** @description ID verified or photo verified. */
+            verified_only?: boolean | null;
+            work_after_marriage_options?: components["schemas"]["WorkAfterMarriage"][] | null;
+        };
+        /** @description `POST /v1/search`. */
+        SearchRequest: {
+            cursor?: string | null;
+            filters?: components["schemas"]["SearchFilters"];
+            /**
+             * Format: int64
+             * @description 1 to 50, default 20.
+             */
+            limit?: number | null;
+            /** @description `best_match` by default. */
+            sort?: components["schemas"]["SearchSort"];
+        };
+        /** @description The answer of `POST /v1/search`. */
+        SearchResults: {
+            items: components["schemas"]["ProfileCard"][];
+            next_cursor: string | null;
+            /**
+             * Format: int64
+             * @description Exact up to 500, `null` above; computed on the first page only.
+             */
+            total_estimate: number | null;
+        };
+        /**
+         * @description The order of search results (10 section 9.3).
+         * @enum {string}
+         */
+        SearchSort: "best_match" | "newest" | "recently_active";
+        /**
+         * @description Documentation only: the body of `PUT .../sections/{section}` is the section type named in
+         *     the path. The handler picks the type itself, so that a body that does not fit its section
+         *     is reported as such.
+         */
+        SectionBody: components["schemas"]["AccountForBody"] | components["schemas"]["BasicsSection"] | components["schemas"]["CommunitySection"] | components["schemas"]["LocationSection"] | components["schemas"]["EducationCareerSection"] | components["schemas"]["FamilySection"] | components["schemas"]["LifestyleSection"] | components["schemas"]["ContactsSection"];
+        /** @description `POST /v1/interests/seen`. */
+        SeenBody: {
+            /** @description Ids of received interests that were rendered on screen; at most 100. */
+            interest_ids: string[];
+        };
+        /** @description `GET /v1/me/verifications/selfie-challenge`. */
+        SelfieChallenge: {
+            gesture: components["schemas"]["Gesture"];
+        };
+        /** @description `POST /v1/interests`. */
+        SendInterestBody: {
+            /** @description At most 300 characters; the text rules apply (13 section 3). */
+            message?: string | null;
+            /** Format: uuid */
+            receiver_profile_id: string;
+        };
+        /** @description `POST /v1/connections/{connection_id}/messages`. */
+        SendMessageBody: {
+            /** @description 1 to 2000 characters after trimming. */
+            body: string;
+            /** @description A UUID made by the client for each new message and reused on every retry. */
+            client_message_id: string;
+        };
+        /** @description The answer of `POST /v1/interests`: `connection` is set when a mutual interest created one. */
+        SentInterest: {
+            connection: components["schemas"]["Connection"] | null;
+            interest: components["schemas"]["Interest"];
+        };
+        SettingItem: {
+            default: Record<string, never>;
+            key: string;
+            /** Format: date-time */
+            updated_at: string | null;
+            updated_by_email: string | null;
+            value: Record<string, never>;
+        };
+        /**
+         * @description The other member's contact details shared with the caller: only the selected items, the
+         *     others `null` (09 section 10.2 rule 4).
+         */
+        SharedContact: {
+            best_time_to_call: string | null;
+            contact_email: string | null;
+            guardian: components["schemas"]["SharedGuardian"] | null;
+            phone_e164: string | null;
+            /** @description `self` or `guardian`: whom to call first. */
+            preferred_contact: components["schemas"]["PreferredContact"];
+            whatsapp_e164: string | null;
+        };
+        /** @description The guardian item of a shared contact. */
+        SharedGuardian: {
+            name: string | null;
+            phone_e164: string | null;
+            relation: components["schemas"]["GuardianRelation"] | null;
+        };
+        /** @description `PUT /v1/shortlist/{profile_id}`. */
+        ShortlistBody: {
+            /** @description A private note, at most 300 characters. `null` or missing clears it. */
+            note?: string | null;
+        };
+        /**
+         * @description One shortlist entry. `profile` is `null` when the profile is no longer visible; the client
+         *     shows "No longer available" with a remove button.
+         */
+        ShortlistItem: {
+            /** Format: date-time */
+            created_at: string;
+            note: string | null;
+            profile: components["schemas"]["ProfileCard"] | null;
+            /** Format: uuid */
+            profile_id: string;
+        };
+        ShortlistPage: {
+            items: components["schemas"]["ShortlistItem"][];
+            next_cursor: string | null;
+        };
+        /**
+         * @description `smoking` (05 section 2).
+         * @enum {string}
+         */
+        Smoking: "no" | "occasionally" | "yes";
+        StageCounts: {
+            /** Format: int64 */
+            chatting: number;
+            /** Format: int64 */
+            engaged: number;
+            /** Format: int64 */
+            families_talking: number;
+            /** Format: int64 */
+            nikah_done: number;
+        };
+        /** @description `POST /v1/connections/{connection_id}/stage-proposals`. */
+        StageProposalBody: {
+            stage: components["schemas"]["ProposableStage"];
+        };
+        /** @description `POST /v1/me/verifications` (15 section 9): an identity check or a photo check. */
+        SubmitVerification: {
+            /** @description Required for `cnic`, `nicop` and `poc`. */
+            back_key?: string | null;
+            front_key: string;
+            gesture: string;
+            /** @enum {string} */
+            kind: "id_document";
+            selfie_key: string;
+        } | {
+            gesture: string;
+            /** @enum {string} */
+            kind: "selfie";
+            selfie_key: string;
+        };
+        SuspendBody: {
+            /**
+             * Format: int64
+             * @description 1 to 365.
+             */
+            days: number;
+            /** @description Shown to the member. 3 to 500 characters. */
+            reason: string;
+            /** Format: uuid */
+            report_id?: string | null;
+        };
+        /**
+         * @description `messages.system_event`.
+         * @enum {string}
+         */
+        SystemEvent: "connected" | "contact_shared" | "contact_share_revoked" | "stage_proposed" | "stage_confirmed" | "stage_declined" | "connection_ended";
+        /**
+         * @description Moderated text status: `about_me_status`, `about_family_status`, `notes_status` (03 section 4.5).
+         * @enum {string}
+         */
+        TextStatus: "approved" | "pending" | "rejected";
+        /** @description The status of each moderated text (03 section 4.5). */
+        TextStatuses: {
+            about_family: components["schemas"]["TextStatus"];
+            about_me: components["schemas"]["TextStatus"];
+            partner_notes: components["schemas"]["TextStatus"];
+        };
+        /**
+         * @description Relation tier of a viewer to an owner (03 section 6), evaluated in this order.
+         * @enum {string}
+         */
+        Tier: "self" | "connection" | "interest_from_owner" | "interest_to_owner" | "member";
+        UploadRequest: {
+            /** @description `image/jpeg`, `image/png` or `image/webp`. */
+            content_type: string;
+            /**
+             * Format: int64
+             * @description The size of the file in bytes, at most 10 MiB.
+             */
+            size_bytes: number;
+        };
+        /**
+         * @description Which image of a request an upload is for (15 section 9).
+         * @enum {string}
+         */
+        UploadSlot: "front" | "back" | "selfie";
+        /** @description Where and how to `PUT` a file (15 section 8). */
+        UploadTicket: {
+            /** Format: date-time */
+            expires_at: string;
+            /** @description Exactly these headers must be sent with the `PUT`. */
+            headers: {
+                [key: string]: string;
+            };
+            /** @description The key to send back when confirming. */
+            upload_key: string;
+            /** @description A presigned `PUT` URL, valid for 10 minutes. */
+            upload_url: string;
+        };
+        UserFlags: {
+            /**
+             * Format: int64
+             * @description Messages with `safety_flag = 'money'` sent in the last 30 days.
+             */
+            money_flags_30d: number;
+            /** @description 5 or more dismissed reports and none actioned in 30 days (13 section 6.6). */
+            reporter_misuse: boolean;
+            /** @description A system report records that the user signed in on a device of a sanctioned account. */
+            shared_device_with_sanctioned_user: boolean;
+        };
+        /**
+         * @description `users.role`.
+         * @enum {string}
+         */
+        UserRole: "member" | "moderator" | "admin";
+        /**
+         * @description `users.status` (03 section 4.1).
+         * @enum {string}
+         */
+        UserStatus: "active" | "suspended" | "banned" | "deletion_scheduled" | "deleted";
+        /**
+         * @description `verification_requests.kind`.
+         * @enum {string}
+         */
+        VerificationKind: "id_document" | "selfie";
+        /** @description `GET /v1/me/verifications` (15 section 9). */
+        VerificationOverview: {
+            id_verified: boolean;
+            identity: components["schemas"]["IdentitySummary"] | null;
+            phone_verified: boolean;
+            photo_verified: boolean;
+            /** @description Newest first, at most 10. */
+            requests: components["schemas"]["VerificationRequestSummary"][];
+        };
+        /**
+         * @description `verification_rejection_reason` (05 section 2).
+         * @enum {string}
+         */
+        VerificationRejectionReason: "unreadable" | "document_mismatch" | "face_mismatch" | "gesture_missing" | "expired_document" | "underage" | "suspected_fraud" | "other";
+        /** @description One verification request as its owner sees it. The reviewer's note stays with staff. */
+        VerificationRequestSummary: {
+            /** Format: date-time */
+            created_at: string;
+            /** Format: uuid */
+            id: string;
+            kind: components["schemas"]["VerificationKind"];
+            rejection_reason: components["schemas"]["VerificationRejectionReason"] | null;
+            /** Format: date-time */
+            reviewed_at: string | null;
+            status: components["schemas"]["VerificationStatus"];
+        };
+        /**
+         * @description `verification_requests.status` (03 section 4.6).
+         * @enum {string}
+         */
+        VerificationStatus: "pending" | "approved" | "rejected" | "cancelled";
+        /** @description `POST /v1/me/verifications/uploads`. */
+        VerificationUploadRequest: {
+            /** @description `image/jpeg`, `image/png` or `image/webp`. */
+            content_type: string;
+            /**
+             * Format: int64
+             * @description The size of the file in bytes, at most 10 MiB.
+             */
+            size_bytes: number;
+            slot: components["schemas"]["UploadSlot"];
+        };
+        /** @description `GET /v1/me/visited`. */
+        VisitedPage: {
+            items: components["schemas"]["VisitorItem"][];
+            next_cursor: string | null;
+        };
+        /** @description One visitor or one visited profile (15 section 10). */
+        VisitorItem: {
+            /** Format: date-time */
+            last_viewed_at: string;
+            profile: components["schemas"]["ProfileCard"];
+            /** Format: int64 */
+            view_count: number;
+        };
+        /** @description `GET /v1/me/visitors`. */
+        VisitorsPage: {
+            /** @description True when the caller browses privately and therefore sees no visitors (09 section 8.2). */
+            hidden_because_private: boolean;
+            items: components["schemas"]["VisitorItem"][];
+            next_cursor: string | null;
+        };
+        WarnBody: {
+            /** @description Shown to the member. 3 to 500 characters. */
+            reason: string;
+            /** Format: uuid */
+            report_id?: string | null;
+        };
+        /**
+         * @description `work_after_marriage` (05 section 2).
+         * @enum {string}
+         */
+        WorkAfterMarriage: "yes" | "no" | "flexible";
     };
     responses: never;
     parameters: never;
@@ -129,6 +5454,4887 @@ export interface operations {
             };
         };
     };
+    send_announcement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnnouncementBody"];
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnnouncementAccepted"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    list_audit_log: {
+        parameters: {
+            query?: {
+                /** @description Only entries written by this staff user. */
+                actor_user_id?: string;
+                target_type?: components["schemas"]["AuditTargetType"];
+                target_id?: string;
+                /** @description An action code of 18 section 8.3, for example `user.ban`. */
+                action?: string;
+                /** @description 1 to 50, default 20. */
+                limit?: number;
+                /** @description `next_cursor` of the previous page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_AuditEntry"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    list_suggestions: {
+        parameters: {
+            query?: {
+                /** @description `pending` (default), `promoted` or `rejected`. */
+                status?: components["schemas"]["CasteSuggestionStatus"];
+                /** @description 1 to 50, default 20. */
+                limit?: number;
+                /** @description `next_cursor` of the previous page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_CasteSuggestionItem"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    promote_suggestion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Suggestion id */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromoteBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromotedCaste"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    reject_suggestion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Suggestion id */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CasteSuggestionItem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    list_castes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Items_AdminCaste"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    create_caste: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCasteBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaste"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    patch_caste: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Caste code */
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PatchCasteBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaste"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_overview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOverview"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    list_photos: {
+        parameters: {
+            query?: {
+                /**
+                 * @description `pending_review` (default), `approved`, `rejected`, `processing` or `failed`. Photos
+                 *     without processed files are never listed.
+                 */
+                status?: components["schemas"]["PhotoStatus"];
+                /** @description 1 to 50, default 20. */
+                limit?: number;
+                /** @description `next_cursor` of the previous page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_AdminPhotoItem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    approve_photo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The photo */
+                photo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    reject_photo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The photo */
+                photo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectPhoto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    list_profiles: {
+        parameters: {
+            query?: {
+                /** @description Any profile status. Without `q` the default is `pending_review`, the review queue. */
+                status?: components["schemas"]["ProfileStatus"];
+                /** @description A profile code, or the start of a first or last name. */
+                q?: string;
+                /** @description 1 to 50, default 20. */
+                limit?: number;
+                /** @description `next_cursor` of the previous page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_AdminProfileListItem"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_profile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Profile id */
+                profile_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProfile"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    approve_profile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Profile id */
+                profile_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProfile"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    change_locked_fields: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Profile id */
+                profile_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LockedFieldsBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProfile"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    request_changes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Profile id */
+                profile_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestChangesBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProfile"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    list_releases: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Items_AdminRelease"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    create_release: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateReleaseBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRelease"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    list_reports: {
+        parameters: {
+            query?: {
+                /** @description `open` (default), `in_review`, `actioned` or `dismissed`. */
+                status?: components["schemas"]["ReportStatus"];
+                /** @description 1 to 50, default 20. */
+                limit?: number;
+                /** @description `next_cursor` of the previous page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_AdminReportListItem"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_report: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Report id */
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminReportDetail"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    claim_report: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Report id */
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminReportDetail"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    resolve_report: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Report id */
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResolveBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminReportDetail"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    list_settings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Items_SettingItem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    put_setting: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Setting key, for example limits.photos_max */
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PutSettingBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingItem"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    list_texts: {
+        parameters: {
+            query?: {
+                /** @description 1 to 50, default 20. */
+                limit?: number;
+                /** @description `next_cursor` of the previous page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_AdminTextItem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    approve_text: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The profile */
+                profile_id: string;
+                /** @description about_me, about_family or partner_notes */
+                field: components["schemas"]["ModeratedField"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApproveText"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    reject_text: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The profile */
+                profile_id: string;
+                /** @description about_me, about_family or partner_notes */
+                field: components["schemas"]["ModeratedField"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectText"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    search_users: {
+        parameters: {
+            query?: {
+                /**
+                 * @description At least 3 characters: an exact email, a phone number (7 or more digits, suffix match),
+                 *     an exact profile code, or the start of a first or last name.
+                 */
+                q?: string;
+                status?: components["schemas"]["UserStatus"];
+                role?: components["schemas"]["UserRole"];
+                /** @description 1 to 50, default 20. */
+                limit?: number;
+                /** @description `next_cursor` of the previous page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_AdminUserListItem"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_user: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description User id */
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUser"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    ban_user: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description User id */
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BanBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUser"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    change_role: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description User id */
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RoleBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUser"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    suspend_user: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description User id */
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SuspendBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUser"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    unban_user: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description User id */
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUser"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    unsuspend_user: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description User id */
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUser"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    warn_user: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description User id */
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WarnBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUser"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    list_verifications: {
+        parameters: {
+            query?: {
+                /** @description `pending` (default), `approved`, `rejected` or `cancelled`. */
+                status?: components["schemas"]["VerificationStatus"];
+                kind?: components["schemas"]["VerificationKind"];
+                /** @description 1 to 50, default 20. */
+                limit?: number;
+                /** @description `next_cursor` of the previous page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_AdminVerificationListItem"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_verification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The request */
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminVerificationDetail"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    approve_verification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The request */
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        /** @description May be left out */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApproveVerification"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    reject_verification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The request */
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectVerification"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    list_blocks: {
+        parameters: {
+            query?: {
+                /** @description 1 to 50, default 20. */
+                limit?: number;
+                /** @description `next_cursor` of the previous page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BlocksPage"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    put_block: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The profile to block */
+                profile_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Blocked */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    delete_block: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The blocked profile */
+                profile_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Unblocked */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    list_connections: {
+        parameters: {
+            query?: {
+                /** @description `active` (default), `archived` or `ended`. */
+                filter?: "active" | "archived" | "ended";
+                /** @description 1 to 50, default 20. */
+                limit?: number;
+                /** @description `next_cursor` of the previous page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectionPage"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_connection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Connection"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    patch_connection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PatchConnectionBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Connection"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    put_contact_share: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactShareBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Connection"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    delete_contact_share: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Connection"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    end_connection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EndConnectionBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Connection"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    list_messages: {
+        parameters: {
+            query?: {
+                /** @description Messages older than this id, newest first. */
+                before?: string;
+                /** @description Messages newer than this id, oldest first. */
+                after?: string;
+                /** @description 1 to 100, default 30. */
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessagesPage"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    send_message: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendMessageBody"];
+            };
+        };
+        responses: {
+            /** @description Already sent with this client_message_id */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Sent */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    delete_message: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+                /** @description The caller's message */
+                message_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    mark_read: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReadBody"];
+            };
+        };
+        responses: {
+            /** @description Marked */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    propose_stage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StageProposalBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Connection"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    cancel_proposal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+                /** @description The caller's proposal */
+                proposal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Connection"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    confirm_proposal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+                /** @description The other member's proposal */
+                proposal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Connection"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    decline_proposal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+                /** @description The other member's proposal */
+                proposal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Connection"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    post_events: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EventsBody"];
+            };
+        };
+        responses: {
+            /** @description Accepted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_home: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Home"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    list_interests: {
+        parameters: {
+            query: {
+                /** @description `received` or `sent`. */
+                box: "received" | "sent";
+                /** @description `pending` (default), `accepted` or `closed`. */
+                status?: "pending" | "accepted" | "closed";
+                /** @description 1 to 50, default 20. */
+                limit?: number;
+                /** @description `next_cursor` of the previous page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InterestPage"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    send_interest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendInterestBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SentInterest"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    mark_seen: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SeenBody"];
+            };
+        };
+        responses: {
+            /** @description Marked */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_interest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The interest */
+                interest_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Interest"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    accept_interest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The received interest */
+                interest_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcceptedInterest"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    decline_interest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The received interest */
+                interest_id: string;
+            };
+            cookie?: never;
+        };
+        /** @description Optional */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeclineBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Interest"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    withdraw_interest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The sent interest */
+                interest_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Interest"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    patch_me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PatchMe"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    post_consents: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConsentsBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    post_deletion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeletionBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    delete_deletion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    register_device: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeviceBody"];
+            };
+        };
+        responses: {
+            /** @description Registered */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    remove_device: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The FCM registration token */
+                push_token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    post_export: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExportQueued"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_latest_export: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LatestExport"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_identity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentitySummary"] | null;
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    put_identity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IdentityBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentitySummary"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_preferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPreferences"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    put_preferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreferencesBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPreferences"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    post_complete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    post_continue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContinueBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    list_access: {
+        parameters: {
+            query?: {
+                /** @description `received` (default) or `sent`. */
+                box?: "received" | "sent";
+                /** @description `pending` (default), `granted`, `denied` or `revoked`. */
+                status?: components["schemas"]["PhotoAccessStatus"];
+                /** @description 1 to 50, default 20. */
+                limit?: number;
+                /** @description `next_cursor` of the previous page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_PhotoAccessItem"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    put_grant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The member to give access to */
+                profile_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Granted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    delete_grant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The member whose access is removed */
+                profile_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Revoked */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    deny_request: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The photo access request */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Denied */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    grant_request: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The photo access request */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Granted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    list_photos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnPhoto"][];
+                };
+            };
+        };
+    };
+    confirm_photo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnPhoto"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnPhoto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    put_order: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnPhoto"][];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    create_upload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UploadRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UploadTicket"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    delete_photo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The photo to delete */
+                photo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    patch_photo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The photo to make primary */
+                photo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PatchPhoto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnPhoto"][];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_preferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Preferences"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    put_preferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Preferences"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Preferences"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_privacy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Privacy"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    patch_privacy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PrivacyPatch"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Privacy"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_profile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnProfile"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    post_close: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CloseBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    post_pause: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_preview: {
+        parameters: {
+            query?: {
+                /** @description `member` (default) or `connection`. */
+                as?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileDetail"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    post_reopen: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReopenBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    post_resubmit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    post_resume: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    put_section: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The section to replace */
+                section: "account_for" | "basics" | "community" | "location" | "education_career" | "family" | "lifestyle" | "contacts";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SectionBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnProfile"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    list_saved_searches: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedSearchesPage"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    create_saved_search: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewSavedSearch"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedSearch"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    delete_saved_search: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The saved search */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    patch_saved_search: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The saved search */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SavedSearchPatch"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedSearch"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_verifications: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VerificationOverview"];
+                };
+            };
+        };
+    };
+    submit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmitVerification"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VerificationRequestSummary"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    selfie_challenge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SelfieChallenge"];
+                };
+            };
+        };
+    };
+    create_upload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerificationUploadRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UploadTicket"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The request to cancel */
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_visited: {
+        parameters: {
+            query?: {
+                /** @description 1 to 50, default 20. */
+                limit?: number;
+                /** @description `next_cursor` of the previous page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VisitedPage"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_visitors: {
+        parameters: {
+            query?: {
+                /** @description 1 to 50, default 20. */
+                limit?: number;
+                /** @description `next_cursor` of the previous page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VisitorsPage"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
     meta: {
         parameters: {
             query?: never;
@@ -145,6 +10351,766 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Meta"];
+                };
+            };
+        };
+    };
+    app_release: {
+        parameters: {
+            query: {
+                /** @description Only `android`. */
+                platform: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppRelease"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    list_notifications: {
+        parameters: {
+            query?: {
+                /** @description 1 to 50, default 20. */
+                limit?: number;
+                /** @description `next_cursor` of the previous page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_Notification"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    mark_read: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReadBody"];
+            };
+        };
+        responses: {
+            /** @description Marked as read */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    put_pass: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The profile to pass */
+                profile_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Passed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    delete_pass: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The passed profile */
+                profile_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Undone */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_profile_by_code: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A profile code such as KR7F3K2QX9 */
+                public_code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileIdResponse"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_profile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The profile to open */
+                profile_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileDetail"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    request_access: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The owner of the photos */
+                profile_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhotoRequested"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_recommendations: {
+        parameters: {
+            query?: {
+                /** @description 1 to 50, default 20. */
+                limit?: number;
+                /** @description `next_cursor` of the previous page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecommendationsPage"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    post_refresh: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The refresh is queued */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    bootstrap: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferenceBootstrap"];
+                };
+            };
+            /** @description Not modified */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    cities: {
+        parameters: {
+            query: {
+                country_code: string;
+                region_id?: number;
+                /** @description At least 2 characters; prefix and trigram match. */
+                q?: string;
+                /** @description Default 20, maximum 50. */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CityList"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    regions: {
+        parameters: {
+            query: {
+                /** @description ISO 3166-1 alpha-2, for example `PK`. */
+                country_code: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegionList"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    file_report: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FileReportBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportFiled"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    post_search: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SearchRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchResults"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    list_shortlist: {
+        parameters: {
+            query?: {
+                /** @description 1 to 50, default 20. */
+                limit?: number;
+                /** @description `next_cursor` of the previous page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShortlistPage"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    put_shortlist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The profile to shortlist */
+                profile_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShortlistBody"];
+            };
+        };
+        responses: {
+            /** @description Shortlisted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    delete_shortlist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The shortlisted profile */
+                profile_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    upgrade: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Switching protocols */
+            101: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The origin is not allowed */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    clerk_webhook: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Svix-signed Clerk event */
+        requestBody: {
+            content: {
+                "application/json": string;
+            };
+        };
+        responses: {
+            /** @description Handled */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
                 };
             };
         };

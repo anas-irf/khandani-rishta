@@ -142,7 +142,12 @@ const FEMALE_NAMES = [
 
 const EDUCATION = ['bachelors', 'masters', 'professional', 'mphil', 'intermediate', 'doctorate']
 const PROFESSIONS = ['software_it', 'engineer', 'doctor', 'teacher', 'banker', 'accountant_auditor']
-const EMPLOYMENT = ['private_job', 'government_job', 'business_owner', 'self_employed']
+const EMPLOYMENT: ProfileDetail['card']['employment_type'][] = [
+  'private_job',
+  'government_job',
+  'business_owner',
+  'self_employed',
+]
 const CASTES = ['Arain', 'Awan', 'Rajput', 'Jutt', null, 'Syed', 'Sheikh', null, 'Mughal']
 const LANGS = ['urdu', 'punjabi', 'pashto', 'sindhi', 'saraiki']
 const REASONS = [

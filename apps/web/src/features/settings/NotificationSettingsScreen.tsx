@@ -6,6 +6,7 @@ import { PageHeader } from '~/components/common/PageHeader'
 import { SectionCard } from '~/components/common/SectionCard'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
+import { EMAIL_MATCH_DIGESTS, isOneOf } from '~/lib/api-enums'
 import type { NotificationPreferences } from '~/lib/api-types'
 import { useOptions } from '~/lib/reference'
 import {
@@ -18,6 +19,7 @@ import {
 import {
   digestValue,
   type PreferenceSwitch,
+  type PreferencesPatch,
   quietHoursOn,
   quietHoursToggle,
   quietTimeChange,
@@ -83,7 +85,7 @@ function usePreferencesDraft(saved: NotificationPreferences) {
   )
 
   const change = useCallback(
-    (patch: NotificationPreferences) => {
+    (patch: PreferencesPatch) => {
       const next = { ...(latest.current ?? saved), ...patch }
       latest.current = next
       setDraft(next)
@@ -157,7 +159,9 @@ function PreferenceGroups({ saved }: { saved: NotificationPreferences }) {
           label={t('notifications.email.match_digest')}
           value={digestValue(preferences)}
           options={digestOptions.map((option) => ({ value: option.code, label: option.label }))}
-          onChange={(value) => change({ email_match_digest: value })}
+          onChange={(value) => {
+            if (isOneOf(EMAIL_MATCH_DIGESTS, value)) change({ email_match_digest: value })
+          }}
         />
         {toggle('email_announcements', t('notifications.email.announcements'))}
         <p className="text-sm text-muted-foreground">{t('notifications.email.note')}</p>

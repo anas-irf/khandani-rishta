@@ -75,7 +75,7 @@ export function FilterGroup({
 }
 
 /** Several choices from a short list, as toggle chips. */
-export function ChipsField({
+export function ChipsField<T extends string>({
   label,
   options,
   value,
@@ -83,14 +83,14 @@ export function ChipsField({
   error,
 }: {
   label: string
-  options: readonly Option[]
-  value: readonly string[] | undefined
-  onChange: (next: string[]) => void
+  options: readonly Option<T>[]
+  value: readonly T[] | null | undefined
+  onChange: (next: T[]) => void
   error?: string
 }) {
   const errorId = useId()
   const selected = value ?? []
-  const toggle = (code: string) =>
+  const toggle = (code: T) =>
     onChange(
       selected.includes(code) ? selected.filter((item) => item !== code) : [...selected, code],
     )
@@ -167,7 +167,7 @@ export function SearchMultiField({
 }: {
   label: string
   options: readonly SearchOption[]
-  value: readonly string[] | undefined
+  value: readonly string[] | null | undefined
   onChange: (next: string[]) => void
   error?: string
 }) {
@@ -229,7 +229,7 @@ export function SelectField<T extends string | number>({
 }: {
   label: string
   options: readonly { value: T; label: string }[]
-  value: T | undefined
+  value: T | null | undefined
   onChange: (next: T | undefined) => void
   anyLabel: string
   error?: string
@@ -241,7 +241,7 @@ export function SelectField<T extends string | number>({
       <Label htmlFor={id}>{label}</Label>
       <NativeSelect
         id={id}
-        value={value === undefined ? '' : String(value)}
+        value={value == null ? '' : String(value)}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
         onChange={(event) => {
@@ -274,8 +274,8 @@ export function RangeField({
 }: {
   label: string
   options: readonly NumberOption[]
-  min: number | undefined
-  max: number | undefined
+  min: number | null | undefined
+  max: number | null | undefined
   onChange: (next: { min: number | undefined; max: number | undefined }) => void
   error?: string
 }) {
@@ -284,6 +284,7 @@ export function RangeField({
   const toId = useId()
   const errorId = useId()
   const parse = (raw: string) => (raw === '' ? undefined : Number(raw))
+  const current = { min: min ?? undefined, max: max ?? undefined }
   return (
     <fieldset className="flex flex-col gap-2" aria-describedby={error ? errorId : undefined}>
       <legend className="mb-2 text-sm font-medium">{label}</legend>
@@ -295,9 +296,9 @@ export function RangeField({
           <NativeSelect
             id={fromId}
             aria-label={t('search.range_from', { label })}
-            value={min === undefined ? '' : String(min)}
+            value={min == null ? '' : String(min)}
             aria-invalid={error ? true : undefined}
-            onChange={(event) => onChange({ min: parse(event.target.value), max })}
+            onChange={(event) => onChange({ ...current, min: parse(event.target.value) })}
           >
             <NativeSelectOption value="">{t('search.any')}</NativeSelectOption>
             {options.map((option) => (
@@ -314,9 +315,9 @@ export function RangeField({
           <NativeSelect
             id={toId}
             aria-label={t('search.range_to', { label })}
-            value={max === undefined ? '' : String(max)}
+            value={max == null ? '' : String(max)}
             aria-invalid={error ? true : undefined}
-            onChange={(event) => onChange({ min, max: parse(event.target.value) })}
+            onChange={(event) => onChange({ ...current, max: parse(event.target.value) })}
           >
             <NativeSelectOption value="">{t('search.any')}</NativeSelectOption>
             {options.map((option) => (
@@ -361,7 +362,7 @@ export function RegionsField({
 }: {
   label: string
   countries: readonly string[]
-  value: readonly number[] | undefined
+  value: readonly number[] | null | undefined
   onChange: (next: number[]) => void
 }) {
   if (countries.length === 0) return null
@@ -438,7 +439,7 @@ export function CityField({
   countries: readonly string[]
   /** The viewer's own country when none is chosen. */
   fallbackCountry: string
-  value: readonly number[] | undefined
+  value: readonly number[] | null | undefined
   onChange: (next: number[]) => void
 }) {
   const { t } = useTranslation('discovery')

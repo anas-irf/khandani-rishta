@@ -62,8 +62,8 @@ export function LifestyleForm({
   const subject = subjectOf(profile.account_for.managed_by, profile.basics.gender)
   const wording = { context: wordingContext(subject) }
   const context = useLatest<LifestyleContext>({
-    gender: profile.basics.gender,
-    religionCode: profile.community.religion_code,
+    gender: profile.basics.gender ?? null,
+    religionCode: profile.community.religion_code ?? null,
   })
   const [schema] = useState(() => lifestyleSchema())
   const [defaultValues] = useState(() => lifestyleFromProfile(profile))
@@ -119,14 +119,14 @@ export function LifestyleForm({
     return buildAboutMeDraft(
       {
         subject,
-        firstName: basics.first_name,
+        firstName: basics.first_name ?? null,
         age: basics.date_of_birth ? ageFromDateOfBirth(basics.date_of_birth) : null,
         job:
           education.job_title ??
           (education.profession_code
             ? label('profession_categories', education.profession_code)
             : null),
-        city: location.city?.name ?? location.city_other,
+        city: location.city?.name ?? location.city_other ?? null,
         educationLevel: education.education_level_code
           ? label('education_levels', education.education_level_code)
           : null,
@@ -134,7 +134,7 @@ export function LifestyleForm({
           ? label('education_fields', education.education_field_code)
           : null,
         religiosity: values.religiosity,
-        familyType: family.family_type,
+        familyType: family.family_type ?? null,
         hobbies: values.hobby_codes.map((code) => label('hobbies', code)),
       },
       (key, options) => i18n.t(key, options ?? {}),

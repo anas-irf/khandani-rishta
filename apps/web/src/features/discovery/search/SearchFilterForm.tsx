@@ -1,7 +1,21 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import {
+  BEARDS,
+  CHILDREN_ACCEPTANCES,
+  EMPLOYMENT_TYPES,
+  FAMILY_TYPES,
+  FAMILY_VALUES,
+  HIJABS,
+  LIVING_ARRANGEMENTS,
+  MANAGED_BY,
+  MARITAL_STATUSES,
+  RELIGIOSITY_LEVELS,
+  SMOKING_OPTIONS,
+  WORK_AFTER_MARRIAGE_OPTIONS,
+} from '~/lib/api-enums'
 import type { Gender, SearchFilters } from '~/lib/api-types'
-import { useCastes, useOptions, useReference } from '~/lib/reference'
+import { optionsIn, useCastes, useOptions, useReference } from '~/lib/reference'
 import { activeFilterControls } from '../search-params'
 import {
   ChipsField,
@@ -86,10 +100,15 @@ export function SearchFilterForm({
 
   const maritalAll = useOptions('marital_status')
   const marital = useMemo(
-    () => maritalAll.filter((option) => option.code !== 'married' || viewerGender === 'female'),
+    () =>
+      optionsIn(maritalAll, MARITAL_STATUSES).filter(
+        (option) => option.code !== 'married' || viewerGender === 'female',
+      ),
     [maritalAll, viewerGender],
   )
-  const children = useOptions('children_acceptance').filter((option) => option.code !== 'any')
+  const children = optionsIn(useOptions('children_acceptance'), CHILDREN_ACCEPTANCES).filter(
+    (option) => option.code !== 'any',
+  )
   const religions = useOptions('religions')
   const castes = useCastes()
   const casteOptions = useMemo(
@@ -103,17 +122,17 @@ export function SearchFilterForm({
   )
   const languages = useOptions('languages')
   const countries = useOptions('countries')
-  const employment = useOptions('employment_type')
+  const employment = optionsIn(useOptions('employment_type'), EMPLOYMENT_TYPES)
   const professions = useOptions('profession_categories')
-  const religiosity = useOptions('religiosity')
-  const hijab = useOptions('hijab')
-  const beard = useOptions('beard')
-  const familyValues = useOptions('family_values')
-  const familyTypes = useOptions('family_type')
-  const living = useOptions('living_arrangement')
-  const work = useOptions('work_after_marriage')
-  const smoking = useOptions('smoking')
-  const managedBy = useOptions('managed_by')
+  const religiosity = optionsIn(useOptions('religiosity'), RELIGIOSITY_LEVELS)
+  const hijab = optionsIn(useOptions('hijab'), HIJABS)
+  const beard = optionsIn(useOptions('beard'), BEARDS)
+  const familyValues = optionsIn(useOptions('family_values'), FAMILY_VALUES)
+  const familyTypes = optionsIn(useOptions('family_type'), FAMILY_TYPES)
+  const living = optionsIn(useOptions('living_arrangement'), LIVING_ARRANGEMENTS)
+  const work = optionsIn(useOptions('work_after_marriage'), WORK_AFTER_MARRIAGE_OPTIONS)
+  const smoking = optionsIn(useOptions('smoking'), SMOKING_OPTIONS)
+  const managedBy = optionsIn(useOptions('managed_by'), MANAGED_BY)
 
   const sects = useMemo(() => {
     const chosen = new Set(filters.religion_codes ?? [])
@@ -172,9 +191,7 @@ export function SearchFilterForm({
           options={children.map((option) => ({ value: option.code, label: option.label }))}
           value={filters.children_acceptance}
           error={errors.children_acceptance}
-          onChange={(value) =>
-            set('children_acceptance', value as SearchFilters['children_acceptance'])
-          }
+          onChange={(value) => set('children_acceptance', value)}
         />
       </FilterGroup>
 

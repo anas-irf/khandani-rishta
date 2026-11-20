@@ -2,7 +2,8 @@ import { type ComponentType, type ReactNode, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ErrorState } from '~/components/common/ErrorState'
 import { FormSkeleton } from '~/components/common/FormSkeleton'
-import type { ApiFieldError, OwnProfile } from '~/lib/api-types'
+import type { ClientFieldError } from '~/lib/api'
+import type { OwnProfile } from '~/lib/api-types'
 import { useOwnProfile } from './queries'
 import type { FormMode } from './schemas'
 import { AccountForForm } from './sections/AccountForForm'
@@ -46,7 +47,7 @@ export type SectionFormProps = {
   /** Rendered under the submit button, inside the form. */
   footer?: ReactNode
   /** API field errors to show when the form opens (a failed completion, 07 section 14.2). */
-  initialErrors?: ApiFieldError[]
+  initialErrors?: ClientFieldError[]
   /** Told whenever the form gains or loses unsaved input ("Discard changes?", 07 2.5). */
   onDirtyChange?: (dirty: boolean) => void
 }

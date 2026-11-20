@@ -2,7 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { delay, http } from 'msw'
 import { describe, expect, it } from 'vitest'
-import type { Me } from '~/lib/api-types'
+import type { Me, NotificationItem } from '~/lib/api-types'
 import { qk } from '~/lib/query'
 import { db } from '~/mocks/db'
 import { makeNotification, makePhotoView } from '~/mocks/factories'
@@ -144,10 +144,12 @@ describe('NotificationsScreen (APP-NOTIFS)', () => {
   })
 
   it('shows an unknown type as "You have a new notification." with no link, and marks it read', async () => {
+    // A type a newer API may send (15 section 1: clients ignore unknown enum values).
+    const newerType: string = 'type_from_the_future'
     seed([
       makeNotification({
         id: 'n-new',
-        type: 'type_from_the_future',
+        type: newerType as NotificationItem['type'],
         data: { something: 'else' },
         actor: null,
       }),

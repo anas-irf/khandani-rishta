@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import type { NotificationItem } from '~/lib/api-types'
 import { i18n } from '~/lib/i18n'
 import { labelOf } from '~/lib/reference'
 import { makeNotification, makePhotoView } from '~/mocks/factories'
@@ -18,13 +19,14 @@ const context = (language = 'en'): DescribeContext => ({
 
 const actor = { profile_id: 'p-1', display_name: 'Ahmed R.', photo: makePhotoView() }
 
+/** `type` may also be one a newer API sends (15 section 1: clients ignore unknown enum values). */
 function describeItem(
   type: string,
   data: Record<string, unknown>,
   options: { actor?: typeof actor | null; language?: string } = {},
 ) {
   const item = makeNotification({
-    type,
+    type: type as NotificationItem['type'],
     data,
     actor: options.actor === undefined ? null : options.actor,
   })

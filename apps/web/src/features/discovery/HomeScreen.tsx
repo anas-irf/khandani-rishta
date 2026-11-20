@@ -294,7 +294,7 @@ function NearbySeeAll({ title }: { title: string }) {
         queryKey: qk.ownProfile(),
         queryFn: () => http.get<OwnProfile>('/v1/me/profile'),
       })
-      cityId = own.location.city_id
+      cityId = own.location.city_id ?? null
     } catch {
       cityId = null
     } finally {

@@ -2,7 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { delay, http } from 'msw'
 import { describe, expect, it } from 'vitest'
-import type { Me } from '~/lib/api-types'
+import type { Me, OwnProfile } from '~/lib/api-types'
 import { db } from '~/mocks/db'
 import { makeMe, makeOwnPhoto } from '~/mocks/factories'
 import { apiError, apiUrl } from '~/mocks/http'
@@ -36,10 +36,17 @@ describe('ME-PROFILE helpers', () => {
   })
 
   it('links the verification items and skips unknown keys', () => {
+    // A key a newer API may send (15 section 1: clients ignore unknown enum values).
+    const newerKey: string = 'something_new'
     expect(
       completenessHints({
         onboarding_step: 'done',
-        missing: ['something_new', 'more_photos', 'id_verified', 'photo_verified'],
+        missing: [
+          newerKey as OwnProfile['missing'][number],
+          'more_photos',
+          'id_verified',
+          'photo_verified',
+        ],
       }).map((hint) => hint.to),
     ).toEqual(['/me/photos', '/me/verification/identity', '/me/verification/selfie'])
     expect(completenessHints({ onboarding_step: 'family', missing: ['core'] })).toEqual([

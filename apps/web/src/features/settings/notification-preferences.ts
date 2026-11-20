@@ -6,6 +6,9 @@ import type { NotificationPreferences } from '~/lib/api-types'
  * sends the complete object, 16 section 6.26).
  */
 
+/** Some keys of the preferences: a change, or an object read with safe defaults. */
+export type PreferencesPatch = Partial<NotificationPreferences>
+
 export type PreferenceSwitch =
   | 'push_interests'
   | 'push_messages'
@@ -26,17 +29,18 @@ export function toTimeValue(value: unknown): string | null {
   return match ? `${match[1]}:${match[2]}` : null
 }
 
-export function switchValue(preferences: NotificationPreferences, key: PreferenceSwitch): boolean {
+export function switchValue(preferences: PreferencesPatch, key: PreferenceSwitch): boolean {
   return preferences[key] === true
 }
 
-export function digestValue(preferences: NotificationPreferences): string {
-  const value = preferences.email_match_digest
-  return typeof value === 'string' ? value : 'off'
+export function digestValue(
+  preferences: PreferencesPatch,
+): NotificationPreferences['email_match_digest'] {
+  return preferences.email_match_digest ?? 'off'
 }
 
 /** Quiet hours are on when both times are set (they are both set or both null, 14 section 6.2). */
-export function quietHoursOn(preferences: NotificationPreferences): boolean {
+export function quietHoursOn(preferences: PreferencesPatch): boolean {
   return (
     toTimeValue(preferences.quiet_hours_start) !== null &&
     toTimeValue(preferences.quiet_hours_end) !== null
@@ -44,7 +48,7 @@ export function quietHoursOn(preferences: NotificationPreferences): boolean {
 }
 
 /** The change that turns quiet hours on (22:00 to 07:00) or off (both null). */
-export function quietHoursToggle(on: boolean): NotificationPreferences {
+export function quietHoursToggle(on: boolean): PreferencesPatch {
   return on
     ? { quiet_hours_start: DEFAULT_QUIET_HOURS.start, quiet_hours_end: DEFAULT_QUIET_HOURS.end }
     : { quiet_hours_start: null, quiet_hours_end: null }
@@ -54,7 +58,7 @@ export function quietHoursToggle(on: boolean): NotificationPreferences {
  * The change for one of the two time pickers. An empty value (the field was cleared) changes
  * nothing, so the pair never ends up half set.
  */
-export function quietTimeChange(which: 'start' | 'end', value: string): NotificationPreferences {
+export function quietTimeChange(which: 'start' | 'end', value: string): PreferencesPatch {
   const time = toTimeValue(value)
   if (!time) return {}
   return which === 'start' ? { quiet_hours_start: time } : { quiet_hours_end: time }

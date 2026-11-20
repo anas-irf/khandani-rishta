@@ -6,13 +6,20 @@ import type { ApiErrorBody, ApiErrorCode, ApiFieldError } from './api-types'
 export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8787'
 
 /**
+ * A field error as the client handles it. The API sends `FieldError`s; a screen may swap the
+ * `code` for one of its own to pick another message (`serverFieldMessage`), and a newer API may
+ * send a code this build does not know yet (15 section 1).
+ */
+export type ClientFieldError = Omit<ApiFieldError, 'code'> & { code: string }
+
+/**
  * An error response of the API (15 section 2), or a request that never reached it
  * (`code = 'network_error'`, `status = 0`).
  */
 export class ApiError extends Error {
   readonly status: number
   readonly code: ApiErrorCode | string
-  readonly fields: ApiFieldError[]
+  readonly fields: ClientFieldError[]
   readonly details: Record<string, unknown>
   readonly requestId: string | null
 
@@ -20,7 +27,7 @@ export class ApiError extends Error {
     status: number
     code: ApiErrorCode | string
     message: string
-    fields?: ApiFieldError[]
+    fields?: ClientFieldError[]
     details?: Record<string, unknown>
     requestId?: string | null
   }) {
@@ -95,7 +102,7 @@ async function toApiError(response: Response): Promise<ApiError> {
     status: response.status,
     code: error?.code ?? (response.status >= 500 ? 'internal_error' : 'bad_request'),
     message: error?.message ?? response.statusText ?? 'Request failed',
-    fields: error?.fields,
+    fields: error?.fields ?? undefined,
     details: error?.details,
     requestId: error?.request_id ?? requestId,
   })
@@ -166,8 +173,9 @@ export const api = createClient<paths>({
 api.use(authMiddleware)
 
 // ---------------------------------------------------------------------------
-// Untyped facade for routes that `openapi.json` does not describe yet. Response types come
-// from `api-types.ts` (see its header). All calls still go through `api` and its middleware.
+// Path-based facade used by every feature's `queries.ts`. Callers name the response type from
+// `api-types.ts`, whose types are the generated schemas. All calls still go through `api` and
+// its middleware.
 // ---------------------------------------------------------------------------
 
 type HttpMethod = 'get' | 'post' | 'put' | 'patch' | 'delete'
@@ -179,7 +187,7 @@ export type RequestOptions = {
   signal?: AbortSignal
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: the facade covers paths missing from `paths`.
+// biome-ignore lint/suspicious/noExplicitAny: the facade takes its paths as plain strings.
 const untyped = api as unknown as Client<any>
 
 function cleanQuery(query: RequestOptions['query']) {

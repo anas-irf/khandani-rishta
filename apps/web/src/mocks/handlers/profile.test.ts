@@ -18,7 +18,7 @@ const continueStep = (step: string) => http.post<Me>('/v1/me/onboarding/continue
 const putSection = (section: string, body: unknown) =>
   http.put<OwnProfile>(`/v1/me/profile/sections/${section}`, body)
 
-function atStep(step: string) {
+function atStep(step: OwnProfile['onboarding_step']) {
   resetDb('onboarding_midway')
   db.me.profile.onboarding_step = step
   db.ownProfile.onboarding_step = step
@@ -159,7 +159,7 @@ describe('POST /v1/me/onboarding/continue (03 section 4.3)', () => {
     })
   })
 
-  it.each([
+  it.each<[OwnProfile['onboarding_step'], string]>([
     ['account_for', 'managed_by'],
     ['basics', 'first_name'],
     ['community', 'religion_code'],

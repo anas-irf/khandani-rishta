@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { ContactsSection } from '~/lib/api-types'
+import type { ContactsSection, Filled } from '~/lib/api-types'
 
 /**
  * The contact details form of `SET-CONTACTS` (08 section 3): values, prefill, the request body
@@ -17,7 +17,7 @@ export type ContactsValues = {
   contact_email: string | null
   preferred_contact: 'self' | 'guardian' | null
   guardian_name: string | null
-  guardian_relation: string | null
+  guardian_relation: Filled<ContactsSection>['guardian_relation']
   guardian_phone_e164: string | null
   best_time_to_call: string | null
 }
@@ -50,17 +50,19 @@ function collapse(value: string | null | undefined): string | null {
 }
 
 export function contactsFromProfile(contacts: ContactsSection): ContactsValues {
-  const same = contacts.whatsapp_e164 !== null && contacts.whatsapp_e164 === contacts.phone_e164
+  const phone = contacts.phone_e164 ?? null
+  const whatsapp = contacts.whatsapp_e164 ?? null
+  const same = whatsapp !== null && whatsapp === phone
   return {
-    phone_e164: contacts.phone_e164,
+    phone_e164: phone,
     whatsapp_same: same,
-    whatsapp_e164: same ? null : contacts.whatsapp_e164,
-    contact_email: contacts.contact_email,
+    whatsapp_e164: same ? null : whatsapp,
+    contact_email: contacts.contact_email ?? null,
     preferred_contact: contacts.preferred_contact ?? 'self',
-    guardian_name: contacts.guardian_name,
-    guardian_relation: contacts.guardian_relation,
-    guardian_phone_e164: contacts.guardian_phone_e164,
-    best_time_to_call: contacts.best_time_to_call,
+    guardian_name: contacts.guardian_name ?? null,
+    guardian_relation: contacts.guardian_relation ?? null,
+    guardian_phone_e164: contacts.guardian_phone_e164 ?? null,
+    best_time_to_call: contacts.best_time_to_call ?? null,
   }
 }
 

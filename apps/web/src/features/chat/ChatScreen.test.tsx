@@ -53,6 +53,7 @@ function text(id: string, sender: 'me' | 'them', body: string, extra: Partial<Me
   })
 }
 
+/** `event` may also be one a newer API sends (15 section 1: clients ignore unknown enum values). */
 function system(id: string, event: string, data: Record<string, unknown> = {}) {
   return makeMessage({
     id,
@@ -60,7 +61,7 @@ function system(id: string, event: string, data: Record<string, unknown> = {}) {
     sender: 'system',
     kind: 'system',
     body: null,
-    system_event: event,
+    system_event: event as Message['system_event'],
     system_data: data,
     created_at: '2026-11-19T09:00:00Z',
   })

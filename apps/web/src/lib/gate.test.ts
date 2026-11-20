@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { makeMe } from '~/mocks/factories'
-import type { Gate } from './api-types'
+import type { Gate, Me } from './api-types'
 import {
   allowedForGate,
   gateHome,
@@ -11,7 +11,7 @@ import {
   statusPanelFor,
 } from './gate'
 
-function me(gate: Gate, onboardingStep = 'done') {
+function me(gate: Gate, onboardingStep: Me['profile']['onboarding_step'] = 'done') {
   return makeMe({ gate, profile: { onboarding_step: onboardingStep } })
 }
 

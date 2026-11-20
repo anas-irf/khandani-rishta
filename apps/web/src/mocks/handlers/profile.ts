@@ -8,6 +8,7 @@ import type {
   ConsentDocument,
   EducationCareerSection,
   FamilySection,
+  FieldErrorCode,
   LifestyleSection,
   LocationSection,
   LockedGroup,
@@ -57,7 +58,7 @@ function trimmed(value: unknown): string | null {
   return text === '' ? null : text
 }
 
-const DEFAULT_MESSAGES: Record<string, string> = {
+const DEFAULT_MESSAGES: Record<FieldErrorCode, string> = {
   required: 'This field is required.',
   invalid: 'Please check this value.',
   too_short: 'This is too short.',
@@ -74,8 +75,8 @@ const DEFAULT_MESSAGES: Record<string, string> = {
 }
 
 /** One field error with the English message of 07 section 16 where the mock knows it. */
-export function fieldError(field: string, code: string, message?: string): ApiFieldError {
-  return { field, code, message: message ?? DEFAULT_MESSAGES[code] ?? 'Please check this value.' }
+export function fieldError(field: string, code: FieldErrorCode, message?: string): ApiFieldError {
+  return { field, code, message: message ?? DEFAULT_MESSAGES[code] }
 }
 
 const NAME_PATTERN = /^[\p{L}\p{M}][\p{L}\p{M} .'-]*[\p{L}\p{M}.]$/u
@@ -181,7 +182,12 @@ function hasOption(list: string, code: string): boolean {
 }
 
 /** A code from an option list or null; an unknown code is `unknown_code`. */
-function checkOption(errors: ApiFieldError[], field: string, list: string, value: unknown) {
+function checkOption<T extends string>(
+  errors: ApiFieldError[],
+  field: string,
+  list: string,
+  value: T | null | undefined,
+): T | null {
   if (value == null) return null
   if (typeof value !== 'string' || !hasOption(list, value)) {
     errors.push(fieldError(field, 'unknown_code'))
@@ -238,7 +244,7 @@ export function findCity(id: number | null | undefined): CityRef | null {
   }
 }
 
-export function countryHasRegions(countryCode: string | null): boolean {
+export function countryHasRegions(countryCode: string | null | undefined): boolean {
   return Boolean(countryCode && (regionsByCountry[countryCode]?.length ?? 0) > 0)
 }
 
@@ -303,7 +309,7 @@ type Saved<T> = { errors: ApiFieldError[]; value: T; after?: () => void }
 function saveAccountFor(body: Partial<AccountForBody>): Saved<OwnProfile['account_for']> {
   const errors: ApiFieldError[] = []
   const previous = db.ownProfile.account_for
-  const managedBy = (body.managed_by ?? null) as AccountForBody['managed_by']
+  const managedBy = body.managed_by ?? null
   if (managedBy != null && !MANAGED_BY.includes(managedBy)) {
     errors.push(fieldError('managed_by', 'unknown_code'))
   }
@@ -450,7 +456,7 @@ function saveBasics(body: Partial<BasicsSection>): Saved<BasicsSection> {
     }
   }
 
-  let childrenStatus: string | null = null
+  let childrenStatus: BasicsSection['children_status'] = null
   let childrenCount: number | null = null
   if (maritalStatus === 'never_married') {
     childrenStatus = 'none'
@@ -809,7 +815,11 @@ function saveEducationCareer(body: Partial<EducationCareerSection>): Saved<Educa
 const LONG_TEXT_CONTACT =
   'Please remove phone numbers, email addresses, links and social media names. Contact details are shared only through contact sharing.'
 
-function nextTextStatus(previous: string | null, next: string | null, status: TextStatus) {
+function nextTextStatus(
+  previous: string | null | undefined,
+  next: string | null,
+  status: TextStatus,
+) {
   if (next == null) return 'approved' as const
   return next === previous ? status : ('pending' as const)
 }
@@ -949,10 +959,11 @@ function saveFamily(body: Partial<FamilySection>): Saved<FamilySection> {
 function saveLifestyle(body: Partial<LifestyleSection>): Saved<LifestyleSection> {
   const errors: ApiFieldError[] = []
   const gender = db.ownProfile.basics.gender
-  const option = (field: keyof LifestyleSection, list = field as string) =>
-    checkOption(errors, field, list, body[field])
-  const hijab = option('hijab')
-  const beard = option('beard')
+  // Each option field of this section is checked against the list of the same name.
+  const option = <T extends string>(field: keyof LifestyleSection, value: T | null | undefined) =>
+    checkOption(errors, field, field, value)
+  const hijab = option('hijab', body.hijab)
+  const beard = option('beard', body.beard)
   if (hijab != null && gender !== 'female') errors.push(fieldError('hijab', 'not_allowed'))
   if (beard != null && gender !== 'male') errors.push(fieldError('beard', 'not_allowed'))
   const weight = checkInteger(
@@ -963,7 +974,7 @@ function saveLifestyle(body: Partial<LifestyleSection>): Saved<LifestyleSection>
     200,
     'Enter a weight between 30 and 200 kg.',
   )
-  const disability = option('disability')
+  const disability = option('disability', body.disability)
   const details =
     disability == null || disability === 'none' ? null : collapse(body.disability_details)
   checkText(errors, 'disability_details', details, {
@@ -993,20 +1004,20 @@ function saveLifestyle(body: Partial<LifestyleSection>): Saved<LifestyleSection>
   return {
     errors,
     value: {
-      religiosity: option('religiosity'),
-      prayer_frequency: option('prayer_frequency'),
+      religiosity: option('religiosity', body.religiosity),
+      prayer_frequency: option('prayer_frequency', body.prayer_frequency),
       hijab,
       beard,
-      religious_education: option('religious_education'),
-      smoking: option('smoking'),
-      living_arrangement: option('living_arrangement'),
-      work_after_marriage: option('work_after_marriage'),
-      marriage_timeline: option('marriage_timeline'),
-      jahez_stance: option('jahez_stance'),
+      religious_education: option('religious_education', body.religious_education),
+      smoking: option('smoking', body.smoking),
+      living_arrangement: option('living_arrangement', body.living_arrangement),
+      work_after_marriage: option('work_after_marriage', body.work_after_marriage),
+      marriage_timeline: option('marriage_timeline', body.marriage_timeline),
+      jahez_stance: option('jahez_stance', body.jahez_stance),
       weight_kg: weight,
-      complexion: option('complexion'),
-      body_type: option('body_type'),
-      blood_group: option('blood_group'),
+      complexion: option('complexion', body.complexion),
+      body_type: option('body_type', body.body_type),
+      blood_group: option('blood_group', body.blood_group),
       disability,
       disability_details: details,
       hobby_codes: hobbies,
@@ -1290,15 +1301,15 @@ export function previewDetail(tier: Tier): ProfileDetail {
     height_cm: basics.height_cm ?? 0,
     marital_status: basics.marital_status ?? 'never_married',
     religion_code: community.religion_code ?? '',
-    sect_code: community.sect_code,
-    caste_label: showCaste ? casteName : null,
+    sect_code: community.sect_code ?? null,
+    caste_label: showCaste ? (casteName ?? null) : null,
     mother_tongue_code: community.mother_tongue_code ?? '',
     city_name: cityName,
     region_name: location.city?.region_name ?? null,
     country_code: location.country_code ?? '',
     education_level_code: education.education_level_code ?? '',
-    employment_type: education.employment_type ?? '',
-    profession_code: education.profession_code,
+    employment_type: education.employment_type ?? 'not_working',
+    profession_code: education.profession_code ?? null,
     photo: photos[0] ?? null,
     photo_count: photos.length,
     badges: db.me.profile.badges,
@@ -1321,83 +1332,83 @@ export function previewDetail(tier: Tier): ProfileDetail {
     photos,
     basics: {
       marital_status: card.marital_status,
-      children_status: basics.children_status,
-      children_count: basics.children_count,
-      current_wives_count: basics.current_wives_count,
+      children_status: basics.children_status ?? null,
+      children_count: basics.children_count ?? null,
+      current_wives_count: basics.current_wives_count ?? null,
       height_cm: card.height_cm,
-      weight_kg: lifestyle.weight_kg,
-      complexion: lifestyle.complexion,
-      body_type: lifestyle.body_type,
+      weight_kg: lifestyle.weight_kg ?? null,
+      complexion: lifestyle.complexion ?? null,
+      body_type: lifestyle.body_type ?? null,
     },
     community: {
       religion_code: card.religion_code,
-      sect_code: community.sect_code,
+      sect_code: community.sect_code ?? null,
       caste_label: card.caste_label,
-      sub_caste_label: showCaste ? subCasteName : null,
+      sub_caste_label: showCaste ? (subCasteName ?? null) : null,
       mother_tongue_code: card.mother_tongue_code,
-      language_codes: community.language_codes,
+      language_codes: community.language_codes ?? [],
     },
     location: {
       country_code: card.country_code,
       region_name: card.region_name,
       city_name: cityName,
-      area: showArea ? location.area : null,
-      nationality_code: location.nationality_code,
-      residency_status: location.residency_status,
-      origin_label: location.origin_city?.name ?? location.origin_other,
-      relocation: location.relocation,
+      area: showArea ? (location.area ?? null) : null,
+      nationality_code: location.nationality_code ?? null,
+      residency_status: location.residency_status ?? null,
+      origin_label: location.origin_city?.name ?? location.origin_other ?? null,
+      relocation: location.relocation ?? null,
     },
     education_career: {
       education_level_code: card.education_level_code,
-      education_field_code: education.education_field_code,
-      degree_title: education.degree_title,
-      institute_name: showCareer ? education.institute_name : null,
+      education_field_code: education.education_field_code ?? null,
+      degree_title: education.degree_title ?? null,
+      institute_name: showCareer ? (education.institute_name ?? null) : null,
       employment_type: card.employment_type,
-      profession_code: education.profession_code,
-      job_title: education.job_title,
-      employer_name: showCareer ? education.employer_name : null,
-      income_band_code: showIncome ? education.income_band_code : null,
+      profession_code: card.profession_code,
+      job_title: education.job_title ?? null,
+      employer_name: showCareer ? (education.employer_name ?? null) : null,
+      income_band_code: showIncome ? (education.income_band_code ?? null) : null,
     },
     family: showFamily
       ? {
-          father_status: family.father_status,
-          father_occupation: family.father_occupation,
-          mother_status: family.mother_status,
-          mother_occupation: family.mother_occupation,
-          brothers_count: family.brothers_count,
-          brothers_married: family.brothers_married,
-          sisters_count: family.sisters_count,
-          sisters_married: family.sisters_married,
-          family_type: family.family_type,
-          family_class: family.family_class,
-          family_values: family.family_values,
-          family_country_code: family.family_country_code,
+          father_status: family.father_status ?? null,
+          father_occupation: family.father_occupation ?? null,
+          mother_status: family.mother_status ?? null,
+          mother_occupation: family.mother_occupation ?? null,
+          brothers_count: family.brothers_count ?? null,
+          brothers_married: family.brothers_married ?? null,
+          sisters_count: family.sisters_count ?? null,
+          sisters_married: family.sisters_married ?? null,
+          family_type: family.family_type ?? null,
+          family_class: family.family_class ?? null,
+          family_values: family.family_values ?? null,
+          family_country_code: family.family_country_code ?? null,
           family_city_name: findCity(family.family_city_id)?.name ?? null,
-          home_ownership: showHome ? family.home_ownership : null,
-          home_type: showHome ? family.home_type : null,
-          home_size_value: showHome ? family.home_size_value : null,
-          home_size_unit: showHome ? family.home_size_unit : null,
+          home_ownership: showHome ? (family.home_ownership ?? null) : null,
+          home_type: showHome ? (family.home_type ?? null) : null,
+          home_size_value: showHome ? (family.home_size_value ?? null) : null,
+          home_size_unit: showHome ? (family.home_size_unit ?? null) : null,
         }
       : null,
     lifestyle: {
-      religiosity: lifestyle.religiosity,
-      prayer_frequency: lifestyle.prayer_frequency,
-      hijab: lifestyle.hijab,
-      beard: lifestyle.beard,
-      religious_education: lifestyle.religious_education,
-      smoking: lifestyle.smoking,
-      living_arrangement: lifestyle.living_arrangement,
-      work_after_marriage: lifestyle.work_after_marriage,
-      marriage_timeline: lifestyle.marriage_timeline,
-      jahez_stance: lifestyle.jahez_stance,
-      blood_group: showHealth ? lifestyle.blood_group : null,
-      disability: showHealth ? lifestyle.disability : null,
-      disability_details: showHealth ? lifestyle.disability_details : null,
-      hobby_codes: lifestyle.hobby_codes,
+      religiosity: lifestyle.religiosity ?? null,
+      prayer_frequency: lifestyle.prayer_frequency ?? null,
+      hijab: lifestyle.hijab ?? null,
+      beard: lifestyle.beard ?? null,
+      religious_education: lifestyle.religious_education ?? null,
+      smoking: lifestyle.smoking ?? null,
+      living_arrangement: lifestyle.living_arrangement ?? null,
+      work_after_marriage: lifestyle.work_after_marriage ?? null,
+      marriage_timeline: lifestyle.marriage_timeline ?? null,
+      jahez_stance: lifestyle.jahez_stance ?? null,
+      blood_group: showHealth ? (lifestyle.blood_group ?? null) : null,
+      disability: showHealth ? (lifestyle.disability ?? null) : null,
+      disability_details: showHealth ? (lifestyle.disability_details ?? null) : null,
+      hobby_codes: lifestyle.hobby_codes ?? [],
     },
-    about_me: textApproved.about_me === 'approved' ? lifestyle.about_me : null,
+    about_me: textApproved.about_me === 'approved' ? (lifestyle.about_me ?? null) : null,
     about_family:
-      showFamily && textApproved.about_family === 'approved' ? family.about_family : null,
+      showFamily && textApproved.about_family === 'approved' ? (family.about_family ?? null) : null,
     partner_notes:
       textApproved.partner_notes === 'approved' ? (currentPreferences().notes ?? null) : null,
     looking_for: lookingForLines(),
@@ -1423,12 +1434,12 @@ export function previewDetail(tier: Tier): ProfileDetail {
 // Handlers
 // ---------------------------------------------------------------------------
 
-function nextStep(step: string): string {
+function nextStep(step: string): OwnProfile['onboarding_step'] {
   const index = stepIndex(step)
   return ONBOARDING_STEPS[index + 1] ?? 'done'
 }
 
-function setStep(step: string) {
+function setStep(step: OwnProfile['onboarding_step']) {
   db.me.profile.onboarding_step = step
   db.ownProfile = { ...db.ownProfile, onboarding_step: step }
 }
@@ -1470,8 +1481,8 @@ export const handlers = [
     saved.after?.()
     db.ownProfile = { ...db.ownProfile, [section]: saved.value }
     const { account_for, basics } = db.ownProfile
-    db.me.profile.first_name = basics.first_name
-    db.me.profile.gender = basics.gender
+    db.me.profile.first_name = basics.first_name ?? null
+    db.me.profile.gender = basics.gender ?? null
     db.me.profile.managed_by = account_for.managed_by
     return HttpResponse.json(ownProfileView())
   }),

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
-import type { ApiFieldError, OwnProfile } from '~/lib/api-types'
+import type { ClientFieldError } from '~/lib/api'
+import type { OwnProfile } from '~/lib/api-types'
 import type { FormMode } from '../schemas'
 
 /** Props every section form receives from `SectionForm`. */
@@ -10,6 +11,6 @@ export type SectionFormInnerProps = {
   /** Called after a successful save; a returned promise keeps the form submitting. */
   onSaved?: (profile: OwnProfile) => unknown
   footer?: ReactNode
-  initialErrors?: ApiFieldError[]
+  initialErrors?: ClientFieldError[]
   onDirtyChange?: (dirty: boolean) => void
 }

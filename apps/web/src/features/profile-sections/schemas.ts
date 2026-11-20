@@ -11,6 +11,7 @@ import type {
   ConsentDocument,
   EducationCareerSection,
   FamilySection,
+  Filled,
   Gender,
   LifestyleSection,
   LocationSection,
@@ -177,7 +178,7 @@ export function accountForToBody(
 // 07 section 4: basics
 // ---------------------------------------------------------------------------
 
-export type BasicsValues = BasicsSection
+export type BasicsValues = Filled<BasicsSection>
 
 export type BasicsContext = { subject: Subject; now?: Date }
 
@@ -248,7 +249,18 @@ export function basicsSchema(context: () => BasicsContext) {
 }
 
 export function basicsFromProfile(profile: OwnProfile): BasicsValues {
-  return { ...profile.basics }
+  const basics = profile.basics
+  return {
+    first_name: basics.first_name ?? null,
+    last_name: basics.last_name ?? null,
+    gender: basics.gender ?? null,
+    date_of_birth: basics.date_of_birth ?? null,
+    marital_status: basics.marital_status ?? null,
+    children_status: basics.children_status ?? null,
+    children_count: basics.children_count ?? null,
+    current_wives_count: basics.current_wives_count ?? null,
+    height_cm: basics.height_cm ?? null,
+  }
 }
 
 /** Applies the dependent-field rules of 07 section 4.2 (rules 4 to 6) the way the API stores them. */
@@ -276,7 +288,7 @@ export function basicsToBody(values: BasicsValues): BasicsSection {
 /** "Prefer not to say" in the caste list and "Not specified" in the sub-caste list. */
 export const NOT_SPECIFIED = '__none'
 
-export type CommunityValues = CommunitySection & {
+export type CommunityValues = Filled<CommunitySection> & {
   /** `other` after "Other (type your own)": the typed `caste_other` is used. */
   caste_mode: 'list' | 'other'
   sub_caste_mode: 'list' | 'other'
@@ -335,8 +347,14 @@ export function communityFromProfile(
   const community = profile.community
   const listedWithSubs = community.caste_code != null && context.hasSubCastes(community.caste_code)
   return {
-    ...community,
-    language_codes: [...community.language_codes],
+    religion_code: community.religion_code ?? null,
+    sect_code: community.sect_code ?? null,
+    caste_code: community.caste_code ?? null,
+    caste_other: community.caste_other ?? null,
+    sub_caste_code: community.sub_caste_code ?? null,
+    sub_caste_other: community.sub_caste_other ?? null,
+    mother_tongue_code: community.mother_tongue_code ?? null,
+    language_codes: [...(community.language_codes ?? [])],
     caste_mode: community.caste_other != null ? 'other' : 'list',
     sub_caste_mode: listedWithSubs && community.sub_caste_other != null ? 'other' : 'list',
   }
@@ -381,10 +399,10 @@ export type LocationValues = {
   place: CityValue
   area: string | null
   nationality_code: string | null
-  residency_status: string | null
+  residency_status: Filled<LocationSection>['residency_status']
   /** The family's home town in Pakistan (`origin_city_id` or `origin_other`). */
   origin: CityValue
-  relocation: string | null
+  relocation: Filled<LocationSection>['relocation']
 }
 
 export type LocationContext = {
@@ -435,19 +453,19 @@ export function locationFromProfile(profile: OwnProfile): LocationValues {
   const location = profile.location
   return {
     place: cityValueFromSection(location, 'PK'),
-    area: location.area,
+    area: location.area ?? null,
     nationality_code: location.nationality_code ?? 'PK',
-    residency_status: location.residency_status,
+    residency_status: location.residency_status ?? null,
     origin: cityValueFromSection(
       {
         country_code: 'PK',
-        city_id: location.origin_city_id,
-        city_other: location.origin_other,
-        city: location.origin_city,
+        city_id: location.origin_city_id ?? null,
+        city_other: location.origin_other ?? null,
+        city: location.origin_city ?? null,
       },
       'PK',
     ),
-    relocation: location.relocation,
+    relocation: location.relocation ?? null,
   }
 }
 
@@ -473,12 +491,12 @@ export function locationToBody(values: LocationValues): LocationSection {
 // 07 section 7: education_career
 // ---------------------------------------------------------------------------
 
-export type EducationCareerValues = EducationCareerSection
+export type EducationCareerValues = Filled<EducationCareerSection>
 
 /** Employment types without profession, job, employer and income (07 section 7.3 rule 2). */
 export const NOT_WORKING = ['student', 'homemaker', 'not_working']
 
-export function isWorking(employmentType: string | null): boolean {
+export function isWorking(employmentType: string | null | undefined): boolean {
   return !NOT_WORKING.includes(employmentType ?? '')
 }
 
@@ -502,7 +520,18 @@ export function educationCareerSchema() {
 }
 
 export function educationCareerFromProfile(profile: OwnProfile): EducationCareerValues {
-  return { ...profile.education_career }
+  const education = profile.education_career
+  return {
+    education_level_code: education.education_level_code ?? null,
+    education_field_code: education.education_field_code ?? null,
+    degree_title: education.degree_title ?? null,
+    institute_name: education.institute_name ?? null,
+    employment_type: education.employment_type ?? null,
+    profession_code: education.profession_code ?? null,
+    job_title: education.job_title ?? null,
+    employer_name: education.employer_name ?? null,
+    income_band_code: education.income_band_code ?? null,
+  }
 }
 
 export function educationCareerToBody(values: EducationCareerValues): EducationCareerSection {
@@ -525,7 +554,7 @@ export function educationCareerToBody(values: EducationCareerValues): EducationC
 // ---------------------------------------------------------------------------
 
 export type FamilyValues = Omit<
-  FamilySection,
+  Filled<FamilySection>,
   'family_country_code' | 'family_city_id' | 'home_size_value'
 > & {
   /** The switch "My family lives in a different city" (not stored). */
@@ -574,12 +603,26 @@ export function familyFromProfile(profile: OwnProfile): FamilyValues {
   const family = profile.family
   const elsewhere = family.family_country_code != null || family.family_city_id != null
   return {
-    ...family,
+    father_status: family.father_status ?? null,
+    father_occupation: family.father_occupation ?? null,
+    mother_status: family.mother_status ?? null,
+    mother_occupation: family.mother_occupation ?? null,
+    brothers_count: family.brothers_count ?? null,
+    brothers_married: family.brothers_married ?? null,
+    sisters_count: family.sisters_count ?? null,
+    sisters_married: family.sisters_married ?? null,
+    family_type: family.family_type ?? null,
+    family_class: family.family_class ?? null,
+    family_values: family.family_values ?? null,
+    home_ownership: family.home_ownership ?? null,
+    home_type: family.home_type ?? null,
+    home_size_unit: family.home_size_unit ?? null,
+    about_family: family.about_family ?? null,
     family_elsewhere: elsewhere,
     family_place: {
       country_code: family.family_country_code ?? 'PK',
       region_id: null,
-      city_id: family.family_city_id,
+      city_id: family.family_city_id ?? null,
       city_other: null,
       city: null,
     },
@@ -610,7 +653,7 @@ export function familyToBody(values: FamilyValues): FamilySection {
 // 07 section 9: lifestyle
 // ---------------------------------------------------------------------------
 
-export type LifestyleValues = LifestyleSection
+export type LifestyleValues = Filled<LifestyleSection>
 
 export type LifestyleContext = { gender: Gender | null; religionCode: string | null }
 
@@ -652,7 +695,27 @@ export function lifestyleSchema() {
 }
 
 export function lifestyleFromProfile(profile: OwnProfile): LifestyleValues {
-  return { ...profile.lifestyle, hobby_codes: [...profile.lifestyle.hobby_codes] }
+  const lifestyle = profile.lifestyle
+  return {
+    religiosity: lifestyle.religiosity ?? null,
+    prayer_frequency: lifestyle.prayer_frequency ?? null,
+    hijab: lifestyle.hijab ?? null,
+    beard: lifestyle.beard ?? null,
+    religious_education: lifestyle.religious_education ?? null,
+    smoking: lifestyle.smoking ?? null,
+    living_arrangement: lifestyle.living_arrangement ?? null,
+    work_after_marriage: lifestyle.work_after_marriage ?? null,
+    marriage_timeline: lifestyle.marriage_timeline ?? null,
+    jahez_stance: lifestyle.jahez_stance ?? null,
+    weight_kg: lifestyle.weight_kg ?? null,
+    complexion: lifestyle.complexion ?? null,
+    body_type: lifestyle.body_type ?? null,
+    blood_group: lifestyle.blood_group ?? null,
+    disability: lifestyle.disability ?? null,
+    disability_details: lifestyle.disability_details ?? null,
+    hobby_codes: [...(lifestyle.hobby_codes ?? [])],
+    about_me: lifestyle.about_me ?? null,
+  }
 }
 
 /** A field that is not shown is sent as `null` (07 section 9.1). */

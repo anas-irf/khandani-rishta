@@ -49,7 +49,7 @@ export function useContactValue() {
       case 'share_whatsapp':
         return contacts.whatsapp_e164 ? formatPhone(contacts.whatsapp_e164) : null
       case 'share_email':
-        return contacts.contact_email
+        return contacts.contact_email ?? null
       case 'share_guardian': {
         // The guardian item needs the guardian's name and phone number (08 section 3.5).
         if (!contacts.guardian_name || !contacts.guardian_phone_e164) return null

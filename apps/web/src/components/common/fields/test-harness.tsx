@@ -1,7 +1,6 @@
 import { type ReactNode, useState } from 'react'
 import type { z } from 'zod'
-import { ApiError } from '~/lib/api'
-import type { ApiFieldError } from '~/lib/api-types'
+import { ApiError, type ClientFieldError } from '~/lib/api'
 import { focusFirstInvalid, useAppForm } from '~/lib/form'
 import { applyServerErrors } from '~/lib/form-context'
 
@@ -35,13 +34,13 @@ export type HarnessProps = {
   schema?: z.ZodType
   onSubmit?: (values: Values) => unknown
   /** Field errors applied by the "Apply server errors" button. */
-  serverErrors?: ApiFieldError[]
+  serverErrors?: ClientFieldError[]
   children: (form: HarnessForm) => ReactNode
 }
 
 export function Harness({ initial, schema, onSubmit, serverErrors = [], children }: HarnessProps) {
   const form = useHarnessForm(initial, schema, onSubmit)
-  const [unmatched, setUnmatched] = useState<ApiFieldError[]>([])
+  const [unmatched, setUnmatched] = useState<ClientFieldError[]>([])
   return (
     <form
       noValidate

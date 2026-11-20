@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { http } from '~/lib/api'
-import type { Preferences } from '~/lib/api-types'
+import type { OwnProfile, Preferences } from '~/lib/api-types'
 import { db, resetDb } from '../db'
 import { makeOwnProfile, makePreferences } from '../factories'
 import { preferenceDefaults } from './preferences'
@@ -10,7 +10,7 @@ const NOW = new Date('2026-11-20T08:00:00Z')
 function candidate(
   gender: 'male' | 'female',
   age: number,
-  marital: string,
+  marital: OwnProfile['basics']['marital_status'],
   religion: string,
   country: string,
 ) {

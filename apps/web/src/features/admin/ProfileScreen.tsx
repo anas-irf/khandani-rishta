@@ -109,10 +109,14 @@ function ProfileView({ data }: { data: AdminProfile }) {
   )
 
   const texts: { field: AdminTextField; text: string | null; status: string }[] = [
-    { field: 'about_me', text: profile.lifestyle.about_me, status: profile.text_status.about_me },
+    {
+      field: 'about_me',
+      text: profile.lifestyle.about_me ?? null,
+      status: profile.text_status.about_me,
+    },
     {
       field: 'about_family',
-      text: profile.family.about_family,
+      text: profile.family.about_family ?? null,
       status: profile.text_status.about_family,
     },
     {
@@ -203,7 +207,7 @@ function ProfileView({ data }: { data: AdminProfile }) {
                       url={photo.medium_url}
                       isPrimary={photo.is_primary}
                       name={name}
-                      gender={profile.basics.gender}
+                      gender={profile.basics.gender ?? null}
                       size="medium"
                       width={160}
                       height={200}

@@ -8,8 +8,7 @@ import { PlainText } from '~/components/common/PlainText'
 import { StatusBanner } from '~/components/common/StatusBanner'
 import { Button, buttonVariants } from '~/components/ui/button'
 import { useResubmitProfile } from '~/features/profile-sections/queries'
-import { isApiError } from '~/lib/api'
-import type { ApiFieldError } from '~/lib/api-types'
+import { type ClientFieldError, isApiError } from '~/lib/api'
 import { serverFieldMessage } from '~/lib/form-context'
 import { useCurrentMe } from '~/lib/me'
 import { invalidateMe } from '~/lib/query'
@@ -24,7 +23,7 @@ export function ChangesScreen() {
   const queryClient = useQueryClient()
   const online = useOnlineStatus()
   const resubmit = useResubmitProfile()
-  const [problems, setProblems] = useState<ApiFieldError[]>([])
+  const [problems, setProblems] = useState<ClientFieldError[]>([])
   useGateRefresh()
 
   const send = () => {
@@ -67,7 +66,7 @@ export function ChangesScreen() {
  * The messages of a `validation_failed` answer, each field with its text, and one link per
  * screen that fixes them (07 section 14.3).
  */
-function Problems({ problems }: { problems: ApiFieldError[] }) {
+function Problems({ problems }: { problems: ClientFieldError[] }) {
   const { t } = useTranslation('gate')
   const steps = [
     ...new Set(

@@ -25,8 +25,8 @@ import {
 } from '~/features/profile-sections/form-shell'
 import { useOwnProfile } from '~/features/profile-sections/queries'
 import { subjectOf, wordingContext } from '~/features/profile-sections/wording'
-import { isApiError } from '~/lib/api'
-import type { ApiFieldError, IdentitySummary, OwnProfile } from '~/lib/api-types'
+import { type ClientFieldError, isApiError } from '~/lib/api'
+import type { IdentitySummary, OwnProfile } from '~/lib/api-types'
 import { useCurrentMe } from '~/lib/me'
 import { useLabelOf } from '~/lib/reference'
 import { useIdentity, useSaveIdentity } from './queries'
@@ -50,7 +50,7 @@ export type IdentityNumberFormProps = {
   onSaved?: (summary: IdentitySummary) => void | Promise<void>
   /** Rendered under the button (onboarding's Skip and Back). */
   footer?: ReactNode
-  initialErrors?: ApiFieldError[]
+  initialErrors?: ClientFieldError[]
   onDirtyChange?: (dirty: boolean) => void
 }
 

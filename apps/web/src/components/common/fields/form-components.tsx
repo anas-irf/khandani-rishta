@@ -4,7 +4,7 @@ import { useSyncExternalStore } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert'
 import { Button, type ButtonProps } from '~/components/ui/button'
-import type { ApiFieldError } from '~/lib/api-types'
+import type { ClientFieldError } from '~/lib/api'
 import { useFormContext } from '~/lib/form-context'
 
 function subscribeOnline(callback: () => void) {
@@ -60,7 +60,7 @@ export function SubmitButton({
 
 export type FormErrorSummaryProps = {
   /** Server field errors that match no field of the form (from `applyServerErrors`). */
-  serverErrors?: (ApiFieldError | string)[]
+  serverErrors?: (ClientFieldError | string)[]
   className?: string
 }
 

@@ -1,5 +1,11 @@
 import { HttpResponse, http } from 'msw'
-import type { OwnPhoto, OwnPhotoStatus, UploadContentType, UploadTicket } from '~/lib/api-types'
+import type {
+  OwnPhoto,
+  OwnPhotoStatus,
+  OwnProfile,
+  UploadContentType,
+  UploadTicket,
+} from '~/lib/api-types'
 import { db } from '../db'
 import { placeholderPhotoUrl } from '../factories'
 import { apiError, apiUrl, newId, noContent, notFound, nowIso, readJson } from '../http'
@@ -29,7 +35,7 @@ export type PhotoMockState = {
   /** What processing turns a photo into. */
   outcome: Exclude<OwnPhotoStatus, 'processing'>
   /** The rejection reason when `outcome` is `rejected`. */
-  rejectionReason: string
+  rejectionReason: NonNullable<OwnPhoto['rejection_reason']>
   /** Storage objects by key (photo and verification uploads share the bucket). */
   objects: Map<string, StoredObject>
   /** Processing deadline of each confirmed photo still `processing`. */
@@ -106,7 +112,9 @@ export function syncPhotos(photos: OwnPhoto[] = db.ownPhotos) {
   db.me.profile.photo = list.find((photo) => photo.is_primary) ?? null
   if (before && before !== (primary?.id ?? null)) clearPhotoVerified()
 
-  const missing = db.ownProfile.missing.filter((item) => item !== 'photo' && item !== 'more_photos')
+  const missing: OwnProfile['missing'] = db.ownProfile.missing.filter(
+    (item) => item !== 'photo' && item !== 'more_photos',
+  )
   if (approved.length === 0) missing.unshift('photo')
   else if (approved.length < 3) missing.push('more_photos')
   db.ownProfile.missing = missing

@@ -2,7 +2,7 @@ import { useLocation } from '@tanstack/react-router'
 import { screen } from '@testing-library/react'
 import { HttpResponse, http as mswHttp } from 'msw'
 import { describe, expect, it } from 'vitest'
-import type { Gate } from '~/lib/api-types'
+import type { Gate, Me } from '~/lib/api-types'
 import { makeMe } from '~/mocks/factories'
 import { apiError, apiUrl } from '~/mocks/http'
 import { server } from '~/mocks/server'
@@ -25,7 +25,7 @@ function Gated() {
   )
 }
 
-function serveMe(gate: Gate, onboardingStep = 'done') {
+function serveMe(gate: Gate, onboardingStep: Me['profile']['onboarding_step'] = 'done') {
   server.use(
     mswHttp.get(apiUrl('/v1/me'), () =>
       HttpResponse.json(makeMe({ gate, profile: { onboarding_step: onboardingStep } })),

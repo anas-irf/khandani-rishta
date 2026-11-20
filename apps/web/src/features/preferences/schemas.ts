@@ -165,7 +165,7 @@ export function preferencesToValues(preferences: Preferences): PreferencesValues
     ...rest,
     region_ids: preferences.region_ids.map(String),
     age: { min: age_min, max: age_max },
-    height: { min: height_min_cm, max: height_max_cm },
+    height: { min: height_min_cm ?? null, max: height_max_cm ?? null },
     education_min_rank:
       preferences.education_min_rank == null ? null : String(preferences.education_min_rank),
     income_min_rank:

@@ -142,7 +142,8 @@ function Review({
     }
   }
 
-  const names = (list: string, codes: string[]) => codes.map((code) => label(list, code)).join(', ')
+  const names = (list: string, codes: string[] | undefined) =>
+    (codes ?? []).map((code) => label(list, code)).join(', ')
   const working = isWorking(education.employment_type)
   const casteName = community.caste_code
     ? label('castes', community.caste_code)
@@ -159,7 +160,7 @@ function Review({
           })
         : label('children_status', basics.children_status)
       : null
-  const siblings = (count: number | null, married: number | null) =>
+  const siblings = (count: number | null | undefined, married: number | null | undefined) =>
     count == null
       ? null
       : married != null && count > 0
@@ -623,18 +624,18 @@ function lookingForLines(
   },
 ) {
   const { t, label, reference } = helpers
-  const gender = profile.basics.gender
+  const gender = profile.basics.gender ?? null
   const values = preferencesToValues(preferences)
   const join = (list: string, codes: (string | number)[]) =>
     codes.map((code) => label(list, String(code))).join(', ')
   const k = (key: string) => `onboarding:review.looking_for.${key}`
-  const rankName = (rank: number | null) => {
+  const rankName = (rank: number | null | undefined) => {
     const level = reference.education_levels.find((entry) => entry.rank === rank)
     return level
       ? t('preferences:rows.education_option', { name: level.name.replace(/\s*\(.*\)\s*$/, '') })
       : ''
   }
-  const incomeName = (rank: number | null) => {
+  const incomeName = (rank: number | null | undefined) => {
     const band = reference.income_bands.find(
       (entry) => entry.currency_code === 'PKR' && entry.rank === rank,
     )

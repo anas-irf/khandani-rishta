@@ -11,7 +11,8 @@ import { Button } from '~/components/ui/button'
 import { ChipsField, TextStatusNote } from '~/features/profile-sections/fields'
 import { FormShell, useManagedForm } from '~/features/profile-sections/form-shell'
 import { useOwnProfile } from '~/features/profile-sections/queries'
-import type { ApiFieldError, Gender, Preferences } from '~/lib/api-types'
+import type { ClientFieldError } from '~/lib/api'
+import type { Gender, Preferences } from '~/lib/api-types'
 import { useCurrentMe } from '~/lib/me'
 import { optionsOf, useOptions, useReference } from '~/lib/reference'
 import { cn } from '~/lib/utils'
@@ -38,7 +39,7 @@ export type PreferencesFormProps = {
   onSaved?: (preferences: Preferences) => void | Promise<void>
   /** Rendered under the button (onboarding's Back, ME-PREFS's Cancel). */
   footer?: ReactNode
-  initialErrors?: ApiFieldError[]
+  initialErrors?: ClientFieldError[]
   onDirtyChange?: (dirty: boolean) => void
 }
 

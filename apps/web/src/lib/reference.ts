@@ -2,6 +2,7 @@ import { queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiRequestRaw, http } from './api'
+import { isOneOf } from './api-enums'
 import type { CityRef, ReferenceBootstrap, Region } from './api-types'
 import { qk, STALE } from './query'
 
@@ -86,7 +87,18 @@ export type LookupTable =
   | 'hobbies'
   | 'countries'
 
-export type Option = { code: string; label: string }
+export type Option<T extends string = string> = { code: T; label: string }
+
+/**
+ * The options whose code is one of `codes` (a contract enumeration), typed with them. A code
+ * the contract does not know could not be sent, so it is not offered.
+ */
+export function optionsIn<T extends string>(
+  options: readonly Option[],
+  codes: readonly T[],
+): Option<T>[] {
+  return options.filter((option): option is Option<T> => isOneOf(codes, option.code))
+}
 
 type Labelled = { code: string; label?: string; label_ur?: string | null }
 type Named = { code: string; name?: string; name_ur?: string | null }

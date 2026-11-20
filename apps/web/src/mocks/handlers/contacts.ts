@@ -58,19 +58,19 @@ export const handlers = [
   http.put(apiUrl('/v1/me/profile/sections/contacts'), async ({ request }) => {
     const blocked = gateErrorFor('open')
     if (blocked) return blocked
-    const body = await readJson<Partial<Record<keyof ContactsSection, unknown>>>(request)
+    const body = await readJson<ContactsSection>(request)
     const errors: ApiFieldError[] = []
 
-    const value: ContactsSection = {
+    const value = {
       phone_e164: text(body.phone_e164),
       whatsapp_e164: text(body.whatsapp_e164),
       contact_email: text(body.contact_email),
       guardian_name: collapse(body.guardian_name),
-      guardian_relation: text(body.guardian_relation),
+      guardian_relation: body.guardian_relation || null,
       guardian_phone_e164: text(body.guardian_phone_e164),
-      preferred_contact: body.preferred_contact as ContactsSection['preferred_contact'],
+      preferred_contact: body.preferred_contact,
       best_time_to_call: collapse(body.best_time_to_call),
-    }
+    } satisfies ContactsSection
 
     for (const field of PHONE_FIELDS) {
       const phone = value[field]

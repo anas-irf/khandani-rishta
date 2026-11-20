@@ -1,5 +1,6 @@
 import { HttpResponse, http } from 'msw'
 import type {
+  FieldErrorCode,
   IdentitySummary,
   SelfieGesture,
   VerificationKind,
@@ -67,7 +68,7 @@ function setPending(kind: VerificationKind, pending: boolean) {
   }
 }
 
-function fieldError(field: string, code: string, message: string) {
+function fieldError(field: string, code: FieldErrorCode, message: string) {
   return apiError(400, 'validation_failed', 'Some fields need your attention.', {
     fields: [{ field, code, message }],
   })

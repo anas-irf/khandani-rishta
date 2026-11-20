@@ -15,8 +15,9 @@ import { RadioGroup, RadioGroupItem } from '~/components/ui/radio-group'
 import { Textarea } from '~/components/ui/textarea'
 import { useReportMember } from '~/features/relations/queries'
 import { isApiError } from '~/lib/api'
+import { isOneOf, REPORT_REASONS } from '~/lib/api-enums'
 import type { ReportBody } from '~/lib/api-types'
-import { useOptions } from '~/lib/reference'
+import { optionsIn, useOptions } from '~/lib/reference'
 import { cn } from '~/lib/utils'
 import { useOnlineStatus } from './OfflineBanner'
 import { useGoBack } from './PageHeader'
@@ -53,7 +54,7 @@ export type ReportDialogProps = {
 function bodyFor(
   profileId: string,
   subject: ReportSubjectRef,
-  reason: string,
+  reason: ReportBody['reason'],
   details: string,
   alsoBlock: boolean,
 ): ReportBody {
@@ -93,7 +94,7 @@ function ReportForm({
   onClose,
 }: Omit<ReportDialogProps, 'open' | 'onOpenChange'> & { onClose: () => void }) {
   const { t } = useTranslation(['shared', 'common', 'errors'])
-  const reasons = useOptions('report_reason')
+  const reasons = optionsIn(useOptions('report_reason'), REPORT_REASONS)
   const report = useReportMember()
   const goBack = useGoBack()
   const online = useOnlineStatus()
@@ -106,7 +107,7 @@ function ReportForm({
 
   const submit = async (event: FormEvent) => {
     event.preventDefault()
-    if (!reason) {
+    if (!isOneOf(REPORT_REASONS, reason)) {
       setErrors({ reason: t('shared:report.reason_required') })
       return
     }

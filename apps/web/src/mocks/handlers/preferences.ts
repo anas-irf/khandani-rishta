@@ -14,8 +14,13 @@ import { checkText, fieldError } from './profile'
  * stores.
  */
 
-const NEVER_MARRIED_ONLY = ['never_married']
-const PREVIOUSLY_MARRIED = ['never_married', 'divorced', 'widowed', 'nikah_ended_before_rukhsati']
+const NEVER_MARRIED_ONLY: Preferences['marital_statuses'] = ['never_married']
+const PREVIOUSLY_MARRIED: Preferences['marital_statuses'] = [
+  'never_married',
+  'divorced',
+  'widowed',
+  'nikah_ended_before_rukhsati',
+]
 
 /** The defaults of 07 section 12 for a profile without a `partner_preferences` row. */
 export function preferenceDefaults(profile: OwnProfile, now: Date = new Date()): Preferences {
@@ -107,7 +112,7 @@ const optionCodes = (list: string) => (ref.options[list] ?? []).map((option) => 
 /** Validates a `PUT /v1/me/preferences` body (07 section 11.4). */
 export function validatePreferences(
   body: Partial<Preferences>,
-  candidateGender: 'male' | 'female' | null,
+  candidateGender: 'male' | 'female' | null | undefined,
 ): { errors: ApiFieldError[]; value: Preferences } {
   const errors: ApiFieldError[] = []
   const value = { ...preferenceDefaults(db.ownProfile), ...body } as Preferences
@@ -123,7 +128,7 @@ export function validatePreferences(
     )
   }
 
-  const heightOk = (height: number | null) =>
+  const heightOk = (height: number | null | undefined) =>
     height == null || (Number.isInteger(height) && height >= 122 && height <= 213)
   if (!heightOk(value.height_min_cm)) errors.push(fieldError('height_min_cm', 'out_of_range'))
   if (!heightOk(value.height_max_cm)) errors.push(fieldError('height_max_cm', 'out_of_range'))

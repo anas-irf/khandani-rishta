@@ -21,7 +21,7 @@ import type {
   CasteSuggestionItem,
   ReportContextMessage,
 } from '~/features/admin/types'
-import type { ApiFieldError, Gender, OwnPhoto } from '~/lib/api-types'
+import type { ApiFieldError, Gender, OwnPhoto, OwnProfile } from '~/lib/api-types'
 import { ageFromDateOfBirth } from '~/lib/format'
 import { db } from '../db'
 import {
@@ -55,7 +55,7 @@ type Person = {
   dob: string
   city: string
   managedBy: string
-  maritalStatus: string
+  maritalStatus: NonNullable<OwnProfile['basics']['marital_status']>
   role: Role
   userStatus: string
   profileStatus: string

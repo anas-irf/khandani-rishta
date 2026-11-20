@@ -72,12 +72,12 @@ export function useFilterChips(filters: SearchFilters): FilterChip[] {
   const reference = useReference()
 
   const range = (
-    min: number | undefined,
-    max: number | undefined,
+    min: number | null | undefined,
+    max: number | null | undefined,
     format: (n: number) => string,
   ) => {
-    if (min !== undefined && max !== undefined) return `${format(min)} - ${format(max)}`
-    if (min !== undefined) return `${t('search.from')} ${format(min)}`
+    if (min != null && max != null) return `${format(min)} - ${format(max)}`
+    if (min != null) return `${t('search.from')} ${format(min)}`
     return `${t('search.to')} ${format(max ?? 0)}`
   }
   const heightLabel = (cm: number) =>

@@ -1,8 +1,7 @@
 import { createFormHookContexts } from '@tanstack/react-form'
 import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { ApiError } from './api'
-import type { ApiFieldError } from './api-types'
+import type { ApiError, ClientFieldError } from './api'
 import { i18n } from './i18n'
 
 /**
@@ -77,7 +76,7 @@ export function describedBy(
  * that field and code when it has one (`<ns>:errors.<field>.<code>`), then the generic text for
  * the code (`errors:field.<code>`), then the API's message.
  */
-export function serverFieldMessage(namespace: string | null, error: ApiFieldError): string {
+export function serverFieldMessage(namespace: string | null, error: ClientFieldError): string {
   const keys = [
     namespace ? `${namespace}:errors.${error.field}.${error.code}` : null,
     `errors:field.${error.code}`,
@@ -103,9 +102,9 @@ export function applyServerErrors(
   form: unknown,
   error: ApiError,
   options: { namespace?: string | null; aliases?: Record<string, string> } = {},
-): ApiFieldError[] {
+): ClientFieldError[] {
   const target = form as FormLike
-  const unmatched: ApiFieldError[] = []
+  const unmatched: ClientFieldError[] = []
   let first: string | null = null
   for (const fieldError of error.fields) {
     const name = options.aliases?.[fieldError.field] ?? fieldError.field

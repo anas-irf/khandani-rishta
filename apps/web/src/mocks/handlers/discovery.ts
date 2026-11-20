@@ -270,7 +270,7 @@ export function normalizeCode(value: string): string {
   return value.replace(/\s+/g, '').toUpperCase()
 }
 
-function present<T>(value: T[] | undefined | null): value is T[] {
+function present<T>(value: readonly T[] | undefined | null): value is readonly T[] {
   return Array.isArray(value) && value.length > 0
 }
 
@@ -342,7 +342,7 @@ const ACTIVE_WITHIN: Record<number, (LastActive | null)[]> = {
 /** Search filters are exact: a null value never matches a filter on it (10 section 9.2). */
 export function matchesFilters(profile: ProfileDetail, filters: SearchFilters): boolean {
   const { card } = profile
-  const inSet = (values: string[] | undefined, value: string | null | undefined) =>
+  const inSet = (values: readonly string[] | null | undefined, value: string | null | undefined) =>
     !present(values) || (value != null && values.includes(value))
 
   if (given(filters.age_min) && card.age < filters.age_min) return false
@@ -435,7 +435,11 @@ function sortProfiles(profiles: ProfileDetail[], sort: SearchSort): ProfileDetai
   return list.sort(byCompat)
 }
 
-function pageFromBody<T>(items: T[], cursor: string | undefined, limit: number | undefined) {
+function pageFromBody<T>(
+  items: T[],
+  cursor: string | null | undefined,
+  limit: number | null | undefined,
+) {
   const size = Math.min(Math.max(Number(limit ?? 20) || 20, 1), 50)
   const offset = Number(cursor ?? 0) || 0
   const slice = items.slice(offset, offset + size)

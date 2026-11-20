@@ -1,4 +1,5 @@
 import { HttpResponse, http } from 'msw'
+import { isOneOf } from '~/lib/api-enums'
 import type {
   ApiFieldError,
   Connection,
@@ -209,7 +210,7 @@ export function appendMessage(
 /** A system message (11 section 6.8). */
 export function appendSystemMessage(
   connection: Connection,
-  event: string,
+  event: NonNullable<Message['system_event']>,
   data: Record<string, unknown> = {},
 ): Message {
   return appendMessage(connection, {
@@ -240,7 +241,7 @@ function relationAfterEnd(profile: ProfileDetail | undefined, endedAt: string) {
 /** Ends a connection (11 section 5.4): shares revoked, proposal cancelled, system message. */
 export function endConnection(
   connection: Connection,
-  reason: string,
+  reason: NonNullable<Connection['ended_reason']>,
   endedBy: 'me' | 'them' | 'system' = 'me',
 ) {
   const endedAt = nowIso()
@@ -435,7 +436,7 @@ export const handlers = [
     if (!connection) return notFound()
     if (connection.status !== 'active') return connectionEnded()
     const body = await readJson<{ reason?: string; also_block?: boolean }>(request)
-    if (!body.reason || !END_REASONS.includes(body.reason as EndConnectionReason)) {
+    if (!body.reason || !isOneOf(END_REASONS, body.reason)) {
       return validation([
         {
           field: 'reason',

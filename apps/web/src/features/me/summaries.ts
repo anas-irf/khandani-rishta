@@ -84,7 +84,7 @@ export function sectionIsEmpty(section: object): boolean {
 }
 
 /** The first 120 characters of a text, with an ellipsis when cut (08 section 1.3). */
-export function excerpt(text: string | null, length = 120): string | null {
+export function excerpt(text: string | null | undefined, length = 120): string | null {
   if (!text) return null
   const trimmed = text.trim()
   return trimmed.length > length ? `${trimmed.slice(0, length).trimEnd()}...` : trimmed

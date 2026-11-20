@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { Gender, Preferences, SearchFilters, SearchSort } from '~/lib/api-types'
+import type { Gender, Preferences, SearchBody, SearchFilters, SearchSort } from '~/lib/api-types'
 
 /**
  * Pure helpers of `APP-SEARCH` (16 section 6.6, 17 section 3.3): the `SearchFilters` schema, the
@@ -163,7 +163,7 @@ export function filtersFromPreferences(
  * The search body of 16 section 6.6: `{ filters, sort, limit: 20 }` plus the cursor of a further
  * page. Only set keys are sent.
  */
-export function searchBody(state: SearchState, cursor?: string) {
+export function searchBody(state: SearchState, cursor?: string): SearchBody {
   return {
     filters: cleanFilters(state.filters),
     sort: state.sort,

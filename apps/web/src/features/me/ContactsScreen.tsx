@@ -11,8 +11,8 @@ import { FormSkeleton } from '~/components/common/FormSkeleton'
 import { PageHeader, useGoBack } from '~/components/common/PageHeader'
 import { Button } from '~/components/ui/button'
 import { useOwnProfile } from '~/features/profile-sections/queries'
-import { isApiError } from '~/lib/api'
-import type { ApiFieldError, OwnProfile } from '~/lib/api-types'
+import { type ClientFieldError, isApiError } from '~/lib/api'
+import type { OwnProfile } from '~/lib/api-types'
 import { focusFirstInvalid, useAppForm } from '~/lib/form'
 import { applyServerErrors, focusField } from '~/lib/form-context'
 import { formatPhone } from '~/lib/format'
@@ -84,7 +84,7 @@ function ContactsForm({ profile }: { profile: OwnProfile }) {
   const [guardianOpen, setGuardianOpen] = useState(
     () => guardianGroupOpen(initial) || search.focus === 'guardian_name',
   )
-  const [serverErrors, setServerErrors] = useState<ApiFieldError[]>([])
+  const [serverErrors, setServerErrors] = useState<ClientFieldError[]>([])
   const [failed, setFailed] = useState(false)
   const saved = useRef(false)
   const managing =

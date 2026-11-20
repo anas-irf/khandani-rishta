@@ -132,7 +132,7 @@ describe('"Use my preferences" (16 section 6.6)', () => {
       city_ids: [1001],
       education_min_rank: 5,
       hijab_types: ['hijab'],
-      beard_types: ['full_beard'],
+      beard_types: ['full'],
       children_acceptance: 'none',
       notes: 'Someone kind',
     })
@@ -148,7 +148,7 @@ describe('"Use my preferences" (16 section 6.6)', () => {
       country_codes: ['PK'],
       city_ids: [1001],
       education_min_rank: 5,
-      beard_types: ['full_beard'],
+      beard_types: ['full'],
     })
     expect(filters).not.toHaveProperty('notes')
     expect(filters).not.toHaveProperty('religion_importance')
@@ -156,7 +156,7 @@ describe('"Use my preferences" (16 section 6.6)', () => {
 
   it('offers hijab to a male viewer and leaves the full age range untouched', () => {
     const filters = filtersFromPreferences(
-      makePreferences({ age_min: 18, age_max: 80, hijab_types: ['niqab'], beard_types: ['clean'] }),
+      makePreferences({ age_min: 18, age_max: 80, hijab_types: ['niqab'], beard_types: ['none'] }),
       'male',
     )
     expect(filters.hijab_types).toEqual(['niqab'])

@@ -258,10 +258,10 @@ describe('APP-CHAT history', () => {
       }),
     )
     setMessages(all)
-    const befores: (string | null)[] = []
+    const beforeCursors: (string | null)[] = []
     server.use(
       http.get(apiUrl('/v1/connections/:id/messages'), ({ request }) => {
-        befores.push(new URL(request.url).searchParams.get('before'))
+        beforeCursors.push(new URL(request.url).searchParams.get('before'))
         return undefined
       }),
     )
@@ -270,7 +270,7 @@ describe('APP-CHAT history', () => {
     expect(screen.queryByText('History 0')).toBeNull()
     await user.click(screen.getByRole('button', { name: 'Load older messages' }))
     expect(await screen.findByText('History 0')).toBeInTheDocument()
-    expect(befores).toEqual([null, 'h015'])
+    expect(beforeCursors).toEqual([null, 'h015'])
     expect(screen.queryByRole('button', { name: 'Load older messages' })).toBeNull()
   })
 })

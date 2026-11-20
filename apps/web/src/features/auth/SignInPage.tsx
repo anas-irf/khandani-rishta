@@ -35,9 +35,12 @@ export function SignInPage({ redirectUrl }: { redirectUrl?: string }) {
         {isMockMode ? (
           <MockSignIn target={target} />
         ) : clerkEnabled ? (
+          // `withSignUp` turns on Clerk's combined sign-in-or-sign-up flow: there is no separate
+          // sign-up page, and a new email address continues straight into sign-up (17 section 3.2).
           <SignIn
             routing="path"
             path="/sign-in"
+            withSignUp
             fallbackRedirectUrl={target}
             signUpFallbackRedirectUrl={target}
           />

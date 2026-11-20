@@ -338,6 +338,7 @@ text_enum! {
 
 text_enum! {
     /// Relation tier of a viewer to an owner (03 section 6), evaluated in this order.
+    #[expect(clippy::enum_variant_names, reason = "`Self` is a keyword, so the code `self` needs a longer name")]
     Tier {
         SelfTier = "self",
         Connection = "connection",

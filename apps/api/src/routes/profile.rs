@@ -90,7 +90,7 @@ async fn get_profile(State(state): State<AppState>, account: Open) -> ApiResult<
     path = "/me/profile/sections/{section}",
     tag = "profile",
     security(("bearer" = [])),
-    params(("section" = Section, Path, description = "The section to replace")),
+    params(("section" = inline(Section), Path, description = "The section to replace")),
     request_body = SectionBody,
     responses(
         (status = 200, body = OwnProfile),

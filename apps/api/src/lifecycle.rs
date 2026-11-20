@@ -94,6 +94,13 @@ pub async fn end_connection(
     .bind(json!({}))
     .execute(&mut *tx)
     .await?;
+    // The chat list sorts by the last message; system messages carry no preview (11 section 6.8).
+    sqlx::query(
+        "UPDATE connections SET last_message_at = now(), last_message_preview = NULL WHERE id = $1",
+    )
+    .bind(connection_id)
+    .execute(&mut *tx)
+    .await?;
     Ok(Some(ended))
 }
 

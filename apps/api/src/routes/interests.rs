@@ -854,12 +854,17 @@ async fn decline_interest(
         return Err(ApiError::invalid_state(locked.status));
     }
     db::respond(&mut tx, interest_id, InterestStatus::Declined).await?;
+    let sender = locked.sender_profile_id;
+    // The decline and the optional block commit together.
+    let blocked = if body.also_block == Some(true) {
+        Some(relations::block_in(&mut tx, me, sender).await?)
+    } else {
+        None
+    };
     tx.commit().await?;
     tracing::info!(event = "interest.declined", %interest_id, compat_score = ?locked.compat_score);
 
-    let sender = locked.sender_profile_id;
-    if body.also_block == Some(true) {
-        let effects = relations::block(&state.db, me, sender).await?;
+    if let Some(effects) = blocked {
         if let Some(ended) = effects.ended {
             tracing::info!(
                 event = "connection.ended",

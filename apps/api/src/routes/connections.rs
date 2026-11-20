@@ -216,18 +216,21 @@ async fn end_connection(
     let (_, message) = db::end(&mut tx, connection_id, me, reason)
         .await?
         .ok_or(ApiError::ConnectionEnded)?;
+    let other = membership.other_id;
+    // 11 section 5.4 step 6: the block is part of the same transaction. It runs after the
+    // ending, so the stored reason stays the member's own.
+    let blocked = if body.also_block == Some(true) {
+        Some(relations::block_in(&mut tx, me, other).await?)
+    } else {
+        None
+    };
     tx.commit().await?;
     tracing::info!(
         event = "connection.ended",
         %connection_id,
         reason = %reason
     );
-
-    let other = membership.other_id;
-    // The block is applied after the ending, so the stored reason is the member's own; the
-    // connection is already ended when the block's own effects run.
-    if body.also_block == Some(true) {
-        let effects = relations::block(&state.db, me, other).await?;
+    if let Some(effects) = blocked {
         for interest_id in &effects.withdrawn {
             tracing::info!(event = "interest.withdrawn", %interest_id);
         }

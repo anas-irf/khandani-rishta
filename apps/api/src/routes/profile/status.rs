@@ -177,6 +177,7 @@ pub async fn post_reopen(
     log_status_change(&account, status, ProfileStatus::Active);
     // Ending a connection changes the unread chats of both members (14 section 8.2).
     for connection in ended {
+        crate::models::connections::publish_updated(&state, connection.connection_id).await;
         counters::push(&state, connection.profile_low_id).await;
         counters::push(&state, connection.profile_high_id).await;
     }

@@ -361,6 +361,7 @@ pub(super) async fn after_block(
             connection_id = %ended.connection_id,
             reason = "blocked"
         );
+        crate::models::connections::publish_updated(state, ended.connection_id).await;
     }
     for interest_id in &effects.withdrawn {
         tracing::info!(event = "interest.withdrawn", %interest_id);

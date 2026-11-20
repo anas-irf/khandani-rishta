@@ -216,6 +216,8 @@ async fn purge_user(state: &AppState, user_id: Uuid) -> anyhow::Result<bool> {
         } else {
             connection.profile_low_id
         };
+        crate::models::connections::publish_updated_to(state, connection.connection_id, other)
+            .await;
         crate::db::counters::push(state, other).await;
     }
     state.jobs.wake();

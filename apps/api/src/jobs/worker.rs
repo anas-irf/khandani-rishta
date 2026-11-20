@@ -192,4 +192,113 @@ mod tests {
         assert_eq!(backoff(4), Duration::from_hours(1));
         assert_eq!(backoff(9), Duration::from_hours(1));
     }
+
+    mod db {
+        use serde_json::json;
+        use sqlx::PgPool;
+
+        use crate::jobs::{NewJob, enqueue, worker};
+        use crate::test_support::TestApp;
+
+        #[derive(Debug, PartialEq, sqlx::FromRow)]
+        struct Row {
+            status: String,
+            attempts: i16,
+            last_error: Option<String>,
+            due_in_seconds: f64,
+        }
+
+        async fn row(app: &TestApp) -> Row {
+            sqlx::query_as(
+                "SELECT status, attempts, last_error,
+                        EXTRACT(EPOCH FROM run_at - now())::float8 AS due_in_seconds
+                 FROM jobs",
+            )
+            .fetch_one(app.db())
+            .await
+            .unwrap()
+        }
+
+        async fn make_due(app: &TestApp) {
+            sqlx::query("UPDATE jobs SET run_at = now()")
+                .execute(app.db())
+                .await
+                .unwrap();
+        }
+
+        #[sqlx::test]
+        async fn a_job_runs_once(db: PgPool) {
+            let app = TestApp::new(db).await;
+            let job = NewJob::new("delete_clerk_user", json!({ "clerk_user_id": "user_1" }));
+            enqueue(app.db(), job).await.unwrap();
+            assert_eq!(app.drain_jobs().await, 1);
+            assert_eq!(app.drain_jobs().await, 0);
+            let row = row(&app).await;
+            assert_eq!((row.status.as_str(), row.attempts), ("succeeded", 1));
+            assert_eq!(app.clerk.calls(), vec!["delete_user:user_1"]);
+        }
+
+        #[sqlx::test]
+        async fn failures_retry_with_backoff_then_die(db: PgPool) {
+            let app = TestApp::new(db).await;
+            *app.clerk.down.lock().unwrap() = true;
+            let mut job = NewJob::new("delete_clerk_user", json!({ "clerk_user_id": "user_1" }));
+            job.max_attempts = 3;
+            enqueue(app.db(), job).await.unwrap();
+
+            app.drain_jobs().await;
+            let first = row(&app).await;
+            assert_eq!((first.status.as_str(), first.attempts), ("queued", 1));
+            assert!(
+                (25.0..=31.0).contains(&first.due_in_seconds),
+                "30 s backoff"
+            );
+            assert!(first.last_error.unwrap().contains("clerk is down"));
+
+            make_due(&app).await;
+            app.drain_jobs().await;
+            let second = row(&app).await;
+            assert_eq!(second.attempts, 2);
+            assert!(
+                (115.0..=121.0).contains(&second.due_in_seconds),
+                "2 min backoff"
+            );
+
+            make_due(&app).await;
+            app.drain_jobs().await;
+            let last = row(&app).await;
+            assert_eq!((last.status.as_str(), last.attempts), ("dead", 3));
+        }
+
+        #[sqlx::test]
+        async fn unknown_kinds_die_at_once_and_bad_payloads_fail(db: PgPool) {
+            let app = TestApp::new(db).await;
+            sqlx::query("INSERT INTO jobs (kind, payload) VALUES ('no_such_kind', '{}')")
+                .execute(app.db())
+                .await
+                .unwrap();
+            let job = worker::claim(app.db()).await.unwrap().unwrap();
+            worker::execute(&app.state, job).await.unwrap();
+            assert_eq!(row(&app).await.status, "dead");
+
+            sqlx::query("DELETE FROM jobs")
+                .execute(app.db())
+                .await
+                .unwrap();
+            enqueue(
+                app.db(),
+                NewJob::new("delete_clerk_user", json!({ "wrong": 1 })),
+            )
+            .await
+            .unwrap();
+            app.drain_jobs().await;
+            let row = row(&app).await;
+            assert_eq!(row.status, "queued");
+            assert!(
+                row.last_error
+                    .unwrap()
+                    .contains("invalid delete_clerk_user payload")
+            );
+        }
+    }
 }

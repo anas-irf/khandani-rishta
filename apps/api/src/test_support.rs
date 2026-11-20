@@ -417,6 +417,19 @@ impl TestApp {
         &self.state.db
     }
 
+    /// Serves the app on a random local port (for WebSocket tests) and returns its address.
+    pub async fn serve(&self) -> std::net::SocketAddr {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("a local port is free");
+        let address = listener.local_addr().expect("the listener has an address");
+        let router = self.router.clone();
+        tokio::spawn(async move {
+            let _ = axum::serve(listener, router).await;
+        });
+        address
+    }
+
     /// Sends a request through the full middleware stack.
     pub async fn request_with_headers(
         &self,

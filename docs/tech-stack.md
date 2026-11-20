@@ -159,7 +159,7 @@ Each app commits an `.env.example`. Real env files are git-ignored (section 15).
 | Middleware | `tower`, `tower-http` (CORS, compression, timeouts, request ID, tracing, panic catching) | 0.5, 0.7 |
 | PostgreSQL access and migrations | `sqlx` (Postgres, rustls, compile-time checked queries) | 0.9 |
 | JSON | `serde`, `serde_json` | 1.x |
-| Input validation | `garde` | 0.23 |
+| Input validation | Hand-written validators that collect every field error into the API error body (`error.rs`, `domain/text_rules.rs`) | |
 | Clerk token verification | `jsonwebtoken`, with Clerk's JWKS cached in memory | 12 |
 | Clerk webhook signatures | `svix` | 2.10 |
 | Outbound HTTP (Resend, FCM, Azure AI) | `reqwest` (rustls) | 0.13 |
@@ -167,13 +167,21 @@ Each app commits an `.env.example`. Real env files are git-ignored (section 15).
 | R2 through the S3 API | `aws-sdk-s3` | 1.x |
 | IDs | `uuid` (v7, time-ordered) | 1.29 |
 | In-process cache | `moka` | 0.12 |
-| Rate limiting | `tower_governor` | 0.8 |
+| Rate limiting | In-process GCRA limiter (`ratelimit.rs`), keyed by verified user id, or by client IP for requests without a token | |
 | OpenAPI spec | `utoipa`, `utoipa-axum` | 6.0, 0.3 |
 | Logs and traces | `tracing`, `tracing-subscriber` (JSON output on staging and production) | 0.1, 0.3 |
 | Error tracking | `sentry`, `sentry-tower` | 0.49 |
 | Error types | `thiserror`, `anyhow` | 2.x, 1.x |
 | Image processing | `image` | 0.25 |
 | Local `.env` loading | `dotenvy` (local only) | 0.15 |
+| Identity number encryption | `aes-gcm` (AES-256-GCM) | 0.11 |
+| Keyed hashes, digests | `hmac`, `sha2` | 0.13, 0.11 |
+| Keys, nonces, codes | `base64`, `rand` | 0.23, 0.10 |
+| Text rules and chat safety patterns | `regex`, `unicode-normalization` | 1.x, 0.1 |
+| Dates, ages, `Asia/Karachi` day boundaries (fixed UTC+5) | `time` | 0.3 |
+| Wiping identity numbers from memory | `zeroize` | 1.x |
+| Service traits, stream helpers | `async-trait`, `futures-util` | 0.1, 0.3 |
+| Test doubles for outbound HTTP, WebSocket test client | `wiremock`, `tokio-tungstenite` (dev only) | 0.6, 0.29 |
 
 ### Runtime shape
 
@@ -182,7 +190,7 @@ Each app commits an `.env.example`. Real env files are git-ignored (section 15).
 - Background jobs live in a PostgreSQL table and are claimed with `FOR UPDATE SKIP LOCKED`. No Redis, no message broker.
 - Real-time updates use Axum WebSockets with in-process fan-out over Tokio channels. Clients ping every 30 seconds because Cloudflare closes idle connections.
 - Caching uses `moka`, always with a size cap (`max_capacity`), because each VM has 1 GiB of RAM.
-- Rate limits use `tower_governor` in memory, keyed by Clerk user ID, or by client IP from Cloudflare's `CF-Connecting-IP` header.
+- Rate limits are kept in memory, keyed by the verified user id (checked after token verification, so a forged `sub` cannot drain someone else's allowance), or by client IP from Cloudflare's `CF-Connecting-IP` header for requests without a token.
 - The cache, rate limiter and pub/sub sit behind small traits, so Redis (or Valkey) can replace them once we run more than one API instance.
 
 ### API conventions
@@ -491,7 +499,7 @@ No log-shipping agent on the VMs. It would compete for RAM on 1 GiB machines.
 - Secrets live only in git-ignored env files, Workers secrets and GitHub Actions secrets, never in the repository (section 15).
 - Public-repository safeguards from section 16.
 - Every API route requires a valid Clerk token, except health checks and signature-verified webhooks.
-- API rate limits (`tower_governor`) plus Clerk's bot protection on sign-up.
+- API rate limits (in memory, per verified user and per IP) plus Clerk's bot protection on sign-up.
 - Uploaded images are re-encoded on the server, which strips EXIF data including GPS location.
 - Dependency checks: Dependabot alerts, dependency review on pull requests, `cargo deny` and `pnpm audit` (weekly), and a 1-day minimum release age for npm packages.
 - Workflow security: zizmor on every pull request, actions pinned to commit SHAs, read-only `GITHUB_TOKEN` by default.

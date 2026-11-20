@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next'
-import type { Connection, Message, Stage } from '~/lib/api-types'
+import type { Connection, Message, ProposableStage, Stage } from '~/lib/api-types'
 
 /** The stages in order (11 section 9.1). Stages only move forward and may skip. */
 export const STAGES: readonly Stage[] = ['chatting', 'families_talking', 'engaged', 'nikah_done']
@@ -8,9 +8,12 @@ export function stageIndex(stage: string): number {
   return STAGES.indexOf(stage as Stage)
 }
 
+/** The stages a member can propose at all: every stage after `chatting`. */
+const PROPOSABLE_STAGES: readonly ProposableStage[] = ['families_talking', 'engaged', 'nikah_done']
+
 /** The stages a member may suggest from the current one. */
-export function laterStages(current: Stage): Stage[] {
-  return STAGES.filter((stage) => stageIndex(stage) > stageIndex(current))
+export function laterStages(current: Stage): ProposableStage[] {
+  return PROPOSABLE_STAGES.filter((stage) => stageIndex(stage) > stageIndex(current))
 }
 
 /** "{stage name}" (11 section 9.1, owned there and quoted in 16 section 1.6). */

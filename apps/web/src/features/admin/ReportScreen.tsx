@@ -231,7 +231,10 @@ function ReportView({ data }: { data: AdminReportDetail }) {
             </Panel>
           ) : null}
           {data.photo ? (
-            <Panel title={t('report.photo')} action={<StatusBadge status={data.photo.status} />}>
+            <Panel
+              title={t('report.photo')}
+              action={data.photo.status ? <StatusBadge status={data.photo.status} /> : undefined}
+            >
               <AdminPhoto
                 photoId={data.photo.photo_id}
                 url={data.photo.large_url}

@@ -9,15 +9,12 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { http, isApiError } from '~/lib/api'
 import type {
-  BlockEntry,
   CloseReason,
-  Connection,
   DataExport,
   DeletionBody,
   Locale,
   Me,
   NotificationPreferences,
-  Page,
   Privacy,
 } from '~/lib/api-types'
 import { setLanguage } from '~/lib/i18n'
@@ -38,7 +35,7 @@ import { SAVE_FAILURE_CODES } from './save-errors'
 export function usePrivacy() {
   return useQuery({
     queryKey: qk.privacy(),
-    queryFn: ({ signal }) => http.get<Privacy>('/v1/me/privacy', { signal }),
+    queryFn: ({ signal }) => http.get('/v1/me/privacy', { signal }),
     staleTime: STALE.none,
     refetchOnMount: 'always',
   })
@@ -51,7 +48,7 @@ export function usePrivacy() {
 export function useUpdatePrivacy() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (change: Partial<Privacy>) => http.patch<Privacy>('/v1/me/privacy', change),
+    mutationFn: (change: Partial<Privacy>) => http.patch('/v1/me/privacy', change),
     meta: { handles: SAVE_FAILURE_CODES },
     onSuccess: (privacy) => queryClient.setQueryData(qk.privacy(), privacy),
   })
@@ -65,8 +62,7 @@ export function useUpdatePrivacy() {
 export function useNotificationPreferences() {
   return useQuery({
     queryKey: qk.notificationPreferences(),
-    queryFn: ({ signal }) =>
-      http.get<NotificationPreferences>('/v1/me/notification-preferences', { signal }),
+    queryFn: ({ signal }) => http.get('/v1/me/notification-preferences', { signal }),
     staleTime: STALE.none,
     refetchOnMount: 'always',
   })
@@ -77,7 +73,7 @@ export function useSaveNotificationPreferences() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (preferences: NotificationPreferences) =>
-      http.put<NotificationPreferences>('/v1/me/notification-preferences', preferences),
+      http.put('/v1/me/notification-preferences', preferences),
     meta: { handles: SAVE_FAILURE_CODES },
     onSuccess: (saved, sent) =>
       queryClient.setQueryData(qk.notificationPreferences(), saved ?? sent),
@@ -93,7 +89,7 @@ export function useBlocks() {
   return useInfiniteQuery({
     queryKey: qk.blocks(),
     queryFn: ({ pageParam, signal }) =>
-      http.get<Page<BlockEntry>>('/v1/blocks', {
+      http.get('/v1/blocks', {
         query: { limit: 20, cursor: pageParam },
         signal,
       }),
@@ -111,7 +107,7 @@ export function useBlocks() {
 export function useChangeLocale() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (locale: Locale) => http.patch<Me>('/v1/me', { locale }),
+    mutationFn: (locale: Locale) => http.patch('/v1/me', { locale }),
     meta: { handles: SAVE_FAILURE_CODES },
     onSuccess: (me) => {
       setMe(queryClient, me)
@@ -167,7 +163,7 @@ function useStatusChange<TVariables>(
 export function usePauseProfile() {
   const { t } = useTranslation('settings')
   return useStatusChange<void>(
-    () => http.post<Me>('/v1/me/profile/pause'),
+    () => http.post('/v1/me/profile/pause'),
     t('account.status.pause.done'),
   )
 }
@@ -176,7 +172,7 @@ export function usePauseProfile() {
 export function useResumeProfile() {
   const { t } = useTranslation('settings')
   return useStatusChange<void>(
-    () => http.post<Me>('/v1/me/profile/resume'),
+    () => http.post('/v1/me/profile/resume'),
     t('account.status.resume.done'),
   )
 }
@@ -185,7 +181,7 @@ export function useResumeProfile() {
 export function useCloseProfile() {
   const { t } = useTranslation('settings')
   return useStatusChange<CloseReason>(
-    (reason) => http.post<Me>('/v1/me/profile/close', { reason }),
+    (reason) => http.post('/v1/me/profile/close', { reason }),
     t('account.status.close.done'),
   )
 }
@@ -194,7 +190,7 @@ export function useCloseProfile() {
 export function useReopenProfile() {
   const { t } = useTranslation('settings')
   return useStatusChange<void>(
-    () => http.post<Me>('/v1/me/profile/reopen', { confirm: true }),
+    () => http.post('/v1/me/profile/reopen', { confirm: true }),
     t('account.status.reopen.done'),
   )
 }
@@ -212,7 +208,7 @@ export function useNikahCheck(enabled: boolean) {
     staleTime: STALE.none,
     queryFn: async ({ signal }) => {
       try {
-        const page = await http.get<Page<Connection>>('/v1/connections', {
+        const page = await http.get('/v1/connections', {
           query: { filter: 'active', limit: 50 },
           signal,
         })
@@ -238,7 +234,7 @@ export function useDataExport() {
     queryKey: qk.dataExport(),
     queryFn: async ({ signal }): Promise<DataExport | null> => {
       try {
-        return await http.get<DataExport>('/v1/me/exports/latest', { signal })
+        return await http.get('/v1/me/exports/latest', { signal })
       } catch (error) {
         if (isApiError(error) && error.status === 404) return null
         throw error
@@ -254,7 +250,7 @@ export function useDataExport() {
 export function useRequestExport() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: () => http.post<{ status: 'queued' }>('/v1/me/exports'),
+    mutationFn: () => http.post('/v1/me/exports'),
     meta: { limitText: 'settings:account.data.limit' },
     onSuccess: () => {
       const queued: DataExport = { status: 'queued', download_url: null, expires_at: null }
@@ -276,7 +272,7 @@ export function useScheduleDeletion() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (body: DeletionBody) =>
-      orRefetchMe(queryClient, () => http.post<Me>('/v1/me/deletion', body)),
+      orRefetchMe(queryClient, () => http.post('/v1/me/deletion', body)),
     onSuccess: (me) => {
       if (me) setMe(queryClient, me)
     },
@@ -287,7 +283,7 @@ export function useScheduleDeletion() {
 export function useCancelDeletion() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: () => orRefetchMe(queryClient, () => http.delete<Me>('/v1/me/deletion')),
+    mutationFn: () => orRefetchMe(queryClient, () => http.delete('/v1/me/deletion')),
     onSuccess: (me) => {
       if (me) setMe(queryClient, me)
     },

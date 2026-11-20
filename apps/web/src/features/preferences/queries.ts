@@ -12,7 +12,7 @@ import { qk, STALE } from '~/lib/query'
 export function usePreferences() {
   return useQuery({
     queryKey: qk.preferences(),
-    queryFn: ({ signal }) => http.get<Preferences>('/v1/me/preferences', { signal }),
+    queryFn: ({ signal }) => http.get('/v1/me/preferences', { signal }),
     staleTime: STALE.none,
     refetchOnMount: 'always',
   })
@@ -21,8 +21,7 @@ export function usePreferences() {
 export function useSavePreferences() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (preferences: Preferences) =>
-      http.put<Preferences>('/v1/me/preferences', preferences),
+    mutationFn: (preferences: Preferences) => http.put('/v1/me/preferences', preferences),
     meta: { handles: ['internal_error', 'service_unavailable', 'network_error'] },
     onSuccess: (preferences) => {
       queryClient.setQueryData(qk.preferences(), preferences)

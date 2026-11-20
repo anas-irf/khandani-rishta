@@ -11,7 +11,7 @@ export function useSetPhotoVisibility() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (photoVisibility: Privacy['photo_visibility']) =>
-      http.patch<Privacy>('/v1/me/privacy', { photo_visibility: photoVisibility }),
+      http.patch('/v1/me/privacy', { photo_visibility: photoVisibility }),
     meta: { handles: ['internal_error', 'service_unavailable', 'network_error'] },
     onSuccess: (privacy) => queryClient.setQueryData(qk.privacy(), privacy),
   })

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { AUDIT_TARGET_TYPES } from '~/lib/api-enums'
 
 /**
  * List filters of the admin routes, used as `validateSearch` (17 section 3) and parsed again by
@@ -54,6 +55,6 @@ export const castesSearch = z.object({
 export const auditSearch = z.object({
   actor_user_id: optionalText,
   action: optionalText,
-  target_type: optionalText,
+  target_type: z.enum(AUDIT_TARGET_TYPES).optional().catch(undefined),
   target_id: optionalText,
 })

@@ -28,7 +28,7 @@ import {
 import { Label } from '~/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '~/components/ui/radio-group'
 import { usePauseProfile } from '~/features/settings/queries'
-import type { Connection, OwnProfile, Stage } from '~/lib/api-types'
+import type { Connection, OwnProfile, ProposableStage } from '~/lib/api-types'
 import { invalidateMe, qk } from '~/lib/query'
 import { cn } from '~/lib/utils'
 import { useStageAction } from './queries'
@@ -270,7 +270,7 @@ function SuggestStageDialog({
   const online = useOnlineStatus()
   const legend = useId()
   const options = laterStages(connection.stage)
-  const [stage, setStage] = useState<Stage | ''>(options[0] ?? '')
+  const [stage, setStage] = useState<ProposableStage | ''>(options[0] ?? '')
 
   const submit = async () => {
     if (!stage) return
@@ -291,7 +291,10 @@ function SuggestStageDialog({
         </DialogHeader>
         <RadioGroup
           value={stage}
-          onValueChange={(value) => setStage(value as Stage)}
+          onValueChange={(value) => {
+            const picked = options.find((option) => option === value)
+            if (picked) setStage(picked)
+          }}
           aria-labelledby={legend}
           className="gap-1"
         >

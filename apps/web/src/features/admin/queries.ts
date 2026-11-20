@@ -7,35 +7,30 @@ import {
 } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { http, isApiError, seg } from '~/lib/api'
-import type { Page } from '~/lib/api-types'
+import type { Page, ProfileStatus, UserRole, UserStatus } from '~/lib/api-types'
 import { i18n } from '~/lib/i18n'
 import { nextCursor, qk, removeFromPages, STALE } from '~/lib/query'
 import type {
-  AdminCaste,
-  AdminOverview,
   AdminPhotoItem,
-  AdminProfile,
   AdminProfileListItem,
-  AdminRelease,
-  AdminReportDetail,
   AdminReportListItem,
-  AdminSetting,
+  AdminTextField,
   AdminTextItem,
-  AdminUser,
-  AdminUserListItem,
   AdminVerificationDetail,
+  AdminVerificationKind,
   AdminVerificationListItem,
   AnnouncementBody,
-  AnnouncementResult,
-  AuditEntry,
   AuditFilters,
   BanBody,
   CasteSuggestionItem,
   CreateCasteBody,
   CreateReleaseBody,
   LockedFieldsBody,
+  PhotoRejectionReason,
+  PhotoStatus,
   PromoteSuggestionBody,
   ReportResolveBody,
+  ReportStatus,
   RequestChangesBody,
   RoleBody,
   SuspendBody,
@@ -43,6 +38,7 @@ import type {
   UpdateCasteBody,
   VerificationApproveBody,
   VerificationRejectBody,
+  VerificationStatus,
   WarnBody,
 } from './types'
 
@@ -80,26 +76,28 @@ export const adminKeys = {
   audit: (filters: AuditFilters) => qk.admin('audit-log', filters),
 }
 
-export type ProfileFilters = { status: string; q?: string }
-export type VerificationFilters = { status: string; kind?: string }
-export type UserFilters = { q: string; status?: string; role?: string }
+export type ProfileFilters = { status: ProfileStatus; q?: string }
+export type VerificationFilters = { status: VerificationStatus; kind?: AdminVerificationKind }
+export type UserFilters = { q: string; status?: UserStatus; role?: UserRole }
 
 /** Minimum length of a user search (18 section 5.1). */
 export const USER_SEARCH_MIN_LENGTH = 3
 
+/** The paging parameters of one page of an admin list. */
+type PageQuery = { limit: number; cursor: string | undefined }
+
+/**
+ * A cursor-paginated admin list. `fetchPage` calls the list's route with the paging parameters
+ * added to its own filters, so the path and the filters are checked against the contract.
+ */
 function useAdminList<T>(
   key: readonly unknown[],
-  path: string,
-  params: Record<string, string | number | undefined>,
+  fetchPage: (page: PageQuery, signal: AbortSignal) => Promise<Page<T>>,
   enabled = true,
 ) {
   return useInfiniteQuery({
     queryKey: key,
-    queryFn: ({ pageParam, signal }) =>
-      http.get<Page<T>>(path, {
-        query: { ...params, limit: PAGE_SIZE, cursor: pageParam },
-        signal,
-      }),
+    queryFn: ({ pageParam, signal }) => fetchPage({ limit: PAGE_SIZE, cursor: pageParam }, signal),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: nextCursor,
     staleTime: STALE.none,
@@ -156,7 +154,7 @@ function markStale(queryClient: QueryClient, key: readonly unknown[]) {
 export function useAdminOverview() {
   return useQuery({
     queryKey: adminKeys.overview(),
-    queryFn: ({ signal }) => http.get<AdminOverview>(`${ADMIN}/overview`, { signal }),
+    queryFn: ({ signal }) => http.get(`${ADMIN}/overview`, { signal }),
     staleTime: STALE.none,
     refetchInterval: 60_000,
   })
@@ -167,10 +165,12 @@ export function useAdminOverview() {
 // ---------------------------------------------------------------------------
 
 export function useAdminProfiles(filters: ProfileFilters) {
-  return useAdminList<AdminProfileListItem>(adminKeys.profileList(filters), `${ADMIN}/profiles`, {
-    status: filters.status,
-    q: filters.q,
-  })
+  return useAdminList(adminKeys.profileList(filters), (page, signal) =>
+    http.get(`${ADMIN}/profiles`, {
+      query: { status: filters.status, q: filters.q, ...page },
+      signal,
+    }),
+  )
 }
 
 export function useAdminProfile(
@@ -179,8 +179,7 @@ export function useAdminProfile(
 ) {
   return useQuery({
     queryKey: adminKeys.profile(profileId ?? ''),
-    queryFn: ({ signal }) =>
-      http.get<AdminProfile>(`${ADMIN}/profiles/${seg(profileId ?? '')}`, { signal }),
+    queryFn: ({ signal }) => http.get(`${ADMIN}/profiles/${seg(profileId ?? '')}`, { signal }),
     enabled: Boolean(profileId) && (options.enabled ?? true),
     staleTime: STALE.none,
   })
@@ -235,8 +234,10 @@ export function useCorrectLockedFields() {
 // ADM-PHOTOS
 // ---------------------------------------------------------------------------
 
-export function useAdminPhotos(status: string) {
-  return useAdminList<AdminPhotoItem>(adminKeys.photoList(status), `${ADMIN}/photos`, { status })
+export function useAdminPhotos(status: PhotoStatus) {
+  return useAdminList(adminKeys.photoList(status), (page, signal) =>
+    http.get(`${ADMIN}/photos`, { query: { status, ...page }, signal }),
+  )
 }
 
 export function useApprovePhoto() {
@@ -258,7 +259,7 @@ export function useApprovePhoto() {
 /** Rejecting a photo also works on an approved one (a reported photo, 18 section 4.2). */
 export function useRejectPhoto() {
   return useDecision({
-    request: (variables: { photoId: string; reason: string }) =>
+    request: (variables: { photoId: string; reason: PhotoRejectionReason }) =>
       http.post(`${ADMIN}/photos/${seg(variables.photoId)}/reject`, { reason: variables.reason }),
     onDone: (queryClient, variables) => {
       removeFromPages<AdminPhotoItem>(
@@ -280,10 +281,12 @@ export function useRejectPhoto() {
 // ---------------------------------------------------------------------------
 
 export function useAdminTexts() {
-  return useAdminList<AdminTextItem>(adminKeys.texts(), `${ADMIN}/texts`, {})
+  return useAdminList(adminKeys.texts(), (page, signal) =>
+    http.get(`${ADMIN}/texts`, { query: page, signal }),
+  )
 }
 
-type TextDecision = { profileId: string; field: string; text_sha256: string }
+type TextDecision = { profileId: string; field: AdminTextField; text_sha256: string }
 
 function textDone(queryClient: QueryClient, variables: TextDecision) {
   removeFromPages<AdminTextItem>(
@@ -322,10 +325,11 @@ export function useRejectText() {
 // ---------------------------------------------------------------------------
 
 export function useAdminVerifications(filters: VerificationFilters) {
-  return useAdminList<AdminVerificationListItem>(
-    adminKeys.verificationList(filters),
-    `${ADMIN}/verifications`,
-    { status: filters.status, kind: filters.kind },
+  return useAdminList(adminKeys.verificationList(filters), (page, signal) =>
+    http.get(`${ADMIN}/verifications`, {
+      query: { status: filters.status, kind: filters.kind, ...page },
+      signal,
+    }),
   )
 }
 
@@ -337,7 +341,7 @@ export function useAdminVerification(requestId: string | undefined) {
   return useQuery({
     queryKey: adminKeys.verification(requestId ?? ''),
     queryFn: ({ signal }) =>
-      http.get<AdminVerificationDetail>(`${ADMIN}/verifications/${seg(requestId ?? '')}`, {
+      http.get(`${ADMIN}/verifications/${seg(requestId ?? '')}`, {
         signal,
       }),
     enabled: Boolean(requestId),
@@ -347,7 +351,7 @@ export function useAdminVerification(requestId: string | undefined) {
   })
 }
 
-function verificationDone(queryClient: QueryClient, requestId: string, status: string) {
+function verificationDone(queryClient: QueryClient, requestId: string, status: VerificationStatus) {
   removeFromPages<AdminVerificationListItem>(
     queryClient,
     qk.admin('verifications', 'list', { status: 'pending' }),
@@ -390,17 +394,16 @@ export function useRejectVerification() {
 // ADM-REPORTS, ADM-REPORT
 // ---------------------------------------------------------------------------
 
-export function useAdminReports(status: string) {
-  return useAdminList<AdminReportListItem>(adminKeys.reportList(status), `${ADMIN}/reports`, {
-    status,
-  })
+export function useAdminReports(status: ReportStatus) {
+  return useAdminList(adminKeys.reportList(status), (page, signal) =>
+    http.get(`${ADMIN}/reports`, { query: { status, ...page }, signal }),
+  )
 }
 
 export function useAdminReport(reportId: string | undefined) {
   return useQuery({
     queryKey: adminKeys.report(reportId ?? ''),
-    queryFn: ({ signal }) =>
-      http.get<AdminReportDetail>(`${ADMIN}/reports/${seg(reportId ?? '')}`, { signal }),
+    queryFn: ({ signal }) => http.get(`${ADMIN}/reports/${seg(reportId ?? '')}`, { signal }),
     enabled: Boolean(reportId),
     staleTime: STALE.none,
   })
@@ -450,10 +453,13 @@ export function useResolveReport() {
 
 /** Runs only for a search of at least 3 characters: there is no "browse members" list. */
 export function useAdminUsers(filters: UserFilters) {
-  return useAdminList<AdminUserListItem>(
+  return useAdminList(
     adminKeys.userList(filters),
-    `${ADMIN}/users`,
-    { q: filters.q, status: filters.status, role: filters.role },
+    (page, signal) =>
+      http.get(`${ADMIN}/users`, {
+        query: { q: filters.q, status: filters.status, role: filters.role, ...page },
+        signal,
+      }),
     filters.q.trim().length >= USER_SEARCH_MIN_LENGTH,
   )
 }
@@ -461,7 +467,7 @@ export function useAdminUsers(filters: UserFilters) {
 export function useAdminUser(userId: string | undefined) {
   return useQuery({
     queryKey: adminKeys.user(userId ?? ''),
-    queryFn: ({ signal }) => http.get<AdminUser>(`${ADMIN}/users/${seg(userId ?? '')}`, { signal }),
+    queryFn: ({ signal }) => http.get(`${ADMIN}/users/${seg(userId ?? '')}`, { signal }),
     enabled: Boolean(userId),
     staleTime: STALE.none,
   })
@@ -528,12 +534,8 @@ export function useChangeRole() {
 // ---------------------------------------------------------------------------
 
 export function useCasteSuggestions() {
-  return useAdminList<CasteSuggestionItem>(
-    adminKeys.casteSuggestions(),
-    `${ADMIN}/caste-suggestions`,
-    {
-      status: 'pending',
-    },
+  return useAdminList(adminKeys.casteSuggestions(), (page, signal) =>
+    http.get(`${ADMIN}/caste-suggestions`, { query: { status: 'pending', ...page }, signal }),
   )
 }
 
@@ -579,7 +581,7 @@ export function useRejectSuggestion() {
 export function useAdminCastes() {
   return useQuery({
     queryKey: adminKeys.castes(),
-    queryFn: ({ signal }) => http.get<{ items: AdminCaste[] }>(`${ADMIN}/castes`, { signal }),
+    queryFn: ({ signal }) => http.get(`${ADMIN}/castes`, { signal }),
     select: (data) => data.items,
     staleTime: STALE.none,
   })
@@ -613,7 +615,7 @@ export function useUpdateCaste() {
 export function useAdminSettings() {
   return useQuery({
     queryKey: adminKeys.settings(),
-    queryFn: ({ signal }) => http.get<{ items: AdminSetting[] }>(`${ADMIN}/settings`, { signal }),
+    queryFn: ({ signal }) => http.get(`${ADMIN}/settings`, { signal }),
     select: (data) => data.items,
     staleTime: STALE.none,
   })
@@ -631,8 +633,14 @@ export function useSaveSetting() {
   })
 }
 
+/** Every release record, newest first: the route returns the whole list, not pages. */
 export function useAdminReleases() {
-  return useAdminList<AdminRelease>(adminKeys.releases(), `${ADMIN}/releases`, {})
+  return useQuery({
+    queryKey: adminKeys.releases(),
+    queryFn: ({ signal }) => http.get(`${ADMIN}/releases`, { signal }),
+    select: (data) => data.items,
+    staleTime: STALE.none,
+  })
 }
 
 export function useCreateRelease() {
@@ -651,8 +659,7 @@ export function useCreateRelease() {
 /** Answers `202` with the recipient estimate. At most one per 24 hours (`429 limit_reached`). */
 export function useSendAnnouncement() {
   return useMutation({
-    mutationFn: (body: AnnouncementBody) =>
-      http.post<AnnouncementResult>(`${ADMIN}/announcements`, body),
+    mutationFn: (body: AnnouncementBody) => http.post(`${ADMIN}/announcements`, body),
     meta: { handles: ['validation_failed', 'limit_reached'] },
   })
 }
@@ -662,5 +669,7 @@ export function useSendAnnouncement() {
 // ---------------------------------------------------------------------------
 
 export function useAuditLog(filters: AuditFilters) {
-  return useAdminList<AuditEntry>(adminKeys.audit(filters), `${ADMIN}/audit-log`, { ...filters })
+  return useAdminList(adminKeys.audit(filters), (page, signal) =>
+    http.get(`${ADMIN}/audit-log`, { query: { ...filters, ...page }, signal }),
+  )
 }

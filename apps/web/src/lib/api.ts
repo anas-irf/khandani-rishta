@@ -1,5 +1,5 @@
 import type { paths } from '@khandani/api-contract'
-import createClient, { type Client, type Middleware } from 'openapi-fetch'
+import createClient, { type Middleware } from 'openapi-fetch'
 import type { ApiErrorBody, ApiErrorCode, ApiFieldError } from './api-types'
 
 /** Base URL of the API. Set per environment at build time through `VITE_API_BASE_URL`. */
@@ -164,78 +164,204 @@ const authMiddleware: Middleware = {
   },
 }
 
-/** Typed API client. Request and response types come from `packages/api-contract`. */
-export const api = createClient<paths>({
+// ---------------------------------------------------------------------------
+// Transport. Every request goes through one openapi-fetch client and its middleware.
+// ---------------------------------------------------------------------------
+
+/** The methods openapi-fetch knows. */
+type FetchMethod = 'get' | 'put' | 'post' | 'delete' | 'options' | 'head' | 'patch' | 'trace'
+
+/**
+ * The client's own view of the API: any path, a JSON body and a JSON answer. Callers name
+ * concrete paths (`/v1/admin/profiles/0192...`), which are not keys of the contract's `paths`, so
+ * the checking against the contract happens in the signatures of `http` below instead.
+ */
+type TransportOperation = {
+  parameters: { query?: Record<string, string | number | boolean> }
+  requestBody?: { content: { 'application/json': unknown } }
+  responses: { 200: { content: { 'application/json': unknown } } }
+}
+type TransportPaths = Record<string, Record<FetchMethod, TransportOperation>>
+
+const transport = createClient<TransportPaths>({
   baseUrl: apiBaseUrl,
   // Resolved per call, so a fetch patched later (the mock API in tests) is used.
   fetch: (request) => globalThis.fetch(request),
 })
-api.use(authMiddleware)
+transport.use(authMiddleware)
 
 // ---------------------------------------------------------------------------
-// Path-based facade used by every feature's `queries.ts`. Callers name the response type from
-// `api-types.ts`, whose types are the generated schemas. All calls still go through `api` and
-// its middleware.
+// Paths of the contract. A caller writes a path as a template literal with each parameter
+// encoded by `seg()`, for example `/v1/admin/profiles/${seg(id)}`. TypeScript types that
+// expression as `/v1/admin/profiles/${string}`, which is matched segment by segment against the
+// contract's `/v1/admin/profiles/{profile_id}` to find the operation, and from it the query
+// parameters, the request body and the answer.
 // ---------------------------------------------------------------------------
 
 type HttpMethod = 'get' | 'post' | 'put' | 'patch' | 'delete'
 
-export type RequestOptions = {
-  query?: Record<string, string | number | boolean | undefined | null>
+type ContractPath = keyof paths
+
+/** The operation behind `M` on contract path `K`, `never` when the path has no such method. */
+type Operation<K extends ContractPath, M extends HttpMethod> = NonNullable<paths[K][M]>
+
+/** The contract paths that answer `M`. */
+type PathsWith<M extends HttpMethod> = {
+  [K in ContractPath]: [Operation<K, M>] extends [never] ? never : K
+}[ContractPath]
+
+/** A contract path with every `{parameter}` written as any string: the shape of a caller's path. */
+type Concrete<K extends string> = K extends `${infer Head}{${string}}${infer Tail}`
+  ? `${Head}${string}${Concrete<Tail>}`
+  : K
+
+/** Whether one segment of a caller's path fits one segment of a contract path. */
+type SegmentFits<K extends string, S extends string> = K extends `{${string}}`
+  ? true
+  : [S] extends [K]
+    ? true
+    : false
+
+/** Whether caller path `S` fits contract path `K`; a `{parameter}` holds exactly one segment. */
+type Fits<K extends string, S extends string> = K extends `${infer KHead}/${infer KTail}`
+  ? S extends `${infer SHead}/${infer STail}`
+    ? SegmentFits<KHead, SHead> extends true
+      ? Fits<KTail, STail>
+      : false
+    : false
+  : S extends `${string}/${string}`
+    ? false
+    : SegmentFits<K, S>
+
+/** The contract path that caller path `S` stands for. */
+type ContractPathOf<M extends HttpMethod, S extends string> = {
+  [K in PathsWith<M>]: Fits<K, S> extends true ? K : never
+}[PathsWith<M>]
+
+/**
+ * Contract paths of `M` that another path of `M` also fits, such as `/photos/uploads` next to
+ * `/photos/{photo_id}`. A caller's path would then stand for two operations. `never` while every
+ * path is unambiguous, which `api.test.ts` checks.
+ */
+export type OverlappingPaths<M extends HttpMethod> = {
+  [K in PathsWith<M>]: [ContractPathOf<M, Concrete<K>>] extends [K] ? never : K
+}[PathsWith<M>]
+
+/** A path the API answers for `M`, as a caller writes it. */
+export type ApiPath<M extends HttpMethod> = Concrete<PathsWith<M>>
+
+type OperationOf<M extends HttpMethod, S extends string> = Operation<ContractPathOf<M, S>, M>
+
+type JsonContent<R> = R extends { content: { 'application/json': infer Body } } ? Body : undefined
+
+/** The JSON body of the success answer of `M` on `S`; `undefined` for `204 No Content`. */
+export type ApiResponse<M extends HttpMethod, S extends string> =
+  OperationOf<M, S> extends { responses: infer Responses }
+    ? {
+        [Code in keyof Responses]: Code extends 200 | 201 | 202 | 204
+          ? JsonContent<Responses[Code]>
+          : never
+      }[keyof Responses]
+    : never
+
+/** The JSON request body of `M` on `S`; `undefined` when the operation takes none. */
+type ApiBody<M extends HttpMethod, S extends string> = JsonContent<
+  NonNullable<OperationOf<M, S>['requestBody']>
+>
+
+/**
+ * The query parameters of `M` on `S`. A value may also be `null`, `undefined` or `''`: such
+ * parameters are left out of the URL, so a filter that is not set can be passed as it is.
+ */
+type ApiQuery<M extends HttpMethod, S extends string> = {
+  [Name in keyof NonNullable<OperationOf<M, S>['parameters']['query']>]?:
+    | NonNullable<OperationOf<M, S>['parameters']['query']>[Name]
+    | ''
+    | null
+}
+
+export type RequestOptions<M extends HttpMethod, S extends string> = {
+  query?: ApiQuery<M, S>
+  headers?: Record<string, string>
+  signal?: AbortSignal
+}
+
+/** The arguments after the path of a method that sends a body. */
+type BodyArgs<M extends HttpMethod, S extends string> = [ApiBody<M, S>] extends [undefined]
+  ? [body?: undefined, options?: RequestOptions<M, S>]
+  : [body: ApiBody<M, S>, options?: RequestOptions<M, S>]
+
+/** What every request carries once its types are checked. */
+type RawOptions = {
+  query?: object
   body?: unknown
   headers?: Record<string, string>
   signal?: AbortSignal
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: the facade takes its paths as plain strings.
-const untyped = api as unknown as Client<any>
-
-function cleanQuery(query: RequestOptions['query']) {
+/** The query without the parameters that are not set (`undefined`, `null` or `''`). */
+function cleanQuery(query: RawOptions['query']) {
   if (!query) return undefined
   const out: Record<string, string | number | boolean> = {}
   for (const [key, value] of Object.entries(query)) {
-    if (value !== undefined && value !== null && value !== '') out[key] = value
+    if (typeof value === 'number' || typeof value === 'boolean') out[key] = value
+    else if (typeof value === 'string' && value !== '') out[key] = value
   }
   return out
 }
 
-/** Sends a request and returns the raw response too (for 304 and headers). */
-export async function apiRequestRaw<T>(
+/**
+ * Sends one request through the transport. `T` is the answer the contract gives for the path,
+ * which the typed wrappers below work out; this is the one place where the API's JSON is taken
+ * to be of that type.
+ */
+async function send<T>(
   method: HttpMethod,
   path: string,
-  options: RequestOptions = {},
+  options: RawOptions,
 ): Promise<{ data: T; response: Response }> {
-  const init = {
+  const result = await transport.request(method, path, {
     params: { query: cleanQuery(options.query) },
     body: options.body,
     headers: options.headers,
     signal: options.signal,
-  }
-  const result = await untyped.request(method, path, init)
+  })
   return { data: result.data as T, response: result.response }
 }
 
-export async function apiRequest<T>(
-  method: HttpMethod,
-  path: string,
-  options: RequestOptions = {},
-): Promise<T> {
-  const { data } = await apiRequestRaw<T>(method, path, options)
+async function sendForData<T>(method: HttpMethod, path: string, options: RawOptions = {}) {
+  const { data } = await send<T>(method, path, options)
   return data
 }
 
-/** Short helpers used by every feature's `queries.ts`. Paths are built with `encodeURIComponent`. */
+/**
+ * Sends a request and returns the raw response too (for `304` and headers). On a `304` the
+ * data is `undefined`.
+ */
+export function apiRequestRaw<M extends HttpMethod, P extends ApiPath<M>>(
+  method: M,
+  path: P,
+  options: RequestOptions<M, P> = {},
+) {
+  return send<ApiResponse<M, P>>(method, path, options)
+}
+
+/**
+ * Short helpers used by every feature's `queries.ts`. Build paths as template literals with
+ * `seg()` for each parameter: the path, the query, the body and the answer are all checked
+ * against the contract.
+ */
 export const http = {
-  get: <T>(path: string, options?: Omit<RequestOptions, 'body'>) =>
-    apiRequest<T>('get', path, options),
-  post: <T = void>(path: string, body?: unknown, options?: RequestOptions) =>
-    apiRequest<T>('post', path, { ...options, body }),
-  put: <T = void>(path: string, body?: unknown, options?: RequestOptions) =>
-    apiRequest<T>('put', path, { ...options, body }),
-  patch: <T>(path: string, body?: unknown, options?: RequestOptions) =>
-    apiRequest<T>('patch', path, { ...options, body }),
-  delete: <T = void>(path: string, options?: RequestOptions) =>
-    apiRequest<T>('delete', path, options),
+  get: <P extends ApiPath<'get'>>(path: P, options?: RequestOptions<'get', P>) =>
+    sendForData<ApiResponse<'get', P>>('get', path, options),
+  post: <P extends ApiPath<'post'>>(path: P, ...[body, options]: BodyArgs<'post', P>) =>
+    sendForData<ApiResponse<'post', P>>('post', path, { ...options, body }),
+  put: <P extends ApiPath<'put'>>(path: P, ...[body, options]: BodyArgs<'put', P>) =>
+    sendForData<ApiResponse<'put', P>>('put', path, { ...options, body }),
+  patch: <P extends ApiPath<'patch'>>(path: P, ...[body, options]: BodyArgs<'patch', P>) =>
+    sendForData<ApiResponse<'patch', P>>('patch', path, { ...options, body }),
+  delete: <P extends ApiPath<'delete'>>(path: P, options?: RequestOptions<'delete', P>) =>
+    sendForData<ApiResponse<'delete', P>>('delete', path, options),
 }
 
 /** Encodes one path segment. */

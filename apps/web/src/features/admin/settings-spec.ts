@@ -108,6 +108,15 @@ function validateInt(
   return null
 }
 
+/**
+ * The English text of an `announcement.banner` value, `null` when no banner is set. Setting
+ * values are any JSON (18 section 7.1), so the value is read rather than assumed.
+ */
+export function bannerText(value: unknown): string | null {
+  if (typeof value !== 'object' || value === null || !('text_en' in value)) return null
+  return typeof value.text_en === 'string' && value.text_en ? value.text_en : null
+}
+
 function validateBanner(value: unknown): SettingProblem | null {
   if (value === null) return null
   if (typeof value !== 'object') return { code: 'invalid' }

@@ -1,13 +1,7 @@
 import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { putWithRetries } from '~/features/photos/queries'
 import { http, seg } from '~/lib/api'
-import type {
-  SelfieGesture,
-  UploadTicket,
-  VerificationRequest,
-  VerificationSubmitBody,
-  Verifications,
-} from '~/lib/api-types'
+import type { VerificationSubmitBody } from '~/lib/api-types'
 import { UploadError } from '~/lib/image'
 import { invalidateMe, qk, STALE } from '~/lib/query'
 
@@ -22,7 +16,7 @@ export type VerificationSlot = 'front' | 'back' | 'selfie'
 export function useVerifications() {
   return useQuery({
     queryKey: qk.verifications(),
-    queryFn: ({ signal }) => http.get<Verifications>('/v1/me/verifications', { signal }),
+    queryFn: ({ signal }) => http.get('/v1/me/verifications', { signal }),
     staleTime: STALE.none,
     refetchOnMount: 'always',
   })
@@ -32,8 +26,7 @@ export function useVerifications() {
 export function useSelfieChallenge() {
   return useQuery({
     queryKey: qk.selfieChallenge(),
-    queryFn: ({ signal }) =>
-      http.get<{ gesture: SelfieGesture }>('/v1/me/verifications/selfie-challenge', { signal }),
+    queryFn: ({ signal }) => http.get('/v1/me/verifications/selfie-challenge', { signal }),
     select: (data) => data.gesture,
     staleTime: STALE.none,
     refetchOnMount: 'always',
@@ -75,7 +68,7 @@ export async function uploadVerificationImage({
   onProgress,
   signal,
 }: UploadImageInput): Promise<string> {
-  const ticket = await http.post<UploadTicket>(
+  const ticket = await http.post(
     '/v1/me/verifications/uploads',
     { slot, content_type: blob.type, size_bytes: blob.size },
     { signal },
@@ -96,8 +89,7 @@ export function useUploadVerificationImage() {
 export function useSubmitVerification() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: VerificationSubmitBody) =>
-      http.post<VerificationRequest>('/v1/me/verifications', body),
+    mutationFn: (body: VerificationSubmitBody) => http.post('/v1/me/verifications', body),
     meta: { handles: SCREEN_HANDLED },
     onSuccess: () => invalidateVerificationData(queryClient),
   })

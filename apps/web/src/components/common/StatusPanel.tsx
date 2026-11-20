@@ -5,7 +5,6 @@ import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '~/components/ui/button'
 import { http } from '~/lib/api'
-import type { Me } from '~/lib/api-types'
 import { setMe } from '~/lib/query'
 import { cn } from '~/lib/utils'
 import { useOnlineStatus } from './OfflineBanner'
@@ -21,7 +20,7 @@ const NOT_SCREEN_DATA: ReadonlySet<unknown> = new Set(['me', 'reference'])
 export function useResumeProfile() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: () => http.post<Me>('/v1/me/profile/resume'),
+    mutationFn: () => http.post('/v1/me/profile/resume'),
     onSuccess: (me) => {
       setMe(queryClient, me)
       void queryClient.invalidateQueries({

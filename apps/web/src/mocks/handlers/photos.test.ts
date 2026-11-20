@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { ApiError, http } from '~/lib/api'
-import type { OwnPhoto, UploadTicket, VerificationRequest, Verifications } from '~/lib/api-types'
+import type { OwnPhoto } from '~/lib/api-types'
 import { todayInKarachi } from '~/lib/format'
 import { uploadWithProgress } from '~/lib/image'
 import { db } from '../db'
@@ -24,17 +24,17 @@ function seed(photos: OwnPhoto[]) {
 }
 
 async function uploadAndConfirm(size = 1000): Promise<OwnPhoto> {
-  const ticket = await http.post<UploadTicket>('/v1/me/photos/uploads', {
+  const ticket = await http.post('/v1/me/photos/uploads', {
     content_type: 'image/jpeg',
     size_bytes: size,
   })
   await uploadWithProgress(ticket.upload_url, new Blob([new Uint8Array(size)]), ticket.headers)
-  return http.post<OwnPhoto>('/v1/me/photos', { upload_key: ticket.upload_key })
+  return http.post('/v1/me/photos', { upload_key: ticket.upload_key })
 }
 
 describe('photo handlers (15 section 8)', () => {
   it('issues a ticket for the mock storage, signed for the content type', async () => {
-    const ticket = await http.post<UploadTicket>('/v1/me/photos/uploads', {
+    const ticket = await http.post('/v1/me/photos/uploads', {
       content_type: 'image/webp',
       size_bytes: 2000,
     })
@@ -78,7 +78,7 @@ describe('photo handlers (15 section 8)', () => {
     seed([])
     db.me.profile.photo = null
     photoMockState().processingMs = 0
-    const ticket = await http.post<UploadTicket>('/v1/me/photos/uploads', {
+    const ticket = await http.post('/v1/me/photos/uploads', {
       content_type: 'image/jpeg',
       size_bytes: 100,
     })
@@ -90,14 +90,14 @@ describe('photo handlers (15 section 8)', () => {
     })
     await uploadWithProgress(ticket.upload_url, new Blob([new Uint8Array(100)]), ticket.headers)
     photoMockState().processingMs = 60_000
-    const photo = await http.post<OwnPhoto>('/v1/me/photos', { upload_key: ticket.upload_key })
+    const photo = await http.post('/v1/me/photos', { upload_key: ticket.upload_key })
     expect(photo).toMatchObject({ status: 'processing', thumb_url: null, is_primary: false })
-    const again = await http.post<OwnPhoto>('/v1/me/photos', { upload_key: ticket.upload_key })
+    const again = await http.post('/v1/me/photos', { upload_key: ticket.upload_key })
     expect(again.id).toBe(photo.id)
 
     const job = photoMockState().jobs.get(photo.id)
     if (job) job.readyAt = Date.now() - 1
-    const [settled] = await http.get<OwnPhoto[]>('/v1/me/photos')
+    const [settled] = await http.get('/v1/me/photos')
     expect(settled).toMatchObject({ id: photo.id, status: 'approved', is_primary: true })
     // The profile and Me follow the list.
     expect(db.ownProfile.photos.map((entry) => entry.id)).toEqual([photo.id])
@@ -109,7 +109,7 @@ describe('photo handlers (15 section 8)', () => {
     photoMockState().processingMs = 0
     photoMockState().outcome = 'rejected'
     const photo = await uploadAndConfirm()
-    const list = await http.get<OwnPhoto[]>('/v1/me/photos')
+    const list = await http.get('/v1/me/photos')
     expect(list.find((entry) => entry.id === photo.id)).toMatchObject({
       status: 'rejected',
       rejection_reason: 'low_quality',
@@ -128,7 +128,7 @@ describe('photo handlers (15 section 8)', () => {
     const refused = await failure(http.patch('/v1/me/photos/c', { is_primary: true }))
     expect(refused).toMatchObject({ status: 409, code: 'invalid_state' })
 
-    const list = await http.patch<OwnPhoto[]>('/v1/me/photos/b', { is_primary: true })
+    const list = await http.patch('/v1/me/photos/b', { is_primary: true })
     expect(list.filter((entry) => entry.is_primary).map((entry) => entry.id)).toEqual(['b'])
     expect(db.ownProfile.verification.photo_verified).toBe(false)
     expect(db.me.profile.badges).not.toContain('photo_verified')
@@ -142,7 +142,7 @@ describe('photo handlers (15 section 8)', () => {
     expect(await failure(http.put('/v1/me/photos/order', { photo_ids: ['a'] }))).toMatchObject({
       code: 'validation_failed',
     })
-    const list = await http.put<OwnPhoto[]>('/v1/me/photos/order', { photo_ids: ['b', 'a'] })
+    const list = await http.put('/v1/me/photos/order', { photo_ids: ['b', 'a'] })
     expect(list.map((entry) => [entry.id, entry.position, entry.is_primary])).toEqual([
       ['b', 0, false],
       ['a', 1, true],
@@ -167,7 +167,7 @@ describe('photo handlers (15 section 8)', () => {
 
 describe('verification handlers (15 section 9)', () => {
   async function verificationKey(slot: 'front' | 'back' | 'selfie') {
-    const ticket = await http.post<UploadTicket>('/v1/me/verifications/uploads', {
+    const ticket = await http.post('/v1/me/verifications/uploads', {
       slot,
       content_type: 'image/jpeg',
       size_bytes: 500,
@@ -178,7 +178,7 @@ describe('verification handlers (15 section 9)', () => {
   }
 
   it('derives the gesture from the profile id and the date', async () => {
-    const { gesture } = await http.get<{ gesture: string }>('/v1/me/verifications/selfie-challenge')
+    const { gesture } = await http.get('/v1/me/verifications/selfie-challenge')
     expect(gesture).toBe(await selfieGestureFor(db.ownProfile.id, todayInKarachi()))
     expect(await selfieGestureFor('x', '2026-11-20')).toBe(
       await selfieGestureFor('x', '2026-11-20'),
@@ -186,7 +186,7 @@ describe('verification handlers (15 section 9)', () => {
   })
 
   it('accepts a selfie once, refuses a wrong gesture and requires an approved photo', async () => {
-    const { gesture } = await http.get<{ gesture: string }>('/v1/me/verifications/selfie-challenge')
+    const { gesture } = await http.get('/v1/me/verifications/selfie-challenge')
     const others = ['peace_sign', 'thumbs_up', 'open_palm', 'hand_on_head']
     const yesterday = await selfieGestureFor(
       db.ownProfile.id,
@@ -204,7 +204,7 @@ describe('verification handlers (15 section 9)', () => {
       expect.objectContaining({ field: 'gesture', code: 'mismatch' }),
     ])
 
-    const created = await http.post<VerificationRequest>('/v1/me/verifications', {
+    const created = await http.post('/v1/me/verifications', {
       kind: 'selfie',
       selfie_key: await verificationKey('selfie'),
       gesture,
@@ -228,7 +228,7 @@ describe('verification handlers (15 section 9)', () => {
   })
 
   it('checks the identity, the back of the card, and cancels back to unverified', async () => {
-    const { gesture } = await http.get<{ gesture: string }>('/v1/me/verifications/selfie-challenge')
+    const { gesture } = await http.get('/v1/me/verifications/selfie-challenge')
     const front = await verificationKey('front')
     const selfie = await verificationKey('selfie')
     const noBack = await failure(
@@ -244,19 +244,19 @@ describe('verification handlers (15 section 9)', () => {
       expect.objectContaining({ field: 'back_key', code: 'required' }),
     ])
 
-    const request = await http.post<VerificationRequest>('/v1/me/verifications', {
+    const request = await http.post('/v1/me/verifications', {
       kind: 'id_document',
       front_key: front,
       back_key: await verificationKey('back'),
       selfie_key: selfie,
       gesture,
     })
-    const state = await http.get<Verifications>('/v1/me/verifications')
+    const state = await http.get('/v1/me/verifications')
     expect(state.identity?.status).toBe('pending')
     expect(state.requests[0]?.id).toBe(request.id)
 
     await http.delete(`/v1/me/verifications/${request.id}`)
-    const after = await http.get<Verifications>('/v1/me/verifications')
+    const after = await http.get('/v1/me/verifications')
     expect(after.identity?.status).toBe('unverified')
     expect(after.requests[0]?.status).toBe('cancelled')
 

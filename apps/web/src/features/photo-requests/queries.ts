@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import type { InfiniteListQuery } from '~/components/common/InfiniteList'
 import { http, seg } from '~/lib/api'
-import type { Page, PhotoAccessEntry } from '~/lib/api-types'
+import type { PhotoAccessEntry } from '~/lib/api-types'
 import { invalidateMe, nextCursor, qk, removeFromPages, STALE } from '~/lib/query'
 
 /**
@@ -26,7 +26,7 @@ export function usePhotoAccess(box: PhotoAccessBox, status: PhotoAccessStatus) {
   return useInfiniteQuery({
     queryKey: qk.photoAccess(box, status),
     queryFn: ({ pageParam, signal }) =>
-      http.get<Page<PhotoAccessEntry>>('/v1/me/photo-access', {
+      http.get('/v1/me/photo-access', {
         query: { box, status, limit: 20, cursor: pageParam },
         signal,
       }),

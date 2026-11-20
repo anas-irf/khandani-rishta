@@ -8,7 +8,7 @@ import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { NativeSelect, NativeSelectOption } from '~/components/ui/native-select'
 import { http } from '~/lib/api'
-import type { CityRef, Region } from '~/lib/api-types'
+import type { CityRef } from '~/lib/api-types'
 import { useFieldControl } from '~/lib/form-context'
 import { qk, STALE } from '~/lib/query'
 import { type Option, useCitySearch, useOptions } from '~/lib/reference'
@@ -26,7 +26,7 @@ export function useRegionOptions(countryCodes: string[]): Option[] {
     queries: countryCodes.map((country) => ({
       queryKey: qk.regions(country),
       queryFn: ({ signal }: { signal: AbortSignal }) =>
-        http.get<{ items: Region[] }>('/v1/reference/regions', {
+        http.get('/v1/reference/regions', {
           query: { country_code: country },
           signal,
         }),
@@ -50,7 +50,7 @@ function useCityNames(countryCodes: string[]) {
     queries: countryCodes.map((country) => ({
       queryKey: qk.cities({ country_code: country, region_id: null, q: undefined }),
       queryFn: ({ signal }: { signal: AbortSignal }) =>
-        http.get<{ items: CityRef[] }>('/v1/reference/cities', {
+        http.get('/v1/reference/cities', {
           query: { country_code: country, limit: 50 },
           signal,
         }),

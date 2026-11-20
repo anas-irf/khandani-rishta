@@ -1,15 +1,21 @@
+import type { components } from '@khandani/api-contract'
 import { HttpResponse, http as mswHttp } from 'msw'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, expectTypeOf, it, vi } from 'vitest'
+import type { AdminProfile } from '~/features/admin/types'
 import { apiUrl } from '~/mocks/http'
 import { server } from '~/mocks/server'
 import {
   ApiError,
+  type ApiPath,
+  type ApiResponse,
   apiRequestRaw,
   http,
   isGateError,
+  type OverlappingPaths,
   setTokenGetter,
   setUnauthenticatedHandler,
 } from './api'
+import type { OwnProfile, ProfileDetail } from './api-types'
 
 afterEach(() => {
   setTokenGetter(async () => 'test-token')
@@ -167,10 +173,10 @@ describe('API client middleware (17 section 6.1)', () => {
         return HttpResponse.json({ items: [], next_cursor: null })
       }),
     )
-    await http.get('/v1/interests', { query: { box: 'sent', cursor: undefined, q: '' } })
+    await http.get('/v1/interests', { query: { box: 'sent', cursor: undefined, status: '' } })
     expect(url).toContain('box=sent')
     expect(url).not.toContain('cursor')
-    expect(url).not.toContain('q=')
+    expect(url).not.toContain('status=')
   })
 
   it('returns undefined for 204 responses', async () => {
@@ -194,5 +200,35 @@ describe('isGateError', () => {
   it('ignores other codes and non-API errors', () => {
     expect(isGateError(new ApiError({ status: 403, code: 'forbidden', message: '' }))).toBe(false)
     expect(isGateError(new Error('x'))).toBe(false)
+  })
+})
+
+// The checks below run in the compiler (`pnpm typecheck`); `expectTypeOf` does nothing at run
+// time.
+describe('http paths typed from the contract', () => {
+  it('finds the operation of each path a caller writes', () => {
+    expectTypeOf<ApiResponse<'get', '/v1/me/profile'>>().toEqualTypeOf<OwnProfile>()
+    expectTypeOf<ApiResponse<'get', `/v1/profiles/${string}`>>().toEqualTypeOf<ProfileDetail>()
+    expectTypeOf<ApiResponse<'get', `/v1/admin/profiles/${string}`>>().toEqualTypeOf<AdminProfile>()
+    // Two handlers named `mark_read` once gave the notifications route the chat's body.
+    expectTypeOf<Parameters<typeof http.post<'/v1/notifications/read'>>[1]>().toEqualTypeOf<
+      components['schemas']['ReadBody']
+    >()
+    expectTypeOf<Parameters<typeof http.post<`/v1/connections/${string}/read`>>[1]>().toEqualTypeOf<
+      components['schemas']['ChatReadBody']
+    >()
+  })
+
+  it('accepts only paths of the contract', () => {
+    expectTypeOf<Extract<'/v1/admin/nope', ApiPath<'get'>>>().toBeNever()
+    expectTypeOf<Extract<'/v1/admin/overview', ApiPath<'post'>>>().toBeNever()
+  })
+
+  it('has no path that a second path of the same method also fits', () => {
+    expectTypeOf<OverlappingPaths<'get'>>().toBeNever()
+    expectTypeOf<OverlappingPaths<'post'>>().toBeNever()
+    expectTypeOf<OverlappingPaths<'put'>>().toBeNever()
+    expectTypeOf<OverlappingPaths<'patch'>>().toBeNever()
+    expectTypeOf<OverlappingPaths<'delete'>>().toBeNever()
   })
 })

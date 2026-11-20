@@ -19,7 +19,7 @@ export function useNotifications() {
   return useInfiniteQuery({
     queryKey: qk.notifications(),
     queryFn: ({ pageParam, signal }) =>
-      http.get<Page<NotificationItem>>('/v1/notifications', {
+      http.get('/v1/notifications', {
         query: { limit: 20, cursor: pageParam },
         signal,
       }),

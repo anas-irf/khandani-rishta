@@ -287,14 +287,19 @@ function ProfileView({ data }: { data: AdminProfile }) {
                     .map((code) => label('marital_status', code))
                     .join(', '),
                 },
-                {
-                  label: t('profile.pref.discovery'),
-                  value: t(`profile.privacy.${data.privacy.discovery_visibility}`),
-                },
-                {
-                  label: t('profile.pref.photo_visibility'),
-                  value: label('photo_visibility', data.privacy.photo_visibility),
-                },
+                // `privacy` is `null` only once the account was purged.
+                ...(data.privacy
+                  ? [
+                      {
+                        label: t('profile.pref.discovery'),
+                        value: t(`profile.privacy.${data.privacy.discovery_visibility}`),
+                      },
+                      {
+                        label: t('profile.pref.photo_visibility'),
+                        value: label('photo_visibility', data.privacy.photo_visibility),
+                      },
+                    ]
+                  : []),
               ]}
             />
           ) : null}

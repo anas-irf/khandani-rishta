@@ -18,7 +18,8 @@ import { REPORT_STATUSES, reportsSearch } from './search-schemas'
 import { useQueueFocusNavigation } from './shortcuts'
 import type { AdminReportListItem } from './types'
 
-export function PriorityBadge({ priority }: { priority: 1 | 2 | 3 }) {
+/** `priority` runs from 1 (most urgent) to 3 (13 section 6.5). */
+export function PriorityBadge({ priority }: { priority: AdminReportListItem['priority'] }) {
   const { t } = useTranslation('admin')
   return (
     <Badge variant={priority === 1 ? 'danger' : priority === 2 ? 'warning' : 'secondary'}>

@@ -8,8 +8,9 @@ import { PageHeader } from '~/components/common/PageHeader'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '~/components/ui/native-select'
+import { AUDIT_TARGET_TYPES, isOneOf } from '~/lib/api-enums'
 import { RequireAdmin } from './access'
-import { AUDIT_ACTIONS, AUDIT_TARGET_TYPES } from './audit-codes'
+import { AUDIT_ACTIONS } from './audit-codes'
 import { AdminList, type Column } from './components/DataTable'
 import { FormField } from './components/FormField'
 import { auditColumns } from './components/Tables'
@@ -108,7 +109,12 @@ function AuditLog() {
             <NativeSelect
               {...props}
               value={filters.target_type ?? ''}
-              onChange={(event) => setFilters({ target_type: event.target.value || undefined })}
+              onChange={(event) => {
+                const value = event.target.value
+                setFilters({
+                  target_type: isOneOf(AUDIT_TARGET_TYPES, value) ? value : undefined,
+                })
+              }}
             >
               <NativeSelectOption value="">{t('audit.any_target')}</NativeSelectOption>
               {AUDIT_TARGET_TYPES.map((type) => (

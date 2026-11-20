@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { http, seg } from '~/lib/api'
-import type { Me, OwnProfile, ProfileDetail, SectionBodies } from '~/lib/api-types'
+import type { SectionBodies } from '~/lib/api-types'
+import type { OnboardingStep } from '~/lib/gate'
 import { invalidateMe, qk, STALE, setMe } from '~/lib/query'
 
 /**
@@ -15,7 +16,7 @@ export type EditableSection = Exclude<keyof SectionBodies, 'contacts'>
 export function useOwnProfile() {
   return useQuery({
     queryKey: qk.ownProfile(),
-    queryFn: ({ signal }) => http.get<OwnProfile>('/v1/me/profile', { signal }),
+    queryFn: ({ signal }) => http.get('/v1/me/profile', { signal }),
     staleTime: STALE.none,
     refetchOnMount: 'always',
   })
@@ -26,7 +27,7 @@ export function useSaveSection<S extends EditableSection>(section: S) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (body: SectionBodies[S]) =>
-      http.put<OwnProfile>(`/v1/me/profile/sections/${seg(section)}`, body),
+      http.put(`/v1/me/profile/sections/${seg(section)}`, body),
     // The form shows network and server failures inline with "Try again" (08 section 2.5).
     meta: { handles: ['internal_error', 'service_unavailable', 'network_error'] },
     onSuccess: (profile) => {
@@ -42,7 +43,7 @@ export function useSaveSection<S extends EditableSection>(section: S) {
 export function useOnboardingContinue() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (step: string) => http.post<Me>('/v1/me/onboarding/continue', { step }),
+    mutationFn: (step: OnboardingStep) => http.post('/v1/me/onboarding/continue', { step }),
     meta: { handles: ['invalid_state', 'internal_error', 'service_unavailable', 'network_error'] },
     onSuccess: (me) => setMe(queryClient, me),
   })
@@ -52,7 +53,7 @@ export function useOnboardingContinue() {
 export function useOnboardingComplete() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: () => http.post<Me>('/v1/me/onboarding/complete'),
+    mutationFn: () => http.post('/v1/me/onboarding/complete'),
     meta: { handles: ['invalid_state', 'internal_error', 'service_unavailable', 'network_error'] },
     onSuccess: (me) => setMe(queryClient, me),
   })
@@ -62,7 +63,7 @@ export function useOnboardingComplete() {
 export function useResubmitProfile() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: () => http.post<Me>('/v1/me/profile/resubmit'),
+    mutationFn: () => http.post('/v1/me/profile/resubmit'),
     meta: { handles: ['invalid_state'] },
     onSuccess: (me) => setMe(queryClient, me),
   })
@@ -72,8 +73,7 @@ export function useResubmitProfile() {
 export function useProfilePreview(as: 'member' | 'connection') {
   return useQuery({
     queryKey: qk.ownProfilePreview(as),
-    queryFn: ({ signal }) =>
-      http.get<ProfileDetail>('/v1/me/profile/preview', { query: { as }, signal }),
+    queryFn: ({ signal }) => http.get('/v1/me/profile/preview', { query: { as }, signal }),
     staleTime: STALE.none,
     refetchOnMount: 'always',
   })

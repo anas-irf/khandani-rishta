@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { VERIFICATION_REJECTION_REASONS } from '~/lib/api-enums'
 import { boundedInt, boundedText } from './forms'
 
 /**
@@ -26,7 +27,7 @@ export const resolveReportSchema = z.object({
 export const textRejectSchema = z.object({ note: boundedText(0, 300) })
 
 export const verificationRejectSchema = z.object({
-  reason: z.string().min(1, { error: 'required' }),
+  reason: z.enum(VERIFICATION_REJECTION_REASONS, { error: 'required' }),
   note: boundedText(0, 1000),
 })
 

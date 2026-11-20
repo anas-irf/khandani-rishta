@@ -26,16 +26,3 @@ export const AUDIT_ACTIONS = [
   'release.create',
   'announcement.send',
 ] as const
-
-/** The `target_type` values of the audit log (18 section 8.3, 04 section 9.4). */
-export const AUDIT_TARGET_TYPES = [
-  'profile',
-  'photo',
-  'verification_request',
-  'report',
-  'user',
-  'caste',
-  'caste_suggestion',
-  'app_setting',
-  'app_release',
-] as const

@@ -983,3 +983,42 @@ async fn also_block_applies_the_block_in_the_same_transaction(db: PgPool) {
         1
     );
 }
+
+// -------------------------------------------------------------------------------------------
+// The contract
+// -------------------------------------------------------------------------------------------
+
+#[test]
+fn the_spec_describes_the_route_and_the_reason_codes() {
+    let spec: Value = serde_json::from_str(&crate::openapi::spec_json().unwrap()).unwrap();
+    assert!(spec["paths"]["/v1/reports"]["post"].is_object());
+    let body = &spec["components"]["schemas"]["FileReportBody"];
+    let mut properties: Vec<&str> = body["properties"]
+        .as_object()
+        .unwrap()
+        .keys()
+        .map(String::as_str)
+        .collect();
+    properties.sort_unstable();
+    assert_eq!(
+        properties,
+        [
+            "also_block",
+            "details",
+            "message_id",
+            "photo_id",
+            "reason",
+            "subject_type",
+            "target_profile_id"
+        ]
+    );
+    // The reason is documented as the `report_reason` enumeration.
+    assert!(
+        body["properties"]["reason"]["$ref"]
+            .as_str()
+            .unwrap()
+            .ends_with("/ReportReason"),
+        "{}",
+        body["properties"]["reason"]
+    );
+}

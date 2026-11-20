@@ -953,3 +953,33 @@ async fn counters_and_notifications_are_pushed_to_the_right_member(db: PgPool) {
         0
     );
 }
+
+// -------------------------------------------------------------------------------------------
+// The contract
+// -------------------------------------------------------------------------------------------
+
+#[test]
+fn the_spec_describes_every_route_and_the_box_parameter() {
+    let spec: Value = serde_json::from_str(&crate::openapi::spec_json().unwrap()).unwrap();
+    for (path, method) in [
+        ("/v1/profiles/{profile_id}/photo-access", "post"),
+        ("/v1/me/photo-access", "get"),
+        ("/v1/me/photo-access/{id}/grant", "post"),
+        ("/v1/me/photo-access/{id}/deny", "post"),
+        ("/v1/me/photo-access/grants/{profile_id}", "put"),
+        ("/v1/me/photo-access/grants/{profile_id}", "delete"),
+    ] {
+        assert!(
+            spec["paths"][path][method].is_object(),
+            "{method} {path} is missing"
+        );
+    }
+    let mut parameters: Vec<&str> = spec["paths"]["/v1/me/photo-access"]["get"]["parameters"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|parameter| parameter["name"].as_str().unwrap())
+        .collect();
+    parameters.sort_unstable();
+    assert_eq!(parameters, ["box", "cursor", "limit", "status"]);
+}

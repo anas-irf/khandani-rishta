@@ -1,12 +1,109 @@
 @import "tailwindcss" source('../');
+@import "@fontsource-variable/inter";
+
+/*
+ * Design tokens (specs/17-web-app.md section 9.3). The Android app uses the same values.
+ * Components use the Tailwind names (bg-primary, text-muted-foreground, border-border, ...)
+ * and never raw colours, so a token change applies everywhere.
+ */
+@theme {
+  --color-primary: #0f766e;
+  --color-primary-hover: #115e59;
+  --color-primary-soft: #ccfbf1;
+  --color-primary-foreground: #ffffff;
+
+  --color-accent: #b45309;
+  --color-accent-soft: #fef3c7;
+  --color-accent-foreground: #ffffff;
+
+  --color-success: #15803d;
+  --color-success-soft: #dcfce7;
+  --color-warning: #b45309;
+  --color-warning-soft: #fef3c7;
+  --color-danger: #b91c1c;
+  --color-danger-hover: #991b1b;
+  --color-danger-soft: #fee2e2;
+  --color-danger-foreground: #ffffff;
+
+  --color-background: #fafaf9;
+  --color-surface: #ffffff;
+  --color-foreground: #1c1917;
+  --color-muted: #f5f5f4;
+  --color-muted-foreground: #57534e;
+  --color-border: #e7e5e4;
+  /* Input borders need 3:1 against white (WCAG 1.4.11). */
+  --color-input: #78716c;
+  --color-ring: #0f766e;
+
+  --radius-card: 12px;
+  --radius-input: 8px;
+
+  --font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-urdu: "Noto Nastaliq Urdu", serif;
+
+  --breakpoint-wide: 768px;
+}
 
 @layer base {
   html {
-    color-scheme: light dark;
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
   }
 
   html,
   body {
-    @apply bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100;
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.5;
   }
+
+  html[lang="ur"] body {
+    font-family: var(--font-urdu), var(--font-sans);
+  }
+
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-border);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
+  /* Member photos are a deterrent-only protection (17 section 11). */
+  img[data-member-photo] {
+    -webkit-user-drag: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  /* Reduced motion must win over every component's own animation (20 section 7). */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      /* biome-ignore lint/complexity/noImportantStyles: has to override component styles */
+      animation-duration: 0.01ms !important;
+      /* biome-ignore lint/complexity/noImportantStyles: has to override component styles */
+      animation-iteration-count: 1 !important;
+      /* biome-ignore lint/complexity/noImportantStyles: has to override component styles */
+      transition-duration: 0.01ms !important;
+      /* biome-ignore lint/complexity/noImportantStyles: has to override component styles */
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@utility container-app {
+  width: 100%;
+  max-width: 1120px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+@utility skeleton {
+  @apply animate-pulse rounded-md bg-muted;
 }

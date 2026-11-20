@@ -1,0 +1,41 @@
+/** The action codes written to `admin_audit_log` (18 section 8.3). */
+export const AUDIT_ACTIONS = [
+  'profile.approve',
+  'profile.request_changes',
+  'profile.locked_fields_change',
+  'photo.approve',
+  'photo.reject',
+  'text.approve',
+  'text.reject',
+  'verification.view',
+  'verification.approve',
+  'verification.reject',
+  'report.claim',
+  'report.resolve',
+  'user.warn',
+  'user.suspend',
+  'user.unsuspend',
+  'user.ban',
+  'user.unban',
+  'user.role_change',
+  'caste.create',
+  'caste.update',
+  'caste_suggestion.promote',
+  'caste_suggestion.reject',
+  'setting.update',
+  'release.create',
+  'announcement.send',
+] as const
+
+/** The `target_type` values of the audit log (18 section 8.3, 04 section 9.4). */
+export const AUDIT_TARGET_TYPES = [
+  'profile',
+  'photo',
+  'verification_request',
+  'report',
+  'user',
+  'caste',
+  'caste_suggestion',
+  'app_setting',
+  'app_release',
+] as const

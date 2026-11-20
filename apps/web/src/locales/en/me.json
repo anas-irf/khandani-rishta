@@ -1,0 +1,228 @@
+{
+  "profile": {
+    "title": "My profile",
+    "settings": "Settings",
+    "loading": "Loading your profile",
+    "photo_open": "Manage photos",
+    "photo_none": "No photo yet",
+    "age_city": "{{age}} years, {{city}}",
+    "code": {
+      "label": "Profile code",
+      "help": "Your profile code. Give it to a family so they can find this profile.",
+      "copy": "Copy link",
+      "copy_label": "Copy the link to profile {{code}}",
+      "copied": "Profile link copied.",
+      "copy_failed": "Could not copy the link. The profile code is {{code}}."
+    },
+    "menu": {
+      "label": "More",
+      "shortlist": "Shortlist",
+      "visitors": "Who viewed me",
+      "photo_requests": "Photo requests",
+      "photo_requests_count": "Photo requests, {{count}} new",
+      "settings": "Settings"
+    },
+    "banner": {
+      "paused": "The profile is paused. Members cannot find it. Your connections can still chat with you.",
+      "paused_action": "Resume",
+      "resumed": "The profile is live again.",
+      "closed": "The profile is closed. Members cannot find it and new messages cannot be sent.",
+      "closed_action": "Reopen",
+      "pending_review": "The profile is being reviewed. This usually takes less than a day. You can keep improving it in the meantime.",
+      "changes_requested": "Changes are needed before the profile can go live:",
+      "resubmit": "Resubmit for review",
+      "resubmitted": "The profile is back in review."
+    },
+    "moderation": {
+      "about_me": "About me",
+      "about_family": "About the family",
+      "partner_notes": "Partner notes",
+      "pending": "Under review. Other members will see this text once it is approved.",
+      "rejected": "Not approved. This text is hidden from other members. Please edit it.",
+      "fix": "Edit {{text}}"
+    },
+    "completeness": {
+      "line": "The profile is {{value}}% complete",
+      "hints": "What to add next",
+      "core": "Finish the required details",
+      "photo": "Add a photo",
+      "more_photos": "Add more photos (3 or more work best)",
+      "about_me": "Write a few lines about yourself (100 characters or more)",
+      "family": "Add family details",
+      "education_details": "Add the field of study and degree",
+      "career_details": "Add the profession",
+      "income": "Add the monthly income (kept private by default)",
+      "religious_practice": "Add religious practice",
+      "plans": "Add plans after marriage",
+      "relocation": "Say whether you would relocate",
+      "hobbies": "Choose at least 3 hobbies",
+      "partner_preferences": "Set your partner preferences",
+      "identity": "Add the identity number",
+      "id_verified": "Verify your identity",
+      "photo_verified": "Verify your photo with a selfie"
+    },
+    "preview_button": "See how others see this profile",
+    "not_added": "Not added yet",
+    "actions": {
+      "manage": "Manage",
+      "edit": "Edit",
+      "add": "Add",
+      "open": "Open",
+      "named": "{{action}}: {{title}}"
+    },
+    "cards": {
+      "photos": "Photos",
+      "basics": "Basics",
+      "community": "Religion and community",
+      "location": "Location",
+      "education_career": "Education and career",
+      "family": "Family",
+      "lifestyle": "Faith, lifestyle and about",
+      "preferences": "Looking for",
+      "verification": "Verification",
+      "contacts": "Contact details",
+      "account_for": "Profile managed by",
+      "privacy": "Privacy"
+    },
+    "summary": {
+      "photo_count_one": "{{count}} photo",
+      "photo_count_other": "{{count}} photos",
+      "photo_visibility": "Who can see them: {{label}}",
+      "photo_thumb": "Photo {{position}}",
+      "age": "{{age}} years",
+      "parents": "Father: {{father}}. Mother: {{mother}}.",
+      "father": "Father: {{value}}",
+      "mother": "Mother: {{value}}",
+      "siblings": "Brothers: {{brothers}}, sisters: {{sisters}}",
+      "age_range": "Age {{min}} to {{max}}",
+      "must_haves_one": "{{count}} must-have",
+      "must_haves_other": "{{count}} must-haves",
+      "must_haves_none": "No must-haves",
+      "id": "Identity document: {{state}}",
+      "photo_check": "Photo check: {{state}}",
+      "phone": "Phone number: {{state}}",
+      "state_verified": "Verified",
+      "state_pending": "Under review",
+      "state_not_verified": "Not verified yet",
+      "state_confirmed": "Confirmed",
+      "state_not_confirmed": "Not confirmed",
+      "contacts_added": "Added",
+      "manager": "{{label}}: {{name}}",
+      "photo_privacy": "Photos: {{label}}",
+      "name_display": "Name shown as: {{label}}"
+    }
+  },
+  "preview": {
+    "title": "Preview",
+    "switch_label": "See the profile as",
+    "member": "A member",
+    "connection": "A connection",
+    "as": "Preview as: {{position}}",
+    "not_visible": "The profile is not visible to members right now ({{status}}).",
+    "banner": "This is a preview. Other members see the buttons to send an interest here.",
+    "hidden_until_approved": "Hidden until approved",
+    "hidden_text": "{{text}}: hidden until approved",
+    "close": "Close the preview",
+    "loading": "Loading the preview"
+  },
+  "status_label": {
+    "draft": "not finished",
+    "pending_review": "being reviewed",
+    "changes_requested": "changes needed",
+    "active": "live",
+    "paused": "paused",
+    "closed": "closed",
+    "suspended": "suspended"
+  },
+  "edit": {
+    "title": {
+      "account_for": "Profile managed by",
+      "basics": "Basics",
+      "community": "Religion and community",
+      "location": "Location",
+      "education_career": "Education and career",
+      "family": "Family",
+      "lifestyle": "Faith, lifestyle and about"
+    },
+    "not_found": "This part of the profile does not exist.",
+    "review_religion": "You changed the religion. Your partner preferences still list the previous one. Review them now?",
+    "review_country": "You changed the country. Your partner preferences still list the previous one. Review them now?",
+    "review": "Review",
+    "later": "Later"
+  },
+  "prefs": {
+    "title": "Partner preferences",
+    "saved": "Preferences saved. Your matches are being updated.",
+    "intro": "Must-haves hide everyone who does not fit. Everything else only changes the order of your matches."
+  },
+  "contacts": {
+    "title": "Contact details",
+    "intro": "These details are private. No member can see them until you choose to share them with a specific connection, and you can stop sharing at any time.",
+    "phone": "Mobile number",
+    "use_verified_phone": "Use {{phone}}",
+    "whatsapp_same": "Same as mobile number",
+    "whatsapp": "WhatsApp number",
+    "email": "Email address",
+    "preferred": "Who should families contact first?",
+    "preferred_self": "Me directly",
+    "preferred_guardian": "My guardian",
+    "guardian_group": "Guardian",
+    "guardian_add": "Add a guardian's contact",
+    "managing_hint": "You are managing this profile. You can enter your own details as the guardian.",
+    "guardian_name": "Guardian's name",
+    "guardian_relation": "Relation to the candidate",
+    "guardian_phone": "Guardian's mobile number",
+    "best_time": "Best time to call",
+    "best_time_placeholder": "For example evenings after 7 pm",
+    "shared_warning": "Connections you are sharing your contact details with will see the updated details.",
+    "save": "Save",
+    "cancel": "Cancel",
+    "saved": "Saved",
+    "failed": "Could not save. Check your connection and try again.",
+    "retry": "Try again",
+    "loading": "Loading your contact details"
+  },
+  "discard": {
+    "title": "Discard changes?",
+    "body": "What you entered on this screen has not been saved.",
+    "keep": "Keep editing",
+    "discard": "Discard"
+  },
+  "errors": {
+    "phone_e164": {
+      "invalid": "Enter a valid phone number with the country code."
+    },
+    "whatsapp_e164": {
+      "invalid": "Enter a valid phone number with the country code."
+    },
+    "guardian_phone_e164": {
+      "invalid": "Enter a valid phone number with the country code.",
+      "required": "Enter the guardian's name, relation and mobile number."
+    },
+    "phone": {
+      "pk_mobile": "Enter a valid mobile number, for example 300 1234567."
+    },
+    "contact_email": {
+      "invalid": "Enter a valid email address.",
+      "too_long": "This email address is too long."
+    },
+    "guardian": {
+      "required": "Enter the guardian's name, relation and mobile number."
+    },
+    "guardian_name": {
+      "required": "Enter the guardian's name, relation and mobile number.",
+      "too_short": "Enter a name of 2 to 80 characters, letters only.",
+      "too_long": "Enter a name of 2 to 80 characters, letters only.",
+      "invalid": "Enter a name of 2 to 80 characters, letters only."
+    },
+    "guardian_relation": {
+      "required": "Enter the guardian's name, relation and mobile number."
+    },
+    "best_time_to_call": {
+      "too_long": "Keep it under 80 characters."
+    },
+    "preferred_contact": {
+      "invalid": "Choose who families should contact first."
+    }
+  }
+}

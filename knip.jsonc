@@ -1,6 +1,8 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   // Finds unused files, exports and dependencies. Run with `pnpm knip`.
+  // An export used inside its own file is not reported.
+  "ignoreExportsUsedInFile": true,
   "workspaces": {
     ".": {
       "entry": ["scripts/**/*.mjs"],
@@ -9,8 +11,16 @@
       "ignoreBinaries": ["rustc", "rustfmt", "java"]
     },
     "apps/web": {
-      // The typed API client is part of the scaffold; routes start using it as features land.
-      "entry": ["src/lib/api.ts"],
+      "entry": [
+        // Public APIs whose unused exports are deliberate: the shadcn/ui primitives, the form
+        // fields barrel and the API type aliases over the generated contract (src/lib/api-types.ts).
+        "src/components/ui/*.tsx",
+        "src/components/common/fields/index.ts",
+        "src/lib/api-types.ts",
+        // Loaded with import.meta.glob, which Knip cannot follow.
+        "src/mocks/handlers/*.ts",
+        "src/locales/en/*.json"
+      ],
       "project": ["src/**/*.{ts,tsx,css}"]
     },
     "e2e": {

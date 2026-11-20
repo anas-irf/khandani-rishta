@@ -176,11 +176,15 @@ jobs:
         with:
           cache: "false"
 
-      # Each environment needs its own build: the API address is baked into the browser bundle.
+      # Each environment needs its own build: these public values are baked into the bundle
+      # (17 section 15). Without CLERK_PUBLISHABLE_KEY the app treats everyone as signed out.
       - name: Build
         env:
           DEPLOY_ENVIRONMENT: ${{ needs.changes.outputs.environment }}
           VITE_API_BASE_URL: ${{ vars.API_BASE_URL }}
+          VITE_APP_ENV: ${{ needs.changes.outputs.environment }}
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ vars.CLERK_PUBLISHABLE_KEY }}
+          VITE_SENTRY_DSN: ${{ vars.SENTRY_DSN_WEB }}
         run: |
           if [ "$DEPLOY_ENVIRONMENT" = staging ]; then export CLOUDFLARE_ENV=staging; fi
           pnpm build:web

@@ -42,6 +42,8 @@ Press Ctrl+C to stop the API and the web app. If Rust isn't installed (or, on Wi
 
 Locally the API listens on port 8787, not 8080, because 8080 is often taken by other software (Oracle XE, Tomcat).
 
+Every checkout uses the same PostgreSQL server. If you work in a second checkout (a git worktree) whose branch has different migrations, give it its own database: change the database name at the end of `DATABASE_URL` in that checkout's `apps/api/.env`, and `pnpm bootstrap` creates it. Otherwise the API stops with "migration N was previously applied but is missing in the resolved migrations".
+
 For the Android app, open `apps/android` in Android Studio and run the `app` configuration on an emulator.
 
 ## Common tasks

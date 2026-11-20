@@ -1,0 +1,1162 @@
+{
+  "actions": {
+    "close": "Close",
+    "cancel": "Cancel",
+    "refresh": "Refresh",
+    "search": "Search",
+    "apply": "Apply filters",
+    "save": "Save",
+    "edit": "Edit"
+  },
+  "common": {
+    "none": "Not set",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "form": {
+    "counter": "{{current}} of {{max}} characters",
+    "choose": "Choose..."
+  },
+  "list": {
+    "loading": "Loading",
+    "load_more": "Load more",
+    "load_more_failed": "Could not load more. Try again.",
+    "queue_empty": "Nothing waiting. Well done."
+  },
+  "errors": {
+    "invalid_state": "This item has changed or was already handled by someone else. It has been reloaded.",
+    "date_of_birth": {
+      "too_young": "The corrected date makes the candidate under 18. Ban the account for underage instead of correcting the date.",
+      "invalid": "Enter a valid date."
+    },
+    "gender": {
+      "mismatch": "The registered identity number does not agree with this gender."
+    }
+  },
+  "validation": {
+    "required": "This field is required.",
+    "too_short": "Write at least {{min}} characters.",
+    "too_long": "Write at most {{max}} characters.",
+    "out_of_range": "Enter a whole number from {{min}} to {{max}}.",
+    "invalid": "This value is not valid.",
+    "invalid_code": "Use lowercase letters, digits and underscores, starting with a letter.",
+    "code_needs_parent_prefix": "A sub-caste code must start with {{min}}.",
+    "url_prefix": "The address must start with {{min}}",
+    "min_above_version": "The minimum cannot be greater than the version code.",
+    "at_least_setting": "Must be at least {{min}}.",
+    "at_most_setting": "Must be at most {{max}}.",
+    "not_earlier": "Must not be earlier than the current value ({{min}}).",
+    "above_latest": "The version code must be greater than {{min}}, the newest one.",
+    "min_below_current": "The minimum cannot be lower than the current minimum ({{min}})."
+  },
+  "layout": {
+    "skip": "Skip to content",
+    "title": "Staff console",
+    "shortcuts": "Keyboard shortcuts",
+    "back_to_app": "Back to the app",
+    "nav": "Staff console sections",
+    "waiting_one": "{{count}} waiting",
+    "waiting_other": "{{count}} waiting",
+    "conduct": "Staff conduct"
+  },
+  "nav": {
+    "overview": "Overview",
+    "profiles": "Profiles",
+    "photos": "Photos",
+    "texts": "Text",
+    "verifications": "Verification",
+    "reports": "Reports",
+    "users": "Users",
+    "castes": "Castes",
+    "settings": "Settings",
+    "releases": "Releases",
+    "announcements": "Announcements",
+    "audit_log": "Audit log"
+  },
+  "role": {
+    "member": "Member",
+    "moderator": "Moderator",
+    "admin": "Admin"
+  },
+  "status": {
+    "draft": "Draft",
+    "pending_review": "Pending review",
+    "changes_requested": "Changes requested",
+    "active": "Active",
+    "paused": "Paused",
+    "closed": "Closed",
+    "suspended": "Suspended",
+    "banned": "Banned",
+    "deletion_scheduled": "Deletion scheduled",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "cancelled": "Cancelled",
+    "open": "Open",
+    "in_review": "In review",
+    "actioned": "Actioned",
+    "dismissed": "Dismissed",
+    "verified": "Verified",
+    "unverified": "Unverified",
+    "promoted": "Promoted",
+    "member": "Member",
+    "moderator": "Moderator",
+    "admin": "Admin"
+  },
+  "image": {
+    "controls": "Controls for {{label}}",
+    "zoom_in": "Zoom in",
+    "zoom_out": "Zoom out",
+    "rotate_left": "Rotate left",
+    "rotate_right": "Rotate right",
+    "missing": "No image: it was not provided or has been deleted.",
+    "failed": "The image could not be loaded. Its link may have expired.",
+    "reload": "Load the link again",
+    "reload_all": "Reload images"
+  },
+  "shortcuts": {
+    "title": "Keyboard shortcuts",
+    "description": "They work when no text field has focus and no dialog is open.",
+    "groups": [
+      {
+        "title": "Everywhere",
+        "items": [
+          { "keys": "?", "label": "Show this list" },
+          { "keys": "J", "label": "Next item of a queue" },
+          { "keys": "K", "label": "Previous item of a queue" }
+        ]
+      },
+      {
+        "title": "Profile review",
+        "items": [
+          { "keys": "A", "label": "Approve" },
+          { "keys": "C", "label": "Request changes" },
+          { "keys": "U", "label": "Open the account" }
+        ]
+      },
+      {
+        "title": "Photos",
+        "items": [
+          { "keys": "A", "label": "Approve" },
+          { "keys": "1 to 8", "label": "Reject with the reason of that number" }
+        ]
+      },
+      {
+        "title": "Text",
+        "items": [{ "keys": "A", "label": "Approve" }, { "keys": "R", "label": "Reject" }]
+      },
+      {
+        "title": "Verification",
+        "items": [
+          { "keys": "A", "label": "Approve (every box ticked)" },
+          { "keys": "R", "label": "Reject" }
+        ]
+      },
+      {
+        "title": "Reports",
+        "items": [
+          { "keys": "C", "label": "Claim" },
+          { "keys": "S", "label": "Sanction" },
+          { "keys": "X", "label": "Resolve" }
+        ]
+      }
+    ]
+  },
+  "conduct": {
+    "title": "Staff conduct",
+    "description": "These rules are part of onboarding every moderator.",
+    "rules": [
+      {
+        "title": "Least access.",
+        "text": "Open a profile, an account or a document only because a queue item or a support request requires it. The console has no browse members screen on purpose."
+      },
+      {
+        "title": "No curiosity.",
+        "text": "Looking up someone you know, a public figure, or a profile you matched with as a member is forbidden and is grounds for removal of the role."
+      },
+      {
+        "title": "Identity documents.",
+        "text": "Every view of a verification request is logged with your name. Never photograph, copy, download or forward an identity image or number. Close the tab when you finish."
+      },
+      {
+        "title": "Chat privacy.",
+        "text": "You see private messages only as the excerpt inside a report. Never ask a developer for more."
+      },
+      {
+        "title": "Write for the member.",
+        "text": "Reasons and notes that the member will see must be polite, specific and free of blame. Never name or hint at the reporter."
+      },
+      {
+        "title": "No contact outside the product.",
+        "text": "Do not phone, message or email a member from a personal account. Support email goes through the shared support mailbox."
+      },
+      {
+        "title": "Conflicts of interest.",
+        "text": "If a queue item concerns your own profile, a relative or a friend, skip it and tell an admin."
+      },
+      {
+        "title": "Two people for the hardest calls.",
+        "text": "A ban for fraud, a decision on a possible minor, and any request from law enforcement are confirmed by an admin."
+      },
+      {
+        "title": "Your own account.",
+        "text": "Use a strong, unique Google account or mailbox for your staff login. Report a compromised staff account to an admin at once."
+      },
+      {
+        "title": "When in doubt, hold.",
+        "text": "Leave the item in the queue and ask. A late decision is better than a wrong one."
+      }
+    ]
+  },
+  "home": {
+    "title": "Overview",
+    "updated": "Updated",
+    "queues": "Queues",
+    "metrics": "Numbers",
+    "oldest": "Oldest waiting:",
+    "over_target": "Waiting longer than {{hours}} hours",
+    "photos_flagged_one": "{{count}} flagged by the automatic check",
+    "photos_flagged_other": "{{count}} flagged by the automatic check",
+    "reports_in_review_one": "{{count}} more in review",
+    "reports_in_review_other": "{{count}} more in review",
+    "queue": {
+      "profiles": "Profiles to review",
+      "photos": "Photos to review",
+      "texts": "Texts to review",
+      "verifications": "Verification requests",
+      "reports": "Open reports",
+      "caste_suggestions": "Caste suggestions"
+    },
+    "group": {
+      "people": "Members",
+      "profiles": "Profiles by status",
+      "activity": "Activity",
+      "stages": "Connections by stage",
+      "safety": "Safety and accounts",
+      "system": "System"
+    },
+    "metric": {
+      "users_total": "Accounts",
+      "signups_today": "Sign-ups today",
+      "signups_7d": "Sign-ups, 7 days",
+      "active_last_7d": "Active profiles seen in 7 days",
+      "active_male": "Active, male",
+      "active_female": "Active, female",
+      "active_id_verified": "Active, ID verified",
+      "active_photo_verified": "Active, photo verified",
+      "interests_sent_today": "Interests sent today",
+      "interests_sent_7d": "Interests sent, 7 days",
+      "interests_accepted_7d": "Interests accepted, 7 days",
+      "messages_7d": "Messages, 7 days",
+      "connections_active": "Active connections",
+      "connections_created_7d": "New connections, 7 days",
+      "reports_filed_7d": "Reports filed, 7 days",
+      "users_suspended": "Suspended accounts",
+      "users_banned": "Banned accounts",
+      "deletions_scheduled": "Deletions scheduled",
+      "jobs_dead": "Background jobs that failed for good"
+    },
+    "stage": {
+      "chatting": "Chatting",
+      "families_talking": "Families talking",
+      "engaged": "Engaged",
+      "nikah_done": "Nikah done"
+    },
+    "jobs_dead_hint": "A background job failed permanently and needs a developer."
+  },
+  "profiles": {
+    "title": "Profiles",
+    "description": "Profiles waiting for review, longest waiting first. Search to look up any profile.",
+    "filters": "Profile filters",
+    "status": "Status",
+    "search": "Search",
+    "search_placeholder": "Profile code or name",
+    "caption": "Profiles",
+    "empty": "No profiles match.",
+    "system_reports_one": "{{count}} open system report",
+    "system_reports_other": "{{count}} open system reports",
+    "col": {
+      "photo": "Photo",
+      "profile": "Profile",
+      "status": "Status",
+      "person": "Gender and age",
+      "city": "City",
+      "managed_by": "Managed by",
+      "waiting": "Waiting since",
+      "system_reports": "System reports"
+    }
+  },
+  "profile": {
+    "subtitle": "Profile {{code}}",
+    "back": "Back to profiles",
+    "status_reason": "Reason shown to the member",
+    "system_report_title": "Open system report",
+    "system_report_text": "An automatic report points to this profile. Open it and compare with the previous account before deciding.",
+    "actions": "Profile actions",
+    "approve": "Approve",
+    "open_account": "Open the account",
+    "approved": "{{name}} approved.",
+    "not_pending": "This profile is not waiting for review.",
+    "photos": "Photos",
+    "no_photos": "No photos.",
+    "texts": "Free text",
+    "no_text": "Nothing written.",
+    "preferences": "Preferences and privacy",
+    "pref": {
+      "age": "Age range wanted",
+      "marital": "Marital status wanted",
+      "discovery": "Who can find this profile",
+      "photo_visibility": "Who sees the photos"
+    },
+    "privacy": {
+      "everyone": "Everyone",
+      "preference_match": "Members who match its preferences",
+      "hidden": "Nobody"
+    },
+    "account": "Account",
+    "first_activated": "First activated",
+    "last_active": "Last active",
+    "stats": {
+      "title": "Activity",
+      "interests_sent": "Interests sent",
+      "interests_received": "Interests received",
+      "interests_accepted_by_others": "Sent interests accepted",
+      "active_connections": "Active connections",
+      "connections_ended_by_others": "Connections ended by others",
+      "money_flags_30d": "Money flags, 30 days",
+      "blocks_received": "Blocks received"
+    },
+    "checklist": {
+      "title": "What to check, in order",
+      "items": [
+        "The profile is for one real marriage candidate, not a business, a joke or a test.",
+        "Names look like real names in a plausible spelling.",
+        "The candidate is 18 or older and the age is plausible against the photos.",
+        "Managed by and manager name make sense together.",
+        "Each photo follows the photo rules: reject a photo on the spot.",
+        "About me, about family and partner notes are suitable: reject a text on the spot.",
+        "Short fields (job title, employer, institute, occupations) hold what they should.",
+        "No open system report points to a returning banned user."
+      ]
+    },
+    "sanctions": "Sanctions",
+    "verification_requests": "Verification requests",
+    "reports_against": "Reports against this profile",
+    "reports_filed": "Reports filed by this member: {{total}} (actioned {{actioned}}, dismissed {{dismissed}}).",
+    "audit": "Recent staff actions",
+    "changes_requested": "Changes requested from {{name}}.",
+    "contacts_hidden": "Contact details are not shown to moderators.",
+    "change_presets": [
+      "Please enter the candidate's real first and last name.",
+      "Please add at least one clear photo of the candidate.",
+      "Some details look inconsistent (age, education or job). Please review and correct them.",
+      "Please remove contact details and links from the profile text.",
+      "This profile appears to be for more than one person. Each profile must be for one candidate."
+    ],
+    "request_changes": {
+      "open": "Request changes",
+      "title": "Request changes",
+      "description": "The member reads this on the screen that asks them to edit the profile. Write for them.",
+      "presets": "Ready-made reasons (you may edit them)",
+      "reason": "Reason (the member will see this)",
+      "submit": "Send request"
+    },
+    "locked": {
+      "open": "Correct locked fields",
+      "title": "Correct locked fields",
+      "description": "Fix a genuine mistake in the name, gender or date of birth on the owner's behalf. The change is written to the audit log.",
+      "id_reminder": "This profile is ID verified. Confirm that you have seen the document again before changing a name.",
+      "reason": "Reason (for staff only)",
+      "reason_hint": "Say why the correction is right, for example which document or email confirmed it.",
+      "submit": "Save correction",
+      "nothing_changed": "Change at least one field."
+    },
+    "section": {
+      "account_for": "Who manages the profile",
+      "basics": "Basics",
+      "community": "Community",
+      "location": "Location",
+      "education_career": "Education and career",
+      "family": "Family",
+      "lifestyle": "Lifestyle",
+      "contacts": "Contact details"
+    },
+    "gender": {
+      "male": "Male",
+      "female": "Female"
+    },
+    "field": {
+      "managed_by": "Managed by",
+      "manager_name": "Manager name",
+      "first_name": "First name",
+      "last_name": "Last name",
+      "gender": "Gender",
+      "date_of_birth": "Date of birth",
+      "marital_status": "Marital status",
+      "children_status": "Children",
+      "children_count": "Number of children",
+      "current_wives_count": "Current wives",
+      "height_cm": "Height (cm)",
+      "religion_code": "Religion",
+      "sect_code": "Sect",
+      "caste_code": "Caste",
+      "caste_other": "Caste (typed)",
+      "sub_caste_code": "Sub-caste",
+      "sub_caste_other": "Sub-caste (typed)",
+      "mother_tongue_code": "Mother tongue",
+      "language_codes": "Other languages",
+      "nationality_code": "Nationality",
+      "country_code": "Country",
+      "city": "City",
+      "city_other": "City (typed)",
+      "area": "Area",
+      "residency_status": "Residency",
+      "origin_city": "Home city",
+      "origin_other": "Home city (typed)",
+      "relocation": "Willing to relocate",
+      "education_level_code": "Education level",
+      "education_field_code": "Field of study",
+      "degree_title": "Degree",
+      "institute_name": "Institute",
+      "employment_type": "Employment",
+      "profession_code": "Profession",
+      "job_title": "Job title",
+      "employer_name": "Employer",
+      "income_band_code": "Income",
+      "father_status": "Father",
+      "father_occupation": "Father's occupation",
+      "mother_status": "Mother",
+      "mother_occupation": "Mother's occupation",
+      "brothers_count": "Brothers",
+      "brothers_married": "Brothers married",
+      "sisters_count": "Sisters",
+      "sisters_married": "Sisters married",
+      "family_type": "Family type",
+      "family_class": "Family class",
+      "family_values": "Family values",
+      "family_country_code": "Family country",
+      "home_ownership": "Home ownership",
+      "home_type": "Home type",
+      "home_size_value": "Home size",
+      "home_size_unit": "Home size unit",
+      "religiosity": "Religiosity",
+      "prayer_frequency": "Prayer",
+      "hijab": "Hijab",
+      "beard": "Beard",
+      "religious_education": "Religious education",
+      "smoking": "Smoking",
+      "living_arrangement": "Living arrangement",
+      "work_after_marriage": "Work after marriage",
+      "marriage_timeline": "Marriage timeline",
+      "jahez_stance": "Jahez",
+      "weight_kg": "Weight (kg)",
+      "complexion": "Complexion",
+      "body_type": "Body type",
+      "blood_group": "Blood group",
+      "disability": "Disability",
+      "disability_details": "Disability details",
+      "hobby_codes": "Hobbies",
+      "phone_e164": "Phone",
+      "whatsapp_e164": "WhatsApp",
+      "contact_email": "Contact email",
+      "guardian_name": "Guardian",
+      "guardian_relation": "Guardian relation",
+      "guardian_phone_e164": "Guardian phone",
+      "preferred_contact": "Preferred contact",
+      "best_time_to_call": "Best time to call",
+      "about_me": "About me",
+      "about_family": "About the family",
+      "partner_notes": "Partner notes",
+      "primary_photo_id": "Primary photo",
+      "marital_status_label": "Marital status"
+    }
+  },
+  "photo": {
+    "status": {
+      "processing": "Processing",
+      "pending_review": "Pending review",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "failed": "Failed"
+    },
+    "primary": "Primary",
+    "approve": "Approve",
+    "approved": "Photo approved.",
+    "reject": "Reject",
+    "rejected": "Photo rejected: {{reason}}.",
+    "reject_title": "Reject this photo",
+    "reject_description": "The member is told why, in the words of the chosen reason.",
+    "reason": "Reason",
+    "checklist_title": "Checklist: the first matching row decides",
+    "checklist_finding": "What you see",
+    "checklist_decision": "Decision",
+    "checklist": [
+      {
+        "finding": "Nudity, underwear, suggestive pose, or anything sexual",
+        "decision": "Reject: not appropriate. Consider a sanction."
+      },
+      {
+        "finding": "Violence, weapons pointed at the camera, hateful symbols",
+        "decision": "Reject: not appropriate."
+      },
+      {
+        "finding": "No person in the photo (scenery, object, pet, document, text image)",
+        "decision": "Reject: not a person."
+      },
+      {
+        "finding": "A celebrity, a stock photo, or clearly a different person from the other photos",
+        "decision": "Reject: not the candidate. If it is the only photo or a pattern, file a report for a fake profile."
+      },
+      { "finding": "A child alone", "decision": "Reject: not the candidate." },
+      {
+        "finding": "Phone number, social handle, link or large text on the image",
+        "decision": "Reject: contact details or text."
+      },
+      {
+        "finding": "The first photo shows several people so the candidate cannot be told apart",
+        "decision": "Reject: group photo."
+      },
+      {
+        "finding": "Face hidden: back of the head, mask, heavy sunglasses, cropped away, extreme distance",
+        "decision": "Reject when it would be the first photo: face not visible. Approve as a later photo if another photo shows the face."
+      },
+      {
+        "finding": "Too dark, too blurry, extreme filter, tiny resolution",
+        "decision": "Reject: too blurry or too dark."
+      },
+      { "finding": "Anything else that breaks the rules", "decision": "Reject: other." },
+      { "finding": "None of the above", "decision": "Approve." }
+    ]
+  },
+  "photos": {
+    "title": "Photos",
+    "description": "Photos waiting for review. Photos the automatic check flagged come first.",
+    "status": "Status",
+    "queue": "Photo queue",
+    "flagged": "Flagged",
+    "review": "Photo under review",
+    "banner_first": "First photo of this profile.",
+    "banner_verified": "Photo-verified profile: must be the same person.",
+    "open_profile": "Open profile {{code}}",
+    "other_photos": "Other photos of this profile",
+    "no_other": "No other photos.",
+    "automatic": "Automatic check",
+    "no_automatic": "No automatic check result.",
+    "decision": "Decision",
+    "reject_with": "Reject with the reason:"
+  },
+  "texts": {
+    "title": "Text",
+    "description": "Free text waiting for a person to read it, oldest first.",
+    "queue": "Text queue",
+    "review": "Text under review",
+    "field": {
+      "about_me": "About me",
+      "about_family": "About the family",
+      "partner_notes": "Partner notes"
+    },
+    "updated": "Written",
+    "decision": "Decision",
+    "approve": "Approve",
+    "approved": "Text approved.",
+    "reject": "Reject",
+    "rejected": "Text rejected.",
+    "reject_title": "Reject: {{field}}",
+    "reject_description": "The member sees the note you write here.",
+    "presets": "Ready-made notes (you may edit them)",
+    "note_presets": [
+      "Please remove contact details.",
+      "Please keep the wording respectful.",
+      "Please write about the candidate and the family only."
+    ],
+    "note_label": "Note to the member (they will see this)",
+    "note_hint": "Optional. Up to 300 characters.",
+    "checklist_title": "Approve unless the text:",
+    "checklist": [
+      "contains contact details or links that slipped past the checks",
+      "is abusive, hateful or sexual",
+      "advertises a service",
+      "is about someone other than the candidate and family",
+      "is nonsense or copied filler"
+    ],
+    "distress": "Text about self-harm or distress is never just rejected: decide on the content rules, and tell an admin so that someone can reach out by email."
+  },
+  "verifications": {
+    "title": "Verification",
+    "description": "Identity and selfie requests, oldest first.",
+    "filters": "Verification filters",
+    "status": "Status",
+    "kind_filter": "Kind",
+    "kind_all": "All kinds",
+    "kind": {
+      "id_document": "Identity document",
+      "selfie": "Selfie"
+    },
+    "caption": "Verification requests",
+    "empty": "No requests match.",
+    "none_for_profile": "No verification requests.",
+    "col": {
+      "request": "Profile",
+      "kind": "Kind",
+      "status": "Status",
+      "created": "Submitted",
+      "reason": "Rejection reason"
+    }
+  },
+  "verification": {
+    "title": "Verification: {{name}}",
+    "submitted": "Submitted",
+    "back": "Back to verification requests",
+    "purged": "The images were deleted after the decision.",
+    "decided": "This request has already been decided.",
+    "gesture_invalid": "The gesture is not the challenge of the submission day or the day before. Reject with the gesture reason unless the selfie is clearly genuine.",
+    "underage_title": "The candidate is under 18",
+    "underage_text": "Suspend the account pending admin review, with the reason prefilled.",
+    "suspend_now": "Suspend this account now",
+    "underage_reason": "This profile is for a candidate under 18, which our rules do not allow. An admin will review the account.",
+    "images": "Images",
+    "image": {
+      "front": "Front of the card",
+      "back": "Back of the card",
+      "selfie": "Selfie"
+    },
+    "submission": "Submission",
+    "gesture": "Requested gesture",
+    "gesture_name": {
+      "peace_sign": "Peace sign",
+      "thumbs_up": "Thumbs up",
+      "open_palm": "Open palm",
+      "hand_on_head": "Hand on head"
+    },
+    "gesture_check": "Gesture check",
+    "gesture_ok": "Valid for the submission day",
+    "gesture_bad": "Not valid",
+    "identity": "Registered identity",
+    "document_type": "Document",
+    "number": "Registered number",
+    "identity_status": "Identity status",
+    "profile": "Profile data to compare",
+    "approved_photos": "Approved photos",
+    "no_photos": "The profile has no approved photos.",
+    "checklist_title": "Checklist",
+    "checklist": {
+      "id_document": [
+        "Readability: every printed field and the photo on the card can be read.",
+        "Genuine card: no sign of editing, no pasted photo, not a photo of a screen showing someone else's card.",
+        "Number: the number on the card equals the registered number shown here, digit for digit.",
+        "Name: the name on the card is the profile's first and last name (spelling variants and a missing middle name are fine).",
+        "Date of birth: exactly equals the date of birth of the profile.",
+        "Age: the date of birth on the card makes the person 18 or older today.",
+        "Gender: the gender on the card matches the profile.",
+        "Expiry: the card is not expired today. Lifetime cards pass.",
+        "Gesture: the selfie shows today's or yesterday's gesture for this profile.",
+        "Face: the person in the selfie is the person on the card and in the approved profile photos."
+      ],
+      "selfie": [
+        "The requested gesture is clearly performed.",
+        "The face is clearly visible, unedited and unfiltered.",
+        "It is the same person as in the primary photo and the other approved photos."
+      ]
+    },
+    "decision": "Decision",
+    "approve": "Approve",
+    "approved": "Verification approved for {{name}}.",
+    "reject": "Reject",
+    "rejected": "Verification rejected for {{name}}.",
+    "tick_all": "Tick every box to approve.",
+    "previous": "Previous requests",
+    "no_previous": "No earlier requests.",
+    "reject_title": "Reject this request",
+    "reject_description": "The member is told why, in the words of the chosen reason.",
+    "reject_reason": "Reason",
+    "note_label": "Note for staff (the member will not see this)",
+    "note_hint": "Optional. For a date of birth mismatch, write the date on the card."
+  },
+  "reports": {
+    "title": "Reports",
+    "description": "Reports by priority, then oldest first.",
+    "filters": "Report filters",
+    "status": "Status",
+    "caption": "Reports",
+    "empty": "No reports match.",
+    "none": "No reports.",
+    "priority": "Priority {{priority}}",
+    "subject": {
+      "profile": "Profile",
+      "photo": "Photo",
+      "message": "Message"
+    },
+    "source": {
+      "member": "Member",
+      "system": "System"
+    },
+    "col": {
+      "priority": "Priority",
+      "reason": "Reason",
+      "subject": "About",
+      "target": "Reported member",
+      "reporter": "Reporter",
+      "open_on_target": "Open on this member",
+      "status": "Status",
+      "handled_by": "Handled by",
+      "created": "Filed",
+      "source": "Source"
+    }
+  },
+  "report": {
+    "title": "Report: {{reason}}",
+    "subtitle": "About {{target}} ({{code}})",
+    "back": "Back to reports",
+    "system_note": "This report was filed by the system. Compare with the previous account before deciding.",
+    "actions": "Report actions",
+    "claim": "Claim",
+    "claimed": "Report claimed.",
+    "claim_first": "Claim the report to sanction or resolve it as actioned.",
+    "sanction": "Sanction",
+    "resolve": "Resolve",
+    "resolved": "Report resolved.",
+    "open_profile": "Open profile",
+    "open_account": "Open account",
+    "summary": "Report",
+    "handled_at": "Handled",
+    "details": "What the reporter wrote",
+    "resolution_note": "Resolution note",
+    "photo": "Reported photo",
+    "reject_photo": "Reject this photo",
+    "context": "Context when it was filed",
+    "no_context": "No context was saved.",
+    "transcript": "Messages around the reported one",
+    "sender": {
+      "reporter": "Reporter",
+      "target": "Reported member",
+      "system": "System"
+    },
+    "reported_message": "Reported message",
+    "deleted_message": "Deleted message",
+    "flag": "Flag: {{flag}}",
+    "related": "Other open reports on the same member",
+    "target": "Reported member",
+    "user_status": "Account status",
+    "profile_status": "Profile status",
+    "reports_against": "Reports against",
+    "reports_against_value": "{{total}} in all, {{actioned}} actioned",
+    "verification": "Verified",
+    "id_verified": "Identity",
+    "photo_verified": "Photo",
+    "sanctions": "Sanctions of the member",
+    "reporter": "Reporter",
+    "filed": "Reports filed",
+    "actioned": "Actioned",
+    "dismissed": "Dismissed",
+    "resolve_title": "Resolve this report",
+    "resolve_description": "The note is for staff only. The reporter is not notified.",
+    "outcome": "Outcome",
+    "outcome_actioned": "Actioned",
+    "outcome_actioned_hint": "A violation was confirmed.",
+    "outcome_dismissed": "Dismissed",
+    "outcome_dismissed_hint": "No violation, or not enough to act.",
+    "open_only_dismiss": "An unclaimed report can only be dismissed. Claim it first to resolve it as actioned.",
+    "note": "Resolution note (staff only)",
+    "note_hint": "10 to 1,000 characters.",
+    "confirm_title": "Resolve without a recorded action?",
+    "confirm_text": "No action is recorded for this report. Resolve as actioned anyway?",
+    "confirm_submit": "Resolve as actioned",
+    "related_title": "Resolve the related reports too?",
+    "related_text_one": "{{count}} other open report is about the same member. Resolve it as actioned with the same note?",
+    "related_text_other": "{{count}} other open reports are about the same member. Resolve them as actioned with the same note?",
+    "related_confirm": "Resolve them",
+    "related_skip": "Not now",
+    "related_done_one": "{{count}} related report resolved.",
+    "related_done_other": "{{count}} related reports resolved."
+  },
+  "sanctions": {
+    "none": "No sanctions.",
+    "type": {
+      "warning": "Warning",
+      "suspension": "Suspension",
+      "ban": "Ban"
+    },
+    "col": {
+      "type": "Type",
+      "reason": "Reason",
+      "period": "Period",
+      "state": "State",
+      "by": "By"
+    },
+    "period": "{{from}} to {{to}}",
+    "revoked": "Lifted on {{date}}",
+    "in_force": "In force",
+    "kind": "Action",
+    "kind_label": {
+      "warn": "Warn",
+      "suspend": "Suspend",
+      "ban": "Ban"
+    },
+    "examples_label": "Examples of wording (you may edit them)",
+    "examples": [
+      "Your recent messages broke our rule on respectful communication. Further incidents will lead to suspension.",
+      "You continued to contact a member after they asked you to stop.",
+      "This account was closed for asking other members for money.",
+      "This account was closed because the profile did not represent a real marriage candidate."
+    ],
+    "reason": "Reason (the member will see this)",
+    "days": "Days of suspension",
+    "days_presets": "Common lengths",
+    "days_preset_one": "{{count}} day",
+    "days_preset_other": "{{count}} days",
+    "type_code": "Type the profile code {{code}} to confirm",
+    "dialog": {
+      "warn": {
+        "title": "Warn this member",
+        "description": "The member gets a notification and an email. Their account is not limited.",
+        "submit": "Send warning"
+      },
+      "suspend": {
+        "title": "Suspend this account",
+        "description": "The profile is hidden and the member cannot use the app until the suspension ends.",
+        "submit": "Suspend"
+      },
+      "ban": {
+        "title": "Ban this account",
+        "description": "Connections end and the identifiers are blocked. Only an admin can lift a ban.",
+        "submit": "Ban"
+      }
+    },
+    "done": {
+      "warn": "Warning sent.",
+      "suspend": "Account suspended.",
+      "ban": "Account banned.",
+      "unsuspend": "Suspension lifted.",
+      "unban": "Ban lifted."
+    }
+  },
+  "users": {
+    "title": "Users",
+    "description": "Look up an account to act on a queue item or a support request.",
+    "filters": "User search",
+    "search": "Search",
+    "search_hint": "Email, phone number, profile code, or the start of a first or last name.",
+    "too_short": "Enter at least {{min}} characters.",
+    "status": "Status",
+    "role": "Role",
+    "any": "Any",
+    "caption": "Users found",
+    "empty": "No accounts match.",
+    "prompt_title": "Search for an account",
+    "prompt_text": "There is no list of all members on purpose. Search by email, phone number, profile code or name.",
+    "col": {
+      "user": "Account",
+      "profile": "Profile",
+      "role": "Role",
+      "status": "Status",
+      "profile_status": "Profile status",
+      "created": "Joined",
+      "last_seen": "Last seen"
+    }
+  },
+  "user": {
+    "subtitle": "{{name}} ({{code}})",
+    "back": "Back to users",
+    "status_reason": "Reason shown to the member",
+    "suspended_until": "Suspended until",
+    "until": "until {{date}}",
+    "flag_misuse": "This member filed 5 or more reports in 30 days and none was actioned. Consider a warning for misuse of reports.",
+    "flag_shared_device": "This account shares a device with a sanctioned account.",
+    "self": "This is your own account: you cannot sanction it or change its role.",
+    "staff_target": "This account belongs to staff. Only an admin can warn or suspend staff.",
+    "actions": "Account actions",
+    "warn": "Warn",
+    "suspend": "Suspend",
+    "unsuspend": "Lift suspension",
+    "ban": "Ban",
+    "unban": "Lift ban",
+    "change_role": "Change role",
+    "view_profile": "View profile",
+    "account": "Account",
+    "email": "Email",
+    "verified": "verified",
+    "unverified": "not verified",
+    "phone": "Phone",
+    "phone_hidden": "Not shown to moderators",
+    "role": "Role",
+    "status": "Account status",
+    "profile_status": "Profile status",
+    "locale": "Language",
+    "created": "Joined",
+    "last_seen": "Last seen",
+    "deletion_requested": "Deletion requested",
+    "purge_after": "Data removed after",
+    "flags": "Flags",
+    "flag_misuse_label": "Misuse of reports",
+    "flag_money": "Money flags, 30 days",
+    "flag_shared_device_label": "Shares a device with a sanctioned account",
+    "reports_filed": "Reports filed by this member: {{total}} (actioned {{actioned}}, dismissed {{dismissed}}).",
+    "sanctions": "Sanctions",
+    "devices": "Devices",
+    "no_devices": "No devices.",
+    "consents": "Consents",
+    "no_consents": "No consents recorded.",
+    "reports_against": "Reports against this member",
+    "audit": "Staff actions on this account",
+    "col": {
+      "platform": "Platform",
+      "model": "Device",
+      "version": "App version",
+      "seen": "Last seen",
+      "document": "Document",
+      "consent_version": "Version",
+      "accepted": "Accepted"
+    },
+    "unsuspend_title": "Lift this suspension?",
+    "unsuspend_text": "The member can use the app again and the profile becomes visible.",
+    "unban_title": "Lift this ban?",
+    "unban_text": "The member can sign in again. Identifiers that were blocked stay blocked until you check them.",
+    "role_title": "Change role",
+    "role_description": "A staff role gives access to the console and to private data. You cannot change your own role.",
+    "role_submit": "Change role",
+    "role_done": "Role changed to {{role}}."
+  },
+  "castes": {
+    "title": "Castes",
+    "description": "Suggestions typed by members, and the list of castes.",
+    "tabs": "Caste sections",
+    "tab_suggestions": "Suggestions",
+    "tab_castes": "Caste list",
+    "add": "Add caste",
+    "add_title": "Add a caste",
+    "add_description": "Codes cannot be changed afterwards and rows cannot be deleted.",
+    "parent": "Parent caste",
+    "top_level": "None (top-level caste)",
+    "code": "Code",
+    "code_hint": "Lowercase letters, digits and underscores. A sub-caste starts with its parent's code and an underscore.",
+    "code_taken": "This code is already used.",
+    "name": "Name",
+    "name_ur": "Name in Urdu (optional)",
+    "aliases": "Aliases",
+    "aliases_hint": "Other spellings, one per line.",
+    "sort_order": "Sort order",
+    "active": "Active (offered in the caste picker)",
+    "active_yes": "Active",
+    "active_no": "Inactive",
+    "promote": "Promote",
+    "promote_title": "Promote \"{{name}}\"",
+    "promote_description_one": "Typed by {{count}} profile. Promote only a real community name that at least 5 different profiles typed.",
+    "promote_description_other": "Typed by {{count}} profiles. Promote only a real community name that at least 5 different profiles typed.",
+    "similar_warning": "Similar castes exist: {{names}}. If this is the same community under another spelling, do not promote it: add the spelling to that caste's aliases and reject the suggestion.",
+    "reject": "Reject",
+    "reject_title": "Reject \"{{name}}\"?",
+    "reject_text": "The suggestion is closed. Profiles that typed it keep their typed text.",
+    "rejected": "Suggestion rejected.",
+    "edit_title": "Edit {{name}}",
+    "edit_description": "Code: {{code}}. A caste with active sub-castes cannot be deactivated.",
+    "deactivate_refused": "This caste still has active sub-castes. Deactivate them first.",
+    "suggestions_caption": "Caste suggestions, most used first",
+    "list_caption": "Castes and sub-castes",
+    "filter": "Filter the list",
+    "none_found": "No castes match.",
+    "col": {
+      "name": "Name",
+      "parent": "Parent",
+      "usage": "Typed by",
+      "similar": "Similar castes",
+      "created": "First typed",
+      "actions": "Actions",
+      "code": "Code",
+      "aliases": "Aliases",
+      "order": "Order",
+      "active": "State"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Limits and switches the API reads. A change applies to future actions only: lowering a limit does not undo anything already done.",
+    "default": "Default: {{value}}",
+    "updated": "Last changed by {{email}} on {{date}}",
+    "save_named": "Save {{key}}",
+    "reset_named": "Reset {{key}} to its default",
+    "reset": "Reset to default",
+    "saved": "{{key}} saved.",
+    "warning_title": "Save {{key}}?",
+    "confirm_save": "Save anyway",
+    "on": "On",
+    "off": "Off",
+    "auto": "Automatic",
+    "manual": "Manual (a person reviews)",
+    "range": "A whole number from {{min}} to {{max}}.",
+    "warning": {
+      "legal": "Every member will be asked to accept the new document the next time they open the app. Publish the new document text first.",
+      "photo_review_auto": "Photos that pass the automatic check will go live without a person looking at them.",
+      "identity_not_required": "New members will be able to skip the identity number. Duplicate and returning banned accounts become harder to stop."
+    },
+    "banner": {
+      "text_en": "Banner text (English)",
+      "text_ur": "Banner text (Urdu, optional)",
+      "url": "Link (optional)",
+      "url_hint": "Must start with https://"
+    },
+    "group": {
+      "limits": "Daily and total limits",
+      "interest": "Interests",
+      "connection": "Connections",
+      "photo_access": "Photo requests",
+      "pass": "Passes",
+      "moderation": "Moderation",
+      "onboarding": "Onboarding",
+      "matching": "Matching",
+      "account": "Accounts",
+      "verification": "Verification",
+      "legal": "Legal documents",
+      "support": "Support",
+      "announcement": "Announcement banner"
+    },
+    "meaning": {
+      "limits": {
+        "interests_per_day": "Interests a profile may send per day (the day starts at midnight in Pakistan).",
+        "interests_per_day_verified": "The same, for profiles with a verified identity or photo. At least the normal limit.",
+        "pending_interests_max": "Most sent interests that may wait for an answer at one time.",
+        "profile_views_per_day": "Different profiles a member may open per day.",
+        "photo_requests_per_day": "Photo access requests per day.",
+        "messages_per_minute": "Chat messages per sender per minute.",
+        "messages_per_day": "Chat messages per sender per day.",
+        "reports_per_day": "Reports per reporter per day.",
+        "photos_max": "Photos per profile.",
+        "saved_searches_max": "Saved searches per profile.",
+        "active_connections_max": "Active connections per profile. Accepting or sending beyond this is refused."
+      },
+      "interest": {
+        "expiry_days": "Days until a pending interest expires.",
+        "cooldown_after_decline_days": "Days to wait before sending again after a decline.",
+        "cooldown_after_expiry_days": "Days to wait after an interest expired.",
+        "cooldown_after_withdraw_days": "Days to wait after the sender withdrew."
+      },
+      "connection": {
+        "cooldown_after_end_days": "Days to wait before a new interest after a connection ended."
+      },
+      "photo_access": {
+        "retry_days": "Days to wait before asking again after a denial or a revocation."
+      },
+      "pass": {
+        "duration_days": "How long a pass hides a profile."
+      },
+      "moderation": {
+        "profile_review": "Whether new profiles are reviewed by a person (manual) or go live by themselves (automatic).",
+        "photo_review": "Whether photos are reviewed by a person (manual) or go live after the automatic check (automatic).",
+        "text_review": "Whether free text is reviewed by a person (manual) or after the automatic check (automatic)."
+      },
+      "onboarding": {
+        "identity_required": "Whether the identity number step can be skipped.",
+        "photo_required": "Whether at least one photo is needed to finish onboarding."
+      },
+      "matching": {
+        "candidate_pool_size": "Candidates fetched from the database per refresh.",
+        "recommendations_size": "Recommendations kept per profile. Not greater than the pool size.",
+        "refresh_hours": "Hours after which recommendations are recomputed on the next request."
+      },
+      "account": {
+        "deletion_grace_days": "Days between a deletion request and the purge."
+      },
+      "verification": {
+        "media_retention_days": "Days verification images are kept after a decision."
+      },
+      "legal": {
+        "terms_version": "Current version of the Terms of Use (a date).",
+        "privacy_version": "Current version of the Privacy Policy (a date).",
+        "guidelines_version": "Current version of the Community Guidelines (a date)."
+      },
+      "support": {
+        "email": "Support address shown on blocked screens and in emails."
+      },
+      "announcement": {
+        "banner": "A line at the top of the home screen for everyone, until removed. Reset it to remove the banner."
+      }
+    }
+  },
+  "releases": {
+    "title": "Releases",
+    "description": "Records of Android builds that CI has already uploaded. Records are never edited or deleted: to correct a mistake, publish a new one.",
+    "caption": "Android releases, newest first",
+    "empty": "No releases recorded.",
+    "col": {
+      "version_code": "Version code",
+      "version_name": "Version",
+      "min_supported": "Minimum supported",
+      "download": "Download",
+      "notes": "Release notes",
+      "created": "Recorded"
+    },
+    "form_title": "Publish a release record",
+    "form_hint": "Android only. Raising the minimum supported version forces older builds to update.",
+    "version_code": "Version code",
+    "version_name": "Version name",
+    "version_name_hint": "For example 1.3.0",
+    "min_supported": "Minimum supported version code",
+    "min_supported_hint": "Not greater than the version code, not lower than the current minimum ({{min}}).",
+    "download_url": "Download address",
+    "download_url_hint": "Must start with https://download.",
+    "notes": "Release notes",
+    "notes_hint": "Shown in the update prompt. Up to 1,000 characters.",
+    "publish": "Publish",
+    "published": "Release {{name}} recorded.",
+    "lockout_title": "Lock out older builds?",
+    "lockout_text_one": "Every build older than version code {{min}} must update before it can continue. {{count}} version code will be locked out ({{from}} to {{to}}).",
+    "lockout_text_other": "Every build older than version code {{min}} must update before it can continue. {{count}} version codes will be locked out ({{from}} to {{to}})."
+  },
+  "announce": {
+    "title": "Announcements",
+    "description": "Two ways to reach members. An announcement cannot be recalled.",
+    "banner_title": "Banner",
+    "banner_text": "A line at the top of the home screen for everyone, until removed. It is the announcement.banner setting.",
+    "banner_edit": "Edit the banner in Settings",
+    "banner_current": "Showing now",
+    "banner_none": "No banner is showing.",
+    "notification_title": "Notification",
+    "notification_text": "One entry in every member's notification feed. At most one per 24 hours. Members with announcement emails on also get a low-priority email.",
+    "sent_one": "Announcement queued for about {{count}} member.",
+    "sent_other": "Announcement queued for about {{count}} members.",
+    "limited": "An announcement was already sent in the last 24 hours. Try again later.",
+    "text_en": "Text (English)",
+    "text_ur": "Text (Urdu, optional)",
+    "url": "Link (optional)",
+    "url_hint": "Must start with https://",
+    "estimate_one": "It will go to about {{count}} member (active accounts with an active or paused profile).",
+    "estimate_other": "It will go to about {{count}} members (active accounts with an active or paused profile).",
+    "estimate_unknown": "The number of recipients is not known yet.",
+    "send": "Send announcement",
+    "confirm_title": "Send this announcement?",
+    "confirm_text_one": "It will reach about {{count}} member and cannot be recalled.",
+    "confirm_text_other": "It will reach about {{count}} members and cannot be recalled."
+  },
+  "audit": {
+    "title": "Audit log",
+    "description": "Who did what, newest first. Details never contain identity numbers, contact details or private messages.",
+    "filters": "Audit log filters",
+    "filter_actor": "Actor (user id)",
+    "filter_action": "Action",
+    "filter_target_type": "Target type",
+    "filter_target_id": "Target id",
+    "any_action": "Any action",
+    "any_target": "Any target",
+    "caption": "Audit log entries",
+    "empty": "No entries yet.",
+    "empty_filtered": "No entries match these filters.",
+    "none": "No staff actions recorded.",
+    "col": {
+      "time": "When",
+      "actor": "Who",
+      "action": "Action",
+      "target": "Target",
+      "details": "Details"
+    },
+    "target": {
+      "profile": "Profile",
+      "photo": "Photo",
+      "verification_request": "Verification request",
+      "report": "Report",
+      "user": "User",
+      "caste": "Caste",
+      "caste_suggestion": "Caste suggestion",
+      "app_setting": "Setting",
+      "app_release": "Release"
+    }
+  }
+}

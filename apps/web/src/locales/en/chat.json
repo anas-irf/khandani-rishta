@@ -1,0 +1,271 @@
+{
+  "member_unavailable": "Member no longer available",
+  "stage": {
+    "name": {
+      "chatting": "Getting to know each other",
+      "families_talking": "Our families are in touch",
+      "engaged": "Rishta confirmed",
+      "nikah_done": "Nikah completed"
+    },
+    "explain": {
+      "families_talking": "The elders of both families have spoken or met.",
+      "engaged": "Both families have agreed (baat pakki or mangni).",
+      "nikah_done": "The nikah has taken place. Both profiles will be closed."
+    },
+    "title": "Stage",
+    "tracker_label": "Stages of the rishta",
+    "step_reached": "{{stage}}, reached",
+    "step_not_reached": "{{stage}}, not reached yet",
+    "suggest": "Suggest the next step",
+    "choose_label": "The next step",
+    "suggest_confirm": "Suggest",
+    "you_suggested": "You suggested: {{stage}}. Waiting for {{name}} to confirm.",
+    "you_suggested_short": "You suggested: {{stage}}. Waiting for {{name}}.",
+    "they_suggest": "{{name}} suggests: {{stage}}.",
+    "withdraw": "Withdraw",
+    "confirm": "Confirm",
+    "not_yet": "Not yet",
+    "done": "{{stage}}. Mubarak to both families!",
+    "cooldown": "You can suggest this again on {{date}}.",
+    "marked": "Marked: {{stage}}.",
+    "share_hint": "Families usually exchange contact details at this point.",
+    "engaged_title": "Congratulations",
+    "engaged_text": "Would you like to pause your profile so you stop receiving new interests?",
+    "engaged_pause": "Pause my profile",
+    "engaged_not_now": "Not now",
+    "nikah_title": "Mubarak! May Allah bless this marriage.",
+    "nikah_title_other": "Congratulations to both families!",
+    "nikah_text": "Both profiles are now closed and your other connections have ended. You can still read this conversation.",
+    "nikah_guide": "Nikah guide",
+    "nikah_close": "Close"
+  },
+  "system": {
+    "connected": {
+      "me": "You accepted the interest. You can now chat.",
+      "them": "Your interest was accepted. You can now chat."
+    },
+    "contact_shared": {
+      "me": "You shared your contact details.",
+      "them": "{{name}} shared contact details with you."
+    },
+    "contact_share_revoked": {
+      "me": "You stopped sharing your contact details.",
+      "them": "{{name}} stopped sharing contact details."
+    },
+    "stage_proposed": {
+      "me": "You suggested: {{stage}}.",
+      "them": "{{name}} suggests: {{stage}}."
+    },
+    "stage_confirmed": {
+      "me": "You confirmed: {{stage}}.",
+      "them": "{{name}} confirmed: {{stage}}."
+    },
+    "stage_declined": {
+      "me": "You did not confirm the suggestion.",
+      "them": "{{name}} did not confirm the suggestion."
+    },
+    "stage_cancelled": {
+      "me": "You withdrew your suggestion.",
+      "them": "{{name}} withdrew the suggestion."
+    },
+    "connection_ended": "This conversation has ended."
+  },
+  "notice": {
+    "money": "Be careful. Never send money or share bank details with someone you met here, whatever the reason. If this member asks for money, report them.",
+    "off_platform": "No need to rush to another app. Here you can block and report; elsewhere you cannot. Move when you and your family are comfortable.",
+    "contact_info": "This message seems to contain contact details. Share yours only when you and your family are ready.",
+    "report": "Report"
+  },
+  "tips": {
+    "title": "Before you start",
+    "respect": "Be respectful. This is a family platform.",
+    "money": "Never send money, whatever the reason.",
+    "phone": "Share your phone number only when you and your family are comfortable.",
+    "report": "You can block or report from the menu at any time.",
+    "dismiss": "Dismiss"
+  },
+  "chats": {
+    "title": "Chats",
+    "filter": {
+      "label": "Show",
+      "active": "Chats",
+      "archived": "Archived",
+      "ended": "Ended"
+    },
+    "list_label": "Conversations",
+    "preview_new": "You are now connected. Say salaam.",
+    "preview_update": "Open to see the latest update",
+    "unread_one": "{{count}} unread message",
+    "unread_other": "{{count}} unread messages",
+    "waiting_for_you": "Waiting for your answer",
+    "quiet": "No messages for a week. Say salaam, or end the conversation respectfully.",
+    "muted": "Muted",
+    "ended": "Ended",
+    "menu": "Options for the chat with {{name}}",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "archive": "Archive",
+    "unarchive": "Unarchive",
+    "select": "Choose a conversation to read it here.",
+    "empty": {
+      "active": {
+        "title": "No conversations yet.",
+        "text": "When an interest is accepted you can chat here.",
+        "action": "See my matches"
+      },
+      "archived": {
+        "title": "Archived chats appear here.",
+        "text": "A new message brings a chat back."
+      },
+      "ended": {
+        "title": "Connections that have ended appear here."
+      }
+    }
+  },
+  "chat": {
+    "online": "Online now",
+    "typing": "typing...",
+    "open_details": "Connection details with {{name}}",
+    "menu": "Conversation options",
+    "view_profile": "View profile",
+    "details": "Connection details",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "archive": "Archive",
+    "unarchive": "Unarchive",
+    "safety_tips": "Safety tips",
+    "report": "Report",
+    "block": "Block",
+    "end": "End connection",
+    "messages_label": "Messages",
+    "unread_divider": "Unread messages",
+    "new_messages": "New messages",
+    "load_older": "Load older messages",
+    "loading_older": "Loading older messages",
+    "older_failed": "Could not load older messages.",
+    "start_label": "Start the conversation",
+    "chip_salaam": "Assalam-o-Alaikum",
+    "chip_family": "Thank you for accepting. May I know more about your family?"
+  },
+  "message": {
+    "removed": "Message removed",
+    "sending": "Sending",
+    "sent": "Sent",
+    "read": "Read",
+    "failed": "Not sent. Tap to retry",
+    "too_fast": "Sending too fast",
+    "from_me": "You",
+    "options": "Message options",
+    "copy": "Copy",
+    "copied": "Copied",
+    "remove": "Remove message",
+    "remove_title": "Remove this message for both of you?",
+    "remove_confirm": "Remove",
+    "remove_too_late": "Messages can be removed only within 15 minutes.",
+    "report": "Report message",
+    "delete_local": "Delete",
+    "retry": "Retry"
+  },
+  "composer": {
+    "label": "Message",
+    "placeholder": "Write a message",
+    "send": "Send",
+    "counter": "{{count}} of {{max}}",
+    "hint": "Press Enter to send, Shift and Enter for a new line.",
+    "limit_banner": "You have reached today's message limit. It resets at midnight, Pakistan time."
+  },
+  "disabled": {
+    "ended": "This conversation has ended. You can still read the messages.",
+    "unavailable": "This member is currently unavailable.",
+    "closed": "Your profile is closed. Reopen it to send messages.",
+    "reopen": "Reopen",
+    "offline": "You are offline."
+  },
+  "connection": {
+    "title": "Connection details",
+    "view_profile": "View profile",
+    "connected_since": "Connected since {{date}}",
+    "ended_on": "This conversation ended on {{date}}.",
+    "ended_reason": "Reason you gave: {{reason}}",
+    "my_contact": {
+      "title": "Your contact details",
+      "none": "You have not shared your contact details with {{name}}.",
+      "share": "Share contact details",
+      "sharing": "You are sharing:",
+      "change": "Change",
+      "stop": "Stop sharing",
+      "stop_title": "Stop sharing your contact details with {{name}}?",
+      "stopped": "You stopped sharing.",
+      "shared": "Contact details shared.",
+      "dismiss_hint": "Dismiss"
+    },
+    "their_contact": {
+      "title": "Their contact details",
+      "none": "{{name}} has not shared contact details with you.",
+      "guardian_first": "Please contact the guardian first.",
+      "mobile": "Mobile",
+      "whatsapp": "WhatsApp",
+      "email": "Email",
+      "guardian": "Guardian",
+      "best_time": "Best time to call: {{text}}",
+      "private": "Shared with you privately. Please do not pass these details on.",
+      "call": "Call {{value}}",
+      "open_whatsapp": "Open WhatsApp for {{value}}",
+      "send_email": "Email {{value}}"
+    },
+    "item": {
+      "phone": "Mobile number",
+      "whatsapp": "WhatsApp number",
+      "email": "Email address",
+      "guardian": "Guardian's contact"
+    },
+    "settings": {
+      "title": "Chat settings",
+      "mute": "Mute notifications",
+      "archive": "Archive this chat"
+    },
+    "help": {
+      "title": "Help",
+      "safety": "Safety tips",
+      "nikah": "Nikah guide"
+    },
+    "actions_label": "Other actions"
+  },
+  "share": {
+    "title": "Share contact details with {{name}}",
+    "add": "Add",
+    "add_named": "Add your {{item}}",
+    "guardian_hint": "Many families prefer that first contact goes through a parent or guardian.",
+    "warning": "Once shared, the other person may have saved your details. Stopping the share hides them in the app but cannot take them back.",
+    "submit": "Share",
+    "add_first": "Add your {{item}} first.",
+    "add_now": "Add now",
+    "items_label": "What to share",
+    "missing": {
+      "share_phone": "mobile number",
+      "share_whatsapp": "WhatsApp number",
+      "share_email": "email address",
+      "share_guardian": "guardian's contact"
+    }
+  },
+  "end": {
+    "title": "End this connection?",
+    "reason_label": "Reason",
+    "reason_required": "Please choose a reason.",
+    "reason": {
+      "not_compatible": "We are not a good match",
+      "family_declined": "The families did not agree",
+      "no_response": "No response",
+      "found_someone_else": "I found someone else",
+      "inappropriate_behaviour": "Inappropriate behaviour",
+      "other": "Another reason"
+    },
+    "also_block": "Also block {{name}}",
+    "text": "The chat becomes read-only for both of you, and any shared contact details and photo access are withdrawn. {{name}} is not told the reason. A new interest is possible after 90 days.",
+    "confirm": "End connection",
+    "success": "The conversation has ended.",
+    "report_offer": "Would you like to report {{name}}?",
+    "report": "Report",
+    "no": "No"
+  }
+}

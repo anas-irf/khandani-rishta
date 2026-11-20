@@ -1,0 +1,38 @@
+{
+  "title": "Photo requests",
+  "tabs": {
+    "label": "Photo requests",
+    "received": "Received",
+    "sent": "Sent"
+  },
+  "filter": {
+    "label": "Show",
+    "waiting": "Waiting",
+    "approved": "Approved"
+  },
+  "asked": "Asked {{when}}",
+  "status": {
+    "pending": "Waiting",
+    "granted": "Approved"
+  },
+  "unavailable": "This member is no longer available",
+  "member_fallback": "This member",
+  "approve": "Approve",
+  "deny": "Not now",
+  "remove_access": "Remove access",
+  "approved_toast": "{{name}} can now see your photos.",
+  "access_removed": "Access removed.",
+  "revoke": {
+    "title": "Remove access?",
+    "text": "Stop {{name}} from seeing your photos?"
+  },
+  "list": {
+    "received": "Received photo requests",
+    "sent": "Sent photo requests"
+  },
+  "empty": {
+    "received_waiting": "No one is waiting for an answer.",
+    "received_approved": "Members you approve appear here.",
+    "sent": "You have not asked to see anyone's photos."
+  }
+}

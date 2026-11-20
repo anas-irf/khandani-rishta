@@ -1,0 +1,51 @@
+{
+  "generic": {
+    "action": "Something went wrong. Please try again.",
+    "screen_title": "Something went wrong",
+    "screen_text": "Please try again. If it keeps happening, contact support and mention the reference below.",
+    "try_again": "Try again"
+  },
+  "reference": "Reference: {{id}}",
+  "no_longer_available": "This is no longer available.",
+  "go_back": "Go back",
+  "go_home": "Go to home",
+  "limit": {
+    "title": "Limit reached",
+    "default": "You have reached a limit for today. It resets at midnight, Pakistan time.",
+    "ok": "OK"
+  },
+  "form_summary": "Please check the highlighted fields.",
+  "code": {
+    "bad_request": "Something went wrong. Please try again.",
+    "validation_failed": "Please check the highlighted fields.",
+    "unauthenticated": "Please sign in again.",
+    "forbidden": "You are not allowed to do this.",
+    "not_found": "This is no longer available.",
+    "invalid_state": "This can no longer be done. Please refresh and try again.",
+    "already_exists": "This has already been done.",
+    "identity_already_registered": "This identity number is already registered with another profile.",
+    "interest_already_pending": "You have already sent an interest to this member.",
+    "already_connected": "You are already connected with this member.",
+    "cooldown_active": "You can try this again on {{date}}.",
+    "not_permitted_by_member": "This member's settings do not allow this.",
+    "connection_ended": "This connection has ended.",
+    "payload_too_large": "This file is too large.",
+    "rate_limited": "You are going a little fast. Please try again in {{seconds}} seconds.",
+    "limit_reached": "You have reached a limit for today. It resets at midnight, Pakistan time.",
+    "profile_not_active": "Your profile status does not allow this right now."
+  },
+  "field": {
+    "required": "This field is required.",
+    "invalid": "Please check this value.",
+    "too_short": "This is too short.",
+    "too_long": "This is too long.",
+    "out_of_range": "This value is out of range.",
+    "unknown_code": "Please choose a value from the list.",
+    "not_allowed": "This value is not allowed.",
+    "too_young": "The candidate must be at least 18 years old.",
+    "contains_contact_info": "Please remove phone numbers, email addresses and links. Contact details are shared only through the contact sharing feature.",
+    "inappropriate": "Please remove words that break the community guidelines.",
+    "mismatch": "This does not match.",
+    "locked": "This can no longer be changed. Contact support if it is wrong."
+  }
+}

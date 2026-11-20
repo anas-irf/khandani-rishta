@@ -1,0 +1,91 @@
+{
+  "app_name": "Khandani Rishta",
+  "loading": "Loading",
+  "optional": "(optional)",
+  "actions": {
+    "save": "Save",
+    "saving": "Saving",
+    "cancel": "Cancel",
+    "close": "Close",
+    "continue": "Continue",
+    "back": "Back",
+    "retry": "Try again",
+    "refresh": "Refresh",
+    "load_more": "Load more",
+    "edit": "Edit",
+    "remove": "Remove",
+    "confirm": "Confirm",
+    "done": "Done",
+    "see_all": "See all",
+    "sign_in": "Sign in",
+    "sign_out": "Sign out",
+    "create_profile": "Create profile"
+  },
+  "nav": {
+    "primary_label": "Main",
+    "home": "Home",
+    "search": "Search",
+    "interests": "Interests",
+    "chats": "Chats",
+    "me": "Me",
+    "notifications": "Notifications",
+    "notifications_count": "Notifications, {{count}} unread",
+    "account_menu": "Account menu",
+    "my_profile": "My profile",
+    "shortlist": "Shortlist",
+    "visitors": "Who viewed me",
+    "photo_requests": "Photo requests",
+    "settings": "Settings",
+    "admin": "Staff console",
+    "back_to": "Back",
+    "badge_count": "{{count}} new",
+    "attention_dot": "Needs attention",
+    "skip_to_content": "Skip to content"
+  },
+  "sign_out_dialog": {
+    "title": "Sign out of Khandani Rishta?",
+    "body": "You can sign in again at any time with Google or your email address."
+  },
+  "offline": "You are offline",
+  "toast": {
+    "saved": "Saved",
+    "approved_live": "The profile is approved and live."
+  },
+  "time": {
+    "just_now": "Just now",
+    "minutes_ago_one": "{{count}} min ago",
+    "minutes_ago_other": "{{count}} min ago",
+    "hours_ago_one": "{{count}} hour ago",
+    "hours_ago_other": "{{count}} hours ago",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "days_ago_one": "{{count}} day ago",
+    "days_ago_other": "{{count}} days ago"
+  },
+  "format": {
+    "height": "{{feet}} ft {{inches}} in ({{cm}} cm)",
+    "height_short": "{{feet}} ft {{inches}} in",
+    "age": "{{age}} years",
+    "name_age": "{{name}}, {{age}}"
+  },
+  "splash": {
+    "label": "Loading Khandani Rishta"
+  },
+  "announcement": {
+    "learn_more": "Learn more"
+  },
+  "geonames": "City data from GeoNames (geonames.org), licensed under CC BY 4.0.",
+  "not_found": {
+    "title": "Page not found",
+    "text": "The page you are looking for does not exist.",
+    "home": "Home",
+    "go_back": "Go back"
+  },
+  "route_error": {
+    "title": "Something went wrong",
+    "text": "Please try again. If it keeps happening, contact support.",
+    "try_again": "Try again",
+    "home": "Home",
+    "go_back": "Go back"
+  }
+}

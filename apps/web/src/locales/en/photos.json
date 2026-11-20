@@ -1,0 +1,108 @@
+{
+  "screen": {
+    "title": "Photos",
+    "privacy_line": "Who can see the photos: {{label}}",
+    "privacy_change": "Change"
+  },
+  "grid": {
+    "label": "Your photos",
+    "empty": "No photos yet. Profiles with a photo receive far more interest.",
+    "add": "Add a photo",
+    "add_named": "Add a photo, {{count}} free of {{max}}",
+    "limit": "You have reached the maximum of {{max}} photos.",
+    "photo_alt": "Your photo {{position}}",
+    "upload_alt": "Photo being uploaded",
+    "options": "Options for photo {{position}}",
+    "open": "Open photo {{position}}",
+    "drag_hint": "Drag a photo to change the order, or use Move earlier and Move later in its menu."
+  },
+  "status": {
+    "main": "Main photo",
+    "processing": "Processing...",
+    "pending_review": "In review",
+    "rejected": "Not approved",
+    "failed": "Could not be read",
+    "waiting": "Waiting...",
+    "uploading": "Uploading...",
+    "upload_failed": "Upload failed",
+    "progress": "Upload progress"
+  },
+  "actions": {
+    "view": "View photo",
+    "make_main": "Make main photo",
+    "move_earlier": "Move earlier",
+    "move_later": "Move later",
+    "remove": "Remove",
+    "cancel_upload": "Cancel upload",
+    "retry": "Try again",
+    "dismiss": "Remove from the list",
+    "close": "Close"
+  },
+  "viewer": {
+    "title": "Photo {{position}}",
+    "description": "Your photo as other members see it once it is approved."
+  },
+  "remove_dialog": {
+    "title": "Remove this photo?",
+    "description": "The photo is deleted and other members no longer see it.",
+    "confirm": "Remove",
+    "cancel": "Cancel"
+  },
+  "verified_dialog": {
+    "title": "This removes the Photo verified badge",
+    "description": "The badge belongs to the current main photo. After the change you can verify again from the verification screen.",
+    "confirm": "Continue",
+    "cancel": "Cancel"
+  },
+  "toast": {
+    "main_changed": "Main photo changed.",
+    "main_invalid": "Only an approved photo can be the main photo.",
+    "order_failed": "Could not save the new order. Try again.",
+    "removed": "Photo removed."
+  },
+  "errors": {
+    "unsupported_type": "Choose a JPEG, PNG or WebP photo.",
+    "picked_too_large": "This file is too large. Choose a smaller photo.",
+    "too_small": "This photo is too small. Choose one that is at least 400 by 400 pixels.",
+    "prepared_too_large": "This file is too large. Choose a photo under 10 MB.",
+    "decode_failed": "This file could not be read. Upload a JPEG, PNG or WebP photo of at least 400 by 400 pixels.",
+    "limit": "You have reached the maximum of {{max}} photos.",
+    "rate_limited": "You have uploaded many photos in a short time. Please try again later."
+  },
+  "rejections": {
+    "title": "Photos that were not approved",
+    "guidelines": "Photo guidelines",
+    "failed": "This file could not be read. Upload a JPEG, PNG or WebP photo of at least 400 by 400 pixels.",
+    "reason": {
+      "not_a_person": "This photo does not show a person. Please upload a photo of the candidate.",
+      "face_not_visible": "The face is not clearly visible. Please use a photo that shows the face without sunglasses or a mask.",
+      "group_photo": "Please use a photo of the candidate alone as the first photo. Group photos can be added afterwards.",
+      "inappropriate": "This photo is not suitable for Khandani Rishta. Please read the photo guidelines.",
+      "contains_contact_info": "Photos cannot contain phone numbers, social media names or other text.",
+      "low_quality": "This photo is too blurry or too dark. Please upload a clearer one.",
+      "not_the_candidate": "This photo does not appear to show the candidate. Only photos of the person the profile is for are allowed.",
+      "other": "This photo could not be approved. Please read the photo guidelines and try another."
+    }
+  },
+  "rules": {
+    "title": "Photo guidelines",
+    "do_title": "Do",
+    "dont_title": "Do not",
+    "do": [
+      "Use recent, clear photos of the candidate",
+      "Make the first photo show the face clearly, alone",
+      "Dress as you would to meet the other family",
+      "Use good light and a plain background"
+    ],
+    "dont": [
+      "Photos of someone else, celebrities or stock images",
+      "Group photos as the first photo",
+      "Revealing or suggestive photos",
+      "Heavy filters, face-changing edits, sunglasses or masks in the first photo",
+      "Photos of children alone",
+      "Text, phone numbers, social media names or watermarks on the photo",
+      "Photos of documents, objects, scenery or pets"
+    ],
+    "reviewed": "Every photo is reviewed before others can see it."
+  }
+}

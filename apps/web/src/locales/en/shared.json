@@ -1,0 +1,125 @@
+{
+  "photo": {
+    "alt": "Photo of {{name}}",
+    "private": "Photo is private",
+    "none": "No photo added yet"
+  },
+  "card": {
+    "photo_count_one": "{{count}} photo",
+    "photo_count_other": "{{count}} photos",
+    "location_with_country": "{{city}}, {{country}}",
+    "managed_by": "Profile managed by {{label}}",
+    "shortlist_add": "Add {{name}} to shortlist",
+    "shortlist_remove": "Remove {{name}} from shortlist",
+    "activity": {
+      "online": "Online now",
+      "today": "Active today",
+      "this_week": "Active this week",
+      "this_month": "Active this month",
+      "earlier": "Active a while ago"
+    },
+    "relation": {
+      "sent": "Interest sent",
+      "received": "Interested in you",
+      "connected": "Connected"
+    }
+  },
+  "compat": "{{value}}% match",
+  "badge": {
+    "list": "Badges",
+    "id_verified": "ID verified",
+    "photo_verified": "Photo verified",
+    "phone_verified": "Phone verified",
+    "new": "New"
+  },
+  "reasons_label": "Why this profile is suggested",
+  "reason": {
+    "same_city": "Lives in your city",
+    "same_caste": "Same caste",
+    "same_sect": "Same sect",
+    "you_meet_their_preferences": "You fit what they are looking for",
+    "age_fits": "Age suits you both",
+    "education_fits": "Education matches your preference",
+    "religiosity_fits": "Religious practice matches your preference",
+    "family_values_fit": "Family values match your preference",
+    "profession_fits": "Profession matches your preference",
+    "same_mother_tongue": "Speaks your mother tongue",
+    "same_region": "Lives in your province",
+    "shared_hobbies": "Shared interests",
+    "meets_your_must_haves": "Meets all your must-haves",
+    "verified": "Verified profile",
+    "new_member": "New member",
+    "recently_active": "Active recently"
+  },
+  "locked": {
+    "visible_after_connect": "Visible after you connect",
+    "hidden_by_member": "Hidden by this member",
+    "group": {
+      "caste": "Caste",
+      "area": "Area",
+      "career_details": "Workplace and institute",
+      "income": "Monthly income",
+      "home": "Home",
+      "health": "Health details"
+    }
+  },
+  "section": {
+    "edit": "Edit",
+    "edit_named": "Edit {{title}}"
+  },
+  "header": {
+    "back": "Back"
+  },
+  "list": {
+    "loading": "Loading",
+    "loading_more": "Loading more",
+    "load_more": "Load more",
+    "load_more_failed": "Could not load more.",
+    "refresh": "Refresh"
+  },
+  "confirm": {
+    "type_phrase": "Type {{phrase}} to confirm"
+  },
+  "status_panel": {
+    "paused": {
+      "title": "The profile is paused",
+      "text": "Resume it to see matches, search and send interests. Your chats are still available.",
+      "action": "Resume the profile"
+    },
+    "closed": {
+      "title": "The profile is closed",
+      "text": "Reopen it to see matches and answer interests. You can still read your chats.",
+      "action": "Reopen the profile"
+    }
+  },
+  "report": {
+    "title": "Report {{name}}",
+    "reason_label": "Reason",
+    "reason_required": "Please choose a reason.",
+    "details_label": "Tell us more",
+    "details_count": "{{count}} of {{max}} characters",
+    "also_block": "Also block this member",
+    "submit": "Send report",
+    "success": "Thank you. Our team will review this report. We do not tell the other member who reported them.",
+    "safety_tip": "If you are threatened or blackmailed: stop replying, keep the messages, report the member here, and file a complaint with the National Cyber Crime Investigation Agency. You are not at fault.",
+    "limit": "You have sent the maximum number of reports for today. For urgent safety concerns write to {{support_email}}."
+  },
+  "block": {
+    "title": "Block {{name}}?",
+    "text": "You will no longer see each other anywhere. Any connection and chat between you ends.",
+    "confirm": "Block",
+    "success": "Blocked."
+  },
+  "shortlist": {
+    "full": "Your shortlist is full. Remove some profiles first."
+  },
+  "photo_access": {
+    "sent": "Request sent.",
+    "not_permitted": "This member is not accepting photo requests.",
+    "cooldown": "You can ask again on {{date}}.",
+    "limit": "You have sent the maximum number of photo requests for today."
+  },
+  "announcement": {
+    "label": "Announcement"
+  }
+}

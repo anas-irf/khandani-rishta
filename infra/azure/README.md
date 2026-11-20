@@ -95,6 +95,8 @@ Create the environments `staging` and `production` (Settings > Environments). Li
 | `SSH_USER` | Variable | Each environment | `azureuser` |
 | `API_BASE_URL` | Variable | Each environment | `https://api.khandanirishta.app` or `https://api-staging.khandanirishta.app`. Also the target of the API smoke test after each deploy |
 | `WEB_URL` | Variable | Each environment | `https://khandanirishta.app` or `https://staging.khandanirishta.app` (or the `workers.dev` address until the domain exists). The web smoke tests run against it after each deploy; leave it unset to skip them |
+| `CLERK_PUBLISHABLE_KEY` | Variable | Each environment | Built into the web app. Staging: the Development instance key (`pk_test_...`, `clerk env pull --app app_3MNual4Fg0860GLX8xfhawZOecL`). Production: the Production instance key (`pk_live_...`) |
+| `SENTRY_DSN_WEB` | Variable | Each environment | DSN of the Sentry web project, used by the browser and the Worker. Empty turns reporting off |
 | `SSH_PRIVATE_KEY` | Secret | Each environment | A deploy key whose public half is in the VM's `~/.ssh/authorized_keys` |
 | `SSH_KNOWN_HOSTS` | Secret | Each environment | `ssh.khandanirishta.app ` followed by the VM's `/etc/ssh/ssh_host_ed25519_key.pub` |
 | `CF_ACCESS_CLIENT_ID`, `CF_ACCESS_CLIENT_SECRET` | Secret | Each environment | The Access service token |
@@ -102,6 +104,8 @@ Create the environments `staging` and `production` (Settings > Environments). Li
 | `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | Secret | `production` | Android release signing |
 | `CLOUDFLARE_ACCOUNT_ID` | Variable | Repository | Cloudflare account ID |
 | `DEPLOY_ENABLED` | Variable | Repository | `true` once everything above exists. Until then, workflows build and test but never deploy |
+
+The web Worker reads one secret at run time, the Clerk secret key of its instance. Set it once per environment from `apps/web`: `pnpm exec wrangler secret put CLERK_SECRET_KEY` for production and `pnpm exec wrangler secret put CLERK_SECRET_KEY --env staging` for staging.
 
 ## 7. First deploy
 

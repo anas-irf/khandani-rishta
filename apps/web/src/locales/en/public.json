@@ -1,0 +1,1053 @@
+{
+  "meta": {
+    "default_title": "Khandani Rishta",
+    "default_description": "A free, family-first matrimonial platform for Pakistani families: verified profiles, privacy you control and respectful introductions.",
+    "title": "{{page}} | Khandani Rishta",
+    "og_image_alt": "Khandani Rishta: Rishta, the khandani way.",
+    "pages": {
+      "home": {
+        "title": "Free rishta for Pakistani families",
+        "description": "A free, respectful place for families and individuals in Pakistan and abroad to find a life partner. You control who sees your photos and details."
+      },
+      "how_it_works": {
+        "title": "How it works",
+        "description": "See how a profile, a match, an interest and a chat lead towards nikah on Khandani Rishta, and how your privacy is protected at each step."
+      },
+      "safety": {
+        "title": "Safety advice",
+        "description": "Twelve simple habits that keep you safe when looking for a life partner online, the tools you have in the app, and what to do if something goes wrong."
+      },
+      "nikah_guide": {
+        "title": "Nikah guide",
+        "description": "A plain guide for families in Pakistan to the nikah process: consent, wali and witnesses, mehr, the nikahnama, registration and the documents usually needed."
+      },
+      "faq": {
+        "title": "Questions and answers",
+        "description": "Answers about cost, privacy, matches, interests, verification, safety and managing your account on Khandani Rishta."
+      },
+      "download": {
+        "title": "Download the Android app",
+        "description": "Download the Khandani Rishta Android app and see how to install it. The web app works on any phone or computer."
+      },
+      "contact": {
+        "title": "Contact",
+        "description": "How to reach Khandani Rishta support, what to include in your message, and how to report urgent safety problems."
+      },
+      "terms": {
+        "title": "Terms of Use",
+        "description": "The rules for using Khandani Rishta: who may use it, how to behave, what we do not guarantee, and how accounts are paused, closed or deleted."
+      },
+      "privacy": {
+        "title": "Privacy Policy",
+        "description": "What data Khandani Rishta collects, why, who can see it, how long we keep it and the choices you have."
+      },
+      "community_guidelines": {
+        "title": "Community Guidelines",
+        "description": "How members are expected to behave on Khandani Rishta: honest profiles, respect, modest photos, private contact details and no requests for money."
+      }
+    }
+  },
+
+  "header": {
+    "menu_open": "Open menu",
+    "menu_close": "Close menu",
+    "menu_title": "Menu",
+    "open_app": "Open the app",
+    "nav": {
+      "how_it_works": "How it works",
+      "safety": "Safety",
+      "nikah_guide": "Nikah guide",
+      "faq": "FAQ",
+      "download": "Download"
+    }
+  },
+
+  "footer": {
+    "label": "Footer",
+    "about_title": "Khandani Rishta",
+    "start_title": "Get started",
+    "legal_title": "Legal",
+    "copyright": "© {{year}} Khandani Rishta."
+  },
+
+  "links": {
+    "how_it_works": "How it works",
+    "safety": "Safety",
+    "faq": "Questions and answers",
+    "nikah_guide": "Nikah guide",
+    "create_profile": "Create a free profile",
+    "sign_in": "Sign in",
+    "download": "Download the app",
+    "terms": "Terms of Use",
+    "privacy": "Privacy Policy",
+    "community_guidelines": "Community Guidelines",
+    "contact": "Contact"
+  },
+
+  "cta": {
+    "create_profile": "Create a free profile",
+    "see_also": "See also",
+    "on_this_page": "On this page"
+  },
+
+  "home": {
+    "hero": {
+      "title": "Rishta, the khandani way.",
+      "subtitle": "A respectful place for families and individuals in Pakistan and abroad to find a life partner. Free to use.",
+      "secondary": "How it works"
+    },
+    "promises": {
+      "title": "Three promises",
+      "items": [
+        {
+          "title": "Your privacy, your rules",
+          "body": "You choose who sees your photos, your name and your family details. Nothing about you is public."
+        },
+        {
+          "title": "Checked by people",
+          "body": "Identity and photos are reviewed by our team, not only by software."
+        },
+        {
+          "title": "For marriage only",
+          "body": "No casual chatting, no agents and no hidden fees."
+        }
+      ]
+    },
+    "how": {
+      "title": "How it works",
+      "steps": [
+        "Create a profile for yourself or a family member.",
+        "See matches that fit both sides, and send an interest.",
+        "When an interest is accepted, chat, involve the families and share contact details when you are ready."
+      ],
+      "more": "Read more about how it works"
+    },
+    "privacy": {
+      "title": "Our privacy promise",
+      "items": [
+        "Your photos can stay blurred until you choose to show them.",
+        "Your full name can stay hidden until you connect.",
+        "Your phone number is never shown unless you share it with one person.",
+        "Your CNIC number is never shown to anyone.",
+        "You can pause or delete your profile at any time."
+      ]
+    },
+    "verification": {
+      "title": "Verification is free",
+      "body": "Two checks help members trust each other. Both are free, and you can choose to see only verified members.",
+      "items": [
+        {
+          "title": "ID verified",
+          "body": "Our team checked an identity document against the profile and a live selfie."
+        },
+        {
+          "title": "Photo verified",
+          "body": "Our team compared a live selfie with the profile photos."
+        }
+      ],
+      "note": "Verification confirms identity details only. Always take your own care and involve your family."
+    },
+    "families": {
+      "title": "For families",
+      "lead": "Parents and siblings are welcome.",
+      "body": "A profile can be created and managed by a parent, a sibling, a relative or a friend, with the candidate's agreement. Every profile shows who manages it, so nobody is surprised. A guardian's contact details can be shared in place of the candidate's."
+    },
+    "safety": {
+      "title": "Safety comes first",
+      "items": [
+        {
+          "title": "Never send money",
+          "body": "No genuine rishta needs your money. Report anyone who asks."
+        },
+        {
+          "title": "Report and block in two taps",
+          "body": "Every profile and every chat has a menu to report or block a member."
+        },
+        {
+          "title": "Our team reviews reports",
+          "body": "Reports are confidential. The member is never told who reported them."
+        }
+      ],
+      "link": "Read our safety advice"
+    },
+    "download": {
+      "title": "Get the Android app",
+      "body": "Install Khandani Rishta on your Android phone and see new interests and messages as they arrive.",
+      "button": "Download the app",
+      "note": "The web app works on any phone or computer."
+    },
+    "faq": {
+      "title": "Questions",
+      "link": "See all questions and answers"
+    },
+    "cta": {
+      "title": "Start your search today.",
+      "body": "It is free, and you decide what to share."
+    }
+  },
+
+  "how": {
+    "title": "How Khandani Rishta works",
+    "lead": "From the first profile to the nikah, here is what happens at each step.",
+    "nikah_link": "Read the nikah guide",
+    "cta_title": "Ready to begin?",
+    "cta_body": "Creating a profile takes about 5 minutes and is free.",
+    "sections": [
+      {
+        "id": "create",
+        "title": "Create a profile",
+        "paragraphs": [
+          "A profile can be created by the person who wants to marry, or by a parent, a sibling, a relative or a friend, with the candidate's agreement. The candidate must be 18 or older. When someone else creates the profile, it always says so.",
+          "You are asked about the candidate's basics, religion and community, place, education and work, family, lifestyle, photos and what they are looking for. It takes about 5 minutes. Your progress is saved, so you can stop and continue later.",
+          "We also ask for the candidate's identity number (CNIC, NICOP, POC or passport). We use it only to keep one profile per person and to stop removed members from coming back. It is stored encrypted and is never shown to anyone."
+        ]
+      },
+      {
+        "id": "photos",
+        "title": "Photos and privacy",
+        "paragraphs": ["You decide who sees your photos. There are four choices:"],
+        "items": [
+          "All members: every member who can open your profile sees your photos.",
+          "People I show interest in: photos stay blurred until you send someone an interest, and are clear for your connections.",
+          "Connections only: photos stay blurred until you and the other person are connected.",
+          "Only people I approve: photos are blurred for everyone, and you approve each person who may see them."
+        ],
+        "after": [
+          "Your name can be shown in full, as first name and last initial, as a first name only, as initials, or as your profile code only. Your connections always see your full name.",
+          "Other details, such as caste, income and family details, have their own settings. A detail that you hide is not sent to other members at all."
+        ]
+      },
+      {
+        "id": "matches",
+        "title": "Matches",
+        "paragraphs": [
+          "You and the other side both have preferences. We show you profiles that fit your preferences and whose preferences also fit you.",
+          "A preference that you mark as a must-have is respected strictly: a profile that does not meet it is never shown to you, and you are not shown to them. Preferences that you mark as less important only change the order.",
+          "Every match shows a percentage and the reasons behind it, for example that the profile meets all your must-haves. When nobody is left, we say so and tell you which must-have you could loosen."
+        ]
+      },
+      {
+        "id": "interests",
+        "title": "Interests",
+        "paragraphs": [
+          "When you would like to know a member better, you send an interest with a short, polite message. Please do not put phone numbers or social media names in it.",
+          "There is a daily limit so that interests stay considered: at launch, 10 a day, and 20 a day for members who are ID verified or photo verified. The limit resets every day at midnight, Pakistan time.",
+          "The other side sees your interest and your message, and can accept or decline. A decline is private: you only see 'No response yet'. An interest that is not answered expires after 21 days."
+        ]
+      },
+      {
+        "id": "chat",
+        "title": "Connections and chat",
+        "paragraphs": [
+          "When an interest is accepted, you are connected and chat opens. There is no chat before that, so nobody can write to you without your agreement.",
+          "Chat is text only. We show safety notices next to risky messages, such as requests for money. You can block or report from the chat menu at any time, and you can end a conversation whenever you want."
+        ]
+      },
+      {
+        "id": "families",
+        "title": "Involving families and sharing contact details",
+        "paragraphs": [
+          "Contact details are shared by choice, one connection at a time. You can share the candidate's number, or a guardian's number instead.",
+          "You can stop sharing at any time. Stopping hides your details in the app, but it cannot take back what someone has already saved. Share when you and your family are comfortable."
+        ]
+      },
+      {
+        "id": "nikah",
+        "title": "From rishta to nikah",
+        "paragraphs": [
+          "As your families talk, either side can propose the next stage and the other side confirms it: 'Our families are in touch', 'Rishta confirmed' and 'Nikah completed'. A stage moves forward only when both sides agree.",
+          "When 'Nikah completed' is confirmed, both profiles close. You can also pause your profile for a break, or close it when you have stopped searching.",
+          "Khandani Rishta does not conduct, arrange or register marriages. Our nikah guide explains the usual steps in plain words."
+        ]
+      },
+      {
+        "id": "verification",
+        "title": "Verification",
+        "paragraphs": [
+          "There are two checks, and both are free. Photo verified means our team compared a live selfie with the profile photos. ID verified means our team checked an identity document against the profile and a live selfie.",
+          "We usually finish a review within 24 hours. Document and selfie images are seen only by our reviewers, and they are deleted 30 days after the decision.",
+          "Verification confirms identity details only. It is not a guarantee, so always take your own care and involve your family."
+        ]
+      },
+      {
+        "id": "cost",
+        "title": "Cost",
+        "paragraphs": [
+          "Khandani Rishta is free. Creating a profile, matches, interests, chat and verification cost nothing, and nobody can pay to be shown first.",
+          "If we ever add optional paid extras, we will announce them first, and safety, verification, privacy controls and must-have filters will stay free."
+        ]
+      }
+    ]
+  },
+
+  "safety": {
+    "title": "Safety advice",
+    "lead": "Most families here are genuine. A few people are not. These habits keep you and your family safe.",
+    "tips_title": "Twelve tips for staying safe",
+    "tips": [
+      {
+        "title": "Never send money.",
+        "body": "No genuine rishta needs your money for a visa, a ticket, customs, a gift parcel or a hospital bill. Report anyone who asks."
+      },
+      {
+        "title": "Keep the conversation here at first.",
+        "body": "In Khandani Rishta you can block and report. Scammers push to move to other apps quickly."
+      },
+      {
+        "title": "Involve your family early.",
+        "body": "Tell a family member who you are talking to. Share the profile with them."
+      },
+      {
+        "title": "Prefer verified profiles.",
+        "body": "Look for the identity and photo badges. Verification is free, so ask the other person to complete it."
+      },
+      {
+        "title": "Check the story.",
+        "body": "Ask simple questions over several days. Do the answers stay the same? Does the job, city and family match the profile?"
+      },
+      {
+        "title": "Ask for a video call with family present",
+        "body": "before sharing your home address or meeting."
+      },
+      {
+        "title": "Meet safely.",
+        "body": "First meetings are in a public place or with families present. Never travel alone to another city to meet someone you only know online, and do not carry large amounts of cash or jewellery."
+      },
+      {
+        "title": "Protect your photos and documents.",
+        "body": "Do not send pictures of your CNIC, passport or bank cards to another member. We will never ask for them in chat."
+      },
+      {
+        "title": "Be careful with photos.",
+        "body": "Share extra photos only with people you trust. Never send anything you would not want others to see."
+      },
+      {
+        "title": "Trust your discomfort.",
+        "body": "If someone pressures, flatters excessively, gets angry at questions or wants secrecy, stop and report."
+      },
+      {
+        "title": "Marriage bureaus are not allowed here.",
+        "body": "If someone asks for a fee to arrange a match, report them."
+      },
+      {
+        "title": "If you are threatened or blackmailed:",
+        "body": "stop replying, keep the messages, report the member here, and file a complaint with the National Cyber Crime Investigation Agency. You are not at fault."
+      }
+    ],
+    "tools": {
+      "title": "Your tools in the app",
+      "items": [
+        {
+          "term": "Blurred photos",
+          "text": "In Settings, under Privacy, choose who sees your photos. Until you allow it, other members see a blurred copy."
+        },
+        {
+          "term": "Name display",
+          "text": "In Settings, under Privacy, choose how your name is shown. Your connections always see your full name."
+        },
+        {
+          "term": "Block",
+          "text": "Open the menu on a profile or in a chat and choose Block. A blocked member can no longer find you or contact you."
+        },
+        {
+          "term": "Report",
+          "text": "Open the menu on a profile, a photo or a message and choose Report. Our team reviews every report, and the member is never told who made it."
+        },
+        {
+          "term": "End a conversation",
+          "text": "Open the connection details from the chat and choose End connection. The chat closes for both of you."
+        },
+        {
+          "term": "Stop sharing contact details",
+          "text": "In the connection details, under your contact details, you can stop sharing at any time. This hides them in the app, but it cannot take back what was already saved."
+        }
+      ]
+    },
+    "wrong": {
+      "title": "If something goes wrong",
+      "items": [
+        "Report the member in the app, so that our team can act. Keep the messages, because they are evidence.",
+        "Write to our support team at {{email}}. For urgent matters, use the subject 'Urgent'.",
+        "If you are being threatened, blackmailed or cheated, contact the National Cyber Crime Investigation Agency or the police. You are not at fault.",
+        "If you are in danger, contact the police straight away."
+      ],
+      "see": ["contact"]
+    },
+    "parents": {
+      "title": "For parents",
+      "paragraphs": [
+        "Many profiles here are managed by a parent for a son or daughter. If that is you, these points help the family and the candidate."
+      ],
+      "items": [
+        "Ask your son or daughter before you create a profile. The profile is theirs, and they must agree to it.",
+        "Share decisions. Show them the profiles and the interests that arrive, and listen to their view.",
+        "Respect their answer. A 'no' from your son or daughter, or from the other side, is final. Pressure harms everyone.",
+        "Meet the other family in a public place first, and check what you were told before you share more."
+      ],
+      "see": ["community_guidelines"]
+    }
+  },
+
+  "nikah": {
+    "title": "Nikah guide",
+    "lead": "A plain guide to the steps of a nikah in Pakistan, for families who are close to a decision.",
+    "notice": "This page gives general information for families in Pakistan. It is not legal or religious advice. Requirements differ between provinces and schools of thought. Please confirm the details with your local nikah registrar, union council and a scholar you trust.",
+    "notice_platform": "Khandani Rishta does not conduct, arrange or register marriages.",
+    "closing": "Mubarak in advance. Whatever you decide, take your time, involve your family and keep your own safety in mind.",
+    "sections": [
+      {
+        "id": "before",
+        "title": "Before the nikah",
+        "paragraphs": [
+          "Let both families meet, and involve elders whose advice you trust.",
+          "Check what you were told: identity, marital status, job and family. Never transfer money to a prospective match."
+        ]
+      },
+      {
+        "id": "consent",
+        "title": "Free consent",
+        "paragraphs": [
+          "The free consent of both the bride and the groom is essential. Both must be adults, aged 18 or older.",
+          "A forced marriage is unlawful. No family should pressure a son or daughter to say yes."
+        ]
+      },
+      {
+        "id": "wali",
+        "title": "Wali and witnesses",
+        "paragraphs": [
+          "The bride's wali, usually her father or closest male guardian, has a role in the nikah. How that role works depends on the school of thought your family follows, so ask a scholar you trust.",
+          "Two adult witnesses are present. The nikah khwan is the person who performs the ceremony."
+        ]
+      },
+      {
+        "id": "mehr",
+        "title": "Mehr",
+        "paragraphs": [
+          "Mehr is the bride's right. Agree the amount before the nikah, decide whether it is prompt (paid at the time) or deferred (paid later), and write it in the nikahnama."
+        ]
+      },
+      {
+        "id": "nikahnama",
+        "title": "The nikahnama",
+        "paragraphs": [
+          "The nikahnama is the standard marriage contract form. Read every column before you sign, including the columns on conditions and on the delegated right of divorce.",
+          "The bride and groom, the wali or vakil, and the witnesses sign it."
+        ]
+      },
+      {
+        "id": "registration",
+        "title": "Registration",
+        "paragraphs": [
+          "The nikah must be registered through a licensed nikah registrar and the union council (or the relevant local office). Keep your own copy of the nikahnama."
+        ]
+      },
+      {
+        "id": "certificate",
+        "title": "Marriage certificate",
+        "paragraphs": [
+          "The computerised marriage registration certificate is issued through the union council on NADRA's system. You will need it for passports and visas, and for updating CNIC records."
+        ]
+      },
+      {
+        "id": "documents",
+        "title": "Documents usually needed",
+        "paragraphs": ["Ask your registrar for the exact list. These are usually needed:"],
+        "items": [
+          "CNICs of the bride and the groom",
+          "CNICs of the fathers or guardians",
+          "CNICs of the witnesses",
+          "Photographs",
+          "Where it applies, a divorce certificate, or the death certificate of a previous spouse"
+        ]
+      },
+      {
+        "id": "second",
+        "title": "Second marriages",
+        "paragraphs": [
+          "A man who is already married needs written permission through the arbitration council, as the law requires, before another marriage.",
+          "On Khandani Rishta, a married man must say so on his profile."
+        ]
+      },
+      {
+        "id": "overseas",
+        "title": "Overseas families",
+        "paragraphs": [
+          "Registration and attestation steps differ when a spouse lives abroad. Ask the embassy or mission concerned before you plan a date."
+        ]
+      },
+      {
+        "id": "simple",
+        "title": "Simple weddings",
+        "paragraphs": [
+          "We encourage simple ceremonies, without dowry demands. A simple nikah is easier on both families and keeps the focus on the marriage."
+        ]
+      },
+      {
+        "id": "after",
+        "title": "After your nikah",
+        "paragraphs": [
+          "Mark the rishta as 'Nikah completed' in the app, so that both profiles close. Mubarak to you both."
+        ]
+      }
+    ]
+  },
+
+  "faq": {
+    "title": "Questions and answers",
+    "lead": "Short answers to the questions we hear most. If yours is not here, write to us.",
+    "contact_prompt": "Did not find your answer?",
+    "groups": {
+      "getting_started": "Getting started",
+      "privacy": "Privacy",
+      "matches": "Matches and interests",
+      "safety": "Verification and safety",
+      "account": "Your account"
+    },
+    "items": {
+      "free": {
+        "question": "Is Khandani Rishta free?",
+        "answer": "Yes. Creating a profile, matches, interests, chat and verification are all free. We never charge for safety or verification. If optional paid extras are ever added, we will announce them first, and safety, verification, privacy controls and must-have filters will stay free."
+      },
+      "who_can_create": {
+        "question": "Who can create a profile?",
+        "answer": "Anyone aged 18 or over who is looking for a life partner, in Pakistan or abroad. Each person can have one profile. A parent, sibling, relative or friend can create it for the candidate, with the candidate's agreement."
+      },
+      "for_family": {
+        "question": "Can I create a profile for my son or daughter?",
+        "answer": "Yes. At the start you say who is creating the profile: the person themselves, a parent, a sibling, a relative or a friend. The profile always shows who manages it. The identity number and the verification checks are about the candidate, not about the person managing the profile."
+      },
+      "why_cnic": {
+        "question": "Why do you ask for a CNIC number?",
+        "answer": "We ask for the candidate's CNIC (or NICOP, POC or passport) number so that each person has only one profile, and so that anyone removed for bad behaviour cannot come back. It is also the base for ID verification. It is stored encrypted and is never shown on a profile."
+      },
+      "who_sees_cnic": {
+        "question": "Who can see my CNIC number?",
+        "answer": "No other member ever sees it. You see only its last four digits. Our staff see the full number only while they review an identity document, and every such look is recorded. We do not share it with anyone outside Khandani Rishta."
+      },
+      "photos": {
+        "question": "Who can see my photos?",
+        "answer": "You choose. Your photos can be visible to all members, only to people you show interest in and your connections, only to your connections, or only to people you approve one by one. When photos are private, others see a blurred copy, and they can ask you for access if you allow requests."
+      },
+      "hide_name": {
+        "question": "Can I hide my name?",
+        "answer": "Yes. You can show your full name, your first name and last initial, your first name only, your initials, or only your profile code. Your connections always see your full name."
+      },
+      "phone": {
+        "question": "Who can see my phone number?",
+        "answer": "Nobody, unless you decide. Your phone number and other contact details stay hidden until you choose to share them with one connection. You can share your own number or a guardian's number, and you can stop sharing later. Once shared, the other person may have saved it, so share only when you and your family are comfortable."
+      },
+      "hide_profile": {
+        "question": "Can I hide my profile for a while?",
+        "answer": "Yes. Pausing your profile is a break: new people can no longer find it, and you can resume whenever you like. In your privacy settings you can also choose who can find your profile, including only people who fit your must-haves."
+      },
+      "screenshots": {
+        "question": "Can people take screenshots?",
+        "answer": "A website cannot stop screenshots, and neither can ours. The Android app blocks screenshots on profile, photo and chat screens. Because a photo can still be photographed, keep your photos private until you are comfortable, and never send anything you would not want others to keep."
+      },
+      "how_matches": {
+        "question": "How are matches chosen?",
+        "answer": "Matches must fit both sides. We compare your preferences with each profile, and the other person's preferences with yours. A profile that breaks one of your must-haves is never shown. Each match shows a percentage and the reasons behind it."
+      },
+      "must_have": {
+        "question": "What is a must-have?",
+        "answer": "A must-have is a preference that you mark as essential, for example religion or an age range. A profile that does not meet it is never shown to you, and you are not shown to them. Preferences that you mark as less important only change the order and the percentage."
+      },
+      "how_many_interests": {
+        "question": "How many interests can I send?",
+        "answer": "There is a daily limit so that interests stay considered. At launch it is 10 a day, and 20 a day for members who are ID verified or photo verified. It resets every day at midnight, Pakistan time. An interest that is not answered expires after 21 days."
+      },
+      "decline_known": {
+        "question": "Will someone know if I decline?",
+        "answer": "No. A decline is private. If an interest is declined or not answered, the sender only sees 'No response yet'."
+      },
+      "cannot_send": {
+        "question": "Why can I not send an interest to a member?",
+        "answer": "There are a few reasons. You may have used today's interests. The member may accept interests only from verified members or from people who fit their must-haves. You may have sent them an interest recently. Or their profile may be paused or not available. The profile screen tells you which reason applies."
+      },
+      "id_verified": {
+        "question": "What does 'ID verified' mean?",
+        "answer": "Our team checked the candidate's identity document against the profile and a live selfie. The name, date of birth and gender match a real document that belongs to the person in the photos. It does not prove marital status, education, income or intentions, so always take your own care and involve your family."
+      },
+      "how_verify": {
+        "question": "How do I verify?",
+        "answer": "Open Me, then Verification, in the app. Add the CNIC (or other identity) number, upload a photo of the card, and take a live selfie. We usually review within 24 hours. Verification is free."
+      },
+      "document_photos": {
+        "question": "What happens to my document photos?",
+        "answer": "Only our reviewers see them. They are kept private and are deleted 30 days after the decision. We keep the decision itself, but not the images."
+      },
+      "report": {
+        "question": "How do I report someone?",
+        "answer": "Open the member's profile or the chat, choose Report, pick the reason and send. You can block the member at the same time. Our team reviews every report, and the other member is never told who reported them."
+      },
+      "bureaus": {
+        "question": "Are marriage bureaus allowed?",
+        "answer": "No. Marriage bureaus and paid matchmakers may not create or run profiles. If someone asks you for a fee to arrange a match, report them and our team will review it."
+      },
+      "pause_close": {
+        "question": "How do I pause or close my profile?",
+        "answer": "Go to Settings, then Account. Pause hides your profile for a break, and you can resume at any time. Close is for when you have found a match or stopped searching: your connections can still read your conversations, but you no longer appear to anyone else."
+      },
+      "delete_account": {
+        "question": "How do I delete my account?",
+        "answer": "Go to Settings, then Account, then Delete account, and type DELETE to confirm. Your account is permanently removed after 30 days. If you change your mind during those 30 days, sign in and choose Keep my account."
+      },
+      "data_copy": {
+        "question": "How do I get a copy of my data?",
+        "answer": "Go to Settings, then Account, then Download my data. We prepare a file with everything stored about you and email you when it is ready. The link works for a limited time."
+      },
+      "found_match": {
+        "question": "I found a match. What now?",
+        "answer": "Mubarak! As your families talk, mark the stages in the connection details: 'Our families are in touch', 'Rishta confirmed' and 'Nikah completed'. Each stage needs both sides to confirm. When the nikah is completed, both profiles close. Our nikah guide explains the usual steps."
+      }
+    }
+  },
+
+  "download": {
+    "title": "Download the Android app",
+    "lead": "Get Khandani Rishta on your Android phone.",
+    "ready": {
+      "version": "Version {{version}}",
+      "button": "Download for Android",
+      "notes_title": "What is new"
+    },
+    "none": {
+      "title": "The Android app is not available yet",
+      "body": "You can use Khandani Rishta in your browser now, on any phone or computer."
+    },
+    "error": {
+      "title": "The Android app download is not available right now",
+      "body": "We could not check for the latest version. Please try again in a little while. You can use Khandani Rishta in your browser meanwhile.",
+      "retry": "Try again"
+    },
+    "requirements": {
+      "title": "Requirements",
+      "body": "Android 8.0 or later."
+    },
+    "install": {
+      "title": "How to install",
+      "steps": [
+        "Tap Download for Android. Your browser saves a file ending in .apk.",
+        "Open the file when the download finishes. You can find it in your notifications or in your Downloads folder.",
+        "If Android asks, allow 'Install unknown apps' for the browser you used. This is a one-time setting for that browser.",
+        "Tap Install, then Open."
+      ],
+      "warning_title": "A warning from your phone is normal",
+      "warning_body": "The app is not on the Google Play Store, so Android treats it as an app from outside the store and may show a warning, for example from Play Protect. Download the app only from this page. If your phone offers more details and an option to install anyway, you can continue."
+    },
+    "updates": {
+      "title": "Updates",
+      "body": "The app tells you when a new version is available and links back to this page."
+    },
+    "browser": {
+      "title": "Prefer the browser?",
+      "body": "The web app has the same features and works on any phone or computer.",
+      "button": "Open in the browser"
+    }
+  },
+
+  "contact": {
+    "title": "Contact",
+    "lead": "We are a small team. Write to us and we will reply as soon as we can.",
+    "support": {
+      "title": "Write to support",
+      "body": "We usually answer within 2 working days."
+    },
+    "include": {
+      "title": "What to include",
+      "items": [
+        "Your profile code, if you know it, and the email address you use to sign in.",
+        "A short description of the problem, with dates if you can.",
+        "Screenshots, if they help. Please do not include other people's private details."
+      ],
+      "note": "Never send your CNIC number, a photo of your identity card or a password. We will never ask for them."
+    },
+    "urgent": {
+      "title": "Safety and abuse",
+      "body": "For an urgent safety report, or a request to remove content, write to the same address with the subject 'Urgent'. We handle urgent reports first.",
+      "emergency": "If you are in danger or are being threatened, contact the police or the National Cyber Crime Investigation Agency first. We are not an emergency service."
+    },
+    "authorities": {
+      "title": "Requests from authorities",
+      "body": "We answer official requests only when they come in writing from an official channel of the competent agency, or as a court order. Send them to the same address with the subject 'Official request'. We check the sender through a publicly listed contact and share only the minimum that the request lawfully requires. We do not act on telephone calls or on messages from chat apps."
+    }
+  },
+
+  "legal": {
+    "version": "Version of 20 November 2026",
+    "review_title": "Pending legal review",
+    "review_body": "This is a complete draft. A lawyer in Pakistan has not reviewed it yet, and it may change before launch. Please do not treat it as final."
+  },
+
+  "terms": {
+    "title": "Terms of Use",
+    "lead": "These terms are the agreement between you and Khandani Rishta. Please read them with the Privacy Policy and the Community Guidelines.",
+    "sections": [
+      {
+        "id": "who",
+        "title": "Who may use Khandani Rishta",
+        "paragraphs": [
+          "You must be 18 or older to have a profile. Khandani Rishta is for people who want to marry. It is not a dating or casual chat service.",
+          "Each person may have one profile. A parent, sibling, relative or friend may create and manage a profile for someone else only with that person's agreement, and the profile says who manages it."
+        ]
+      },
+      {
+        "id": "account",
+        "title": "Your account and identity",
+        "paragraphs": [
+          "Give accurate information, including the candidate's name, age, marital status, education, work, family details and photos.",
+          "We ask for the candidate's identity number so that each person has one profile. The Privacy Policy explains how we protect it.",
+          "Verification is a check by our team of the details you give. It is not a guarantee about any member, and it does not replace your own care.",
+          "Keep your sign-in secure. You are responsible for what happens on your account."
+        ]
+      },
+      {
+        "id": "conduct",
+        "title": "Rules of conduct",
+        "paragraphs": ["You agree to the following rules:"],
+        "items": [
+          "Be honest about yourself and the candidate.",
+          "Be respectful. Do not harass, threaten or pressure anyone.",
+          "Do not ask any member for money, gifts or financial details.",
+          "Do not put phone numbers, email addresses, links or social media names in profile text, interest messages or photos. Use contact sharing instead.",
+          "Do not use the service for business, advertising or promotion.",
+          "Do not operate as a marriage bureau or a paid agent."
+        ],
+        "after": [
+          "The Community Guidelines explain these rules in more detail and form part of these terms."
+        ],
+        "see": ["community_guidelines"]
+      },
+      {
+        "id": "content",
+        "title": "Your content",
+        "paragraphs": [
+          "You own the content you add: profile details, photos and messages. You give Khandani Rishta the right to store it and to show it to other members in line with your privacy settings, only so that we can run the service.",
+          "Our team may review content, including photos before they are shown, and may remove content that breaks these terms or the Community Guidelines."
+        ]
+      },
+      {
+        "id": "moderation",
+        "title": "Moderation and appeals",
+        "paragraphs": [
+          "If someone breaks the rules, we may remove content, send a warning, suspend the account for a period, or ban it permanently, depending on how serious the case is. Fraud, asking for money, hiding a current marriage, explicit content and running a marriage bureau lead to a permanent ban.",
+          "We tell you the reason in plain words. To appeal, write to support from the email address of the account within 30 days. Each decision can be appealed once. We review it again, by someone other than the person who decided first where we can, and we reply within 7 days."
+        ],
+        "see": ["contact"]
+      },
+      {
+        "id": "guarantees",
+        "title": "No guarantees",
+        "paragraphs": [
+          "Khandani Rishta does not run background checks. We do not guarantee that what any member says is true, or that you will find a partner.",
+          "Members are responsible for their own decisions, for checking what they are told with their families, and for how and where they meet. Please read our safety advice."
+        ],
+        "see": ["safety"]
+      },
+      {
+        "id": "cost",
+        "title": "Cost",
+        "paragraphs": [
+          "Khandani Rishta is free at launch. If we add paid features in the future, we will announce them in the app first, and they will be optional. Safety, verification and privacy controls will not be sold."
+        ]
+      },
+      {
+        "id": "ending",
+        "title": "Pausing, closing and deleting",
+        "paragraphs": [
+          "You can pause or close your profile at any time in Settings. You can also delete your account in Settings. It is permanently removed after 30 days, unless you cancel the deletion before then.",
+          "We keep some records, such as reports and moderation decisions, for up to 2 years after an account is deleted, to keep the community safe and to meet legal duties. The Privacy Policy explains what we keep and for how long."
+        ],
+        "see": ["privacy"]
+      },
+      {
+        "id": "liability",
+        "title": "Limits of liability",
+        "paragraphs": [
+          "As far as the law allows, Khandani Rishta is provided as it is, and we are not responsible for losses that come from what members say or do, from meetings between members, or from interruptions of the service.",
+          "Nothing in these terms limits a right that you have by law and that cannot be limited."
+        ]
+      },
+      {
+        "id": "law",
+        "title": "Governing law and disputes",
+        "paragraphs": [
+          "These terms are governed by the laws of Pakistan. Please contact us first, so that we can try to solve a problem together. The courts of Pakistan decide any dispute that we cannot solve."
+        ]
+      },
+      {
+        "id": "changes",
+        "title": "Changes to these terms",
+        "paragraphs": [
+          "We may update these terms. When we do, we tell you in the app and ask you to accept the new version before you continue. If you do not accept, you can delete your account."
+        ]
+      },
+      {
+        "id": "contact",
+        "title": "Contact",
+        "paragraphs": ["Questions about these terms: write to {{email}}."],
+        "see": ["contact"]
+      }
+    ]
+  },
+
+  "privacy": {
+    "title": "Privacy Policy",
+    "lead": "This policy explains what we collect about you, why, who can see it and the choices you have. We have tried to write it in plain words.",
+    "sections": [
+      {
+        "id": "controller",
+        "title": "Who is responsible for your data",
+        "paragraphs": [
+          "Khandani Rishta is run by its owner, who decides how your data is used. The registered name and address will be added here before launch.",
+          "You can reach us at {{email}}."
+        ],
+        "see": ["contact"]
+      },
+      {
+        "id": "collect",
+        "title": "What we collect",
+        "paragraphs": ["We collect the following, mostly from what you tell us:"],
+        "details": [
+          {
+            "term": "Account data",
+            "text": "Your email address, and a phone number if you add one."
+          },
+          {
+            "term": "Profile data",
+            "text": "Name, date of birth, gender, religion, sect and caste, languages, where you live and where you are from, education, work, income band, family and home details, lifestyle and the text you write about yourself. Religion, sect and caste are sensitive, and caste is optional."
+          },
+          {
+            "term": "Photos",
+            "text": "The photos you upload, and blurred copies of them."
+          },
+          {
+            "term": "Identity and verification data",
+            "text": "The identity number (CNIC, NICOP, POC or passport), and the document photo and live selfie if you choose to verify."
+          },
+          {
+            "term": "Preferences",
+            "text": "What you are looking for in a partner."
+          },
+          {
+            "term": "Activity and messages",
+            "text": "Interests, chat messages, shortlists, blocks and reports."
+          },
+          {
+            "term": "Device and log data",
+            "text": "Device type, app version, a push notification token, IP address, request logs and error reports."
+          }
+        ]
+      },
+      {
+        "id": "use",
+        "title": "Why we use it",
+        "details": [
+          {
+            "term": "Matching",
+            "text": "To show you compatible profiles and to show you to people who fit what you are looking for."
+          },
+          {
+            "term": "Safety",
+            "text": "To check photos and text, handle reports, prevent fraud and duplicate profiles, and remove members who break the rules."
+          },
+          {
+            "term": "Verification",
+            "text": "To confirm identity details when you ask for a verification badge."
+          },
+          {
+            "term": "Communication",
+            "text": "To send notifications, essential emails and a weekly digest of matches, and to answer your messages to support."
+          }
+        ],
+        "after": ["We do not sell your data."]
+      },
+      {
+        "id": "visibility",
+        "title": "Who can see what",
+        "paragraphs": [
+          "Other members see only what your privacy settings allow. A detail that you hide is not sent to their device at all. Nothing about a member is visible to people who are not signed in.",
+          "Your identity number is never shown to other members. Your phone number and other contact details are shown to one connection only, and only if you share them."
+        ]
+      },
+      {
+        "id": "staff",
+        "title": "Staff access",
+        "paragraphs": [
+          "Our moderators see what they need to review a profile, a photo, a report or a verification request. Chat messages reach a moderator only when a member reports a message, and then only the messages around it.",
+          "Identity numbers are seen only while a verification is reviewed, and every such access is recorded."
+        ]
+      },
+      {
+        "id": "providers",
+        "title": "Service providers",
+        "paragraphs": ["Other companies process data for us, only to provide their service:"],
+        "details": [
+          { "term": "Clerk", "text": "Sign-in." },
+          {
+            "term": "Cloudflare and Microsoft Azure",
+            "text": "Hosting, private photo storage, and automatic safety checks of photos and text."
+          },
+          { "term": "Sentry", "text": "Error reporting, with personal data removed." },
+          { "term": "Resend", "text": "Email." },
+          { "term": "Firebase (Google)", "text": "Push notifications in the Android app." }
+        ]
+      },
+      {
+        "id": "transfers",
+        "title": "Where data is stored",
+        "paragraphs": [
+          "Our providers run servers in several countries, so your data may be processed outside Pakistan. We choose providers that protect data with encryption and access controls, and we share only what is needed.",
+          "If the law requires data to be kept in Pakistan, we will change this policy and our setup."
+        ]
+      },
+      {
+        "id": "retention",
+        "title": "How long we keep it",
+        "details": [
+          {
+            "term": "Account and profile",
+            "text": "While your account is open. After you ask to delete it, we keep it for 30 days in case you change your mind, and then remove it permanently."
+          },
+          {
+            "term": "Verification images",
+            "text": "Deleted 30 days after the decision. We keep the decision itself."
+          },
+          {
+            "term": "Messages of an ended connection",
+            "text": "Until either member's account is deleted, and for at most 12 months after the connection ended."
+          },
+          {
+            "term": "Profile views and notifications",
+            "text": "90 days."
+          },
+          {
+            "term": "Uploads that were never confirmed",
+            "text": "24 hours."
+          },
+          {
+            "term": "Reports, warnings, bans and records of your acceptances",
+            "text": "Up to 2 years after your account is deleted, so that removed members cannot return and so that we meet legal duties."
+          }
+        ]
+      },
+      {
+        "id": "security",
+        "title": "Security",
+        "paragraphs": [
+          "Identity numbers are stored encrypted, and only the last four digits are ever shown, only to you. Photos are stored privately and shown through short-lived links. Photos that you keep private are shown as blurred copies. Connections to our service are encrypted.",
+          "No system is perfectly secure. Please keep your sign-in safe, and tell us if you suspect a problem."
+        ]
+      },
+      {
+        "id": "choices",
+        "title": "Your choices",
+        "paragraphs": [
+          "Your privacy settings control who can find you and what they see. In Settings you can download a copy of your data, pause, close or delete your account. You can correct most profile details yourself.",
+          "Some details, such as date of birth and gender, cannot be changed after sign-up. Write to us to fix a mistake. For any other request about your data, write to {{email}}."
+        ]
+      },
+      {
+        "id": "children",
+        "title": "Children",
+        "paragraphs": [
+          "Khandani Rishta is not for anyone under 18. We remove any profile of a person under 18."
+        ]
+      },
+      {
+        "id": "authorities",
+        "title": "Requests from authorities",
+        "paragraphs": [
+          "We share personal data with authorities only through lawful process: a written request from the competent agency, or a court order. We check the sender, share the minimum that the request requires, and keep a record."
+        ]
+      },
+      {
+        "id": "changes",
+        "title": "Changes to this policy",
+        "paragraphs": [
+          "We may update this policy. We will tell you in the app, and we will ask for your acceptance when a change is significant."
+        ]
+      }
+    ]
+  },
+
+  "guidelines": {
+    "title": "Community Guidelines",
+    "lead": "Khandani Rishta is a place for families to find a life partner with respect. These guidelines say what that means in practice.",
+    "sections": [
+      {
+        "id": "honest",
+        "title": "Be honest",
+        "paragraphs": [
+          "Use the candidate's real name, age and marital status. Describe education and work truthfully. Use recent photos of the candidate only."
+        ]
+      },
+      {
+        "id": "respectful",
+        "title": "Be respectful",
+        "items": [
+          "Use polite language, in your profile and in chat.",
+          "Accept a 'no'. Do not pressure anyone or write again and again.",
+          "Do not insult anyone for their religion, sect, caste, colour or family."
+        ]
+      },
+      {
+        "id": "marriage",
+        "title": "For marriage only",
+        "paragraphs": [
+          "Khandani Rishta is for finding a life partner. No casual chatting, no business offers and no promotion."
+        ]
+      },
+      {
+        "id": "photos",
+        "title": "Photos",
+        "items": [
+          "One person in each photo, with the face visible. Your first photo should show the candidate's face clearly.",
+          "Modest dress, as you would wear to meet the other family.",
+          "No phone numbers, social media names or watermarks on a photo.",
+          "No children alone, no celebrities, and no photos of someone else.",
+          "Our team checks photos before they are shown. A photo that is not approved can be replaced."
+        ]
+      },
+      {
+        "id": "contact",
+        "title": "Keep contact details private",
+        "paragraphs": [
+          "Do not write phone numbers, email addresses, links or social media names in your profile text, in interest messages or on photos.",
+          "When you and your family are ready, use contact sharing. You decide who receives your details, and you can stop sharing later."
+        ]
+      },
+      {
+        "id": "money",
+        "title": "No money",
+        "paragraphs": [
+          "Never ask another member for money, gifts or financial details, and never send money to someone you met here. If someone asks you, report them."
+        ]
+      },
+      {
+        "id": "agents",
+        "title": "No agents",
+        "paragraphs": [
+          "Marriage bureaus and paid matchmakers may not create or run profiles. A profile is for one candidate who is looking for a spouse."
+        ]
+      },
+      {
+        "id": "report",
+        "title": "Report problems",
+        "paragraphs": [
+          "If someone breaks these guidelines, open their profile or the chat and choose Report. Reports are confidential: we never tell a member who reported them.",
+          "Our team reviews each report. Urgent ones, such as requests for money or a profile of someone under 18, are handled first."
+        ]
+      },
+      {
+        "id": "consequences",
+        "title": "What happens when rules are broken",
+        "paragraphs": [
+          "Depending on the case, we remove the content, send a warning, suspend the account for a period, or ban it permanently. Fraud, asking for money, hiding a current marriage, explicit content and running a marriage bureau lead to a permanent ban.",
+          "You can appeal in writing within 30 days. The Terms of Use explain how."
+        ],
+        "see": ["terms"]
+      }
+    ]
+  }
+}

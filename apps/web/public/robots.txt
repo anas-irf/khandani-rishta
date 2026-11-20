@@ -1,0 +1,23 @@
+# Public pages may be indexed. Signed-in and sign-in routes may not (17 section 13).
+# "/p/" (not "/p") so that the Privacy Policy at /privacy stays indexable.
+User-agent: *
+Allow: /
+Disallow: /home
+Disallow: /matches
+Disallow: /search
+Disallow: /profiles
+Disallow: /p/
+Disallow: /interests
+Disallow: /chats
+Disallow: /shortlist
+Disallow: /visitors
+Disallow: /notifications
+Disallow: /photo-requests
+Disallow: /me
+Disallow: /settings
+Disallow: /onboarding
+Disallow: /account
+Disallow: /admin
+Disallow: /sign-in
+
+Sitemap: https://khandanirishta.app/sitemap.xml

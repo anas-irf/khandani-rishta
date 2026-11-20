@@ -1,0 +1,476 @@
+{
+  "form": {
+    "failed_onboarding": "Something went wrong on our side. Your earlier steps are saved. Please try again.",
+    "failed": "Something went wrong. Please try again.",
+    "try_again": "Try again",
+    "reference": "Reference: {{id}}",
+    "review_note": "Changes are reviewed before other members can see them.",
+    "text_pending": "Under review. Other members will see this text once it is approved.",
+    "text_rejected": "Not approved. This text is hidden from other members. Please edit it."
+  },
+  "locked": {
+    "icon": "Locked",
+    "explanation": "This cannot be changed here. If it is wrong, write to <mail>{{email}}</mail> and include your profile code {{code}}.",
+    "mail_subject": "Correction request {{code}}"
+  },
+  "account_for": {
+    "title": "Who is this profile for?",
+    "subtitle": "Many profiles here are created by parents and family. Tell us who will be getting married.",
+    "managed_by_label": "Who is this profile for?",
+    "choice": {
+      "self": "Myself",
+      "self_help": "I am looking for my own life partner.",
+      "parent": "My son or daughter",
+      "parent_help": "I am a parent searching for my child.",
+      "sibling": "My brother or sister",
+      "sibling_help": "I am searching for my sibling.",
+      "relative": "A relative",
+      "relative_help": "For example a niece, nephew or cousin.",
+      "friend": "A friend",
+      "friend_help": "I am helping a friend."
+    },
+    "manager_name_label": "Your name",
+    "manager_name_help": "We use this when we contact you. It is not shown on the profile.",
+    "consent_terms": "I agree to the <terms>Terms of Use</terms>, <privacy>Privacy Policy</privacy> and <guidelines>Community Guidelines</guidelines>.",
+    "consent_age_self": "I confirm that I am 18 years of age or older.",
+    "consent_age_other": "I confirm that the person this profile is for is 18 years of age or older.",
+    "consent_candidate": "I confirm that they know about this profile and agree to it being created.",
+    "marriage_only": "Khandani Rishta is for marriage only. Marriage bureaus and paid agents may not create profiles."
+  },
+  "basics": {
+    "title": "The basics",
+    "subtitle": "These details appear on the profile and are used to find matches.",
+    "first_name_label": "First name",
+    "last_name_label": "Last name",
+    "last_name_help": "You choose how much of the name other members see in the privacy settings.",
+    "gender_label": "Gender",
+    "date_of_birth_label": "Date of birth",
+    "date_of_birth_help": "Only the age is shown to others.",
+    "marital_status_label": "Marital status",
+    "current_wives_count_label": "Number of current wives",
+    "children_status_label": "Do you have children?",
+    "children_status_label_male": "Does he have children?",
+    "children_status_label_female": "Does she have children?",
+    "children_status_label_unknown": "Do they have children?",
+    "children_count_label": "How many children?",
+    "height_label": "Height",
+    "warning": "Please check the gender and date of birth. They cannot be changed after the profile is created. If a mistake is found later, only our support team can correct it.",
+    "gender_dialog": {
+      "title": "Change gender to {{gender}}?",
+      "body": "Answers that depend on gender will be cleared.",
+      "confirm": "Change",
+      "cancel": "Cancel"
+    }
+  },
+  "community": {
+    "title": "Religion and community",
+    "subtitle": "Families often look for a match from a similar background. You decide what is shown.",
+    "religion_label": "Religion",
+    "sect_label": "Sect",
+    "caste_label": "Caste or biradari",
+    "caste_help": "Optional. You can hide it from other members in the privacy settings.",
+    "caste_none": "Prefer not to say",
+    "caste_other_option": "Other (type your own)",
+    "caste_other_label": "Your caste or biradari",
+    "sub_caste_label": "Sub-caste or clan",
+    "sub_caste_none": "Not specified",
+    "sub_caste_other_option": "Other (type your own)",
+    "mother_tongue_label": "Mother tongue",
+    "languages_label": "Other languages spoken"
+  },
+  "location": {
+    "title": "Where you live",
+    "title_male": "Where he lives",
+    "title_female": "Where she lives",
+    "title_unknown": "Where they live",
+    "subtitle": "Your city is shown on the profile. The neighbourhood is private unless you choose otherwise.",
+    "subtitle_male": "His city is shown on the profile. The neighbourhood is private unless you choose otherwise.",
+    "subtitle_female": "Her city is shown on the profile. The neighbourhood is private unless you choose otherwise.",
+    "subtitle_unknown": "Their city is shown on the profile. The neighbourhood is private unless you choose otherwise.",
+    "place_label": "Country and city",
+    "country_label": "Country of residence",
+    "region_label": "Province or state",
+    "city_label": "City",
+    "city_other_label": "City name",
+    "area_label": "Area or neighbourhood",
+    "area_help": "For example Gulberg or DHA Phase 5. Only your connections see this unless you change it in the privacy settings.",
+    "nationality_label": "Nationality",
+    "residency_label": "Residency status",
+    "origin_label": "Family's home town in Pakistan",
+    "origin_help": "Where the family originally belongs, if different from the current city.",
+    "origin_city_label": "Home town",
+    "origin_other_label": "Home town name",
+    "relocation_label": "Willing to move after marriage?"
+  },
+  "education_career": {
+    "title": "Education and career",
+    "subtitle": "Workplace and institute names are private by default.",
+    "education_level_label": "Highest education",
+    "education_field_label": "Field of study",
+    "degree_title_label": "Degree",
+    "degree_title_placeholder": "For example BS Computer Science",
+    "institute_name_label": "University or institute",
+    "private_help": "Shown to connections only unless you change it.",
+    "employment_type_label": "Employment",
+    "profession_label": "Profession",
+    "job_title_label": "Job title",
+    "employer_name_label": "Employer or business name",
+    "income_label": "Monthly income",
+    "income_none": "Prefer not to say",
+    "income_option": "{{label}} {{currency}}",
+    "change_currency": "Change currency",
+    "currency_label": "Currency"
+  },
+  "family": {
+    "title": "Family",
+    "subtitle": "Family background matters to most families here. Add what you are comfortable sharing. You can skip this and add it later.",
+    "group_parents": "Parents",
+    "group_siblings": "Siblings",
+    "group_background": "Family background",
+    "group_home": "Home",
+    "father_status_label": "Father",
+    "father_occupation_label": "Father's occupation",
+    "father_occupation_placeholder": "Current or former, for example Retired government officer",
+    "mother_status_label": "Mother",
+    "mother_occupation_label": "Mother's occupation",
+    "mother_occupation_placeholder": "For example Homemaker",
+    "brothers_count_label": "Brothers",
+    "brothers_married_label": "Married brothers",
+    "sisters_count_label": "Sisters",
+    "sisters_married_label": "Married sisters",
+    "not_set": "Not set",
+    "family_type_label": "Family type",
+    "family_class_label": "Family status",
+    "family_values_label": "Family values",
+    "elsewhere_label": "My family lives in a different city",
+    "elsewhere_label_male": "His family lives in a different city",
+    "elsewhere_label_female": "Her family lives in a different city",
+    "elsewhere_label_unknown": "Their family lives in a different city",
+    "family_place_label": "Where the family lives",
+    "family_country_label": "Family's country",
+    "family_city_label": "Family's city",
+    "home_ownership_label": "Family home",
+    "home_type_label": "Type of home",
+    "home_size_label": "Size",
+    "home_size_unit_label": "Unit",
+    "home_help": "Home details are shown to connections only unless you change it.",
+    "about_family_label": "About the family",
+    "about_family_help": "A few lines about the family: where it comes from, what the parents and siblings do. This text is reviewed before others can see it."
+  },
+  "lifestyle": {
+    "title": "Faith, lifestyle and about you",
+    "title_male": "Faith, lifestyle and about him",
+    "title_female": "Faith, lifestyle and about her",
+    "title_unknown": "Faith, lifestyle and about them",
+    "subtitle": "These answers help families see how you live and what you hope for. You can skip this and add it later.",
+    "subtitle_male": "These answers help families see how he lives and what he hopes for. You can skip this and add it later.",
+    "subtitle_female": "These answers help families see how she lives and what she hopes for. You can skip this and add it later.",
+    "subtitle_unknown": "These answers help families see how they live and what they hope for. You can skip this and add it later.",
+    "group_practice": "Religious practice",
+    "group_plans": "Plans after marriage",
+    "group_appearance": "Appearance and health",
+    "group_hobbies": "Hobbies and interests",
+    "group_about": "About you",
+    "group_about_male": "About him",
+    "group_about_female": "About her",
+    "group_about_unknown": "About them",
+    "religiosity_label": "How religious are you?",
+    "religiosity_label_male": "How religious is he?",
+    "religiosity_label_female": "How religious is she?",
+    "religiosity_label_unknown": "How religious are they?",
+    "prayer_frequency_label": "Prayers",
+    "hijab_label": "Hijab",
+    "beard_label": "Beard",
+    "religious_education_label": "Religious education",
+    "smoking_label": "Do you smoke?",
+    "smoking_label_male": "Does he smoke?",
+    "smoking_label_female": "Does she smoke?",
+    "smoking_label_unknown": "Do they smoke?",
+    "living_arrangement_label": "Where do you expect to live after marriage?",
+    "living_arrangement_label_male": "Where does he expect to live after marriage?",
+    "living_arrangement_label_female": "Where does she expect to live after marriage?",
+    "living_arrangement_label_unknown": "Where do they expect to live after marriage?",
+    "work_female_profile_label": "Do you plan to work after marriage?",
+    "work_female_profile_label_female": "Does she plan to work after marriage?",
+    "work_female_profile_label_unknown": "Do they plan to work after marriage?",
+    "work_male_profile_label": "Are you comfortable with your wife working after marriage?",
+    "work_male_profile_label_male": "Is he comfortable with his wife working after marriage?",
+    "work_male_profile_label_unknown": "Are they comfortable with their wife working after marriage?",
+    "marriage_timeline_label": "When do you hope to marry?",
+    "marriage_timeline_label_male": "When does he hope to marry?",
+    "marriage_timeline_label_female": "When does she hope to marry?",
+    "marriage_timeline_label_unknown": "When do they hope to marry?",
+    "jahez_stance_label": "View on jahez (dowry)",
+    "weight_kg_label": "Weight in kg",
+    "complexion_label": "Complexion",
+    "body_type_label": "Build",
+    "blood_group_label": "Blood group",
+    "disability_label": "Any disability or long-term health condition?",
+    "disability_details_label": "Details",
+    "health_help": "Blood group and health details are shown to connections only unless you change it.",
+    "hobbies_label": "Hobbies and interests",
+    "hobbies_max": "You can choose up to 10.",
+    "hobby_category": {
+      "faith": "Faith",
+      "sports": "Sports and fitness",
+      "arts": "Arts and culture",
+      "food": "Food",
+      "outdoors": "Outdoors and travel",
+      "technology": "Technology",
+      "home": "Home",
+      "social": "Social",
+      "learning": "Learning"
+    },
+    "about_me_label": "About you",
+    "about_me_label_male": "About him",
+    "about_me_label_female": "About her",
+    "about_me_label_unknown": "About them",
+    "about_me_help": "Profiles with a few honest lines get far more responses. This text is reviewed before others can see it. Do not include phone numbers or social media names.",
+    "prompts_label": "Ideas to write about",
+    "prompt_1": "What matters most to you in life and in a marriage?",
+    "prompt_1_male": "What matters most to him in life and in a marriage?",
+    "prompt_1_female": "What matters most to her in life and in a marriage?",
+    "prompt_1_unknown": "What matters most to them in life and in a marriage?",
+    "prompt_2": "How would your family or friends describe you?",
+    "prompt_2_male": "How would his family or friends describe him?",
+    "prompt_2_female": "How would her family or friends describe her?",
+    "prompt_2_unknown": "How would their family or friends describe them?",
+    "prompt_3": "What does a normal week look like: work, family, faith and free time?",
+    "help_me_write": "Help me write",
+    "replace_dialog": {
+      "title": "Replace what you have written?",
+      "confirm": "Replace",
+      "cancel": "Cancel"
+    }
+  },
+  "help_me_write": {
+    "intro_job": "I am a {{age}}-year-old {{job}} living in {{city}}.",
+    "intro_job_male": "{{name}} is a {{age}}-year-old {{job}} living in {{city}}.",
+    "intro_job_female": "{{name}} is a {{age}}-year-old {{job}} living in {{city}}.",
+    "intro": "I am {{age}} years old and live in {{city}}.",
+    "intro_male": "{{name}} is {{age}} years old and lives in {{city}}.",
+    "intro_female": "{{name}} is {{age}} years old and lives in {{city}}.",
+    "education_field": "I have completed {{level}} in {{field}}.",
+    "education_field_male": "He has completed {{level}} in {{field}}.",
+    "education_field_female": "She has completed {{level}} in {{field}}.",
+    "education": "I have completed {{level}}.",
+    "education_male": "He has completed {{level}}.",
+    "education_female": "She has completed {{level}}.",
+    "faith_very": "My faith is central to my life.",
+    "faith_very_male": "His faith is central to his life.",
+    "faith_very_female": "Her faith is central to her life.",
+    "faith_practising": "I practise my faith and try to live by it.",
+    "faith_practising_male": "He practises his faith and tries to live by it.",
+    "faith_practising_female": "She practises her faith and tries to live by it.",
+    "faith_moderate": "I am moderate in my religious practice.",
+    "faith_moderate_male": "He is moderate in religious practice.",
+    "faith_moderate_female": "She is moderate in religious practice.",
+    "family_joint": "I come from a close joint family.",
+    "family_joint_male": "He comes from a close joint family.",
+    "family_joint_female": "She comes from a close joint family.",
+    "family_nuclear": "I come from a close-knit family.",
+    "family_nuclear_male": "He comes from a close-knit family.",
+    "family_nuclear_female": "She comes from a close-knit family.",
+    "hobbies": "In my free time I enjoy {{hobbies}}.",
+    "hobbies_male": "In his free time he enjoys {{hobbies}}.",
+    "hobbies_female": "In her free time she enjoys {{hobbies}}.",
+    "closing": "I am looking for a life partner who shares my values and wants to build a respectful and caring home.",
+    "closing_male": "We are looking for a life partner for him who shares our family's values and wants to build a respectful and caring home.",
+    "closing_female": "We are looking for a life partner for her who shares our family's values and wants to build a respectful and caring home.",
+    "list_two": "{{a}} and {{b}}",
+    "list_three": "{{a}}, {{b}} and {{c}}"
+  },
+  "errors": {
+    "managed_by": { "required": "Choose who this profile is for." },
+    "manager_name": {
+      "required": "Enter your name.",
+      "too_short": "Enter a name of 2 to 80 characters.",
+      "too_long": "Enter a name of 2 to 80 characters.",
+      "invalid": "Use letters only. Numbers and symbols are not allowed in a name."
+    },
+    "consents": {
+      "required": "Please agree to the Terms of Use, Privacy Policy and Community Guidelines."
+    },
+    "consent_age": { "required": "Please confirm the age statement." },
+    "consent_candidate": { "required": "Please confirm that they agree to this profile." },
+    "first_name": {
+      "required": "Enter the first name.",
+      "too_short": "The first name must be 2 to 40 characters.",
+      "too_long": "The first name must be 2 to 40 characters.",
+      "invalid": "Use letters only. Numbers and symbols are not allowed in a name.",
+      "locked": "The name cannot be changed after identity verification. Contact support to correct it."
+    },
+    "last_name": {
+      "required": "Enter the last name.",
+      "too_short": "The last name must be 2 to 40 characters.",
+      "too_long": "The last name must be 2 to 40 characters.",
+      "invalid": "Use letters only. Numbers and symbols are not allowed in a name.",
+      "locked": "The name cannot be changed after identity verification. Contact support to correct it."
+    },
+    "gender": {
+      "required": "Select a gender.",
+      "locked": "The gender cannot be changed. Contact support if it is wrong."
+    },
+    "date_of_birth": {
+      "required": "Enter the date of birth.",
+      "invalid": "Enter a real date.",
+      "too_young": "You must be at least 18 years old to use Khandani Rishta.",
+      "too_young_other": "The person the profile is for must be at least 18 years old.",
+      "out_of_range": "Please check the year of birth.",
+      "locked": "The date of birth cannot be changed. Contact support if it is wrong."
+    },
+    "marital_status": {
+      "required": "Select a marital status.",
+      "not_allowed": "This option is not available for this profile."
+    },
+    "current_wives_count": {
+      "required": "Select the number of current wives.",
+      "out_of_range": "Choose 1, 2 or 3."
+    },
+    "children_status": { "required": "Tell us whether there are children." },
+    "children_count": {
+      "required": "Enter the number of children.",
+      "out_of_range": "Enter a number from 1 to 15."
+    },
+    "height_cm": {
+      "required": "Select a height.",
+      "out_of_range": "Choose a height between 4 ft 0 in and 7 ft 0 in."
+    },
+    "religion_code": {
+      "required": "Select a religion.",
+      "unknown_code": "This option is no longer available. Please choose another."
+    },
+    "sect_code": {
+      "required": "Select a sect.",
+      "mismatch": "This sect does not belong to the selected religion.",
+      "unknown_code": "This option is no longer available. Please choose another."
+    },
+    "caste_code": {
+      "unknown_code": "This option is no longer available. Please choose another."
+    },
+    "caste_other": {
+      "too_short": "Enter 2 to 60 characters.",
+      "too_long": "Enter 2 to 60 characters.",
+      "not_allowed": "Choose a caste from the list or type your own, not both.",
+      "contains_contact_info": "Enter only the caste or clan name.",
+      "inappropriate": "Enter only the caste or clan name.",
+      "invalid": "Enter only the caste or clan name."
+    },
+    "sub_caste_code": {
+      "mismatch": "This sub-caste does not belong to the selected caste.",
+      "not_allowed": "Choose a caste first.",
+      "unknown_code": "This option is no longer available. Please choose another."
+    },
+    "sub_caste_other": {
+      "too_short": "Enter 2 to 60 characters.",
+      "too_long": "Enter 2 to 60 characters.",
+      "not_allowed": "Choose a caste first.",
+      "contains_contact_info": "Enter only the caste or clan name.",
+      "inappropriate": "Enter only the caste or clan name.",
+      "invalid": "Enter only the caste or clan name."
+    },
+    "mother_tongue_code": {
+      "required": "Select a mother tongue.",
+      "unknown_code": "This option is no longer available. Please choose another."
+    },
+    "language_codes": {
+      "too_long": "Choose up to 6 languages.",
+      "unknown_code": "This option is no longer available. Please choose another."
+    },
+    "country_code": {
+      "required": "Select a country.",
+      "unknown_code": "This option is no longer available. Please choose another."
+    },
+    "city_id": {
+      "required": "Select a city, or choose 'My city is not listed' and type it.",
+      "mismatch": "This city is not in the selected country."
+    },
+    "city_other": {
+      "too_short": "Enter 2 to 60 characters.",
+      "too_long": "Enter 2 to 60 characters.",
+      "not_allowed": "Choose a city from the list or type one, not both.",
+      "contains_contact_info": "Enter only the place name.",
+      "inappropriate": "Enter only the place name.",
+      "invalid": "Enter only the place name."
+    },
+    "region_id": {
+      "required": "Select a province or state.",
+      "mismatch": "This province or state is not in the selected country."
+    },
+    "area": {
+      "too_long": "Keep it under 80 characters.",
+      "contains_contact_info": "Enter only the place name.",
+      "inappropriate": "Enter only the place name.",
+      "invalid": "Enter only the place name."
+    },
+    "residency_status": { "required": "Select a residency status." },
+    "origin_city_id": { "mismatch": "Choose a city in Pakistan." },
+    "origin_other": {
+      "too_long": "Keep it under 60 characters.",
+      "contains_contact_info": "Enter only the place name.",
+      "inappropriate": "Enter only the place name.",
+      "invalid": "Enter only the place name."
+    },
+    "education_level_code": { "required": "Select the highest education." },
+    "employment_type": { "required": "Select an employment type." },
+    "degree_title": {
+      "too_long": "Keep it under 80 characters.",
+      "contains_contact_info": "Please remove phone numbers, email addresses, links and social media names.",
+      "inappropriate": "This text contains words that are not allowed. Please rephrase."
+    },
+    "job_title": {
+      "too_long": "Keep it under 80 characters.",
+      "contains_contact_info": "Please remove phone numbers, email addresses, links and social media names.",
+      "inappropriate": "This text contains words that are not allowed. Please rephrase."
+    },
+    "institute_name": {
+      "too_long": "Keep it under 120 characters.",
+      "contains_contact_info": "Please remove phone numbers, email addresses, links and social media names.",
+      "inappropriate": "This text contains words that are not allowed. Please rephrase."
+    },
+    "employer_name": {
+      "too_long": "Keep it under 120 characters.",
+      "contains_contact_info": "Please remove phone numbers, email addresses, links and social media names.",
+      "inappropriate": "This text contains words that are not allowed. Please rephrase."
+    },
+    "brothers_married": {
+      "out_of_range": "Married brothers cannot be more than the number of brothers."
+    },
+    "sisters_married": {
+      "out_of_range": "Married sisters cannot be more than the number of sisters."
+    },
+    "brothers_count": {
+      "out_of_range": "Enter a number from 0 to 15.",
+      "required": "Enter the number of brothers."
+    },
+    "sisters_count": {
+      "out_of_range": "Enter a number from 0 to 15.",
+      "required": "Enter the number of sisters."
+    },
+    "father_occupation": { "too_long": "Keep it under 80 characters." },
+    "mother_occupation": { "too_long": "Keep it under 80 characters." },
+    "home_size_value": {
+      "out_of_range": "Enter a size greater than 0.",
+      "required": "Enter both the size and the unit."
+    },
+    "home_size_unit": { "required": "Enter both the size and the unit." },
+    "family_city_id": { "mismatch": "This city is not in the selected country." },
+    "about_family": {
+      "too_short": "Write at least 30 characters, or leave it empty for now.",
+      "too_long": "Keep it under 1,000 characters.",
+      "contains_contact_info": "Please remove phone numbers, email addresses, links and social media names. Contact details are shared only through contact sharing.",
+      "inappropriate": "This text contains words that are not allowed. Please rephrase."
+    },
+    "hijab": { "not_allowed": "This option is not available for this profile." },
+    "beard": { "not_allowed": "This option is not available for this profile." },
+    "weight_kg": { "out_of_range": "Enter a weight between 30 and 200 kg." },
+    "disability_details": { "too_long": "Keep it under 300 characters." },
+    "hobby_codes": { "too_long": "Choose up to 10 hobbies." },
+    "about_me": {
+      "too_short": "Write at least 50 characters, or leave it empty for now.",
+      "too_long": "Keep it under 1,500 characters.",
+      "contains_contact_info": "Please remove phone numbers, email addresses, links and social media names. Contact details are shared only through contact sharing.",
+      "inappropriate": "This text contains words that are not allowed. Please rephrase."
+    }
+  }
+}

@@ -9,7 +9,7 @@ publish = false
 aes-gcm = "0.11.1"
 anyhow = "1.0.104"
 async-trait = "0.1.89"
-aws-sdk-s3 = { version = "1.161.0", default-features = false, features = ["behavior-version-latest", "default-https-client", "http-1x", "rt-tokio", "rustls"] }
+aws-sdk-s3 = { version = "1.161.0", default-features = false, features = ["behavior-version-latest", "default-https-client", "http-1x", "rt-tokio"] }
 axum = { version = "0.8.9", features = ["ws"] }
 base64 = "0.23.1"
 dotenvy = "0.15.7"

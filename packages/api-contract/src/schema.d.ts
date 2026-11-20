@@ -2850,12 +2850,12 @@ export interface components {
          * @description `admin_audit_log.target_type`.
          * @enum {string}
          */
-        AuditTargetType: "User" | "Profile" | "Photo" | "VerificationRequest" | "Report" | "Caste" | "CasteSuggestion" | "AppSetting" | "AppRelease";
+        AuditTargetType: "user" | "profile" | "photo" | "verification_request" | "report" | "caste" | "caste_suggestion" | "app_setting" | "app_release";
         /**
          * @description Profile badges (03 section 6).
          * @enum {string}
          */
-        Badge: "PhoneVerified" | "PhotoVerified" | "IdVerified" | "New";
+        Badge: "phone_verified" | "photo_verified" | "id_verified" | "new";
         BanBody: {
             /** @description Shown to the member. 3 to 500 characters. */
             reason: string;
@@ -2886,7 +2886,7 @@ export interface components {
          * @description `beard` (05 section 2).
          * @enum {string}
          */
-        Beard: "Full" | "Trimmed" | "None";
+        Beard: "full" | "trimmed" | "none";
         /** @description One blocked profile: only the name at tier `member` and the code (15 section 13). */
         BlockItem: {
             /** Format: date-time */
@@ -2904,12 +2904,12 @@ export interface components {
          * @description `blood_group` (05 section 2).
          * @enum {string}
          */
-        BloodGroup: "APos" | "ANeg" | "BPos" | "BNeg" | "AbPos" | "AbNeg" | "OPos" | "ONeg";
+        BloodGroup: "a_pos" | "a_neg" | "b_pos" | "b_neg" | "ab_pos" | "ab_neg" | "o_pos" | "o_neg";
         /**
          * @description `body_type` (05 section 2).
          * @enum {string}
          */
-        BodyType: "Slim" | "Average" | "Athletic" | "Heavy";
+        BodyType: "slim" | "average" | "athletic" | "heavy";
         BootstrapCaste: {
             aliases: string[];
             code: string;
@@ -2955,12 +2955,12 @@ export interface components {
          *     (09 section 7).
          * @enum {string}
          */
-        CannotSendDetail: "VerifiedOnly" | "PreferenceMatch";
+        CannotSendDetail: "verified_only" | "preference_match";
         /**
          * @description `Relation.cannot_send_reason` (09 section 7.2, 15 section 4.6).
          * @enum {string}
          */
-        CannotSendReason: "AlreadyPending" | "AlreadyConnected" | "Cooldown" | "DailyLimit" | "PendingLimit" | "ConnectionLimit" | "NotPermittedByMember" | "OwnProfileNotActive";
+        CannotSendReason: "already_pending" | "already_connected" | "cooldown" | "daily_limit" | "pending_limit" | "connection_limit" | "not_permitted_by_member" | "own_profile_not_active";
         /** @description `ProfileCard.relation`: the short form of [`Relation`]. */
         CardRelation: {
             /** @description The same result as `Relation.can_send_interest`, so lists can offer "Send interest". */
@@ -2995,17 +2995,17 @@ export interface components {
          * @description `caste_suggestions.status`.
          * @enum {string}
          */
-        CasteSuggestionStatus: "Pending" | "Promoted" | "Rejected";
+        CasteSuggestionStatus: "pending" | "promoted" | "rejected";
         /**
          * @description `children_acceptance` (05 section 2).
          * @enum {string}
          */
-        ChildrenAcceptance: "Any" | "NotLivingWithPartner" | "None";
+        ChildrenAcceptance: "any" | "not_living_with_partner" | "none";
         /**
          * @description `children_status` (05 section 2).
          * @enum {string}
          */
-        ChildrenStatus: "None" | "LivingWithMe" | "NotLivingWithMe";
+        ChildrenStatus: "none" | "living_with_me" | "not_living_with_me";
         CityList: {
             items: components["schemas"]["CityRef"][];
         };
@@ -3027,7 +3027,7 @@ export interface components {
          * @description `closed_reason` (05 section 2).
          * @enum {string}
          */
-        ClosedReason: "FoundMatchHere" | "FoundMatchElsewhere" | "TakingABreak" | "Other";
+        ClosedReason: "found_match_here" | "found_match_elsewhere" | "taking_a_break" | "other";
         CommunitySection: {
             caste_code?: string | null;
             caste_other?: string | null;
@@ -3080,12 +3080,12 @@ export interface components {
          *     `OwnProfile.missing`.
          * @enum {string}
          */
-        CompletenessItem: "Core" | "Photo" | "MorePhotos" | "AboutMe" | "EducationDetails" | "CareerDetails" | "Income" | "Family" | "ReligiousPractice" | "Plans" | "Relocation" | "Hobbies" | "PartnerPreferences" | "Identity" | "IdVerified" | "PhotoVerified";
+        CompletenessItem: "core" | "photo" | "more_photos" | "about_me" | "education_details" | "career_details" | "income" | "family" | "religious_practice" | "plans" | "relocation" | "hobbies" | "partner_preferences" | "identity" | "id_verified" | "photo_verified";
         /**
          * @description `complexion` (05 section 2).
          * @enum {string}
          */
-        Complexion: "VeryFair" | "Fair" | "Wheatish" | "Brown" | "Dark";
+        Complexion: "very_fair" | "fair" | "wheatish" | "brown" | "dark";
         ConfirmRequest: {
             /** @description The `upload_key` returned by `POST /v1/me/photos/uploads`. */
             upload_key: string;
@@ -3123,7 +3123,7 @@ export interface components {
          * @description `connection_end_reason` (05 section 2).
          * @enum {string}
          */
-        ConnectionEndReason: "NotCompatible" | "FamilyDeclined" | "NoResponse" | "FoundSomeoneElse" | "InappropriateBehaviour" | "Other" | "Blocked" | "AccountClosed";
+        ConnectionEndReason: "not_compatible" | "family_declined" | "no_response" | "found_someone_else" | "inappropriate_behaviour" | "other" | "blocked" | "account_closed";
         /** @description A page of connections, latest activity first. */
         ConnectionPage: {
             items: components["schemas"]["Connection"][];
@@ -3134,17 +3134,17 @@ export interface components {
          * @description `connection_stage` (05 section 2).
          * @enum {string}
          */
-        ConnectionStage: "Chatting" | "FamiliesTalking" | "Engaged" | "NikahDone";
+        ConnectionStage: "chatting" | "families_talking" | "engaged" | "nikah_done";
         /**
          * @description `connections.status` (03 section 4.8).
          * @enum {string}
          */
-        ConnectionStatus: "Active" | "Ended";
+        ConnectionStatus: "active" | "ended";
         /**
          * @description `user_consents.document`.
          * @enum {string}
          */
-        ConsentDocument: "Terms" | "Privacy" | "CommunityGuidelines" | "AgeDeclaration" | "CandidateConsent";
+        ConsentDocument: "terms" | "privacy" | "community_guidelines" | "age_declaration" | "candidate_consent";
         ConsentsBody: {
             documents: components["schemas"]["ConsentDocument"][];
         };
@@ -3169,7 +3169,7 @@ export interface components {
          * @description `contact_shares.status` (03 section 4.10).
          * @enum {string}
          */
-        ContactShareStatus: "Active" | "Revoked";
+        ContactShareStatus: "active" | "revoked";
         /** @description Private contact details (08 section 3). Never part of another member's response. */
         ContactsSection: {
             best_time_to_call?: string | null;
@@ -3362,17 +3362,17 @@ export interface components {
          * @description `user_devices.platform`.
          * @enum {string}
          */
-        DevicePlatform: "Android" | "Web";
+        DevicePlatform: "android" | "web";
         /**
          * @description `disability` (05 section 2).
          * @enum {string}
          */
-        Disability: "None" | "Physical" | "Visual" | "Hearing" | "Speech" | "ChronicIllness" | "Other";
+        Disability: "none" | "physical" | "visual" | "hearing" | "speech" | "chronic_illness" | "other";
         /**
          * @description `discovery_visibility` (05 section 2).
          * @enum {string}
          */
-        DiscoveryVisibility: "Everyone" | "PreferenceMatch" | "Hidden";
+        DiscoveryVisibility: "everyone" | "preference_match" | "hidden";
         /**
          * @description `Interest.display_status` (15 section 4.7): what the client shows. Declines are hidden from
          *     senders.
@@ -3383,7 +3383,7 @@ export interface components {
          * @description `document_type` (05 section 2).
          * @enum {string}
          */
-        DocumentType: "Cnic" | "Nicop" | "Poc" | "Passport";
+        DocumentType: "cnic" | "nicop" | "poc" | "passport";
         EducationCareerSection: {
             degree_title?: string | null;
             education_field_code?: string | null;
@@ -3399,12 +3399,12 @@ export interface components {
          * @description `email_match_digest` (05 section 2).
          * @enum {string}
          */
-        EmailMatchDigest: "Off" | "Daily" | "Weekly";
+        EmailMatchDigest: "off" | "daily" | "weekly";
         /**
          * @description `employment_type` (05 section 2).
          * @enum {string}
          */
-        EmploymentType: "PrivateJob" | "GovernmentJob" | "ArmedForces" | "BusinessOwner" | "SelfEmployed" | "Student" | "Homemaker" | "NotWorking" | "Retired";
+        EmploymentType: "private_job" | "government_job" | "armed_forces" | "business_owner" | "self_employed" | "student" | "homemaker" | "not_working" | "retired";
         /** @description `POST /v1/connections/{connection_id}/end`. */
         EndConnectionBody: {
             /** @description Also block the other member (15 section 13). */
@@ -3442,12 +3442,12 @@ export interface components {
          * @description `data_exports.status`.
          * @enum {string}
          */
-        ExportStatus: "Queued" | "Ready" | "Failed" | "Expired";
+        ExportStatus: "queued" | "ready" | "failed" | "expired";
         /**
          * @description `family_class` (05 section 2).
          * @enum {string}
          */
-        FamilyClass: "LowerMiddle" | "Middle" | "UpperMiddle" | "Affluent";
+        FamilyClass: "lower_middle" | "middle" | "upper_middle" | "affluent";
         FamilySection: {
             about_family?: string | null;
             /** Format: int32 */
@@ -3481,12 +3481,12 @@ export interface components {
          * @description `family_type` (05 section 2).
          * @enum {string}
          */
-        FamilyType: "Joint" | "Nuclear";
+        FamilyType: "joint" | "nuclear";
         /**
          * @description `family_values` (05 section 2).
          * @enum {string}
          */
-        FamilyValues: "Religious" | "Traditional" | "Moderate" | "Liberal";
+        FamilyValues: "religious" | "traditional" | "moderate" | "liberal";
         /**
          * @description Field error codes (15 section 2.2).
          * @enum {string}
@@ -3503,7 +3503,7 @@ export interface components {
          * @description `field_visibility` (05 section 2).
          * @enum {string}
          */
-        FieldVisibility: "Members" | "Connections" | "Nobody";
+        FieldVisibility: "members" | "connections" | "nobody";
         /** @description `POST /v1/reports`. */
         FileReportBody: {
             /** @description Block the target in the same transaction. Default `false`. */
@@ -3537,22 +3537,22 @@ export interface components {
          * @description The gate returned by `GET /v1/me` (03 section 5.1).
          * @enum {string}
          */
-        Gate: "Banned" | "Suspended" | "DeletionScheduled" | "ConsentRequired" | "Onboarding" | "ChangesRequested" | "PendingReview" | "Ok";
+        Gate: "banned" | "suspended" | "deletion_scheduled" | "consent_required" | "onboarding" | "changes_requested" | "pending_review" | "ok";
         /**
          * @description `gender` (05 section 2).
          * @enum {string}
          */
-        Gender: "Male" | "Female";
+        Gender: "male" | "female";
         /**
          * @description `verification_requests.gesture`.
          * @enum {string}
          */
-        Gesture: "PeaceSign" | "ThumbsUp" | "OpenPalm" | "HandOnHead";
+        Gesture: "peace_sign" | "thumbs_up" | "open_palm" | "hand_on_head";
         /**
          * @description `guardian_relation` (05 section 2).
          * @enum {string}
          */
-        GuardianRelation: "Father" | "Mother" | "Brother" | "Sister" | "Uncle" | "Aunt" | "Other";
+        GuardianRelation: "father" | "mother" | "brother" | "sister" | "uncle" | "aunt" | "other";
         Health: {
             /** @description `ok` when healthy, `unavailable` otherwise. */
             status: string;
@@ -3561,7 +3561,7 @@ export interface components {
          * @description `hijab` (05 section 2).
          * @enum {string}
          */
-        Hijab: "Niqab" | "Hijab" | "Dupatta" | "Occasionally" | "None";
+        Hijab: "niqab" | "hijab" | "dupatta" | "occasionally" | "none";
         /** @description `GET /v1/home`. */
         Home: {
             /** Format: int32 */
@@ -3588,17 +3588,17 @@ export interface components {
          * @description `home_ownership` (05 section 2).
          * @enum {string}
          */
-        HomeOwnership: "Owned" | "Rented" | "Ancestral" | "EmployerProvided" | "Other";
+        HomeOwnership: "owned" | "rented" | "ancestral" | "employer_provided" | "other";
         /**
          * @description `home_size_unit` (05 section 2).
          * @enum {string}
          */
-        HomeSizeUnit: "Marla" | "Kanal" | "SqYard" | "SqFt" | "SqM";
+        HomeSizeUnit: "marla" | "kanal" | "sq_yard" | "sq_ft" | "sq_m";
         /**
          * @description `home_type` (05 section 2).
          * @enum {string}
          */
-        HomeType: "House" | "Apartment" | "Portion" | "Other";
+        HomeType: "house" | "apartment" | "portion" | "other";
         /**
          * @description A request that carries an identity number. The number is kept out of `Debug` output and
          *     zeroed on drop (12 section 2.3), and a body of the wrong type is refused without echoing the
@@ -3613,7 +3613,7 @@ export interface components {
          * @description `profile_identity.status`.
          * @enum {string}
          */
-        IdentityStatus: "Unverified" | "Pending" | "Verified" | "Rejected";
+        IdentityStatus: "unverified" | "pending" | "verified" | "rejected";
         /** @description An identity document the owner registered. The number is never returned (12 section 2.3). */
         IdentitySummary: {
             document_type: components["schemas"]["DocumentType"];
@@ -3627,7 +3627,7 @@ export interface components {
          * @description `importance` (05 section 2).
          * @enum {string}
          */
-        Importance: "Must" | "High" | "Medium" | "Low";
+        Importance: "must" | "high" | "medium" | "low";
         /** @description An interest as one of its two members sees it (15 section 4.7). */
         Interest: {
             /**
@@ -3671,7 +3671,7 @@ export interface components {
          *     `received` by the viewer from the owner (15 section 4.6 `interest_direction`).
          * @enum {string}
          */
-        InterestDirection: "Sent" | "Received";
+        InterestDirection: "sent" | "received";
         /** @description A page of interests, newest first. */
         InterestPage: {
             items: components["schemas"]["Interest"][];
@@ -3682,12 +3682,12 @@ export interface components {
          * @description `interest_permission` (05 section 2).
          * @enum {string}
          */
-        InterestPermission: "Everyone" | "VerifiedOnly" | "PreferenceMatch";
+        InterestPermission: "everyone" | "verified_only" | "preference_match";
         /**
          * @description `interests.status` (03 section 4.7).
          * @enum {string}
          */
-        InterestStatus: "Pending" | "Accepted" | "Declined" | "Withdrawn" | "Expired";
+        InterestStatus: "pending" | "accepted" | "declined" | "withdrawn" | "expired";
         /** @description A list that is returned whole instead of paged (`GET /castes`, `/settings`, `/releases`). */
         Items_AdminCaste: {
             items: {
@@ -3733,12 +3733,12 @@ export interface components {
          * @description `jahez_stance` (05 section 2).
          * @enum {string}
          */
-        JahezStance: "Against" | "NoDemand" | "FamilyCustom";
+        JahezStance: "against" | "no_demand" | "family_custom";
         /**
          * @description Last active label (03 section 6). Never an exact time.
          * @enum {string}
          */
-        LastActive: "Online" | "Today" | "ThisWeek" | "ThisMonth" | "Earlier";
+        LastActive: "online" | "today" | "this_week" | "this_month" | "earlier";
         /** @description The status of the latest export, with a download link once it is ready. */
         LatestExport: {
             /** @description A signed link, only while `status` is `ready`. */
@@ -3778,12 +3778,12 @@ export interface components {
          * @description `living_arrangement` (05 section 2).
          * @enum {string}
          */
-        LivingArrangement: "WithFamily" | "Separate" | "Flexible";
+        LivingArrangement: "with_family" | "separate" | "flexible";
         /**
          * @description `users.locale`.
          * @enum {string}
          */
-        Locale: "En" | "Ur";
+        Locale: "en" | "ur";
         LocationSection: {
             area?: string | null;
             /** Format: int32 */
@@ -3815,7 +3815,7 @@ export interface components {
          * @description Groups of fields that privacy settings can hide (09 section 5).
          * @enum {string}
          */
-        LockedGroup: "FullName" | "Photos" | "Caste" | "Income" | "Family" | "CareerDetails" | "Home" | "Area" | "Health";
+        LockedGroup: "full_name" | "photos" | "caste" | "income" | "family" | "career_details" | "home" | "area" | "health";
         /**
          * @description What the owner is looking for, as display lines, each marked with whether the viewer fits
          *     (15 section 4.6 `LookingFor`).
@@ -3851,17 +3851,17 @@ export interface components {
          * @description `managed_by` (05 section 2).
          * @enum {string}
          */
-        ManagedBy: "Candidate" | "Parent" | "Sibling" | "Relative" | "Friend";
+        ManagedBy: "self" | "parent" | "sibling" | "relative" | "friend";
         /**
          * @description `marital_status` (05 section 2).
          * @enum {string}
          */
-        MaritalStatus: "NeverMarried" | "Divorced" | "Widowed" | "Separated" | "NikahEndedBeforeRukhsati" | "Married";
+        MaritalStatus: "never_married" | "divorced" | "widowed" | "separated" | "nikah_ended_before_rukhsati" | "married";
         /**
          * @description `marriage_timeline` (05 section 2).
          * @enum {string}
          */
-        MarriageTimeline: "Within6Months" | "Within1Year" | "Within2Years" | "NotDecided";
+        MarriageTimeline: "within_6_months" | "within_1_year" | "within_2_years" | "not_decided";
         Me: {
             config: components["schemas"]["MeConfig"];
             consents_required: components["schemas"]["ConsentDocument"][];
@@ -3957,7 +3957,7 @@ export interface components {
          * @description `messages.kind`.
          * @enum {string}
          */
-        MessageKind: "Text" | "System";
+        MessageKind: "text" | "system";
         /**
          * @description `Message.sender`.
          * @enum {string}
@@ -3982,12 +3982,12 @@ export interface components {
          * @description The three moderated free-text fields (13 section 3.7).
          * @enum {string}
          */
-        ModeratedField: "AboutMe" | "AboutFamily" | "PartnerNotes";
+        ModeratedField: "about_me" | "about_family" | "partner_notes";
         /**
          * @description `name_display` (05 section 2).
          * @enum {string}
          */
-        NameDisplay: "FullName" | "FirstNameLastInitial" | "FirstNameOnly" | "Initials" | "CodeOnly";
+        NameDisplay: "full_name" | "first_name_last_initial" | "first_name_only" | "initials" | "code_only";
         NamedItem: {
             code: string;
             name: string;
@@ -4044,7 +4044,7 @@ export interface components {
          * @description `notifications.type` (14 section 2).
          * @enum {string}
          */
-        NotificationType: "InterestReceived" | "InterestAccepted" | "PhotoRequestReceived" | "PhotoRequestGranted" | "ContactShared" | "StageProposed" | "StageConfirmed" | "ProfileApproved" | "ProfileChangesRequested" | "PhotoApproved" | "PhotoRejected" | "TextRejected" | "VerificationApproved" | "VerificationRejected" | "NewMatches" | "ProfileViewsSummary" | "AccountWarning" | "Announcement";
+        NotificationType: "interest_received" | "interest_accepted" | "photo_request_received" | "photo_request_granted" | "contact_shared" | "stage_proposed" | "stage_confirmed" | "profile_approved" | "profile_changes_requested" | "photo_approved" | "photo_rejected" | "text_rejected" | "verification_approved" | "verification_rejected" | "new_matches" | "profile_views_summary" | "account_warning" | "announcement";
         /** @description One entry of `nudges` in `GET /v1/home` (15 section 10). */
         Nudge: {
             code: components["schemas"]["NudgeCode"];
@@ -4055,7 +4055,7 @@ export interface components {
          * @description A nudge code (10 section 10.1). [`NudgeCode::ALL`] is in priority order, highest first.
          * @enum {string}
          */
-        NudgeCode: "AddPhoto" | "VerifyIdentity" | "AddAboutMe" | "SetPreferences" | "VerifyPhoto" | "AddContactDetails" | "CompleteProfile";
+        NudgeCode: "add_photo" | "verify_identity" | "add_about_me" | "set_preferences" | "verify_photo" | "add_contact_details" | "complete_profile";
         /** @description Created time of the longest-waiting item of each queue, `null` when the queue is empty. */
         OldestWaiting: {
             /** Format: date-time */
@@ -4071,7 +4071,7 @@ export interface components {
          * @description `profiles.onboarding_step` (03 section 4.3), in order.
          * @enum {string}
          */
-        OnboardingStep: "AccountFor" | "Basics" | "Community" | "Location" | "EducationCareer" | "Family" | "Lifestyle" | "Photos" | "Preferences" | "Identity" | "Review" | "Done";
+        OnboardingStep: "account_for" | "basics" | "community" | "location" | "education_career" | "family" | "lifestyle" | "photos" | "preferences" | "identity" | "review" | "done";
         OptionItem: {
             code: string;
             label: string;
@@ -4433,7 +4433,7 @@ export interface components {
          * @description `parent_status` (05 section 2).
          * @enum {string}
          */
-        ParentStatus: "Alive" | "Deceased";
+        ParentStatus: "alive" | "deceased";
         /**
          * @description Which member did something, seen from the caller.
          * @enum {string}
@@ -4498,12 +4498,12 @@ export interface components {
          * @description `photo_access.status` (03 section 4.9).
          * @enum {string}
          */
-        PhotoAccessStatus: "Pending" | "Granted" | "Denied" | "Revoked";
+        PhotoAccessStatus: "pending" | "granted" | "denied" | "revoked";
         /**
          * @description `photo_rejection_reason` (05 section 2).
          * @enum {string}
          */
-        PhotoRejectionReason: "NotAPerson" | "FaceNotVisible" | "GroupPhoto" | "Inappropriate" | "ContainsContactInfo" | "LowQuality" | "NotTheCandidate" | "Other";
+        PhotoRejectionReason: "not_a_person" | "face_not_visible" | "group_photo" | "inappropriate" | "contains_contact_info" | "low_quality" | "not_the_candidate" | "other";
         /** @description The answer to a photo request: always `pending`. */
         PhotoRequested: {
             status: components["schemas"]["PhotoAccessStatus"];
@@ -4512,7 +4512,7 @@ export interface components {
          * @description `profile_photos.status` (03 section 4.4).
          * @enum {string}
          */
-        PhotoStatus: "Processing" | "PendingReview" | "Approved" | "Rejected" | "Failed";
+        PhotoStatus: "processing" | "pending_review" | "approved" | "rejected" | "failed";
         /**
          * @description Another member's photo as the viewer may see it (15 section 4.4). In blurred mode the URLs
          *     point at the separate blurred files and `large_url` is `null` (09 section 6.2).
@@ -4533,12 +4533,12 @@ export interface components {
          * @description `photo_visibility` (05 section 2).
          * @enum {string}
          */
-        PhotoVisibility: "Members" | "InterestsAndConnections" | "Connections" | "ApprovedOnly";
+        PhotoVisibility: "members" | "interests_and_connections" | "connections" | "approved_only";
         /**
          * @description `prayer_frequency` (05 section 2).
          * @enum {string}
          */
-        PrayerFrequency: "FiveTimes" | "MostPrayers" | "Sometimes" | "JummahOnly" | "Rarely";
+        PrayerFrequency: "five_times" | "most_prayers" | "sometimes" | "jummah_only" | "rarely";
         /**
          * @description Every column of `partner_preferences` except `profile_id`, `notes_status` and the timestamps.
          *     An empty array or a `null` bound means "no preference" for that dimension.
@@ -4625,7 +4625,7 @@ export interface components {
          * @description `preferred_contact` (05 section 2).
          * @enum {string}
          */
-        PreferredContact: "Candidate" | "Guardian";
+        PreferredContact: "self" | "guardian";
         /** @description Every column of `profile_privacy` except `profile_id` and the timestamps. */
         Privacy: {
             allow_photo_requests: boolean;
@@ -4742,7 +4742,7 @@ export interface components {
          * @description `profiles.status` (03 section 4.2).
          * @enum {string}
          */
-        ProfileStatus: "Draft" | "PendingReview" | "ChangesRequested" | "Active" | "Paused" | "Closed" | "Suspended" | "Deleted";
+        ProfileStatus: "draft" | "pending_review" | "changes_requested" | "active" | "paused" | "closed" | "suspended" | "deleted";
         ProfilesByStatus: {
             /** Format: int64 */
             active: number;
@@ -4884,7 +4884,7 @@ export interface components {
          * @description `Relation.photo_access` (09 section 6.4, 15 section 4.6).
          * @enum {string}
          */
-        RelationPhotoAccess: "Visible" | "CanRequest" | "Requested" | "Denied" | "RequestsOff";
+        RelationPhotoAccess: "visible" | "can_request" | "requested" | "denied" | "requests_off";
         /**
          * @description Which must-have to loosen, and how many more profiles that would show (15 section 10,
          *     `relaxation_hints`).
@@ -4904,17 +4904,17 @@ export interface components {
          * @description `religiosity` (05 section 2).
          * @enum {string}
          */
-        Religiosity: "VeryPractising" | "Practising" | "ModeratelyPractising" | "NotPractising";
+        Religiosity: "very_practising" | "practising" | "moderately_practising" | "not_practising";
         /**
          * @description `religious_education` (05 section 2).
          * @enum {string}
          */
-        ReligiousEducation: "None" | "Nazra" | "Hafiz" | "Alim";
+        ReligiousEducation: "none" | "nazra" | "hafiz" | "alim";
         /**
          * @description `relocation` (05 section 2).
          * @enum {string}
          */
-        Relocation: "NotWilling" | "WithinCountry" | "Abroad" | "Anywhere";
+        Relocation: "not_willing" | "within_country" | "abroad" | "anywhere";
         /** @description The body of `POST /v1/me/profile/reopen`. */
         ReopenBody: {
             /** @description Must be `true`. */
@@ -4937,7 +4937,7 @@ export interface components {
          * @description `report_reason` (05 section 2).
          * @enum {string}
          */
-        ReportReason: "FakeProfile" | "AlreadyMarried" | "MisleadingInformation" | "InappropriatePhoto" | "Harassment" | "AskingForMoney" | "MarriageBureauOrAgent" | "Underage" | "Impersonation" | "OffensiveContent" | "Other";
+        ReportReason: "fake_profile" | "already_married" | "misleading_information" | "inappropriate_photo" | "harassment" | "asking_for_money" | "marriage_bureau_or_agent" | "underage" | "impersonation" | "offensive_content" | "other";
         ReportReporter: {
             first_name?: string | null;
             /** Format: uuid */
@@ -4948,17 +4948,17 @@ export interface components {
          * @description `reports.source`.
          * @enum {string}
          */
-        ReportSource: "Member" | "System";
+        ReportSource: "member" | "system";
         /**
          * @description `reports.status` (03 section 4.11).
          * @enum {string}
          */
-        ReportStatus: "Open" | "InReview" | "Actioned" | "Dismissed";
+        ReportStatus: "open" | "in_review" | "actioned" | "dismissed";
         /**
          * @description `reports.subject_type`.
          * @enum {string}
          */
-        ReportSubject: "Profile" | "Photo" | "Message";
+        ReportSubject: "profile" | "photo" | "message";
         ReportTarget: {
             first_name?: string | null;
             /** Format: uuid */
@@ -5003,7 +5003,7 @@ export interface components {
          * @description `residency_status` (05 section 2).
          * @enum {string}
          */
-        ResidencyStatus: "Citizen" | "PermanentResident" | "WorkVisa" | "StudentVisa" | "DependentVisa" | "VisitVisa" | "Other";
+        ResidencyStatus: "citizen" | "permanent_resident" | "work_visa" | "student_visa" | "dependent_visa" | "visit_visa" | "other";
         ResolveBody: {
             /** @description For staff only. 10 to 1,000 characters. */
             note: string;
@@ -5016,12 +5016,12 @@ export interface components {
          * @description `messages.safety_flag` (13 section 5).
          * @enum {string}
          */
-        SafetyFlag: "Money" | "OffPlatform" | "ContactInfo";
+        SafetyFlag: "money" | "off_platform" | "contact_info";
         /**
          * @description `sanctions.type`.
          * @enum {string}
          */
-        SanctionType: "Warning" | "Suspension" | "Ban";
+        SanctionType: "warning" | "suspension" | "ban";
         /** @description A saved search (15 section 10). */
         SavedSearch: {
             /** Format: date-time */
@@ -5208,7 +5208,7 @@ export interface components {
          * @description `smoking` (05 section 2).
          * @enum {string}
          */
-        Smoking: "No" | "Occasionally" | "Yes";
+        Smoking: "no" | "occasionally" | "yes";
         StageCounts: {
             /** Format: int64 */
             chatting: number;
@@ -5253,12 +5253,12 @@ export interface components {
          * @description `messages.system_event`.
          * @enum {string}
          */
-        SystemEvent: "Connected" | "ContactShared" | "ContactShareRevoked" | "StageProposed" | "StageConfirmed" | "StageDeclined" | "ConnectionEnded";
+        SystemEvent: "connected" | "contact_shared" | "contact_share_revoked" | "stage_proposed" | "stage_confirmed" | "stage_declined" | "connection_ended";
         /**
          * @description Moderated text status: `about_me_status`, `about_family_status`, `notes_status` (03 section 4.5).
          * @enum {string}
          */
-        TextStatus: "Approved" | "Pending" | "Rejected";
+        TextStatus: "approved" | "pending" | "rejected";
         /** @description The status of each moderated text (03 section 4.5). */
         TextStatuses: {
             about_family: components["schemas"]["TextStatus"];
@@ -5269,7 +5269,7 @@ export interface components {
          * @description Relation tier of a viewer to an owner (03 section 6), evaluated in this order.
          * @enum {string}
          */
-        Tier: "SelfTier" | "Connection" | "InterestFromOwner" | "InterestToOwner" | "Member";
+        Tier: "self" | "connection" | "interest_from_owner" | "interest_to_owner" | "member";
         UploadRequest: {
             /** @description `image/jpeg`, `image/png` or `image/webp`. */
             content_type: string;
@@ -5283,7 +5283,7 @@ export interface components {
          * @description Which image of a request an upload is for (15 section 9).
          * @enum {string}
          */
-        UploadSlot: "Front" | "Back" | "Selfie";
+        UploadSlot: "front" | "back" | "selfie";
         /** @description Where and how to `PUT` a file (15 section 8). */
         UploadTicket: {
             /** Format: date-time */
@@ -5312,17 +5312,17 @@ export interface components {
          * @description `users.role`.
          * @enum {string}
          */
-        UserRole: "Member" | "Moderator" | "Admin";
+        UserRole: "member" | "moderator" | "admin";
         /**
          * @description `users.status` (03 section 4.1).
          * @enum {string}
          */
-        UserStatus: "Active" | "Suspended" | "Banned" | "DeletionScheduled" | "Deleted";
+        UserStatus: "active" | "suspended" | "banned" | "deletion_scheduled" | "deleted";
         /**
          * @description `verification_requests.kind`.
          * @enum {string}
          */
-        VerificationKind: "IdDocument" | "Selfie";
+        VerificationKind: "id_document" | "selfie";
         /** @description `GET /v1/me/verifications` (15 section 9). */
         VerificationOverview: {
             id_verified: boolean;
@@ -5336,7 +5336,7 @@ export interface components {
          * @description `verification_rejection_reason` (05 section 2).
          * @enum {string}
          */
-        VerificationRejectionReason: "Unreadable" | "DocumentMismatch" | "FaceMismatch" | "GestureMissing" | "ExpiredDocument" | "Underage" | "SuspectedFraud" | "Other";
+        VerificationRejectionReason: "unreadable" | "document_mismatch" | "face_mismatch" | "gesture_missing" | "expired_document" | "underage" | "suspected_fraud" | "other";
         /** @description One verification request as its owner sees it. The reviewer's note stays with staff. */
         VerificationRequestSummary: {
             /** Format: date-time */
@@ -5353,7 +5353,7 @@ export interface components {
          * @description `verification_requests.status` (03 section 4.6).
          * @enum {string}
          */
-        VerificationStatus: "Pending" | "Approved" | "Rejected" | "Cancelled";
+        VerificationStatus: "pending" | "approved" | "rejected" | "cancelled";
         /** @description `POST /v1/me/verifications/uploads`. */
         VerificationUploadRequest: {
             /** @description `image/jpeg`, `image/png` or `image/webp`. */
@@ -5395,7 +5395,7 @@ export interface components {
          * @description `work_after_marriage` (05 section 2).
          * @enum {string}
          */
-        WorkAfterMarriage: "Yes" | "No" | "Flexible";
+        WorkAfterMarriage: "yes" | "no" | "flexible";
     };
     responses: never;
     parameters: never;

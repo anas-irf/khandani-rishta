@@ -22,7 +22,7 @@ pub mod visibility;
 macro_rules! text_enum {
     (
         $(#[$meta:meta])*
-        $name:ident { $($variant:ident = $code:literal),+ $(,)? }
+        $name:ident { $($variant:ident = $code:tt),+ $(,)? }
     ) => {
         $(#[$meta])*
         #[derive(

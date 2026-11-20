@@ -114,4 +114,27 @@ mod tests {
             }
         }
     }
+
+    /// String enums list the codes sent on the wire, not the Rust variant names. The schema of a
+    /// `text_enum!` type once showed `Male`/`Female` while the API sent `male`/`female`.
+    #[test]
+    fn enums_list_their_wire_codes() {
+        let document: Value = serde_json::from_str(&super::spec_json().unwrap()).unwrap();
+        let schemas = &document["components"]["schemas"];
+        assert_eq!(
+            schemas["Gender"]["enum"],
+            serde_json::json!(["male", "female"])
+        );
+        assert_eq!(schemas["ManagedBy"]["enum"][0], "self");
+        for (name, schema) in schemas.as_object().unwrap() {
+            for value in schema["enum"].as_array().into_iter().flatten() {
+                let code = value.as_str().unwrap_or_default();
+                assert_eq!(
+                    code,
+                    code.to_lowercase(),
+                    "{name} lists {code:?}, which is not a lower-case wire code"
+                );
+            }
+        }
+    }
 }

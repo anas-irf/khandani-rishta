@@ -3645,7 +3645,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ReadBody"
+                "$ref": "#/components/schemas/ChatReadBody"
               }
             }
           },
@@ -8328,15 +8328,19 @@
         "type": "object",
         "description": "A photo in the review queue (18 section 4.2).",
         "required": [
+          "age",
+          "created_at",
+          "first_name",
+          "gender",
+          "large_url",
+          "moderation",
+          "other_photos",
           "photo_id",
           "profile_id",
+          "profile_is_photo_verified",
           "public_code",
           "status",
-          "created_at",
-          "large_url",
-          "would_be_primary",
-          "profile_is_photo_verified",
-          "other_photos"
+          "would_be_primary"
         ],
         "properties": {
           "age": {
@@ -8533,12 +8537,20 @@
         "type": "object",
         "description": "A row of the profile search and review queue.",
         "required": [
+          "age",
+          "city_name",
+          "created_at",
+          "first_name",
+          "gender",
+          "last_name",
+          "managed_by",
+          "onboarding_completed_at",
+          "open_system_reports",
+          "photo_thumb_url",
           "profile_id",
-          "user_id",
           "public_code",
           "status",
-          "open_system_reports",
-          "created_at"
+          "user_id"
         ],
         "properties": {
           "age": {
@@ -8789,8 +8801,14 @@
           {
             "type": "object",
             "required": [
-              "target_summary",
-              "related_reports"
+              "context",
+              "details",
+              "handled_at",
+              "photo",
+              "related_reports",
+              "reporter_summary",
+              "resolution_note",
+              "target_summary"
             ],
             "properties": {
               "context": {
@@ -8993,9 +9011,11 @@
         "type": "object",
         "description": "A text waiting for a person (18 section 4.3).",
         "required": [
+          "field",
+          "first_name",
+          "gender",
           "profile_id",
           "public_code",
-          "field",
           "text",
           "text_sha256",
           "updated_at"
@@ -9048,16 +9068,21 @@
           {
             "type": "object",
             "required": [
-              "email_verified",
-              "phone_verified",
-              "locale",
-              "devices",
+              "audit",
               "consents",
-              "sanctions",
+              "deletion_requested_at",
+              "devices",
+              "email_verified",
+              "flags",
+              "locale",
+              "phone_e164",
+              "phone_verified",
+              "purge_after",
               "reports_against",
               "reports_filed",
-              "flags",
-              "audit"
+              "sanctions",
+              "status_reason",
+              "suspended_until"
             ],
             "properties": {
               "audit": {
@@ -9345,12 +9370,13 @@
         "type": "object",
         "description": "A request in the queue (18 section 4.4).",
         "required": [
-          "request_id",
+          "created_at",
+          "first_name",
           "kind",
-          "status",
           "profile_id",
           "public_code",
-          "created_at"
+          "request_id",
+          "status"
         ],
         "properties": {
           "created_at": {
@@ -10241,6 +10267,20 @@
           "promoted",
           "rejected"
         ]
+      },
+      "ChatReadBody": {
+        "type": "object",
+        "description": "`POST /v1/connections/{connection_id}/read`. Named apart from the notifications `ReadBody`,\nbecause the contract keys schemas by type name.",
+        "required": [
+          "up_to_message_id"
+        ],
+        "properties": {
+          "up_to_message_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
       },
       "ChildrenAcceptance": {
         "type": "string",
@@ -12546,11 +12586,13 @@
               "type": "object",
               "description": "A caste or sub-caste, active or not.",
               "required": [
-                "code",
-                "name",
                 "aliases",
-                "sort_order",
-                "is_active"
+                "code",
+                "is_active",
+                "name",
+                "name_ur",
+                "parent_code",
+                "sort_order"
               ],
               "properties": {
                 "aliases": {
@@ -12601,13 +12643,14 @@
             "items": {
               "type": "object",
               "required": [
-                "id",
-                "platform",
-                "version_code",
-                "version_name",
-                "min_supported_version_code",
                 "download_url",
-                "released_at"
+                "id",
+                "min_supported_version_code",
+                "platform",
+                "release_notes",
+                "released_at",
+                "version_code",
+                "version_name"
               ],
               "properties": {
                 "download_url": {
@@ -12658,9 +12701,11 @@
             "items": {
               "type": "object",
               "required": [
+                "default",
                 "key",
-                "value",
-                "default"
+                "updated_at",
+                "updated_by_email",
+                "value"
               ],
               "properties": {
                 "default": {
@@ -13663,11 +13708,12 @@
         "type": "object",
         "description": "One row of the feed, also the body of the `notification.new` event (15 section 14).",
         "required": [
-          "id",
-          "type",
+          "actor",
+          "created_at",
           "data",
+          "id",
           "is_read",
-          "created_at"
+          "type"
         ],
         "properties": {
           "actor": {
@@ -14123,6 +14169,10 @@
           },
           {
             "type": "object",
+            "required": [
+              "city",
+              "origin_city"
+            ],
             "properties": {
               "city": {
                 "oneOf": [
@@ -14362,15 +14412,19 @@
               "type": "object",
               "description": "A photo in the review queue (18 section 4.2).",
               "required": [
+                "age",
+                "created_at",
+                "first_name",
+                "gender",
+                "large_url",
+                "moderation",
+                "other_photos",
                 "photo_id",
                 "profile_id",
+                "profile_is_photo_verified",
                 "public_code",
                 "status",
-                "created_at",
-                "large_url",
-                "would_be_primary",
-                "profile_is_photo_verified",
-                "other_photos"
+                "would_be_primary"
               ],
               "properties": {
                 "age": {
@@ -14464,12 +14518,20 @@
               "type": "object",
               "description": "A row of the profile search and review queue.",
               "required": [
+                "age",
+                "city_name",
+                "created_at",
+                "first_name",
+                "gender",
+                "last_name",
+                "managed_by",
+                "onboarding_completed_at",
+                "open_system_reports",
+                "photo_thumb_url",
                 "profile_id",
-                "user_id",
                 "public_code",
                 "status",
-                "open_system_reports",
-                "created_at"
+                "user_id"
               ],
               "properties": {
                 "age": {
@@ -14579,15 +14641,17 @@
               "type": "object",
               "description": "A row of the report queue.",
               "required": [
-                "report_id",
-                "source",
+                "created_at",
+                "handled_by_email",
+                "open_reports_on_target",
                 "priority",
                 "reason",
-                "subject_type",
+                "report_id",
+                "reporter",
+                "source",
                 "status",
-                "target",
-                "open_reports_on_target",
-                "created_at"
+                "subject_type",
+                "target"
               ],
               "properties": {
                 "created_at": {
@@ -14666,9 +14730,11 @@
               "type": "object",
               "description": "A text waiting for a person (18 section 4.3).",
               "required": [
+                "field",
+                "first_name",
+                "gender",
                 "profile_id",
                 "public_code",
-                "field",
                 "text",
                 "text_sha256",
                 "updated_at"
@@ -14737,13 +14803,18 @@
               "type": "object",
               "description": "A row of the user search.",
               "required": [
-                "user_id",
+                "created_at",
+                "email",
+                "first_name",
+                "gender",
+                "last_name",
+                "last_seen_at",
                 "profile_id",
+                "profile_status",
                 "public_code",
                 "role",
                 "status",
-                "profile_status",
-                "created_at"
+                "user_id"
               ],
               "properties": {
                 "created_at": {
@@ -14831,12 +14902,13 @@
               "type": "object",
               "description": "A request in the queue (18 section 4.4).",
               "required": [
-                "request_id",
+                "created_at",
+                "first_name",
                 "kind",
-                "status",
                 "profile_id",
                 "public_code",
-                "created_at"
+                "request_id",
+                "status"
               ],
               "properties": {
                 "created_at": {
@@ -14892,13 +14964,13 @@
               "type": "object",
               "description": "One row of `admin_audit_log`.",
               "required": [
-                "id",
-                "actor",
                 "action",
-                "target_type",
-                "target_id",
+                "actor",
+                "created_at",
                 "details",
-                "created_at"
+                "id",
+                "target_id",
+                "target_type"
               ],
               "properties": {
                 "action": {
@@ -14951,13 +15023,15 @@
             "items": {
               "type": "object",
               "required": [
+                "created_at",
                 "id",
                 "name",
                 "normalized_name",
-                "usage_count",
-                "status",
+                "parent_code",
+                "parent_name",
                 "similar",
-                "created_at"
+                "status",
+                "usage_count"
               ],
               "properties": {
                 "created_at": {
@@ -15026,11 +15100,12 @@
               "type": "object",
               "description": "One row of the feed, also the body of the `notification.new` event (15 section 14).",
               "required": [
-                "id",
-                "type",
+                "actor",
+                "created_at",
                 "data",
+                "id",
                 "is_read",
-                "created_at"
+                "type"
               ],
               "properties": {
                 "actor": {
@@ -15089,10 +15164,11 @@
               "type": "object",
               "description": "One request or grant.",
               "required": [
+                "created_at",
                 "id",
+                "profile",
                 "profile_id",
-                "status",
-                "created_at"
+                "status"
               ],
               "properties": {
                 "created_at": {
@@ -15293,10 +15369,11 @@
         "type": "object",
         "description": "One request or grant.",
         "required": [
+          "created_at",
           "id",
+          "profile",
           "profile_id",
-          "status",
-          "created_at"
+          "status"
         ],
         "properties": {
           "created_at": {

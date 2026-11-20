@@ -280,10 +280,11 @@ pub struct SendMessageBody {
     pub client_message_id: String,
 }
 
-/// `POST /v1/connections/{connection_id}/read`.
+/// `POST /v1/connections/{connection_id}/read`. Named apart from the notifications `ReadBody`,
+/// because the contract keys schemas by type name.
 #[derive(Debug, Deserialize, ToSchema)]
 #[serde(deny_unknown_fields)]
-pub struct ReadBody {
+pub struct ChatReadBody {
     pub up_to_message_id: Uuid,
 }
 

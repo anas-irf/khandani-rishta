@@ -27,7 +27,7 @@ use crate::domain::visibility;
 use crate::error::{ApiError, ApiResult, ErrorBody, FieldCode};
 use crate::extract::{ApiJson, ApiPath, ApiQuery};
 use crate::models::connections::{
-    MESSAGES_DEFAULT_LIMIT, MESSAGES_MAX_LIMIT, Message, MessagesPage, MessagesQuery, ReadBody,
+    ChatReadBody, MESSAGES_DEFAULT_LIMIT, MESSAGES_MAX_LIMIT, Message, MessagesPage, MessagesQuery,
     SendMessageBody, publish_messages, render_message,
 };
 use crate::notify;
@@ -434,7 +434,7 @@ async fn delete_message(
     tag = "connections",
     security(("bearer" = [])),
     params(("connection_id" = Uuid, Path, description = "The connection")),
-    request_body = ReadBody,
+    request_body = ChatReadBody,
     responses(
         (status = 204, description = "Marked"),
         (status = 400, body = ErrorBody),
@@ -446,7 +446,7 @@ async fn mark_read(
     State(state): State<AppState>,
     account: Connected,
     ApiPath(connection_id): ApiPath<Uuid>,
-    ApiJson(body): ApiJson<ReadBody>,
+    ApiJson(body): ApiJson<ChatReadBody>,
 ) -> ApiResult<StatusCode> {
     let me = account.profile_id;
     let membership = member_of(&state, me, connection_id).await?;

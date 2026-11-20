@@ -2459,15 +2459,15 @@ export interface components {
         /** @description A photo in the review queue (18 section 4.2). */
         AdminPhotoItem: {
             /** Format: int32 */
-            age?: number | null;
+            age: number | null;
             /** Format: date-time */
             created_at: string;
-            first_name?: string | null;
-            gender?: components["schemas"]["Gender"] | null;
+            first_name: string | null;
+            gender: components["schemas"]["Gender"] | null;
             /** @description The unblurred large variant, signed. */
             large_url: string;
             /** @description `profile_photos.moderation` (13 section 4.2). */
-            moderation?: Record<string, never> | null;
+            moderation: Record<string, unknown> | null;
             other_photos: components["schemas"]["AdminOtherPhoto"][];
             /** Format: uuid */
             photo_id: string;
@@ -2503,11 +2503,11 @@ export interface components {
             /** Format: date-time */
             last_active_at: string | null;
             /** @description `Preferences` (15 section 4.5), `null` when the profile has none. */
-            preferences: Record<string, never> | null;
+            preferences: Record<string, unknown> | null;
             /** @description `Privacy` (15 section 4.5). `null` only after the account was purged. */
-            privacy: Record<string, never> | null;
+            privacy: Record<string, unknown> | null;
             /** @description `OwnProfile` (15 section 4.3). `contacts` is `null` for moderators. */
-            profile: Record<string, never>;
+            profile: Record<string, unknown>;
             /** @description Newest 10. */
             reports_against: components["schemas"]["AdminReportListItem"][];
             reports_filed: components["schemas"]["ReportsFiled"];
@@ -2519,20 +2519,20 @@ export interface components {
         /** @description A row of the profile search and review queue. */
         AdminProfileListItem: {
             /** Format: int32 */
-            age?: number | null;
-            city_name?: string | null;
+            age: number | null;
+            city_name: string | null;
             /** Format: date-time */
             created_at: string;
-            first_name?: string | null;
-            gender?: components["schemas"]["Gender"] | null;
-            last_name?: string | null;
-            managed_by?: components["schemas"]["ManagedBy"] | null;
+            first_name: string | null;
+            gender: components["schemas"]["Gender"] | null;
+            last_name: string | null;
+            managed_by: components["schemas"]["ManagedBy"] | null;
             /** Format: date-time */
-            onboarding_completed_at?: string | null;
+            onboarding_completed_at: string | null;
             /** Format: int64 */
             open_system_reports: number;
             /** @description First photo of any status, unblurred. */
-            photo_thumb_url?: string | null;
+            photo_thumb_url: string | null;
             /** Format: uuid */
             profile_id: string;
             public_code: string;
@@ -2596,15 +2596,15 @@ export interface components {
         /** @description `GET /v1/admin/reports/{report_id}`. */
         AdminReportDetail: components["schemas"]["AdminReportListItem"] & {
             /** @description The snapshot taken at filing time (13 section 6.3 and 5.5). */
-            context?: Record<string, never> | null;
-            details?: string | null;
+            context: Record<string, unknown> | null;
+            details: string | null;
             /** Format: date-time */
-            handled_at?: string | null;
-            photo?: components["schemas"]["ReportPhoto"] | null;
+            handled_at: string | null;
+            photo: components["schemas"]["ReportPhoto"] | null;
             /** @description Other `open` or `in_review` reports on the same target. */
             related_reports: components["schemas"]["AdminReportListItem"][];
-            reporter_summary?: components["schemas"]["ReporterSummary"] | null;
-            resolution_note?: string | null;
+            reporter_summary: components["schemas"]["ReporterSummary"] | null;
+            resolution_note: string | null;
             target_summary: components["schemas"]["ReportTargetSummary"];
         };
         /** @description A row of the report queue. */
@@ -2652,8 +2652,8 @@ export interface components {
         /** @description A text waiting for a person (18 section 4.3). */
         AdminTextItem: {
             field: components["schemas"]["ModeratedField"];
-            first_name?: string | null;
-            gender?: components["schemas"]["Gender"] | null;
+            first_name: string | null;
+            gender: components["schemas"]["Gender"] | null;
             /** Format: uuid */
             profile_id: string;
             public_code: string;
@@ -2669,23 +2669,23 @@ export interface components {
             audit: components["schemas"]["AuditEntry"][];
             consents: components["schemas"]["AdminConsent"][];
             /** Format: date-time */
-            deletion_requested_at?: string | null;
+            deletion_requested_at: string | null;
             devices: components["schemas"]["AdminDevice"][];
             email_verified: boolean;
             flags: components["schemas"]["UserFlags"];
             locale: components["schemas"]["Locale"];
             /** @description `null` for moderators. */
-            phone_e164?: string | null;
+            phone_e164: string | null;
             phone_verified: boolean;
             /** Format: date-time */
-            purge_after?: string | null;
+            purge_after: string | null;
             /** @description Newest 20. */
             reports_against: components["schemas"]["AdminReportListItem"][];
             reports_filed: components["schemas"]["ReportsFiled"];
             sanctions: components["schemas"]["AdminSanction"][];
-            status_reason?: string | null;
+            status_reason: string | null;
             /** Format: date-time */
-            suspended_until?: string | null;
+            suspended_until: string | null;
         };
         /** @description A row of the user search. */
         AdminUserListItem: {
@@ -2743,7 +2743,7 @@ export interface components {
         AdminVerificationListItem: {
             /** Format: date-time */
             created_at: string;
-            first_name?: string | null;
+            first_name: string | null;
             kind: components["schemas"]["VerificationKind"];
             /** Format: uuid */
             profile_id: string;
@@ -2840,7 +2840,7 @@ export interface components {
             /** Format: date-time */
             created_at: string;
             /** @description Never holds an identity number, a contact detail or private message text. */
-            details: Record<string, never>;
+            details: Record<string, unknown>;
             /** Format: uuid */
             id: string;
             target_id: string;
@@ -2996,6 +2996,14 @@ export interface components {
          * @enum {string}
          */
         CasteSuggestionStatus: "pending" | "promoted" | "rejected";
+        /**
+         * @description `POST /v1/connections/{connection_id}/read`. Named apart from the notifications `ReadBody`,
+         *     because the contract keys schemas by type name.
+         */
+        ChatReadBody: {
+            /** Format: uuid */
+            up_to_message_id: string;
+        };
         /**
          * @description `children_acceptance` (05 section 2).
          * @enum {string}
@@ -3424,7 +3432,7 @@ export interface components {
             /** @description Stable code clients branch on (15 section 2.1). */
             code: string;
             /** @description Extra data for some codes. */
-            details: Record<string, never>;
+            details: Record<string, unknown>;
             /** @description Present only for `validation_failed`. */
             fields?: components["schemas"]["FieldError"][] | null;
             /** @description English text suitable for display as a fallback. */
@@ -3432,7 +3440,7 @@ export interface components {
             request_id: string;
         };
         EventsBody: {
-            events: Record<string, never>[];
+            events: Record<string, unknown>[];
         };
         /** @description The answer of `POST /v1/me/exports`. */
         ExportQueued: {
@@ -3695,8 +3703,8 @@ export interface components {
                 code: string;
                 is_active: boolean;
                 name: string;
-                name_ur?: string | null;
-                parent_code?: string | null;
+                name_ur: string | null;
+                parent_code: string | null;
                 /** Format: int32 */
                 sort_order: number;
             }[];
@@ -3710,7 +3718,7 @@ export interface components {
                 /** Format: int32 */
                 min_supported_version_code: number;
                 platform: string;
-                release_notes?: string | null;
+                release_notes: string | null;
                 /** Format: date-time */
                 released_at: string;
                 /** Format: int32 */
@@ -3721,12 +3729,12 @@ export interface components {
         /** @description A list that is returned whole instead of paged (`GET /castes`, `/settings`, `/releases`). */
         Items_SettingItem: {
             items: {
-                default: Record<string, never>;
+                default: Record<string, unknown>;
                 key: string;
                 /** Format: date-time */
-                updated_at?: string | null;
-                updated_by_email?: string | null;
-                value: Record<string, never>;
+                updated_at: string | null;
+                updated_by_email: string | null;
+                value: Record<string, unknown>;
             }[];
         };
         /**
@@ -3950,7 +3958,7 @@ export interface components {
             kind: components["schemas"]["MessageKind"];
             safety_notice: components["schemas"]["SafetyFlag"] | null;
             sender: components["schemas"]["MessageSender"];
-            system_data: Record<string, never> | null;
+            system_data: Record<string, unknown> | null;
             system_event: components["schemas"]["SystemEvent"] | null;
         };
         /**
@@ -4002,11 +4010,11 @@ export interface components {
         };
         /** @description One row of the feed, also the body of the `notification.new` event (15 section 14). */
         Notification: {
-            actor?: components["schemas"]["NotificationActor"] | null;
+            actor: components["schemas"]["NotificationActor"] | null;
             /** Format: date-time */
             created_at: string;
             /** @description Shape per type, see 14 section 3. */
-            data: Record<string, never>;
+            data: Record<string, unknown>;
             /** Format: uuid */
             id: string;
             is_read: boolean;
@@ -4158,8 +4166,8 @@ export interface components {
         };
         /** @description `LocationSection` with the two cities resolved, as `OwnProfile.location` shows it. */
         OwnLocation: components["schemas"]["LocationSection"] & {
-            city?: components["schemas"]["CityRef"] | null;
-            origin_city?: components["schemas"]["CityRef"] | null;
+            city: components["schemas"]["CityRef"] | null;
+            origin_city: components["schemas"]["CityRef"] | null;
         };
         /** @description A member's own photo. */
         OwnPhoto: {
@@ -4215,15 +4223,15 @@ export interface components {
         Page_AdminPhotoItem: {
             items: {
                 /** Format: int32 */
-                age?: number | null;
+                age: number | null;
                 /** Format: date-time */
                 created_at: string;
-                first_name?: string | null;
-                gender?: components["schemas"]["Gender"] | null;
+                first_name: string | null;
+                gender: components["schemas"]["Gender"] | null;
                 /** @description The unblurred large variant, signed. */
                 large_url: string;
                 /** @description `profile_photos.moderation` (13 section 4.2). */
-                moderation?: Record<string, never> | null;
+                moderation: Record<string, unknown> | null;
                 other_photos: components["schemas"]["AdminOtherPhoto"][];
                 /** Format: uuid */
                 photo_id: string;
@@ -4242,20 +4250,20 @@ export interface components {
         Page_AdminProfileListItem: {
             items: {
                 /** Format: int32 */
-                age?: number | null;
-                city_name?: string | null;
+                age: number | null;
+                city_name: string | null;
                 /** Format: date-time */
                 created_at: string;
-                first_name?: string | null;
-                gender?: components["schemas"]["Gender"] | null;
-                last_name?: string | null;
-                managed_by?: components["schemas"]["ManagedBy"] | null;
+                first_name: string | null;
+                gender: components["schemas"]["Gender"] | null;
+                last_name: string | null;
+                managed_by: components["schemas"]["ManagedBy"] | null;
                 /** Format: date-time */
-                onboarding_completed_at?: string | null;
+                onboarding_completed_at: string | null;
                 /** Format: int64 */
                 open_system_reports: number;
                 /** @description First photo of any status, unblurred. */
-                photo_thumb_url?: string | null;
+                photo_thumb_url: string | null;
                 /** Format: uuid */
                 profile_id: string;
                 public_code: string;
@@ -4271,7 +4279,7 @@ export interface components {
             items: {
                 /** Format: date-time */
                 created_at: string;
-                handled_by_email?: string | null;
+                handled_by_email: string | null;
                 /**
                  * Format: int64
                  * @description Reports on the same target that are `open` or `in_review`.
@@ -4285,7 +4293,7 @@ export interface components {
                 reason: components["schemas"]["ReportReason"];
                 /** Format: uuid */
                 report_id: string;
-                reporter?: components["schemas"]["ReportReporter"] | null;
+                reporter: components["schemas"]["ReportReporter"] | null;
                 source: components["schemas"]["ReportSource"];
                 status: components["schemas"]["ReportStatus"];
                 subject_type: components["schemas"]["ReportSubject"];
@@ -4298,8 +4306,8 @@ export interface components {
         Page_AdminTextItem: {
             items: {
                 field: components["schemas"]["ModeratedField"];
-                first_name?: string | null;
-                gender?: components["schemas"]["Gender"] | null;
+                first_name: string | null;
+                gender: components["schemas"]["Gender"] | null;
                 /** Format: uuid */
                 profile_id: string;
                 public_code: string;
@@ -4317,12 +4325,12 @@ export interface components {
             items: {
                 /** Format: date-time */
                 created_at: string;
-                email?: string | null;
-                first_name?: string | null;
-                gender?: components["schemas"]["Gender"] | null;
-                last_name?: string | null;
+                email: string | null;
+                first_name: string | null;
+                gender: components["schemas"]["Gender"] | null;
+                last_name: string | null;
                 /** Format: date-time */
-                last_seen_at?: string | null;
+                last_seen_at: string | null;
                 /** Format: uuid */
                 profile_id: string;
                 profile_status: components["schemas"]["ProfileStatus"];
@@ -4340,7 +4348,7 @@ export interface components {
             items: {
                 /** Format: date-time */
                 created_at: string;
-                first_name?: string | null;
+                first_name: string | null;
                 kind: components["schemas"]["VerificationKind"];
                 /** Format: uuid */
                 profile_id: string;
@@ -4361,7 +4369,7 @@ export interface components {
                 /** Format: date-time */
                 created_at: string;
                 /** @description Never holds an identity number, a contact detail or private message text. */
-                details: Record<string, never>;
+                details: Record<string, unknown>;
                 /** Format: uuid */
                 id: string;
                 target_id: string;
@@ -4379,8 +4387,8 @@ export interface components {
                 id: string;
                 name: string;
                 normalized_name: string;
-                parent_code?: string | null;
-                parent_name?: string | null;
+                parent_code: string | null;
+                parent_name: string | null;
                 /** @description Existing castes whose name or alias has a trigram similarity of 0.4 or more. */
                 similar: components["schemas"]["CasteSimilar"][];
                 status: components["schemas"]["CasteSuggestionStatus"];
@@ -4393,11 +4401,11 @@ export interface components {
         /** @description One page of a list. */
         Page_Notification: {
             items: {
-                actor?: components["schemas"]["NotificationActor"] | null;
+                actor: components["schemas"]["NotificationActor"] | null;
                 /** Format: date-time */
                 created_at: string;
                 /** @description Shape per type, see 14 section 3. */
-                data: Record<string, never>;
+                data: Record<string, unknown>;
                 /** Format: uuid */
                 id: string;
                 is_read: boolean;
@@ -4417,7 +4425,7 @@ export interface components {
                  * @description The `photo_access` row, for `POST /v1/me/photo-access/{id}/grant` and `.../deny`.
                  */
                 id: string;
-                profile?: components["schemas"]["ProfileCard"] | null;
+                profile: components["schemas"]["ProfileCard"] | null;
                 /**
                  * Format: uuid
                  * @description The other profile: the requester in `received`, the owner in `sent`. Present even when
@@ -4485,7 +4493,7 @@ export interface components {
              * @description The `photo_access` row, for `POST /v1/me/photo-access/{id}/grant` and `.../deny`.
              */
             id: string;
-            profile?: components["schemas"]["ProfileCard"] | null;
+            profile: components["schemas"]["ProfileCard"] | null;
             /**
              * Format: uuid
              * @description The other profile: the requester in `received`, the owner in `sent`. Present even when
@@ -4786,7 +4794,7 @@ export interface components {
         ProposableStage: "families_talking" | "engaged" | "nikah_done";
         PutSettingBody: {
             /** @description The new value; its type depends on the key (18 section 7.1). */
-            value: Record<string, never>;
+            value: Record<string, unknown>;
         };
         /** @description Body of `POST /v1/notifications/read`: `{ "ids": [...] }` or `{ "all": true }`. */
         ReadBody: {
@@ -5157,12 +5165,12 @@ export interface components {
             interest: components["schemas"]["Interest"];
         };
         SettingItem: {
-            default: Record<string, never>;
+            default: Record<string, unknown>;
             key: string;
             /** Format: date-time */
             updated_at: string | null;
             updated_by_email: string | null;
-            value: Record<string, never>;
+            value: Record<string, unknown>;
         };
         /**
          * @description The other member's contact details shared with the caller: only the selected items, the
@@ -7874,7 +7882,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ReadBody"];
+                "application/json": components["schemas"]["ChatReadBody"];
             };
         };
         responses: {

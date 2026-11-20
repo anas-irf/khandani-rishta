@@ -787,6 +787,258 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/connections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The chat list. `filter` is `active` (default, without archived chats), `archived` or
+         *     `ended`. Ordered by `last_message_at` descending; connections without messages by
+         *     `created_at`.
+         */
+        get: operations["list_connections"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/connections/{connection_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One connection of the caller. */
+        get: operations["get_connection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Mute or archive a chat. Both flags are the caller's own and invisible to the other member.
+         *     A muted chat sends no push and does not count in `counters.unread_chats`; an archived chat
+         *     moves to the Archived tab until the next message arrives.
+         */
+        patch: operations["patch_connection"];
+        trace?: never;
+    };
+    "/v1/connections/{connection_id}/contact-share": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Share contact details with the other member, or change which items are shared.
+         * @description At least one item must be selected, and each selected item must have a value in the
+         *     caller's contact details (`validation_failed` with field code `required` on the share flag,
+         *     so the client can open the contact form). The share is a reference: later edits of the
+         *     details are what the other member sees. Posts a `contact_shared` system message and
+         *     notifies the other member.
+         */
+        put: operations["put_contact_share"];
+        post?: never;
+        /**
+         * Stop sharing contact details. The other member no longer sees them from the next fetch;
+         *     anything they saved is out of reach. Posts a `contact_share_revoked` system message. Without
+         *     an active share nothing changes.
+         */
+        delete: operations["delete_contact_share"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/connections/{connection_id}/end": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * End the connection with a reason, and optionally block the other member.
+         * @description Both contact shares and the photo access between the pair are revoked, a pending stage
+         *     proposal is cancelled and a `connection_ended` system message is posted. The other member is
+         *     not notified and never sees the reason. Neither may send the other an interest for
+         *     `connection.cooldown_after_end_days` (90).
+         */
+        post: operations["end_connection"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/connections/{connection_id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Message history: the newest `limit` (default 30, at most 100) messages newest first, or
+         *     those older than `before` (newest first), or those newer than `after` (oldest first; repeat
+         *     while `has_more`). Ended connections stay readable.
+         */
+        get: operations["list_messages"];
+        put?: never;
+        /**
+         * Send a text message.
+         * @description `client_message_id` is a UUID made by the client and reused on every retry: sending it
+         *     again returns the original message with `200` and changes nothing. Errors:
+         *     `connection_ended`; `invalid_state` with `details.status = 'other_unavailable'` when the
+         *     other member can no longer be opened (suspended, banned, scheduled for deletion);
+         *     `rate_limited` (`limits.messages_per_minute`) and `limit_reached`
+         *     (`limits.messages_per_day`). Messages are never blocked for their content: the safety
+         *     patterns only add a notice for the receiver (13 section 5).
+         */
+        post: operations["send_message"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/connections/{connection_id}/messages/{message_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove one of the caller's own text messages, within 15 minutes of sending (`invalid_state`
+         *     with `details.status = 'delete_window_passed'` after). The body is cleared; both members see
+         *     "Message removed". A message that is already removed is returned as it is.
+         */
+        delete: operations["delete_message"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/connections/{connection_id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark messages as read up to a message of this connection. The stored pointer never moves
+         *     backwards, and `unread_count` is recomputed from the data. `message.read` reaches the other
+         *     member only when both members send read receipts (09 section 9).
+         */
+        post: operations["mark_read"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/connections/{connection_id}/stage-proposals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Propose the next stage: later than the current one (`invalid_state`), with no proposal
+         *     pending (`already_exists`), and not a stage this member proposed and saw declined in the
+         *     last 7 days (`cooldown_active`). Posts a `stage_proposed` system message and notifies the
+         *     other member.
+         */
+        post: operations["propose_stage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/connections/{connection_id}/stage-proposals/{proposal_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Withdraw the caller's own pending proposal. Posts a `stage_declined` system message with
+         *     `cancelled: true`.
+         */
+        delete: operations["cancel_proposal"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/connections/{connection_id}/stage-proposals/{proposal_id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm the other member's proposal: the connection moves to its stage. Reaching
+         *     `nikah_done` closes both profiles (`found_match_here`), expires their pending interests and
+         *     ends their other connections (`found_someone_else`); the couple's chat stays readable.
+         *     Reaching `engaged` only makes the clients suggest pausing the profile.
+         */
+        post: operations["confirm_proposal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/connections/{connection_id}/stage-proposals/{proposal_id}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Decline the other member's proposal. The stage stays; a `stage_declined` system message is
+         *     posted and nobody is notified. The proposer may suggest the same stage again after 7 days.
+         */
+        post: operations["decline_proposal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/events": {
         parameters: {
             query?: never;
@@ -815,6 +1067,141 @@ export interface paths {
         get: operations["get_home"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/interests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Received or sent interests, newest first. `status` is `pending` (default), `accepted` or
+         *     `closed`. A sender sees a declined interest as "no response" under `pending` until it would
+         *     have expired, then under `closed`.
+         */
+        get: operations["list_interests"];
+        put?: never;
+        /**
+         * Send an interest.
+         * @description The checks of 15 section 11 run in order: the receiver must be `active` and openable
+         *     (`not_found`), not connected (`already_connected`), no pending interest from the caller
+         *     (`interest_already_pending`, also during a quiet decline), no cooldown (`cooldown_active`),
+         *     the receiver's `interest_permission` (`not_permitted_by_member`), the pending, connection and
+         *     daily limits (`limit_reached`), and the text rules on `message` (`validation_failed`).
+         *
+         *     When the receiver already has a pending interest to the caller, that interest is accepted
+         *     instead (mutual interest): checks 5, 6 and 8 are skipped, the message is ignored, and
+         *     `connection` is set in the answer.
+         */
+        post: operations["send_interest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/interests/seen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark received interests as seen (once per id). Ids that are not the caller's received
+         *     interests are ignored.
+         */
+        post: operations["mark_seen"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/interests/{interest_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One interest the caller sent or received. */
+        get: operations["get_interest"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/interests/{interest_id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept a received interest: only the receiver, only `pending`.
+         * @description The sender must still be openable (otherwise the interest expires and `invalid_state`), and
+         *     both members must be under `limits.active_connections_max` (`limit_reached` with
+         *     `details.side` `you` or `them`). Creates the connection, both member rows and the
+         *     `connected` system message in one transaction.
+         */
+        post: operations["accept_interest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/interests/{interest_id}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Decline a received interest: only the receiver, only `pending`. The sender is not told; they
+         *     see "No response yet" until the interest would have expired. With `also_block`, the sender
+         *     is also blocked (15 section 13).
+         */
+        post: operations["decline_interest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/interests/{interest_id}/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Withdraw a sent interest: only the sender, only `pending`. The receiver is not told; their
+         *     notification for it is removed. An interest that was quietly declined answers as withdrawn
+         *     too, so the decline never shows (11 section 3.5 rule 2).
+         */
+        post: operations["withdraw_interest"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1045,6 +1432,101 @@ export interface paths {
          *     answer is `validation_failed` naming the missing fields. Returns `Me`.
          */
         post: operations["post_continue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/photo-access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Requests received or sent, newest first. `box=received` (default) lists the requests for the
+         *     caller's photos and, with `status=granted`, the access the caller gave; `box=sent` lists the
+         *     caller's own requests. `status` defaults to `pending`.
+         * @description A member is never told that a request was denied or that access was removed (09 sections
+         *     6.3 and 6.4), so `box=sent` lists only `pending` and `granted` rows: with `status=denied` or
+         *     `status=revoked` it answers an empty page.
+         */
+        get: operations["list_access"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/photo-access/grants/{profile_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Let a member see the caller's photos without a request. Allowed from no row, `denied`,
+         *     `revoked` and `pending` (which approves the request), and only when the caller may open the
+         *     target (`404` otherwise; for a `paused` caller that means members they are related to).
+         *     Granting twice changes nothing and answers `204`. The target receives
+         *     `photo_request_granted`.
+         */
+        put: operations["put_grant"];
+        post?: never;
+        /**
+         * Take access back: `granted` to `revoked`. The viewer is not told; the photos are blurred
+         *     again on their next request, and they may ask again after `photo_access.retry_days`. `404`
+         *     when the caller has no row for the member, `409 invalid_state` when the row is not
+         *     `granted`.
+         */
+        delete: operations["delete_grant"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/photo-access/{id}/deny": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Deny a request: `pending` to `denied`. The requester is not told, and may ask again after
+         *     `photo_access.retry_days`. Any other state answers `409 invalid_state`; a request that is
+         *     not the caller's answers `404`.
+         */
+        post: operations["deny_request"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/photo-access/{id}/grant": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve a request: `pending` to `granted`. Any other state answers `409 invalid_state`
+         *     with the current `status`; a request that is not the caller's answers `404`. The requester
+         *     receives `photo_request_granted`.
+         */
+        post: operations["grant_request"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1657,6 +2139,37 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/profiles/{profile_id}/photo-access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask to see a member's photos. The checks run in the order of 09 section 6.3:
+         * @description 1. The caller is `active` (access level `browse`) and may open the owner (`404` otherwise).
+         *     2. The caller currently gets blurred photos and the owner has an approved photo, otherwise
+         *        `409 invalid_state` with `details.status = "visible"`.
+         *     3. The owner accepts requests, otherwise `409 not_permitted_by_member` with
+         *        `details.reason = "requests_off"`.
+         *     4. No request is pending (`409 already_exists`).
+         *     5. A denial or revocation is older than `photo_access.retry_days`
+         *        (`409 cooldown_active` with `retry_after_date`).
+         *     6. Fewer than `limits.photo_requests_per_day` requests were sent today
+         *        (`429 limit_reached`).
+         *
+         *     The owner receives a `photo_request_received` notification and a `counters` event.
+         */
+        post: operations["request_access"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/recommendations": {
         parameters: {
             query?: never;
@@ -1746,6 +2259,35 @@ export interface paths {
         get: operations["regions"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Report a member, a photo or a message. The caller must be able to see the subject, else
+         *     `404 not_found` (13 section 6.1): the target through the visibility rules for a profile or
+         *     a photo (an `approved` photo of the target), a connection the caller belongs to for a
+         *     message (one the target sent; an ended connection counts).
+         * @description The context is captured at filing time (13 section 6.3): the profile text fields, the photo
+         *     keys, or for a message the 20 messages before it, the message and the 5 after it from that
+         *     connection only. At most `limits.reports_per_day` reports a day (`429 limit_reached`); a
+         *     report on a subject the caller already has an `open` or `in_review` report on returns that
+         *     report's id and creates nothing. With `also_block` the block is applied in the same
+         *     transaction, also for that repeated report. Answers `201` with the report id. The reported
+         *     member is not told and nothing changes for them.
+         */
+        post: operations["file_report"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1848,6 +2390,11 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description The answer of `POST /v1/interests/{interest_id}/accept`. */
+        AcceptedInterest: {
+            connection: components["schemas"]["Connection"];
+            interest: components["schemas"]["Interest"];
+        };
         /**
          * @description The body of `PUT .../sections/account_for`: the section plus the consents ticked on the
          *     screen, recorded at their current versions (07 section 3.4 rule 3).
@@ -2543,6 +3090,56 @@ export interface components {
             /** @description The `upload_key` returned by `POST /v1/me/photos/uploads`. */
             upload_key: string;
         };
+        /** @description A connection as one of its members sees it (15 section 4.7). */
+        Connection: {
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            ended_at?: string | null;
+            ended_by?: components["schemas"]["EndedBy"] | null;
+            ended_reason?: components["schemas"]["ConnectionEndReason"] | null;
+            /** Format: uuid */
+            id: string;
+            is_archived: boolean;
+            is_muted: boolean;
+            /** Format: date-time */
+            last_message_at?: string | null;
+            last_message_preview?: string | null;
+            my_contact_share?: components["schemas"]["ContactShare"] | null;
+            other?: components["schemas"]["ProfileCard"] | null;
+            pending_stage_proposal?: components["schemas"]["PendingStageProposal"] | null;
+            stage: components["schemas"]["ConnectionStage"];
+            status: components["schemas"]["ConnectionStatus"];
+            their_contact?: components["schemas"]["SharedContact"] | null;
+            /**
+             * Format: uuid
+             * @description `null` unless both members have `send_read_receipts` on (09 section 9).
+             */
+            their_last_read_message_id?: string | null;
+            /** Format: int32 */
+            unread_count: number;
+        };
+        /**
+         * @description `connection_end_reason` (05 section 2).
+         * @enum {string}
+         */
+        ConnectionEndReason: "NotCompatible" | "FamilyDeclined" | "NoResponse" | "FoundSomeoneElse" | "InappropriateBehaviour" | "Other" | "Blocked" | "AccountClosed";
+        /** @description A page of connections, latest activity first. */
+        ConnectionPage: {
+            items: components["schemas"]["Connection"][];
+            /** @description `null` on the last page. */
+            next_cursor?: string | null;
+        };
+        /**
+         * @description `connection_stage` (05 section 2).
+         * @enum {string}
+         */
+        ConnectionStage: "Chatting" | "FamiliesTalking" | "Engaged" | "NikahDone";
+        /**
+         * @description `connections.status` (03 section 4.8).
+         * @enum {string}
+         */
+        ConnectionStatus: "Active" | "Ended";
         /**
          * @description `user_consents.document`.
          * @enum {string}
@@ -2551,6 +3148,28 @@ export interface components {
         ConsentsBody: {
             documents: components["schemas"]["ConsentDocument"][];
         };
+        /** @description The caller's own contact share on a connection (15 section 4.7). */
+        ContactShare: {
+            /** Format: date-time */
+            created_at: string;
+            share_email: boolean;
+            share_guardian: boolean;
+            share_phone: boolean;
+            share_whatsapp: boolean;
+            status: components["schemas"]["ContactShareStatus"];
+        };
+        /** @description `PUT /v1/connections/{connection_id}/contact-share`: at least one item. */
+        ContactShareBody: {
+            share_email: boolean;
+            share_guardian: boolean;
+            share_phone: boolean;
+            share_whatsapp: boolean;
+        };
+        /**
+         * @description `contact_shares.status` (03 section 4.10).
+         * @enum {string}
+         */
+        ContactShareStatus: "Active" | "Revoked";
         /** @description Private contact details (08 section 3). Never part of another member's response. */
         ContactsSection: {
             best_time_to_call?: string | null;
@@ -2616,6 +3235,11 @@ export interface components {
             version_code: number;
             /** @description For example `1.3.0`. */
             version_name: string;
+        };
+        /** @description `POST /v1/interests/{interest_id}/decline`. */
+        DeclineBody: {
+            /** @description Also block the sender (15 section 13). */
+            also_block?: boolean | null;
         };
         DeletionBody: {
             /** @description Must be the text `DELETE`. */
@@ -2750,6 +3374,12 @@ export interface components {
          */
         DiscoveryVisibility: "Everyone" | "PreferenceMatch" | "Hidden";
         /**
+         * @description `Interest.display_status` (15 section 4.7): what the client shows. Declines are hidden from
+         *     senders.
+         * @enum {string}
+         */
+        DisplayStatus: "pending" | "accepted" | "no_response" | "closed" | "withdrawn" | "declined";
+        /**
          * @description `document_type` (05 section 2).
          * @enum {string}
          */
@@ -2775,6 +3405,17 @@ export interface components {
          * @enum {string}
          */
         EmploymentType: "PrivateJob" | "GovernmentJob" | "ArmedForces" | "BusinessOwner" | "SelfEmployed" | "Student" | "Homemaker" | "NotWorking" | "Retired";
+        /** @description `POST /v1/connections/{connection_id}/end`. */
+        EndConnectionBody: {
+            /** @description Also block the other member (15 section 13). */
+            also_block?: boolean | null;
+            reason: components["schemas"]["MemberEndReason"];
+        };
+        /**
+         * @description `Connection.ended_by`.
+         * @enum {string}
+         */
+        EndedBy: "me" | "them" | "system";
         /** @description The error body (15 section 2). */
         ErrorBody: {
             error: components["schemas"]["ErrorDetail"];
@@ -2863,6 +3504,35 @@ export interface components {
          * @enum {string}
          */
         FieldVisibility: "Members" | "Connections" | "Nobody";
+        /** @description `POST /v1/reports`. */
+        FileReportBody: {
+            /** @description Block the target in the same transaction. Default `false`. */
+            also_block?: boolean | null;
+            /**
+             * @description Optional, at most 1,000 characters. Length is the only rule: a report may need to quote
+             *     a phone number or abusive words (13 section 3.1, "Not checked").
+             */
+            details?: string | null;
+            /**
+             * Format: uuid
+             * @description Required for `message`, not allowed otherwise: a message the target sent in a
+             *     connection the caller belongs to.
+             */
+            message_id?: string | null;
+            /**
+             * Format: uuid
+             * @description Required for `photo`, not allowed otherwise: an approved photo of the target.
+             */
+            photo_id?: string | null;
+            /** @description A `report_reason` code (05 section 2.42). */
+            reason: components["schemas"]["ReportReason"];
+            subject_type: components["schemas"]["ReportSubject"];
+            /**
+             * Format: uuid
+             * @description The reported member.
+             */
+            target_profile_id: string;
+        };
         /**
          * @description The gate returned by `GET /v1/me` (03 section 5.1).
          * @enum {string}
@@ -2958,12 +3628,56 @@ export interface components {
          * @enum {string}
          */
         Importance: "Must" | "High" | "Medium" | "Low";
+        /** @description An interest as one of its two members sees it (15 section 4.7). */
+        Interest: {
+            /**
+             * Format: int32
+             * @description The compatibility of the pair when the interest was sent (0..100).
+             */
+            compat_score?: number | null;
+            /**
+             * Format: uuid
+             * @description The connection created when the interest was accepted.
+             */
+            connection_id?: string | null;
+            /** Format: date-time */
+            created_at: string;
+            direction: components["schemas"]["InterestDirection"];
+            display_status: components["schemas"]["DisplayStatus"];
+            /** Format: date-time */
+            expires_at: string;
+            /** Format: uuid */
+            id: string;
+            message?: string | null;
+            profile?: components["schemas"]["ProfileCard"] | null;
+            /**
+             * Format: date-time
+             * @description `null` for the sender of a declined interest, which must still look unanswered.
+             */
+            responded_at?: string | null;
+            /**
+             * @description The receiver always sees their own state; the sender sees `true` only when both members
+             *     send read receipts (09 section 9).
+             */
+            seen: boolean;
+            /**
+             * @description For the sender a `declined` interest is reported as `pending` until `expires_at`, then as
+             *     `expired`: the real value never reaches the sender.
+             */
+            status: components["schemas"]["InterestStatus"];
+        };
         /**
          * @description Direction of an interest seen from the viewer: `sent` by the viewer to the owner, or
          *     `received` by the viewer from the owner (15 section 4.6 `interest_direction`).
          * @enum {string}
          */
         InterestDirection: "Sent" | "Received";
+        /** @description A page of interests, newest first. */
+        InterestPage: {
+            items: components["schemas"]["Interest"][];
+            /** @description `null` on the last page. */
+            next_cursor?: string | null;
+        };
         /**
          * @description `interest_permission` (05 section 2).
          * @enum {string}
@@ -3213,6 +3927,48 @@ export interface components {
             /** Format: date-time */
             suspended_until?: string | null;
             timezone: string;
+        };
+        /**
+         * @description The reasons a member may give for ending a connection (15 section 12). `blocked` and
+         *     `account_closed` are set only by the system.
+         * @enum {string}
+         */
+        MemberEndReason: "not_compatible" | "family_declined" | "no_response" | "found_someone_else" | "inappropriate_behaviour" | "other";
+        /** @description A chat message as one member sees it (15 section 4.7). */
+        Message: {
+            /** @description `null` when deleted, and for system messages. */
+            body?: string | null;
+            /** @description The sender's idempotency key; set only on the caller's own messages. */
+            client_message_id?: string | null;
+            /** Format: uuid */
+            connection_id: string;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: uuid */
+            id: string;
+            is_deleted: boolean;
+            kind: components["schemas"]["MessageKind"];
+            safety_notice?: components["schemas"]["SafetyFlag"] | null;
+            sender: components["schemas"]["MessageSender"];
+            system_data?: Record<string, never> | null;
+            system_event?: components["schemas"]["SystemEvent"] | null;
+        };
+        /**
+         * @description `messages.kind`.
+         * @enum {string}
+         */
+        MessageKind: "Text" | "System";
+        /**
+         * @description `Message.sender`.
+         * @enum {string}
+         */
+        MessageSender: "me" | "them" | "system";
+        /** @description One page of the message history. */
+        MessagesPage: {
+            /** @description More messages exist in the same direction. */
+            has_more: boolean;
+            /** @description Newest first; oldest first with `after`. */
+            items: components["schemas"]["Message"][];
         };
         Meta: {
             /** @description Deployment the API runs in: `local`, `staging` or `production`. */
@@ -3651,11 +4407,38 @@ export interface components {
             /** @description `null` on the last page. */
             next_cursor?: string | null;
         };
+        /** @description One page of a list. */
+        Page_PhotoAccessItem: {
+            items: {
+                /** Format: date-time */
+                created_at: string;
+                /**
+                 * Format: uuid
+                 * @description The `photo_access` row, for `POST /v1/me/photo-access/{id}/grant` and `.../deny`.
+                 */
+                id: string;
+                profile?: components["schemas"]["ProfileCard"] | null;
+                /**
+                 * Format: uuid
+                 * @description The other profile: the requester in `received`, the owner in `sent`. Present even when
+                 *     `profile` is `null`, so a grant can still be revoked.
+                 */
+                profile_id: string;
+                status: components["schemas"]["PhotoAccessStatus"];
+            }[];
+            /** @description `null` on the last page. */
+            next_cursor?: string | null;
+        };
         /**
          * @description `parent_status` (05 section 2).
          * @enum {string}
          */
         ParentStatus: "Alive" | "Deceased";
+        /**
+         * @description Which member did something, seen from the caller.
+         * @enum {string}
+         */
+        Party: "me" | "them";
         PatchCasteBody: {
             aliases?: string[] | null;
             /** @description Deactivating a caste that has active sub-castes is refused. */
@@ -3666,6 +4449,11 @@ export interface components {
             /** Format: int32 */
             sort_order?: number | null;
         };
+        /** @description `PATCH /v1/connections/{connection_id}`. */
+        PatchConnectionBody: {
+            is_archived?: boolean | null;
+            is_muted?: boolean | null;
+        };
         PatchMe: {
             locale?: components["schemas"]["Locale"] | null;
             /** @description An IANA time zone name such as `Asia/Karachi`. */
@@ -3675,15 +4463,51 @@ export interface components {
             /** @description Only `true` is accepted: a photo stops being primary when another one becomes it. */
             is_primary: boolean;
         };
+        /** @description The pending stage proposal of a connection. */
+        PendingStageProposal: {
+            /** Format: date-time */
+            created_at: string;
+            /** Format: uuid */
+            id: string;
+            proposed_by: components["schemas"]["Party"];
+            stage: components["schemas"]["ConnectionStage"];
+        };
         PendingVerification: {
             id_document: boolean;
             selfie: boolean;
         };
+        /** @description One request or grant. */
+        PhotoAccessItem: {
+            /** Format: date-time */
+            created_at: string;
+            /**
+             * Format: uuid
+             * @description The `photo_access` row, for `POST /v1/me/photo-access/{id}/grant` and `.../deny`.
+             */
+            id: string;
+            profile?: components["schemas"]["ProfileCard"] | null;
+            /**
+             * Format: uuid
+             * @description The other profile: the requester in `received`, the owner in `sent`. Present even when
+             *     `profile` is `null`, so a grant can still be revoked.
+             */
+            profile_id: string;
+            status: components["schemas"]["PhotoAccessStatus"];
+        };
+        /**
+         * @description `photo_access.status` (03 section 4.9).
+         * @enum {string}
+         */
+        PhotoAccessStatus: "Pending" | "Granted" | "Denied" | "Revoked";
         /**
          * @description `photo_rejection_reason` (05 section 2).
          * @enum {string}
          */
         PhotoRejectionReason: "NotAPerson" | "FaceNotVisible" | "GroupPhoto" | "Inappropriate" | "ContainsContactInfo" | "LowQuality" | "NotTheCandidate" | "Other";
+        /** @description The answer to a photo request: always `pending`. */
+        PhotoRequested: {
+            status: components["schemas"]["PhotoAccessStatus"];
+        };
         /**
          * @description `profile_photos.status` (03 section 4.4).
          * @enum {string}
@@ -3955,6 +4779,11 @@ export interface components {
              */
             profiles_updated: number;
         };
+        /**
+         * @description The stages a member may propose.
+         * @enum {string}
+         */
+        ProposableStage: "families_talking" | "engaged" | "nikah_done";
         PutSettingBody: {
             /** @description The new value; its type depends on the key (18 section 7.1). */
             value: Record<string, never>;
@@ -4091,6 +4920,11 @@ export interface components {
             /** @description Must be `true`. */
             confirm: boolean;
         };
+        /** @description The filed report. */
+        ReportFiled: {
+            /** Format: uuid */
+            id: string;
+        };
         /** @description The reported photo of a `photo` report. */
         ReportPhoto: {
             /** @description Signed, unblurred. `null` when the object is gone. */
@@ -4178,6 +5012,11 @@ export interface components {
         RoleBody: {
             role: components["schemas"]["UserRole"];
         };
+        /**
+         * @description `messages.safety_flag` (13 section 5).
+         * @enum {string}
+         */
+        SafetyFlag: "Money" | "OffPlatform" | "ContactInfo";
         /**
          * @description `sanctions.type`.
          * @enum {string}
@@ -4289,9 +5128,33 @@ export interface components {
          *     is reported as such.
          */
         SectionBody: components["schemas"]["AccountForBody"] | components["schemas"]["BasicsSection"] | components["schemas"]["CommunitySection"] | components["schemas"]["LocationSection"] | components["schemas"]["EducationCareerSection"] | components["schemas"]["FamilySection"] | components["schemas"]["LifestyleSection"] | components["schemas"]["ContactsSection"];
+        /** @description `POST /v1/interests/seen`. */
+        SeenBody: {
+            /** @description Ids of received interests that were rendered on screen; at most 100. */
+            interest_ids: string[];
+        };
         /** @description `GET /v1/me/verifications/selfie-challenge`. */
         SelfieChallenge: {
             gesture: components["schemas"]["Gesture"];
+        };
+        /** @description `POST /v1/interests`. */
+        SendInterestBody: {
+            /** @description At most 300 characters; the text rules apply (13 section 3). */
+            message?: string | null;
+            /** Format: uuid */
+            receiver_profile_id: string;
+        };
+        /** @description `POST /v1/connections/{connection_id}/messages`. */
+        SendMessageBody: {
+            /** @description 1 to 2000 characters after trimming. */
+            body: string;
+            /** @description A UUID made by the client for each new message and reused on every retry. */
+            client_message_id: string;
+        };
+        /** @description The answer of `POST /v1/interests`: `connection` is set when a mutual interest created one. */
+        SentInterest: {
+            connection?: components["schemas"]["Connection"] | null;
+            interest: components["schemas"]["Interest"];
         };
         SettingItem: {
             default: Record<string, never>;
@@ -4300,6 +5163,25 @@ export interface components {
             updated_at?: string | null;
             updated_by_email?: string | null;
             value: Record<string, never>;
+        };
+        /**
+         * @description The other member's contact details shared with the caller: only the selected items, the
+         *     others `null` (09 section 10.2 rule 4).
+         */
+        SharedContact: {
+            best_time_to_call?: string | null;
+            contact_email?: string | null;
+            guardian?: components["schemas"]["SharedGuardian"] | null;
+            phone_e164?: string | null;
+            /** @description `self` or `guardian`: whom to call first. */
+            preferred_contact: components["schemas"]["PreferredContact"];
+            whatsapp_e164?: string | null;
+        };
+        /** @description The guardian item of a shared contact. */
+        SharedGuardian: {
+            name?: string | null;
+            phone_e164?: string | null;
+            relation?: components["schemas"]["GuardianRelation"] | null;
         };
         /** @description `PUT /v1/shortlist/{profile_id}`. */
         ShortlistBody: {
@@ -4337,6 +5219,10 @@ export interface components {
             /** Format: int64 */
             nikah_done: number;
         };
+        /** @description `POST /v1/connections/{connection_id}/stage-proposals`. */
+        StageProposalBody: {
+            stage: components["schemas"]["ProposableStage"];
+        };
         /** @description `POST /v1/me/verifications` (15 section 9): an identity check or a photo check. */
         SubmitVerification: {
             /** @description Required for `cnic`, `nicop` and `poc`. */
@@ -4363,6 +5249,11 @@ export interface components {
             /** Format: uuid */
             report_id?: string | null;
         };
+        /**
+         * @description `messages.system_event`.
+         * @enum {string}
+         */
+        SystemEvent: "Connected" | "ContactShared" | "ContactShareRevoked" | "StageProposed" | "StageConfirmed" | "StageDeclined" | "ConnectionEnded";
         /**
          * @description Moderated text status: `about_me_status`, `about_family_status`, `notes_status` (03 section 4.5).
          * @enum {string}
@@ -6510,6 +7401,718 @@ export interface operations {
             };
         };
     };
+    list_connections: {
+        parameters: {
+            query?: {
+                /** @description `active` (default), `archived` or `ended`. */
+                filter?: "active" | "archived" | "ended";
+                /** @description 1 to 50, default 20. */
+                limit?: number;
+                /** @description `next_cursor` of the previous page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectionPage"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_connection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Connection"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    patch_connection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PatchConnectionBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Connection"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    put_contact_share: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactShareBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Connection"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    delete_contact_share: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Connection"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    end_connection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EndConnectionBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Connection"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    list_messages: {
+        parameters: {
+            query?: {
+                /** @description Messages older than this id, newest first. */
+                before?: string;
+                /** @description Messages newer than this id, oldest first. */
+                after?: string;
+                /** @description 1 to 100, default 30. */
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessagesPage"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    send_message: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendMessageBody"];
+            };
+        };
+        responses: {
+            /** @description Already sent with this client_message_id */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Sent */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    delete_message: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+                /** @description The caller's message */
+                message_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    mark_read: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReadBody"];
+            };
+        };
+        responses: {
+            /** @description Marked */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    propose_stage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StageProposalBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Connection"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    cancel_proposal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+                /** @description The caller's proposal */
+                proposal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Connection"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    confirm_proposal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+                /** @description The other member's proposal */
+                proposal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Connection"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    decline_proposal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connection */
+                connection_id: string;
+                /** @description The other member's proposal */
+                proposal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Connection"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
     post_events: {
         parameters: {
             query?: never;
@@ -6558,6 +8161,348 @@ export interface operations {
                 };
             };
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    list_interests: {
+        parameters: {
+            query: {
+                /** @description `received` or `sent`. */
+                box: "received" | "sent";
+                /** @description `pending` (default), `accepted` or `closed`. */
+                status?: "pending" | "accepted" | "closed";
+                /** @description 1 to 50, default 20. */
+                limit?: number;
+                /** @description `next_cursor` of the previous page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InterestPage"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    send_interest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendInterestBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SentInterest"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    mark_seen: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SeenBody"];
+            };
+        };
+        responses: {
+            /** @description Marked */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    get_interest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The interest */
+                interest_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Interest"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    accept_interest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The received interest */
+                interest_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcceptedInterest"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    decline_interest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The received interest */
+                interest_id: string;
+            };
+            cookie?: never;
+        };
+        /** @description Optional */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeclineBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Interest"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    withdraw_interest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The sent interest */
+                interest_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Interest"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -7072,6 +9017,222 @@ export interface operations {
                 };
             };
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    list_access: {
+        parameters: {
+            query?: {
+                /** @description `received` (default) or `sent`. */
+                box?: "received" | "sent";
+                /** @description `pending` (default), `granted`, `denied` or `revoked`. */
+                status?: components["schemas"]["PhotoAccessStatus"];
+                /** @description 1 to 50, default 20. */
+                limit?: number;
+                /** @description `next_cursor` of the previous page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_PhotoAccessItem"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    put_grant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The member to give access to */
+                profile_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Granted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    delete_grant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The member whose access is removed */
+                profile_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Revoked */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    deny_request: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The photo access request */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Denied */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    grant_request: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The photo access request */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Granted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -8452,6 +10613,60 @@ export interface operations {
             };
         };
     };
+    request_access: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The owner of the photos */
+                profile_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhotoRequested"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
     get_recommendations: {
         parameters: {
             query?: {
@@ -8607,6 +10822,61 @@ export interface operations {
                 };
             };
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    file_report: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FileReportBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportFiled"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -152,6 +152,7 @@ text_enum! {
 
 text_enum! {
     /// `hijab` (05 section 2).
+    #[expect(clippy::enum_variant_names, reason = "`hijab` is one of the stored codes")]
     Hijab {
         Niqab = "niqab",
         Hijab = "hijab",

@@ -25,8 +25,6 @@ macro_rules! text_enum {
         $name:ident { $($variant:ident = $code:literal),+ $(,)? }
     ) => {
         $(#[$meta])*
-        // Variant names are the stored codes, which sometimes share a prefix or suffix.
-        #[allow(clippy::enum_variant_names)]
         #[derive(
             Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord,
             serde::Serialize, serde::Deserialize, utoipa::ToSchema,

@@ -2925,6 +2925,1076 @@
         ]
       }
     },
+    "/v1/connections": {
+      "get": {
+        "tags": [
+          "connections"
+        ],
+        "summary": "The chat list. `filter` is `active` (default, without archived chats), `archived` or\n`ended`. Ordered by `last_message_at` descending; connections without messages by\n`created_at`.",
+        "operationId": "list_connections",
+        "parameters": [
+          {
+            "name": "filter",
+            "in": "query",
+            "description": "`active` (default), `archived` or `ended`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "`filter` of `GET /v1/connections`.",
+              "enum": [
+                "active",
+                "archived",
+                "ended"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "1 to 50, default 20.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "`next_cursor` of the previous page.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/connections/{connection_id}": {
+      "get": {
+        "tags": [
+          "connections"
+        ],
+        "summary": "One connection of the caller.",
+        "operationId": "get_connection",
+        "parameters": [
+          {
+            "name": "connection_id",
+            "in": "path",
+            "description": "The connection",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Connection"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "connections"
+        ],
+        "summary": "Mute or archive a chat. Both flags are the caller's own and invisible to the other member.\nA muted chat sends no push and does not count in `counters.unread_chats`; an archived chat\nmoves to the Archived tab until the next message arrives.",
+        "operationId": "patch_connection",
+        "parameters": [
+          {
+            "name": "connection_id",
+            "in": "path",
+            "description": "The connection",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchConnectionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Connection"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/connections/{connection_id}/contact-share": {
+      "put": {
+        "tags": [
+          "connections"
+        ],
+        "summary": "Share contact details with the other member, or change which items are shared.",
+        "description": "At least one item must be selected, and each selected item must have a value in the\ncaller's contact details (`validation_failed` with field code `required` on the share flag,\nso the client can open the contact form). The share is a reference: later edits of the\ndetails are what the other member sees. Posts a `contact_shared` system message and\nnotifies the other member.",
+        "operationId": "put_contact_share",
+        "parameters": [
+          {
+            "name": "connection_id",
+            "in": "path",
+            "description": "The connection",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactShareBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Connection"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "connections"
+        ],
+        "summary": "Stop sharing contact details. The other member no longer sees them from the next fetch;\nanything they saved is out of reach. Posts a `contact_share_revoked` system message. Without\nan active share nothing changes.",
+        "operationId": "delete_contact_share",
+        "parameters": [
+          {
+            "name": "connection_id",
+            "in": "path",
+            "description": "The connection",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Connection"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/connections/{connection_id}/end": {
+      "post": {
+        "tags": [
+          "connections"
+        ],
+        "summary": "End the connection with a reason, and optionally block the other member.",
+        "description": "Both contact shares and the photo access between the pair are revoked, a pending stage\nproposal is cancelled and a `connection_ended` system message is posted. The other member is\nnot notified and never sees the reason. Neither may send the other an interest for\n`connection.cooldown_after_end_days` (90).",
+        "operationId": "end_connection",
+        "parameters": [
+          {
+            "name": "connection_id",
+            "in": "path",
+            "description": "The connection",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EndConnectionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Connection"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/connections/{connection_id}/messages": {
+      "get": {
+        "tags": [
+          "connections"
+        ],
+        "summary": "Message history: the newest `limit` (default 30, at most 100) messages newest first, or\nthose older than `before` (newest first), or those newer than `after` (oldest first; repeat\nwhile `has_more`). Ended connections stay readable.",
+        "operationId": "list_messages",
+        "parameters": [
+          {
+            "name": "connection_id",
+            "in": "path",
+            "description": "The connection",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "description": "Messages older than this id, newest first.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "description": "Messages newer than this id, oldest first.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "1 to 100, default 30.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessagesPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "connections"
+        ],
+        "summary": "Send a text message.",
+        "description": "`client_message_id` is a UUID made by the client and reused on every retry: sending it\nagain returns the original message with `200` and changes nothing. Errors:\n`connection_ended`; `invalid_state` with `details.status = 'other_unavailable'` when the\nother member can no longer be opened (suspended, banned, scheduled for deletion);\n`rate_limited` (`limits.messages_per_minute`) and `limit_reached`\n(`limits.messages_per_day`). Messages are never blocked for their content: the safety\npatterns only add a notice for the receiver (13 section 5).",
+        "operationId": "send_message",
+        "parameters": [
+          {
+            "name": "connection_id",
+            "in": "path",
+            "description": "The connection",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Already sent with this client_message_id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Sent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/connections/{connection_id}/messages/{message_id}": {
+      "delete": {
+        "tags": [
+          "connections"
+        ],
+        "summary": "Remove one of the caller's own text messages, within 15 minutes of sending (`invalid_state`\nwith `details.status = 'delete_window_passed'` after). The body is cleared; both members see\n\"Message removed\". A message that is already removed is returned as it is.",
+        "operationId": "delete_message",
+        "parameters": [
+          {
+            "name": "connection_id",
+            "in": "path",
+            "description": "The connection",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "message_id",
+            "in": "path",
+            "description": "The caller's message",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/connections/{connection_id}/read": {
+      "post": {
+        "tags": [
+          "connections"
+        ],
+        "summary": "Mark messages as read up to a message of this connection. The stored pointer never moves\nbackwards, and `unread_count` is recomputed from the data. `message.read` reaches the other\nmember only when both members send read receipts (09 section 9).",
+        "operationId": "mark_read",
+        "parameters": [
+          {
+            "name": "connection_id",
+            "in": "path",
+            "description": "The connection",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReadBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Marked"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/connections/{connection_id}/stage-proposals": {
+      "post": {
+        "tags": [
+          "connections"
+        ],
+        "summary": "Propose the next stage: later than the current one (`invalid_state`), with no proposal\npending (`already_exists`), and not a stage this member proposed and saw declined in the\nlast 7 days (`cooldown_active`). Posts a `stage_proposed` system message and notifies the\nother member.",
+        "operationId": "propose_stage",
+        "parameters": [
+          {
+            "name": "connection_id",
+            "in": "path",
+            "description": "The connection",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StageProposalBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Connection"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/connections/{connection_id}/stage-proposals/{proposal_id}": {
+      "delete": {
+        "tags": [
+          "connections"
+        ],
+        "summary": "Withdraw the caller's own pending proposal. Posts a `stage_declined` system message with\n`cancelled: true`.",
+        "operationId": "cancel_proposal",
+        "parameters": [
+          {
+            "name": "connection_id",
+            "in": "path",
+            "description": "The connection",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "proposal_id",
+            "in": "path",
+            "description": "The caller's proposal",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Connection"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/connections/{connection_id}/stage-proposals/{proposal_id}/confirm": {
+      "post": {
+        "tags": [
+          "connections"
+        ],
+        "summary": "Confirm the other member's proposal: the connection moves to its stage. Reaching\n`nikah_done` closes both profiles (`found_match_here`), expires their pending interests and\nends their other connections (`found_someone_else`); the couple's chat stays readable.\nReaching `engaged` only makes the clients suggest pausing the profile.",
+        "operationId": "confirm_proposal",
+        "parameters": [
+          {
+            "name": "connection_id",
+            "in": "path",
+            "description": "The connection",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "proposal_id",
+            "in": "path",
+            "description": "The other member's proposal",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Connection"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/connections/{connection_id}/stage-proposals/{proposal_id}/decline": {
+      "post": {
+        "tags": [
+          "connections"
+        ],
+        "summary": "Decline the other member's proposal. The stage stays; a `stage_declined` system message is\nposted and nobody is notified. The proposer may suggest the same stage again after 7 days.",
+        "operationId": "decline_proposal",
+        "parameters": [
+          {
+            "name": "connection_id",
+            "in": "path",
+            "description": "The connection",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "proposal_id",
+            "in": "path",
+            "description": "The other member's proposal",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Connection"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/v1/events": {
       "post": {
         "tags": [
@@ -2981,6 +4051,502 @@
             }
           },
           "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/interests": {
+      "get": {
+        "tags": [
+          "interests"
+        ],
+        "summary": "Received or sent interests, newest first. `status` is `pending` (default), `accepted` or\n`closed`. A sender sees a declined interest as \"no response\" under `pending` until it would\nhave expired, then under `closed`.",
+        "operationId": "list_interests",
+        "parameters": [
+          {
+            "name": "box",
+            "in": "query",
+            "description": "`received` or `sent`.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "`box` of `GET /v1/interests`.",
+              "enum": [
+                "received",
+                "sent"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "`pending` (default), `accepted` or `closed`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "`status` of `GET /v1/interests`. `closed` covers declined, withdrawn and expired.",
+              "enum": [
+                "pending",
+                "accepted",
+                "closed"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "1 to 50, default 20.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "`next_cursor` of the previous page.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterestPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "interests"
+        ],
+        "summary": "Send an interest.",
+        "description": "The checks of 15 section 11 run in order: the receiver must be `active` and openable\n(`not_found`), not connected (`already_connected`), no pending interest from the caller\n(`interest_already_pending`, also during a quiet decline), no cooldown (`cooldown_active`),\nthe receiver's `interest_permission` (`not_permitted_by_member`), the pending, connection and\ndaily limits (`limit_reached`), and the text rules on `message` (`validation_failed`).\n\nWhen the receiver already has a pending interest to the caller, that interest is accepted\ninstead (mutual interest): checks 5, 6 and 8 are skipped, the message is ignored, and\n`connection` is set in the answer.",
+        "operationId": "send_interest",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendInterestBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SentInterest"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/interests/seen": {
+      "post": {
+        "tags": [
+          "interests"
+        ],
+        "summary": "Mark received interests as seen (once per id). Ids that are not the caller's received\ninterests are ignored.",
+        "operationId": "mark_seen",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SeenBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Marked"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/interests/{interest_id}": {
+      "get": {
+        "tags": [
+          "interests"
+        ],
+        "summary": "One interest the caller sent or received.",
+        "operationId": "get_interest",
+        "parameters": [
+          {
+            "name": "interest_id",
+            "in": "path",
+            "description": "The interest",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Interest"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/interests/{interest_id}/accept": {
+      "post": {
+        "tags": [
+          "interests"
+        ],
+        "summary": "Accept a received interest: only the receiver, only `pending`.",
+        "description": "The sender must still be openable (otherwise the interest expires and `invalid_state`), and\nboth members must be under `limits.active_connections_max` (`limit_reached` with\n`details.side` `you` or `them`). Creates the connection, both member rows and the\n`connected` system message in one transaction.",
+        "operationId": "accept_interest",
+        "parameters": [
+          {
+            "name": "interest_id",
+            "in": "path",
+            "description": "The received interest",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcceptedInterest"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/interests/{interest_id}/decline": {
+      "post": {
+        "tags": [
+          "interests"
+        ],
+        "summary": "Decline a received interest: only the receiver, only `pending`. The sender is not told; they\nsee \"No response yet\" until the interest would have expired. With `also_block`, the sender\nis also blocked (15 section 13).",
+        "operationId": "decline_interest",
+        "parameters": [
+          {
+            "name": "interest_id",
+            "in": "path",
+            "description": "The received interest",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Optional",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeclineBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Interest"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/interests/{interest_id}/withdraw": {
+      "post": {
+        "tags": [
+          "interests"
+        ],
+        "summary": "Withdraw a sent interest: only the sender, only `pending`. The receiver is not told; their\nnotification for it is removed. An interest that was quietly declined answers as withdrawn\ntoo, so the decline never shows (11 section 3.5 rule 2).",
+        "operationId": "withdraw_interest",
+        "parameters": [
+          {
+            "name": "interest_id",
+            "in": "path",
+            "description": "The sent interest",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Interest"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
             "content": {
               "application/json": {
                 "schema": {
@@ -3652,6 +5218,315 @@
             }
           },
           "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/me/photo-access": {
+      "get": {
+        "tags": [
+          "relations"
+        ],
+        "summary": "Requests received or sent, newest first. `box=received` (default) lists the requests for the\ncaller's photos and, with `status=granted`, the access the caller gave; `box=sent` lists the\ncaller's own requests. `status` defaults to `pending`.",
+        "description": "A member is never told that a request was denied or that access was removed (09 sections\n6.3 and 6.4), so `box=sent` lists only `pending` and `granted` rows: with `status=denied` or\n`status=revoked` it answers an empty page.",
+        "operationId": "list_access",
+        "parameters": [
+          {
+            "name": "box",
+            "in": "query",
+            "description": "`received` (default) or `sent`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Which side of the requests a list shows.",
+              "enum": [
+                "received",
+                "sent"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "`pending` (default), `granted`, `denied` or `revoked`.",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PhotoAccessStatus"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "1 to 50, default 20.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "`next_cursor` of the previous page.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_PhotoAccessItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/me/photo-access/grants/{profile_id}": {
+      "put": {
+        "tags": [
+          "relations"
+        ],
+        "summary": "Let a member see the caller's photos without a request. Allowed from no row, `denied`,\n`revoked` and `pending` (which approves the request), and only when the caller may open the\ntarget (`404` otherwise; for a `paused` caller that means members they are related to).\nGranting twice changes nothing and answers `204`. The target receives\n`photo_request_granted`.",
+        "operationId": "put_grant",
+        "parameters": [
+          {
+            "name": "profile_id",
+            "in": "path",
+            "description": "The member to give access to",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Granted"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "relations"
+        ],
+        "summary": "Take access back: `granted` to `revoked`. The viewer is not told; the photos are blurred\nagain on their next request, and they may ask again after `photo_access.retry_days`. `404`\nwhen the caller has no row for the member, `409 invalid_state` when the row is not\n`granted`.",
+        "operationId": "delete_grant",
+        "parameters": [
+          {
+            "name": "profile_id",
+            "in": "path",
+            "description": "The member whose access is removed",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Revoked"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/me/photo-access/{id}/deny": {
+      "post": {
+        "tags": [
+          "relations"
+        ],
+        "summary": "Deny a request: `pending` to `denied`. The requester is not told, and may ask again after\n`photo_access.retry_days`. Any other state answers `409 invalid_state`; a request that is\nnot the caller's answers `404`.",
+        "operationId": "deny_request",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The photo access request",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Denied"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/me/photo-access/{id}/grant": {
+      "post": {
+        "tags": [
+          "relations"
+        ],
+        "summary": "Approve a request: `pending` to `granted`. Any other state answers `409 invalid_state`\nwith the current `status`; a request that is not the caller's answers `404`. The requester\nreceives `photo_request_granted`.",
+        "operationId": "grant_request",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The photo access request",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Granted"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
             "content": {
               "application/json": {
                 "schema": {
@@ -5538,6 +7413,80 @@
         ]
       }
     },
+    "/v1/profiles/{profile_id}/photo-access": {
+      "post": {
+        "tags": [
+          "relations"
+        ],
+        "summary": "Ask to see a member's photos. The checks run in the order of 09 section 6.3:",
+        "description": "1. The caller is `active` (access level `browse`) and may open the owner (`404` otherwise).\n2. The caller currently gets blurred photos and the owner has an approved photo, otherwise\n   `409 invalid_state` with `details.status = \"visible\"`.\n3. The owner accepts requests, otherwise `409 not_permitted_by_member` with\n   `details.reason = \"requests_off\"`.\n4. No request is pending (`409 already_exists`).\n5. A denial or revocation is older than `photo_access.retry_days`\n   (`409 cooldown_active` with `retry_after_date`).\n6. Fewer than `limits.photo_requests_per_day` requests were sent today\n   (`429 limit_reached`).\n\nThe owner receives a `photo_request_received` notification and a `counters` event.",
+        "operationId": "request_access",
+        "parameters": [
+          {
+            "name": "profile_id",
+            "in": "path",
+            "description": "The owner of the photos",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoRequested"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/v1/recommendations": {
       "get": {
         "tags": [
@@ -5767,6 +7716,78 @@
             }
           }
         }
+      }
+    },
+    "/v1/reports": {
+      "post": {
+        "tags": [
+          "relations"
+        ],
+        "summary": "Report a member, a photo or a message. The caller must be able to see the subject, else\n`404 not_found` (13 section 6.1): the target through the visibility rules for a profile or\na photo (an `approved` photo of the target), a connection the caller belongs to for a\nmessage (one the target sent; an ended connection counts).",
+        "description": "The context is captured at filing time (13 section 6.3): the profile text fields, the photo\nkeys, or for a message the 20 messages before it, the message and the 5 after it from that\nconnection only. At most `limits.reports_per_day` reports a day (`429 limit_reached`); a\nreport on a subject the caller already has an `open` or `in_review` report on returns that\nreport's id and creates nothing. With `also_block` the block is applied in the same\ntransaction, also for that repeated report. Answers `201` with the report id. The reported\nmember is not told and nothing changes for them.",
+        "operationId": "file_report",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileReportBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportFiled"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/v1/search": {
@@ -6064,6 +8085,22 @@
   },
   "components": {
     "schemas": {
+      "AcceptedInterest": {
+        "type": "object",
+        "description": "The answer of `POST /v1/interests/{interest_id}/accept`.",
+        "required": [
+          "interest",
+          "connection"
+        ],
+        "properties": {
+          "connection": {
+            "$ref": "#/components/schemas/Connection"
+          },
+          "interest": {
+            "$ref": "#/components/schemas/Interest"
+          }
+        }
+      },
       "AccountForBody": {
         "type": "object",
         "description": "The body of `PUT .../sections/account_for`: the section plus the consents ticked on the\nscreen, recorded at their current versions (07 section 3.4 rule 3).",
@@ -8405,6 +10442,189 @@
         },
         "additionalProperties": false
       },
+      "Connection": {
+        "type": "object",
+        "description": "A connection as one of its members sees it (15 section 4.7).",
+        "required": [
+          "id",
+          "status",
+          "stage",
+          "created_at",
+          "unread_count",
+          "is_muted",
+          "is_archived"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ended_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "ended_by": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/EndedBy"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ended_reason": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ConnectionEndReason",
+                "description": "Returned only to the member who ended it; `null` for the other member."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "is_archived": {
+            "type": "boolean"
+          },
+          "is_muted": {
+            "type": "boolean"
+          },
+          "last_message_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "last_message_preview": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "my_contact_share": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ContactShare"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "other": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ProfileCard",
+                "description": "`null`: the other account is deleted, scheduled for deletion, suspended or banned, or\nthe profile can no longer be opened; the client shows \"Member no longer available\"."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pending_stage_proposal": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/PendingStageProposal"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stage": {
+            "$ref": "#/components/schemas/ConnectionStage"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ConnectionStatus"
+          },
+          "their_contact": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SharedContact"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "their_last_read_message_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "`null` unless both members have `send_read_receipts` on (09 section 9)."
+          },
+          "unread_count": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ConnectionEndReason": {
+        "type": "string",
+        "description": "`connection_end_reason` (05 section 2).",
+        "enum": [
+          "NotCompatible",
+          "FamilyDeclined",
+          "NoResponse",
+          "FoundSomeoneElse",
+          "InappropriateBehaviour",
+          "Other",
+          "Blocked",
+          "AccountClosed"
+        ]
+      },
+      "ConnectionPage": {
+        "type": "object",
+        "description": "A page of connections, latest activity first.",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Connection"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "`null` on the last page."
+          }
+        }
+      },
+      "ConnectionStage": {
+        "type": "string",
+        "description": "`connection_stage` (05 section 2).",
+        "enum": [
+          "Chatting",
+          "FamiliesTalking",
+          "Engaged",
+          "NikahDone"
+        ]
+      },
+      "ConnectionStatus": {
+        "type": "string",
+        "description": "`connections.status` (03 section 4.8).",
+        "enum": [
+          "Active",
+          "Ended"
+        ]
+      },
       "ConsentDocument": {
         "type": "string",
         "description": "`user_consents.document`.",
@@ -8430,6 +10650,72 @@
           }
         },
         "additionalProperties": false
+      },
+      "ContactShare": {
+        "type": "object",
+        "description": "The caller's own contact share on a connection (15 section 4.7).",
+        "required": [
+          "share_phone",
+          "share_whatsapp",
+          "share_email",
+          "share_guardian",
+          "status",
+          "created_at"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "share_email": {
+            "type": "boolean"
+          },
+          "share_guardian": {
+            "type": "boolean"
+          },
+          "share_phone": {
+            "type": "boolean"
+          },
+          "share_whatsapp": {
+            "type": "boolean"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ContactShareStatus"
+          }
+        }
+      },
+      "ContactShareBody": {
+        "type": "object",
+        "description": "`PUT /v1/connections/{connection_id}/contact-share`: at least one item.",
+        "required": [
+          "share_phone",
+          "share_whatsapp",
+          "share_email",
+          "share_guardian"
+        ],
+        "properties": {
+          "share_email": {
+            "type": "boolean"
+          },
+          "share_guardian": {
+            "type": "boolean"
+          },
+          "share_phone": {
+            "type": "boolean"
+          },
+          "share_whatsapp": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ContactShareStatus": {
+        "type": "string",
+        "description": "`contact_shares.status` (03 section 4.10).",
+        "enum": [
+          "Active",
+          "Revoked"
+        ]
       },
       "ContactsSection": {
         "type": "object",
@@ -8611,6 +10897,20 @@
           "version_name": {
             "type": "string",
             "description": "For example `1.3.0`."
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeclineBody": {
+        "type": "object",
+        "description": "`POST /v1/interests/{interest_id}/decline`.",
+        "properties": {
+          "also_block": {
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "description": "Also block the sender (15 section 13)."
           }
         },
         "additionalProperties": false
@@ -9216,6 +11516,18 @@
           "Hidden"
         ]
       },
+      "DisplayStatus": {
+        "type": "string",
+        "description": "`Interest.display_status` (15 section 4.7): what the client shows. Declines are hidden from\nsenders.",
+        "enum": [
+          "pending",
+          "accepted",
+          "no_response",
+          "closed",
+          "withdrawn",
+          "declined"
+        ]
+      },
       "DocumentType": {
         "type": "string",
         "description": "`document_type` (05 section 2).",
@@ -9312,6 +11624,35 @@
           "Homemaker",
           "NotWorking",
           "Retired"
+        ]
+      },
+      "EndConnectionBody": {
+        "type": "object",
+        "description": "`POST /v1/connections/{connection_id}/end`.",
+        "required": [
+          "reason"
+        ],
+        "properties": {
+          "also_block": {
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "description": "Also block the other member (15 section 13)."
+          },
+          "reason": {
+            "$ref": "#/components/schemas/MemberEndReason"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EndedBy": {
+        "type": "string",
+        "description": "`Connection.ended_by`.",
+        "enum": [
+          "me",
+          "them",
+          "system"
         ]
       },
       "ErrorBody": {
@@ -9627,6 +11968,60 @@
           "Nobody"
         ]
       },
+      "FileReportBody": {
+        "type": "object",
+        "description": "`POST /v1/reports`.",
+        "required": [
+          "target_profile_id",
+          "subject_type",
+          "reason"
+        ],
+        "properties": {
+          "also_block": {
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "description": "Block the target in the same transaction. Default `false`."
+          },
+          "details": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Optional, at most 1,000 characters. Length is the only rule: a report may need to quote\na phone number or abusive words (13 section 3.1, \"Not checked\")."
+          },
+          "message_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Required for `message`, not allowed otherwise: a message the target sent in a\nconnection the caller belongs to."
+          },
+          "photo_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Required for `photo`, not allowed otherwise: an approved photo of the target."
+          },
+          "reason": {
+            "$ref": "#/components/schemas/ReportReason",
+            "description": "A `report_reason` code (05 section 2.42)."
+          },
+          "subject_type": {
+            "$ref": "#/components/schemas/ReportSubject"
+          },
+          "target_profile_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The reported member."
+          }
+        },
+        "additionalProperties": false
+      },
       "Gate": {
         "type": "string",
         "description": "The gate returned by `GET /v1/me` (03 section 5.1).",
@@ -9868,6 +12263,88 @@
           "Low"
         ]
       },
+      "Interest": {
+        "type": "object",
+        "description": "An interest as one of its two members sees it (15 section 4.7).",
+        "required": [
+          "id",
+          "direction",
+          "status",
+          "display_status",
+          "seen",
+          "created_at",
+          "expires_at"
+        ],
+        "properties": {
+          "compat_score": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "description": "The compatibility of the pair when the interest was sent (0..100)."
+          },
+          "connection_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "The connection created when the interest was accepted."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "direction": {
+            "$ref": "#/components/schemas/InterestDirection"
+          },
+          "display_status": {
+            "$ref": "#/components/schemas/DisplayStatus"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "message": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "profile": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ProfileCard",
+                "description": "The other profile; `null` when it is no longer visible to the caller (09 section 2)."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "responded_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "`null` for the sender of a declined interest, which must still look unanswered."
+          },
+          "seen": {
+            "type": "boolean",
+            "description": "The receiver always sees their own state; the sender sees `true` only when both members\nsend read receipts (09 section 9)."
+          },
+          "status": {
+            "$ref": "#/components/schemas/InterestStatus",
+            "description": "For the sender a `declined` interest is reported as `pending` until `expires_at`, then as\n`expired`: the real value never reaches the sender."
+          }
+        }
+      },
       "InterestDirection": {
         "type": "string",
         "description": "Direction of an interest seen from the viewer: `sent` by the viewer to the owner, or\n`received` by the viewer from the owner (15 section 4.6 `interest_direction`).",
@@ -9875,6 +12352,28 @@
           "Sent",
           "Received"
         ]
+      },
+      "InterestPage": {
+        "type": "object",
+        "description": "A page of interests, newest first.",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Interest"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "`null` on the last page."
+          }
+        }
       },
       "InterestPermission": {
         "type": "string",
@@ -10788,6 +13287,132 @@
           },
           "timezone": {
             "type": "string"
+          }
+        }
+      },
+      "MemberEndReason": {
+        "type": "string",
+        "description": "The reasons a member may give for ending a connection (15 section 12). `blocked` and\n`account_closed` are set only by the system.",
+        "enum": [
+          "not_compatible",
+          "family_declined",
+          "no_response",
+          "found_someone_else",
+          "inappropriate_behaviour",
+          "other"
+        ]
+      },
+      "Message": {
+        "type": "object",
+        "description": "A chat message as one member sees it (15 section 4.7).",
+        "required": [
+          "id",
+          "connection_id",
+          "sender",
+          "kind",
+          "is_deleted",
+          "created_at"
+        ],
+        "properties": {
+          "body": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "`null` when deleted, and for system messages."
+          },
+          "client_message_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The sender's idempotency key; set only on the caller's own messages."
+          },
+          "connection_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "is_deleted": {
+            "type": "boolean"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/MessageKind"
+          },
+          "safety_notice": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SafetyFlag",
+                "description": "Only on messages from `them` (13 section 5.1 rule 3)."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sender": {
+            "$ref": "#/components/schemas/MessageSender"
+          },
+          "system_data": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "system_event": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SystemEvent"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "MessageKind": {
+        "type": "string",
+        "description": "`messages.kind`.",
+        "enum": [
+          "Text",
+          "System"
+        ]
+      },
+      "MessageSender": {
+        "type": "string",
+        "description": "`Message.sender`.",
+        "enum": [
+          "me",
+          "them",
+          "system"
+        ]
+      },
+      "MessagesPage": {
+        "type": "object",
+        "description": "One page of the message history.",
+        "required": [
+          "items",
+          "has_more"
+        ],
+        "properties": {
+          "has_more": {
+            "type": "boolean",
+            "description": "More messages exist in the same direction."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            },
+            "description": "Newest first; oldest first with `after`."
           }
         }
       },
@@ -12267,12 +14892,79 @@
           }
         }
       },
+      "Page_PhotoAccessItem": {
+        "type": "object",
+        "description": "One page of a list.",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "One request or grant.",
+              "required": [
+                "id",
+                "profile_id",
+                "status",
+                "created_at"
+              ],
+              "properties": {
+                "created_at": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "The `photo_access` row, for `POST /v1/me/photo-access/{id}/grant` and `.../deny`."
+                },
+                "profile": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ProfileCard",
+                      "description": "`null` when the other profile can no longer be opened."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "profile_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "The other profile: the requester in `received`, the owner in `sent`. Present even when\n`profile` is `null`, so a grant can still be revoked."
+                },
+                "status": {
+                  "$ref": "#/components/schemas/PhotoAccessStatus"
+                }
+              }
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "`null` on the last page."
+          }
+        }
+      },
       "ParentStatus": {
         "type": "string",
         "description": "`parent_status` (05 section 2).",
         "enum": [
           "Alive",
           "Deceased"
+        ]
+      },
+      "Party": {
+        "type": "string",
+        "description": "Which member did something, seen from the caller.",
+        "enum": [
+          "me",
+          "them"
         ]
       },
       "PatchCasteBody": {
@@ -12317,6 +15009,25 @@
         },
         "additionalProperties": false
       },
+      "PatchConnectionBody": {
+        "type": "object",
+        "description": "`PATCH /v1/connections/{connection_id}`.",
+        "properties": {
+          "is_archived": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "is_muted": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
       "PatchMe": {
         "type": "object",
         "properties": {
@@ -12353,6 +15064,32 @@
         },
         "additionalProperties": false
       },
+      "PendingStageProposal": {
+        "type": "object",
+        "description": "The pending stage proposal of a connection.",
+        "required": [
+          "id",
+          "stage",
+          "proposed_by",
+          "created_at"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "proposed_by": {
+            "$ref": "#/components/schemas/Party"
+          },
+          "stage": {
+            "$ref": "#/components/schemas/ConnectionStage"
+          }
+        }
+      },
       "PendingVerification": {
         "type": "object",
         "required": [
@@ -12368,6 +15105,56 @@
           }
         }
       },
+      "PhotoAccessItem": {
+        "type": "object",
+        "description": "One request or grant.",
+        "required": [
+          "id",
+          "profile_id",
+          "status",
+          "created_at"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The `photo_access` row, for `POST /v1/me/photo-access/{id}/grant` and `.../deny`."
+          },
+          "profile": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ProfileCard",
+                "description": "`null` when the other profile can no longer be opened."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "profile_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The other profile: the requester in `received`, the owner in `sent`. Present even when\n`profile` is `null`, so a grant can still be revoked."
+          },
+          "status": {
+            "$ref": "#/components/schemas/PhotoAccessStatus"
+          }
+        }
+      },
+      "PhotoAccessStatus": {
+        "type": "string",
+        "description": "`photo_access.status` (03 section 4.9).",
+        "enum": [
+          "Pending",
+          "Granted",
+          "Denied",
+          "Revoked"
+        ]
+      },
       "PhotoRejectionReason": {
         "type": "string",
         "description": "`photo_rejection_reason` (05 section 2).",
@@ -12381,6 +15168,18 @@
           "NotTheCandidate",
           "Other"
         ]
+      },
+      "PhotoRequested": {
+        "type": "object",
+        "description": "The answer to a photo request: always `pending`.",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/PhotoAccessStatus"
+          }
+        }
       },
       "PhotoStatus": {
         "type": "string",
@@ -13392,6 +16191,15 @@
           }
         }
       },
+      "ProposableStage": {
+        "type": "string",
+        "description": "The stages a member may propose.",
+        "enum": [
+          "families_talking",
+          "engaged",
+          "nikah_done"
+        ]
+      },
       "PutSettingBody": {
         "type": "object",
         "required": [
@@ -13851,6 +16659,19 @@
         },
         "additionalProperties": false
       },
+      "ReportFiled": {
+        "type": "object",
+        "description": "The filed report.",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
       "ReportPhoto": {
         "type": "object",
         "description": "The reported photo of a `photo` report.",
@@ -14109,6 +16930,15 @@
           }
         },
         "additionalProperties": false
+      },
+      "SafetyFlag": {
+        "type": "string",
+        "description": "`messages.safety_flag` (13 section 5).",
+        "enum": [
+          "Money",
+          "OffPlatform",
+          "ContactInfo"
+        ]
       },
       "SanctionType": {
         "type": "string",
@@ -14552,6 +17382,24 @@
         ],
         "description": "Documentation only: the body of `PUT .../sections/{section}` is the section type named in\nthe path. The handler picks the type itself, so that a body that does not fit its section\nis reported as such."
       },
+      "SeenBody": {
+        "type": "object",
+        "description": "`POST /v1/interests/seen`.",
+        "required": [
+          "interest_ids"
+        ],
+        "properties": {
+          "interest_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Ids of received interests that were rendered on screen; at most 100."
+          }
+        },
+        "additionalProperties": false
+      },
       "SelfieChallenge": {
         "type": "object",
         "description": "`GET /v1/me/verifications/selfie-challenge`.",
@@ -14561,6 +17409,68 @@
         "properties": {
           "gesture": {
             "$ref": "#/components/schemas/Gesture"
+          }
+        }
+      },
+      "SendInterestBody": {
+        "type": "object",
+        "description": "`POST /v1/interests`.",
+        "required": [
+          "receiver_profile_id"
+        ],
+        "properties": {
+          "message": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "At most 300 characters; the text rules apply (13 section 3)."
+          },
+          "receiver_profile_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SendMessageBody": {
+        "type": "object",
+        "description": "`POST /v1/connections/{connection_id}/messages`.",
+        "required": [
+          "body",
+          "client_message_id"
+        ],
+        "properties": {
+          "body": {
+            "type": "string",
+            "description": "1 to 2000 characters after trimming."
+          },
+          "client_message_id": {
+            "type": "string",
+            "description": "A UUID made by the client for each new message and reused on every retry."
+          }
+        },
+        "additionalProperties": false
+      },
+      "SentInterest": {
+        "type": "object",
+        "description": "The answer of `POST /v1/interests`: `connection` is set when a mutual interest created one.",
+        "required": [
+          "interest"
+        ],
+        "properties": {
+          "connection": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Connection"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "interest": {
+            "$ref": "#/components/schemas/Interest"
           }
         }
       },
@@ -14593,6 +17503,81 @@
           },
           "value": {
             "type": "object"
+          }
+        }
+      },
+      "SharedContact": {
+        "type": "object",
+        "description": "The other member's contact details shared with the caller: only the selected items, the\nothers `null` (09 section 10.2 rule 4).",
+        "required": [
+          "preferred_contact"
+        ],
+        "properties": {
+          "best_time_to_call": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "contact_email": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "guardian": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SharedGuardian"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "phone_e164": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "preferred_contact": {
+            "$ref": "#/components/schemas/PreferredContact",
+            "description": "`self` or `guardian`: whom to call first."
+          },
+          "whatsapp_e164": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "SharedGuardian": {
+        "type": "object",
+        "description": "The guardian item of a shared contact.",
+        "properties": {
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phone_e164": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "relation": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/GuardianRelation"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         }
       },
@@ -14700,6 +17685,19 @@
           }
         }
       },
+      "StageProposalBody": {
+        "type": "object",
+        "description": "`POST /v1/connections/{connection_id}/stage-proposals`.",
+        "required": [
+          "stage"
+        ],
+        "properties": {
+          "stage": {
+            "$ref": "#/components/schemas/ProposableStage"
+          }
+        },
+        "additionalProperties": false
+      },
       "SubmitVerification": {
         "oneOf": [
           {
@@ -14785,6 +17783,19 @@
           }
         },
         "additionalProperties": false
+      },
+      "SystemEvent": {
+        "type": "string",
+        "description": "`messages.system_event`.",
+        "enum": [
+          "Connected",
+          "ContactShared",
+          "ContactShareRevoked",
+          "StageProposed",
+          "StageConfirmed",
+          "StageDeclined",
+          "ConnectionEnded"
+        ]
       },
       "TextStatus": {
         "type": "string",

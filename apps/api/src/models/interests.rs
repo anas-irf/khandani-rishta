@@ -209,9 +209,10 @@ pub enum InterestFilter {
 pub struct InterestListQuery {
     /// `received` or `sent`.
     #[serde(rename = "box")]
-    #[param(rename = "box")]
+    #[param(rename = "box", inline)]
     pub mailbox: InterestBox,
     /// `pending` (default), `accepted` or `closed`.
+    #[param(inline)]
     pub status: Option<InterestFilter>,
     /// 1 to 50, default 20.
     pub limit: Option<i64>,

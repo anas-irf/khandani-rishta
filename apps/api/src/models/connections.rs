@@ -177,6 +177,7 @@ pub enum ConnectionFilter {
 #[into_params(parameter_in = Query)]
 pub struct ConnectionListQuery {
     /// `active` (default), `archived` or `ended`.
+    #[param(inline)]
     pub filter: Option<ConnectionFilter>,
     /// 1 to 50, default 20.
     pub limit: Option<i64>,

@@ -55,3 +55,63 @@ pub fn spec_json() -> anyhow::Result<String> {
     api.info.license = None;
     Ok(api.to_pretty_json()?)
 }
+
+#[cfg(test)]
+mod tests {
+    use std::collections::BTreeSet;
+
+    use serde_json::Value;
+
+    fn collect_refs(value: &Value, refs: &mut BTreeSet<String>) {
+        match value {
+            Value::Object(map) => {
+                for (key, inner) in map {
+                    if key == "$ref"
+                        && let Some(target) = inner.as_str()
+                    {
+                        refs.insert(target.to_owned());
+                    } else {
+                        collect_refs(inner, refs);
+                    }
+                }
+            }
+            Value::Array(items) => items.iter().for_each(|item| collect_refs(item, refs)),
+            _ => {}
+        }
+    }
+
+    /// Generated clients refuse a document with a dangling `$ref` (for example an enum used only
+    /// as a path or query parameter, which utoipa does not register by itself).
+    #[test]
+    fn every_schema_reference_resolves() {
+        let document: Value = serde_json::from_str(&super::spec_json().unwrap()).unwrap();
+        let mut refs = BTreeSet::new();
+        collect_refs(&document, &mut refs);
+        let schemas = document["components"]["schemas"].as_object().unwrap();
+        let dangling: Vec<&String> = refs
+            .iter()
+            .filter(|target| {
+                target
+                    .strip_prefix("#/components/schemas/")
+                    .is_none_or(|name| !schemas.contains_key(name))
+            })
+            .collect();
+        assert!(dangling.is_empty(), "unresolved references: {dangling:?}");
+    }
+
+    /// Every operation is documented with a tag, so generated clients group it.
+    #[test]
+    fn every_operation_has_a_tag() {
+        let document: Value = serde_json::from_str(&super::spec_json().unwrap()).unwrap();
+        for (path, operations) in document["paths"].as_object().unwrap() {
+            for (method, operation) in operations.as_object().unwrap() {
+                assert!(
+                    operation["tags"]
+                        .as_array()
+                        .is_some_and(|tags| !tags.is_empty()),
+                    "{method} {path} has no tag"
+                );
+            }
+        }
+    }
+}

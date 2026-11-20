@@ -186,6 +186,7 @@ pub enum Mailbox {
 pub struct AccessQuery {
     /// `received` (default) or `sent`.
     #[serde(rename = "box")]
+    #[param(inline)]
     pub mailbox: Option<Mailbox>,
     /// `pending` (default), `granted`, `denied` or `revoked`.
     pub status: Option<PhotoAccessStatus>,

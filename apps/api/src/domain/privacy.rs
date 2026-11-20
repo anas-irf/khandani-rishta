@@ -10,6 +10,7 @@ use crate::domain::options::{
 /// Every column of `profile_privacy` except `profile_id` and the timestamps.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ToSchema, sqlx::FromRow)]
 #[serde(deny_unknown_fields)]
+#[allow(clippy::struct_excessive_bools)] // One column per setting, as in the schema.
 pub struct Privacy {
     pub discovery_visibility: DiscoveryVisibility,
     pub interest_permission: InterestPermission,

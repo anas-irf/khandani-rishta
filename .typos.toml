@@ -10,3 +10,7 @@ mian = "mian"
 matric = "matric"
 # Bachelor of Arts, in the list of degree abbreviations.
 ba = "ba"
+
+[files]
+# Generated from GeoNames: tens of thousands of place names that are not dictionary words.
+extend-exclude = ["apps/api/migrations/0012_seed_geography.sql"]

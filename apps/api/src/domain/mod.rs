@@ -1,9 +1,5 @@
 //! Pure product logic: no database, no network. Everything here is unit-tested.
 
-// Temporary while handlers are being built: modules land before their callers.
-// Removed once every function has a caller.
-#![allow(dead_code)]
-
 pub mod chat_safety;
 pub mod completeness;
 pub mod display;
@@ -29,6 +25,8 @@ macro_rules! text_enum {
         $name:ident { $($variant:ident = $code:literal),+ $(,)? }
     ) => {
         $(#[$meta])*
+        // Variant names are the stored codes, which sometimes share a prefix or suffix.
+        #[allow(clippy::enum_variant_names)]
         #[derive(
             Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord,
             serde::Serialize, serde::Deserialize, utoipa::ToSchema,

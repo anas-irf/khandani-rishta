@@ -214,7 +214,7 @@ async fn basics_saves_the_section_and_the_account_sees_the_gender(db: PgPool) {
     assert_eq!(basics["gender"], "male");
     assert_eq!(basics["date_of_birth"], dob(28));
     assert_eq!(basics["height_cm"], 170);
-    assert!(response.json["completeness"].as_i64().unwrap() == 0);
+    assert_eq!(response.json["completeness"].as_i64().unwrap(), 0);
 
     let me = app.get("/v1/me", Some(&user.token)).await;
     assert_eq!(me.json["profile"]["gender"], "male");
@@ -659,7 +659,10 @@ async fn a_typed_caste_that_names_an_existing_one_becomes_that_one(db: PgPool) {
     assert_eq!(community["caste_other"], Value::Null);
     assert_eq!(community["sub_caste_code"], "rajput_chauhan");
     assert_eq!(community["sub_caste_other"], Value::Null);
-    assert!(suggestions(&app).await.is_empty());
+    assert!(
+        suggestions(&app).await.is_empty(),
+        "an existing caste is never suggested"
+    );
 
     // A new sub-caste under a listed caste is suggested with that parent.
     let mut body = community_body();
@@ -1077,7 +1080,10 @@ async fn a_changed_text_is_held_for_review_and_cleared_text_is_approved(db: PgPo
         .unwrap();
     let response = put_section(&app, &user, "family", body.clone()).await;
     assert_eq!(response.json["text_status"]["about_family"], "approved");
-    assert!(app.queued_jobs("moderate_text").await.is_empty());
+    assert!(
+        app.queued_jobs("moderate_text").await.is_empty(),
+        "approved text queues no review"
+    );
 
     // A rejected text stays rejected until it is edited (03 section 4.5).
     sqlx::query("UPDATE profile_family SET about_family_status = 'rejected' WHERE profile_id = $1")
@@ -1196,9 +1202,7 @@ async fn lifestyle_rules(db: PgPool) {
             "about_me:contains_contact_info",
         ),
         (
-            with(&|b| {
-                b["about_me"] = json!(format!("{ABOUT_ME} I want a hookup, nothing serious."))
-            }),
+            with(&|b| b["about_me"] = json!(format!("{ABOUT_ME} I want a hookup."))),
             "about_me:inappropriate",
         ),
         (

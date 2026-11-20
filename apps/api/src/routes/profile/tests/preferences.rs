@@ -536,7 +536,10 @@ async fn duplicates_are_removed_and_the_notes_text_follows_the_rules_of_moderate
         profile_of(&app, &man).await["text_status"]["partner_notes"],
         "rejected"
     );
-    assert!(app.queued_jobs("moderate_text").await.is_empty());
+    assert!(
+        app.queued_jobs("moderate_text").await.is_empty(),
+        "unchanged notes queue nothing"
+    );
 
     // A changed text is held again.
     body["notes"] = json!("Looking for a partner who is kind, educated and close to her family.");

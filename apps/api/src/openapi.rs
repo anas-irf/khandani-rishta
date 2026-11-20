@@ -53,7 +53,90 @@ pub fn spec_json() -> anyhow::Result<String> {
     let (_, mut api) = crate::routes::api_router().split_for_parts();
     // utoipa fills the license from Cargo.toml, which has none.
     api.info.license = None;
+    require_response_fields(&mut api)?;
     Ok(api.to_pretty_json()?)
+}
+
+/// Response properties the API leaves out instead of sending `null`.
+const OMITTED_WHEN_EMPTY: &[(&str, &str)] = &[("ErrorDetail", "fields")];
+
+/// Marks every property of response-only schemas as required.
+///
+/// utoipa documents an `Option` field as not required, but responses always carry every field,
+/// with `null` for "no value" (15 section 1). Without this, generated clients would type each
+/// such field as possibly missing. Schemas that also appear in a request body or parameter keep
+/// utoipa's reading, because there a missing field is allowed.
+fn require_response_fields(api: &mut utoipa::openapi::OpenApi) -> anyhow::Result<()> {
+    use std::collections::BTreeSet;
+    use utoipa::openapi::{RefOr, schema::Schema};
+
+    let document = serde_json::to_value(&*api)?;
+    let schemas = &document["components"]["schemas"];
+    let mut in_requests = BTreeSet::new();
+    let mut in_responses = BTreeSet::new();
+    for path in document["paths"]
+        .as_object()
+        .into_iter()
+        .flat_map(|paths| paths.values())
+    {
+        for operation in path.as_object().into_iter().flat_map(|item| item.values()) {
+            schema_names(&operation["requestBody"], schemas, &mut in_requests);
+            schema_names(&operation["parameters"], schemas, &mut in_requests);
+            schema_names(&operation["responses"], schemas, &mut in_responses);
+        }
+    }
+
+    let Some(components) = api.components.as_mut() else {
+        return Ok(());
+    };
+    for (name, schema) in &mut components.schemas {
+        if !in_responses.contains(name) || in_requests.contains(name) {
+            continue;
+        }
+        if let RefOr::T(Schema::Object(object)) = schema {
+            object.required = object
+                .properties
+                .keys()
+                .filter(|property| {
+                    !OMITTED_WHEN_EMPTY.contains(&(name.as_str(), property.as_str()))
+                })
+                .cloned()
+                .collect();
+        }
+    }
+    Ok(())
+}
+
+/// Collects the names of the component schemas `value` refers to, directly or through other
+/// schemas.
+fn schema_names(
+    value: &serde_json::Value,
+    schemas: &serde_json::Value,
+    names: &mut std::collections::BTreeSet<String>,
+) {
+    match value {
+        serde_json::Value::Object(map) => {
+            for (key, inner) in map {
+                if key == "$ref"
+                    && let Some(name) = inner
+                        .as_str()
+                        .and_then(|target| target.strip_prefix("#/components/schemas/"))
+                {
+                    if names.insert(name.to_owned()) {
+                        schema_names(&schemas[name], schemas, names);
+                    }
+                } else {
+                    schema_names(inner, schemas, names);
+                }
+            }
+        }
+        serde_json::Value::Array(items) => {
+            for item in items {
+                schema_names(item, schemas, names);
+            }
+        }
+        _ => {}
+    }
 }
 
 #[cfg(test)]
@@ -113,6 +196,34 @@ mod tests {
                 );
             }
         }
+    }
+
+    /// Response-only schemas require every property (nullable ones included), because the API
+    /// sends `null` instead of leaving a field out. Request schemas keep optional fields.
+    #[test]
+    fn response_fields_are_required_and_request_fields_are_not() {
+        let document: Value = serde_json::from_str(&super::spec_json().unwrap()).unwrap();
+        let schemas = &document["components"]["schemas"];
+        let required = |name: &str| -> BTreeSet<String> {
+            schemas[name]["required"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter_map(|value| value.as_str().map(str::to_owned))
+                .collect()
+        };
+        let properties = |name: &str| -> BTreeSet<String> {
+            schemas[name]["properties"]
+                .as_object()
+                .unwrap()
+                .keys()
+                .cloned()
+                .collect()
+        };
+        assert_eq!(required("MeUser"), properties("MeUser"));
+        assert!(required("MeUser").contains("phone_e164"));
+        assert!(!required("ErrorDetail").contains("fields"));
+        assert!(required("PatchMe").len() < properties("PatchMe").len());
     }
 
     /// String enums list the codes sent on the wire, not the Rust variant names. The schema of a

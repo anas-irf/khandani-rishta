@@ -2406,9 +2406,9 @@ export interface components {
         };
         /** @description Who manages the profile. */
         AccountForSection: {
-            managed_by?: components["schemas"]["ManagedBy"] | null;
+            managed_by: components["schemas"]["ManagedBy"] | null;
             /** @description Never shown to other members. Always `null` when `managed_by` is `self`. */
-            manager_name?: string | null;
+            manager_name: string | null;
         };
         AdminApprovedPhoto: {
             is_primary: boolean;
@@ -2423,8 +2423,8 @@ export interface components {
             code: string;
             is_active: boolean;
             name: string;
-            name_ur?: string | null;
-            parent_code?: string | null;
+            name_ur: string | null;
+            parent_code: string | null;
             /** Format: int32 */
             sort_order: number;
         };
@@ -2435,8 +2435,8 @@ export interface components {
             version: string;
         };
         AdminDevice: {
-            app_version?: string | null;
-            device_model?: string | null;
+            app_version: string | null;
+            device_model: string | null;
             /** Format: date-time */
             last_seen_at: string;
             platform: components["schemas"]["DevicePlatform"];
@@ -2485,7 +2485,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             kind: components["schemas"]["VerificationKind"];
-            rejection_reason?: components["schemas"]["VerificationRejectionReason"] | null;
+            rejection_reason: components["schemas"]["VerificationRejectionReason"] | null;
             status: components["schemas"]["VerificationStatus"];
         };
         /**
@@ -2499,13 +2499,13 @@ export interface components {
             /** @description Newest 20 entries whose target is this profile or its user. */
             audit: components["schemas"]["AuditEntry"][];
             /** Format: date-time */
-            first_activated_at?: string | null;
+            first_activated_at: string | null;
             /** Format: date-time */
-            last_active_at?: string | null;
+            last_active_at: string | null;
             /** @description `Preferences` (15 section 4.5), `null` when the profile has none. */
-            preferences?: Record<string, never> | null;
+            preferences: Record<string, never> | null;
             /** @description `Privacy` (15 section 4.5). `null` only after the account was purged. */
-            privacy?: Record<string, never> | null;
+            privacy: Record<string, never> | null;
             /** @description `OwnProfile` (15 section 4.3). `contacts` is `null` for moderators. */
             profile: Record<string, never>;
             /** @description Newest 10. */
@@ -2565,19 +2565,19 @@ export interface components {
         AdminProfileUser: {
             /** Format: date-time */
             created_at: string;
-            email?: string | null;
+            email: string | null;
             email_verified: boolean;
             /** Format: uuid */
             id: string;
             /** Format: date-time */
-            last_seen_at?: string | null;
+            last_seen_at: string | null;
             /** @description `null` for moderators. */
-            phone_e164?: string | null;
+            phone_e164: string | null;
             role: components["schemas"]["UserRole"];
             status: components["schemas"]["UserStatus"];
-            status_reason?: string | null;
+            status_reason: string | null;
             /** Format: date-time */
-            suspended_until?: string | null;
+            suspended_until: string | null;
         };
         AdminRelease: {
             download_url: string;
@@ -2586,7 +2586,7 @@ export interface components {
             /** Format: int32 */
             min_supported_version_code: number;
             platform: string;
-            release_notes?: string | null;
+            release_notes: string | null;
             /** Format: date-time */
             released_at: string;
             /** Format: int32 */
@@ -2611,7 +2611,7 @@ export interface components {
         AdminReportListItem: {
             /** Format: date-time */
             created_at: string;
-            handled_by_email?: string | null;
+            handled_by_email: string | null;
             /**
              * Format: int64
              * @description Reports on the same target that are `open` or `in_review`.
@@ -2625,7 +2625,7 @@ export interface components {
             reason: components["schemas"]["ReportReason"];
             /** Format: uuid */
             report_id: string;
-            reporter?: components["schemas"]["ReportReporter"] | null;
+            reporter: components["schemas"]["ReportReporter"] | null;
             source: components["schemas"]["ReportSource"];
             status: components["schemas"]["ReportStatus"];
             subject_type: components["schemas"]["ReportSubject"];
@@ -2634,17 +2634,17 @@ export interface components {
         /** @description A row of `sanctions` with the staff emails resolved. */
         AdminSanction: {
             /** @description `null` when the system applied it. */
-            created_by_email?: string | null;
+            created_by_email: string | null;
             /** Format: date-time */
-            ends_at?: string | null;
+            ends_at: string | null;
             /** Format: uuid */
             id: string;
             reason: string;
             /** Format: uuid */
-            report_id?: string | null;
+            report_id: string | null;
             /** Format: date-time */
-            revoked_at?: string | null;
-            revoked_by_email?: string | null;
+            revoked_at: string | null;
+            revoked_by_email: string | null;
             /** Format: date-time */
             starts_at: string;
             type: components["schemas"]["SanctionType"];
@@ -2691,12 +2691,12 @@ export interface components {
         AdminUserListItem: {
             /** Format: date-time */
             created_at: string;
-            email?: string | null;
-            first_name?: string | null;
-            gender?: components["schemas"]["Gender"] | null;
-            last_name?: string | null;
+            email: string | null;
+            first_name: string | null;
+            gender: components["schemas"]["Gender"] | null;
+            last_name: string | null;
             /** Format: date-time */
-            last_seen_at?: string | null;
+            last_seen_at: string | null;
             /** Format: uuid */
             profile_id: string;
             profile_status: components["schemas"]["ProfileStatus"];
@@ -2713,7 +2713,7 @@ export interface components {
             gesture: string;
             /** @description The gesture equals the challenge of the submission day or the day before. */
             gesture_valid: boolean;
-            identity?: components["schemas"]["AdminVerificationIdentity"] | null;
+            identity: components["schemas"]["AdminVerificationIdentity"] | null;
             images: components["schemas"]["AdminVerificationImages"];
             kind: components["schemas"]["VerificationKind"];
             media_purged: boolean;
@@ -2735,9 +2735,9 @@ export interface components {
          *     been purged.
          */
         AdminVerificationImages: {
-            back_url?: string | null;
-            front_url?: string | null;
-            selfie_url?: string | null;
+            back_url: string | null;
+            front_url: string | null;
+            selfie_url: string | null;
         };
         /** @description A request in the queue (18 section 4.4). */
         AdminVerificationListItem: {
@@ -2755,18 +2755,18 @@ export interface components {
         /** @description The profile data to compare with the documents. */
         AdminVerificationProfile: {
             /** Format: int32 */
-            age?: number | null;
+            age: number | null;
             /**
              * Format: date
              * @description `YYYY-MM-DD`.
              */
-            date_of_birth?: string | null;
-            first_name?: string | null;
-            gender?: components["schemas"]["Gender"] | null;
-            last_name?: string | null;
-            managed_by?: components["schemas"]["ManagedBy"] | null;
-            manager_name?: string | null;
-            marital_status?: components["schemas"]["MaritalStatus"] | null;
+            date_of_birth: string | null;
+            first_name: string | null;
+            gender: components["schemas"]["Gender"] | null;
+            last_name: string | null;
+            managed_by: components["schemas"]["ManagedBy"] | null;
+            manager_name: string | null;
+            marital_status: components["schemas"]["MaritalStatus"] | null;
             /** @description The approved photos, for comparison with the selfie. */
             photos: components["schemas"]["AdminApprovedPhoto"][];
             /** Format: uuid */
@@ -2779,9 +2779,9 @@ export interface components {
             /** Format: uuid */
             id: string;
             kind: components["schemas"]["VerificationKind"];
-            rejection_reason?: components["schemas"]["VerificationRejectionReason"] | null;
+            rejection_reason: components["schemas"]["VerificationRejectionReason"] | null;
             /** Format: date-time */
-            reviewed_at?: string | null;
+            reviewed_at: string | null;
             status: components["schemas"]["VerificationStatus"];
         };
         /** @description The answer of `POST /v1/admin/announcements` (`202`). */
@@ -2795,8 +2795,8 @@ export interface components {
         /** @description The optional home-screen banner (`announcement.banner`). */
         AnnouncementBanner: {
             text_en: string;
-            text_ur?: string | null;
-            url?: string | null;
+            text_ur: string | null;
+            url: string | null;
         };
         AnnouncementBody: {
             /** @description 1 to 300 characters. */
@@ -2811,7 +2811,7 @@ export interface components {
             download_url: string;
             /** Format: int32 */
             min_supported_version_code: number;
-            release_notes?: string | null;
+            release_notes: string | null;
             /** Format: int32 */
             version_code: number;
             version_name: string;
@@ -2828,7 +2828,7 @@ export interface components {
             photos_match?: boolean | null;
         };
         AuditActor: {
-            email?: string | null;
+            email: string | null;
             /** Format: uuid */
             user_id: string;
         };
@@ -2898,7 +2898,7 @@ export interface components {
         };
         BlocksPage: {
             items: components["schemas"]["BlockItem"][];
-            next_cursor?: string | null;
+            next_cursor: string | null;
         };
         /**
          * @description `blood_group` (05 section 2).
@@ -2914,19 +2914,19 @@ export interface components {
             aliases: string[];
             code: string;
             name: string;
-            name_ur?: string | null;
+            name_ur: string | null;
             sub_castes: components["schemas"]["NamedItem"][];
         };
         BootstrapCountry: {
             code: string;
-            dial_code?: string | null;
+            dial_code: string | null;
             name: string;
-            name_ur?: string | null;
+            name_ur: string | null;
         };
         BootstrapEducationLevel: {
             code: string;
             name: string;
-            name_ur?: string | null;
+            name_ur: string | null;
             /** Format: int32 */
             rank: number;
         };
@@ -2934,20 +2934,20 @@ export interface components {
             category: string;
             code: string;
             name: string;
-            name_ur?: string | null;
+            name_ur: string | null;
         };
         BootstrapIncomeBand: {
             code: string;
             currency_code: string;
             label: string;
-            label_ur?: string | null;
+            label_ur: string | null;
             /** Format: int32 */
             rank: number;
         };
         BootstrapReligion: {
             code: string;
             name: string;
-            name_ur?: string | null;
+            name_ur: string | null;
             sects: components["schemas"]["NamedItem"][];
         };
         /**
@@ -2966,9 +2966,9 @@ export interface components {
             /** @description The same result as `Relation.can_send_interest`, so lists can offer "Send interest". */
             can_send_interest: boolean;
             /** Format: uuid */
-            connection_id?: string | null;
-            interest_direction?: components["schemas"]["InterestDirection"] | null;
-            interest_status?: components["schemas"]["InterestStatus"] | null;
+            connection_id: string | null;
+            interest_direction: components["schemas"]["InterestDirection"] | null;
+            interest_status: components["schemas"]["InterestStatus"] | null;
             is_shortlisted: boolean;
             tier: components["schemas"]["Tier"];
         };
@@ -2983,8 +2983,8 @@ export interface components {
             id: string;
             name: string;
             normalized_name: string;
-            parent_code?: string | null;
-            parent_name?: string | null;
+            parent_code: string | null;
+            parent_name: string | null;
             /** @description Existing castes whose name or alias has a trigram similarity of 0.4 or more. */
             similar: components["schemas"]["CasteSimilar"][];
             status: components["schemas"]["CasteSuggestionStatus"];
@@ -3016,8 +3016,8 @@ export interface components {
             id: number;
             name: string;
             /** Format: int32 */
-            region_id?: number | null;
-            region_name?: string | null;
+            region_id: number | null;
+            region_name: string | null;
         };
         /** @description The body of `POST /v1/me/profile/close`. */
         CloseBody: {
@@ -3095,27 +3095,27 @@ export interface components {
             /** Format: date-time */
             created_at: string;
             /** Format: date-time */
-            ended_at?: string | null;
-            ended_by?: components["schemas"]["EndedBy"] | null;
-            ended_reason?: components["schemas"]["ConnectionEndReason"] | null;
+            ended_at: string | null;
+            ended_by: components["schemas"]["EndedBy"] | null;
+            ended_reason: components["schemas"]["ConnectionEndReason"] | null;
             /** Format: uuid */
             id: string;
             is_archived: boolean;
             is_muted: boolean;
             /** Format: date-time */
-            last_message_at?: string | null;
-            last_message_preview?: string | null;
-            my_contact_share?: components["schemas"]["ContactShare"] | null;
-            other?: components["schemas"]["ProfileCard"] | null;
-            pending_stage_proposal?: components["schemas"]["PendingStageProposal"] | null;
+            last_message_at: string | null;
+            last_message_preview: string | null;
+            my_contact_share: components["schemas"]["ContactShare"] | null;
+            other: components["schemas"]["ProfileCard"] | null;
+            pending_stage_proposal: components["schemas"]["PendingStageProposal"] | null;
             stage: components["schemas"]["ConnectionStage"];
             status: components["schemas"]["ConnectionStatus"];
-            their_contact?: components["schemas"]["SharedContact"] | null;
+            their_contact: components["schemas"]["SharedContact"] | null;
             /**
              * Format: uuid
              * @description `null` unless both members have `send_read_receipts` on (09 section 9).
              */
-            their_last_read_message_id?: string | null;
+            their_last_read_message_id: string | null;
             /** Format: int32 */
             unread_count: number;
         };
@@ -3128,7 +3128,7 @@ export interface components {
         ConnectionPage: {
             items: components["schemas"]["Connection"][];
             /** @description `null` on the last page. */
-            next_cursor?: string | null;
+            next_cursor: string | null;
         };
         /**
          * @description `connection_stage` (05 section 2).
@@ -3249,46 +3249,46 @@ export interface components {
         };
         /** @description `ProfileDetail.basics`. */
         DetailBasics: {
-            body_type?: components["schemas"]["BodyType"] | null;
+            body_type: components["schemas"]["BodyType"] | null;
             /** Format: int32 */
-            children_count?: number | null;
-            children_status?: components["schemas"]["ChildrenStatus"] | null;
-            complexion?: components["schemas"]["Complexion"] | null;
+            children_count: number | null;
+            children_status: components["schemas"]["ChildrenStatus"] | null;
+            complexion: components["schemas"]["Complexion"] | null;
             /** Format: int32 */
-            current_wives_count?: number | null;
+            current_wives_count: number | null;
             /** Format: int32 */
             height_cm: number;
             marital_status: components["schemas"]["MaritalStatus"];
             /** Format: int32 */
-            weight_kg?: number | null;
+            weight_kg: number | null;
         };
         /** @description `ProfileDetail.community`. */
         DetailCommunity: {
             /** @description Group `caste`. */
-            caste_label?: string | null;
+            caste_label: string | null;
             language_codes: string[];
             mother_tongue_code: string;
             religion_code: string;
-            sect_code?: string | null;
+            sect_code: string | null;
             /** @description Group `caste`. */
-            sub_caste_label?: string | null;
+            sub_caste_label: string | null;
         };
         /** @description `ProfileDetail.education_career`. */
         DetailEducationCareer: {
             /** @description Group `career_details`. */
-            degree_title?: string | null;
-            education_field_code?: string | null;
+            degree_title: string | null;
+            education_field_code: string | null;
             education_level_code: string;
             /** @description Group `career_details`. */
-            employer_name?: string | null;
+            employer_name: string | null;
             employment_type: components["schemas"]["EmploymentType"];
             /** @description Group `income`. */
-            income_band_code?: string | null;
+            income_band_code: string | null;
             /** @description Group `career_details`. */
-            institute_name?: string | null;
+            institute_name: string | null;
             /** @description Group `career_details`. */
-            job_title?: string | null;
-            profession_code?: string | null;
+            job_title: string | null;
+            profession_code: string | null;
         };
         /**
          * @description `ProfileDetail.family`: the fields of group `family`, except `about_family`, and the home
@@ -3296,60 +3296,60 @@ export interface components {
          */
         DetailFamily: {
             /** Format: int32 */
-            brothers_count?: number | null;
+            brothers_count: number | null;
             /** Format: int32 */
-            brothers_married?: number | null;
-            family_city_name?: string | null;
-            family_class?: components["schemas"]["FamilyClass"] | null;
-            family_country_code?: string | null;
-            family_type?: components["schemas"]["FamilyType"] | null;
-            family_values?: components["schemas"]["FamilyValues"] | null;
-            father_occupation?: string | null;
-            father_status?: components["schemas"]["ParentStatus"] | null;
-            home_ownership?: components["schemas"]["HomeOwnership"] | null;
-            home_size_unit?: components["schemas"]["HomeSizeUnit"] | null;
+            brothers_married: number | null;
+            family_city_name: string | null;
+            family_class: components["schemas"]["FamilyClass"] | null;
+            family_country_code: string | null;
+            family_type: components["schemas"]["FamilyType"] | null;
+            family_values: components["schemas"]["FamilyValues"] | null;
+            father_occupation: string | null;
+            father_status: components["schemas"]["ParentStatus"] | null;
+            home_ownership: components["schemas"]["HomeOwnership"] | null;
+            home_size_unit: components["schemas"]["HomeSizeUnit"] | null;
             /** Format: double */
-            home_size_value?: number | null;
-            home_type?: components["schemas"]["HomeType"] | null;
-            mother_occupation?: string | null;
-            mother_status?: components["schemas"]["ParentStatus"] | null;
+            home_size_value: number | null;
+            home_type: components["schemas"]["HomeType"] | null;
+            mother_occupation: string | null;
+            mother_status: components["schemas"]["ParentStatus"] | null;
             /** Format: int32 */
-            sisters_count?: number | null;
+            sisters_count: number | null;
             /** Format: int32 */
-            sisters_married?: number | null;
+            sisters_married: number | null;
         };
         /**
          * @description `ProfileDetail.lifestyle`: the lifestyle section without the appearance fields and
          *     `about_me`. The health fields belong to group `health`.
          */
         DetailLifestyle: {
-            beard?: components["schemas"]["Beard"] | null;
-            blood_group?: components["schemas"]["BloodGroup"] | null;
-            disability?: components["schemas"]["Disability"] | null;
-            disability_details?: string | null;
-            hijab?: components["schemas"]["Hijab"] | null;
+            beard: components["schemas"]["Beard"] | null;
+            blood_group: components["schemas"]["BloodGroup"] | null;
+            disability: components["schemas"]["Disability"] | null;
+            disability_details: string | null;
+            hijab: components["schemas"]["Hijab"] | null;
             hobby_codes: string[];
-            jahez_stance?: components["schemas"]["JahezStance"] | null;
-            living_arrangement?: components["schemas"]["LivingArrangement"] | null;
-            marriage_timeline?: components["schemas"]["MarriageTimeline"] | null;
-            prayer_frequency?: components["schemas"]["PrayerFrequency"] | null;
-            religiosity?: components["schemas"]["Religiosity"] | null;
-            religious_education?: components["schemas"]["ReligiousEducation"] | null;
-            smoking?: components["schemas"]["Smoking"] | null;
-            work_after_marriage?: components["schemas"]["WorkAfterMarriage"] | null;
+            jahez_stance: components["schemas"]["JahezStance"] | null;
+            living_arrangement: components["schemas"]["LivingArrangement"] | null;
+            marriage_timeline: components["schemas"]["MarriageTimeline"] | null;
+            prayer_frequency: components["schemas"]["PrayerFrequency"] | null;
+            religiosity: components["schemas"]["Religiosity"] | null;
+            religious_education: components["schemas"]["ReligiousEducation"] | null;
+            smoking: components["schemas"]["Smoking"] | null;
+            work_after_marriage: components["schemas"]["WorkAfterMarriage"] | null;
         };
         /** @description `ProfileDetail.location`. */
         DetailLocation: {
             /** @description Group `area`. */
-            area?: string | null;
+            area: string | null;
             city_name: string;
             country_code: string;
-            nationality_code?: string | null;
+            nationality_code: string | null;
             /** @description The family's home town: a city name or the owner's typed value. */
-            origin_label?: string | null;
-            region_name?: string | null;
-            relocation?: components["schemas"]["Relocation"] | null;
-            residency_status?: components["schemas"]["ResidencyStatus"] | null;
+            origin_label: string | null;
+            region_name: string | null;
+            relocation: components["schemas"]["Relocation"] | null;
+            residency_status: components["schemas"]["ResidencyStatus"] | null;
         };
         /** @description Body of `POST /v1/me/devices`. */
         DeviceBody: {
@@ -3621,7 +3621,7 @@ export interface components {
             number_masked: string;
             status: components["schemas"]["IdentityStatus"];
             /** Format: date-time */
-            verified_at?: string | null;
+            verified_at: string | null;
         };
         /**
          * @description `importance` (05 section 2).
@@ -3634,12 +3634,12 @@ export interface components {
              * Format: int32
              * @description The compatibility of the pair when the interest was sent (0..100).
              */
-            compat_score?: number | null;
+            compat_score: number | null;
             /**
              * Format: uuid
              * @description The connection created when the interest was accepted.
              */
-            connection_id?: string | null;
+            connection_id: string | null;
             /** Format: date-time */
             created_at: string;
             direction: components["schemas"]["InterestDirection"];
@@ -3648,13 +3648,13 @@ export interface components {
             expires_at: string;
             /** Format: uuid */
             id: string;
-            message?: string | null;
-            profile?: components["schemas"]["ProfileCard"] | null;
+            message: string | null;
+            profile: components["schemas"]["ProfileCard"] | null;
             /**
              * Format: date-time
              * @description `null` for the sender of a declined interest, which must still look unanswered.
              */
-            responded_at?: string | null;
+            responded_at: string | null;
             /**
              * @description The receiver always sees their own state; the sender sees `true` only when both members
              *     send read receipts (09 section 9).
@@ -3676,7 +3676,7 @@ export interface components {
         InterestPage: {
             items: components["schemas"]["Interest"][];
             /** @description `null` on the last page. */
-            next_cursor?: string | null;
+            next_cursor: string | null;
         };
         /**
          * @description `interest_permission` (05 section 2).
@@ -3742,9 +3742,9 @@ export interface components {
         /** @description The status of the latest export, with a download link once it is ready. */
         LatestExport: {
             /** @description A signed link, only while `status` is `ready`. */
-            download_url?: string | null;
+            download_url: string | null;
             /** Format: date-time */
-            expires_at?: string | null;
+            expires_at: string | null;
             status: components["schemas"]["ExportStatus"];
         };
         LegalVersions: {
@@ -3845,7 +3845,7 @@ export interface components {
              * @description `true` when the viewer scores 1 on it, `null` when the viewer's value is unknown,
              *     otherwise `false`.
              */
-            viewer_matches?: boolean | null;
+            viewer_matches: boolean | null;
         };
         /**
          * @description `managed_by` (05 section 2).
@@ -3872,7 +3872,7 @@ export interface components {
             user: components["schemas"]["MeUser"];
         };
         MeConfig: {
-            announcement?: components["schemas"]["AnnouncementBanner"] | null;
+            announcement: components["schemas"]["AnnouncementBanner"] | null;
             /**
              * Format: int64
              * @description `account.deletion_grace_days`, for the text of the delete dialog.
@@ -3889,16 +3889,16 @@ export interface components {
             badges: components["schemas"]["Badge"][];
             /** Format: int32 */
             completeness: number;
-            first_name?: string | null;
-            gender?: components["schemas"]["Gender"] | null;
+            first_name: string | null;
+            gender: components["schemas"]["Gender"] | null;
             /** Format: uuid */
             id: string;
-            managed_by?: components["schemas"]["ManagedBy"] | null;
+            managed_by: components["schemas"]["ManagedBy"] | null;
             onboarding_step: components["schemas"]["OnboardingStep"];
-            photo?: components["schemas"]["OwnPhoto"] | null;
+            photo: components["schemas"]["OwnPhoto"] | null;
             public_code: string;
             status: components["schemas"]["ProfileStatus"];
-            status_reason?: string | null;
+            status_reason: string | null;
         };
         MeUsage: {
             /**
@@ -3912,20 +3912,20 @@ export interface components {
         MeUser: {
             /** Format: date-time */
             created_at: string;
-            email?: string | null;
+            email: string | null;
             email_verified: boolean;
             /** Format: uuid */
             id: string;
             locale: components["schemas"]["Locale"];
-            phone_e164?: string | null;
+            phone_e164: string | null;
             phone_verified: boolean;
             /** Format: date-time */
-            purge_after?: string | null;
+            purge_after: string | null;
             role: components["schemas"]["UserRole"];
             status: components["schemas"]["UserStatus"];
-            status_reason?: string | null;
+            status_reason: string | null;
             /** Format: date-time */
-            suspended_until?: string | null;
+            suspended_until: string | null;
             timezone: string;
         };
         /**
@@ -3937,9 +3937,9 @@ export interface components {
         /** @description A chat message as one member sees it (15 section 4.7). */
         Message: {
             /** @description `null` when deleted, and for system messages. */
-            body?: string | null;
+            body: string | null;
             /** @description The sender's idempotency key; set only on the caller's own messages. */
-            client_message_id?: string | null;
+            client_message_id: string | null;
             /** Format: uuid */
             connection_id: string;
             /** Format: date-time */
@@ -3948,10 +3948,10 @@ export interface components {
             id: string;
             is_deleted: boolean;
             kind: components["schemas"]["MessageKind"];
-            safety_notice?: components["schemas"]["SafetyFlag"] | null;
+            safety_notice: components["schemas"]["SafetyFlag"] | null;
             sender: components["schemas"]["MessageSender"];
-            system_data?: Record<string, never> | null;
-            system_event?: components["schemas"]["SystemEvent"] | null;
+            system_data: Record<string, never> | null;
+            system_event: components["schemas"]["SystemEvent"] | null;
         };
         /**
          * @description `messages.kind`.
@@ -3991,7 +3991,7 @@ export interface components {
         NamedItem: {
             code: string;
             name: string;
-            name_ur?: string | null;
+            name_ur: string | null;
         };
         /** @description `POST /v1/me/saved-searches`. */
         NewSavedSearch: {
@@ -4017,7 +4017,7 @@ export interface components {
         NotificationActor: {
             /** @description Reduced according to the actor's `name_display` and the relation (09 section 4.1). */
             display_name: string;
-            photo?: components["schemas"]["PhotoView"] | null;
+            photo: components["schemas"]["PhotoView"] | null;
             /** Format: uuid */
             profile_id: string;
         };
@@ -4033,12 +4033,12 @@ export interface components {
             push_photo_requests: boolean;
             push_profile_views: boolean;
             /** @example 07:00 */
-            quiet_hours_end?: string | null;
+            quiet_hours_end: string | null;
             /**
              * @description Local time in `users.timezone`, `HH:MM`. Both quiet hours are set or both are `null`.
              * @example 22:00
              */
-            quiet_hours_start?: string | null;
+            quiet_hours_start: string | null;
         };
         /**
          * @description `notifications.type` (14 section 2).
@@ -4059,13 +4059,13 @@ export interface components {
         /** @description Created time of the longest-waiting item of each queue, `null` when the queue is empty. */
         OldestWaiting: {
             /** Format: date-time */
-            photos?: string | null;
+            photos: string | null;
             /** Format: date-time */
-            profiles?: string | null;
+            profiles: string | null;
             /** Format: date-time */
-            reports?: string | null;
+            reports: string | null;
             /** Format: date-time */
-            verifications?: string | null;
+            verifications: string | null;
         };
         /**
          * @description `profiles.onboarding_step` (03 section 4.3), in order.
@@ -4075,7 +4075,7 @@ export interface components {
         OptionItem: {
             code: string;
             label: string;
-            label_ur?: string | null;
+            label_ur: string | null;
         };
         OrderRequest: {
             /** @description Every photo of the profile exactly once, in the new order. */
@@ -4168,14 +4168,14 @@ export interface components {
             /** Format: uuid */
             id: string;
             is_primary: boolean;
-            large_url?: string | null;
-            medium_url?: string | null;
+            large_url: string | null;
+            medium_url: string | null;
             /** Format: int32 */
             position: number;
-            rejection_reason?: components["schemas"]["PhotoRejectionReason"] | null;
+            rejection_reason: components["schemas"]["PhotoRejectionReason"] | null;
             status: components["schemas"]["PhotoStatus"];
             /** @description `null` while processing or after a failure. */
-            thumb_url?: string | null;
+            thumb_url: string | null;
         };
         /** @description The owner's complete view of the profile (15 section 4.3). */
         OwnProfile: {
@@ -4189,7 +4189,7 @@ export interface components {
             family: components["schemas"]["FamilySection"];
             /** Format: uuid */
             id: string;
-            identity?: components["schemas"]["IdentitySummary"] | null;
+            identity: components["schemas"]["IdentitySummary"] | null;
             lifestyle: components["schemas"]["LifestyleSection"];
             location: components["schemas"]["OwnLocation"];
             /** @description Fields the owner can no longer edit (03 section 8 rule 15). */
@@ -4200,7 +4200,7 @@ export interface components {
             photos: components["schemas"]["OwnPhoto"][];
             public_code: string;
             status: components["schemas"]["ProfileStatus"];
-            status_reason?: string | null;
+            status_reason: string | null;
             text_status: components["schemas"]["TextStatuses"];
             verification: components["schemas"]["OwnVerification"];
         };
@@ -4236,7 +4236,7 @@ export interface components {
                 would_be_primary: boolean;
             }[];
             /** @description `null` on the last page. */
-            next_cursor?: string | null;
+            next_cursor: string | null;
         };
         /** @description One page of a list. */
         Page_AdminProfileListItem: {
@@ -4264,7 +4264,7 @@ export interface components {
                 user_id: string;
             }[];
             /** @description `null` on the last page. */
-            next_cursor?: string | null;
+            next_cursor: string | null;
         };
         /** @description One page of a list. */
         Page_AdminReportListItem: {
@@ -4292,7 +4292,7 @@ export interface components {
                 target: components["schemas"]["ReportTarget"];
             }[];
             /** @description `null` on the last page. */
-            next_cursor?: string | null;
+            next_cursor: string | null;
         };
         /** @description One page of a list. */
         Page_AdminTextItem: {
@@ -4310,7 +4310,7 @@ export interface components {
                 updated_at: string;
             }[];
             /** @description `null` on the last page. */
-            next_cursor?: string | null;
+            next_cursor: string | null;
         };
         /** @description One page of a list. */
         Page_AdminUserListItem: {
@@ -4333,7 +4333,7 @@ export interface components {
                 user_id: string;
             }[];
             /** @description `null` on the last page. */
-            next_cursor?: string | null;
+            next_cursor: string | null;
         };
         /** @description One page of a list. */
         Page_AdminVerificationListItem: {
@@ -4350,7 +4350,7 @@ export interface components {
                 status: components["schemas"]["VerificationStatus"];
             }[];
             /** @description `null` on the last page. */
-            next_cursor?: string | null;
+            next_cursor: string | null;
         };
         /** @description One page of a list. */
         Page_AuditEntry: {
@@ -4368,7 +4368,7 @@ export interface components {
                 target_type: components["schemas"]["AuditTargetType"];
             }[];
             /** @description `null` on the last page. */
-            next_cursor?: string | null;
+            next_cursor: string | null;
         };
         /** @description One page of a list. */
         Page_CasteSuggestionItem: {
@@ -4388,7 +4388,7 @@ export interface components {
                 usage_count: number;
             }[];
             /** @description `null` on the last page. */
-            next_cursor?: string | null;
+            next_cursor: string | null;
         };
         /** @description One page of a list. */
         Page_Notification: {
@@ -4405,7 +4405,7 @@ export interface components {
                 type: components["schemas"]["NotificationType"];
             }[];
             /** @description `null` on the last page. */
-            next_cursor?: string | null;
+            next_cursor: string | null;
         };
         /** @description One page of a list. */
         Page_PhotoAccessItem: {
@@ -4427,7 +4427,7 @@ export interface components {
                 status: components["schemas"]["PhotoAccessStatus"];
             }[];
             /** @description `null` on the last page. */
-            next_cursor?: string | null;
+            next_cursor: string | null;
         };
         /**
          * @description `parent_status` (05 section 2).
@@ -4523,7 +4523,7 @@ export interface components {
             is_blurred: boolean;
             is_primary: boolean;
             /** @description `null` when `is_blurred`. */
-            large_url?: string | null;
+            large_url: string | null;
             /** @description The blurred variant when `is_blurred`. */
             medium_url: string;
             /** @description The blurred variant when `is_blurred`. */
@@ -4675,13 +4675,13 @@ export interface components {
             age: number;
             badges: components["schemas"]["Badge"][];
             /** @description The caste name or the owner's typed value; `null` when hidden or not stated. */
-            caste_label?: string | null;
+            caste_label: string | null;
             city_name: string;
             /**
              * Format: int32
              * @description 0..100 (10 section 5.3), computed at read time.
              */
-            compat?: number | null;
+            compat: number | null;
             country_code: string;
             /** @description Already reduced according to the owner's `name_display` (09 section 4). */
             display_name: string;
@@ -4692,44 +4692,44 @@ export interface components {
             height_cm: number;
             /** Format: uuid */
             id: string;
-            last_active?: components["schemas"]["LastActive"] | null;
+            last_active: components["schemas"]["LastActive"] | null;
             managed_by: components["schemas"]["ManagedBy"];
             marital_status: components["schemas"]["MaritalStatus"];
             mother_tongue_code: string;
-            photo?: components["schemas"]["PhotoView"] | null;
+            photo: components["schemas"]["PhotoView"] | null;
             /**
              * Format: int64
              * @description Approved photos, in both modes.
              */
             photo_count: number;
-            profession_code?: string | null;
+            profession_code: string | null;
             public_code: string;
             /** @description Reason codes, at most 3 (10 section 7). */
             reasons: string[];
-            region_name?: string | null;
+            region_name: string | null;
             relation: components["schemas"]["CardRelation"];
             religion_code: string;
-            sect_code?: string | null;
+            sect_code: string | null;
         };
         /**
          * @description The full form of another member's profile (15 section 4.6). A hidden value is `null`; the
          *     groups listed in `locked` are those that connecting would reveal (09 section 5.5).
          */
         ProfileDetail: {
-            about_family?: string | null;
-            about_me?: string | null;
+            about_family: string | null;
+            about_me: string | null;
             basics: components["schemas"]["DetailBasics"];
             card: components["schemas"]["ProfileCard"];
             community: components["schemas"]["DetailCommunity"];
-            compatibility?: components["schemas"]["Compatibility"] | null;
+            compatibility: components["schemas"]["Compatibility"] | null;
             education_career: components["schemas"]["DetailEducationCareer"];
-            family?: components["schemas"]["DetailFamily"] | null;
-            is_online?: boolean | null;
+            family: components["schemas"]["DetailFamily"] | null;
+            is_online: boolean | null;
             lifestyle: components["schemas"]["DetailLifestyle"];
             location: components["schemas"]["DetailLocation"];
             locked: components["schemas"]["LockedGroup"][];
             looking_for: components["schemas"]["LookingFor"];
-            partner_notes?: string | null;
+            partner_notes: string | null;
             photos: components["schemas"]["PhotoView"][];
             relation: components["schemas"]["Relation"];
         };
@@ -4798,10 +4798,10 @@ export interface components {
             /** @description The list was stale and is still being recomputed in the background. */
             is_refreshing: boolean;
             items: components["schemas"]["ProfileCard"][];
-            next_cursor?: string | null;
+            next_cursor: string | null;
             pool_exhausted: boolean;
             /** Format: date-time */
-            refreshed_at?: string | null;
+            refreshed_at: string | null;
             /** @description At most 2; empty unless `pool_exhausted` (10 section 8.7). */
             relaxation_hints: components["schemas"]["RelaxationHint"][];
         };
@@ -4827,7 +4827,7 @@ export interface components {
             /** Format: int32 */
             id: number;
             name: string;
-            name_ur?: string | null;
+            name_ur: string | null;
         };
         RegionList: {
             items: components["schemas"]["RegionItem"][];
@@ -4855,16 +4855,16 @@ export interface components {
              * Format: date
              * @description The date the cooldown ends, for `cooldown` (`YYYY-MM-DD`).
              */
-            can_send_interest_after?: string | null;
-            cannot_send_detail?: components["schemas"]["CannotSendDetail"] | null;
-            cannot_send_reason?: components["schemas"]["CannotSendReason"] | null;
+            can_send_interest_after: string | null;
+            cannot_send_detail: components["schemas"]["CannotSendDetail"] | null;
+            cannot_send_reason: components["schemas"]["CannotSendReason"] | null;
             /** Format: uuid */
-            connection_id?: string | null;
-            interest?: components["schemas"]["RelationInterest"] | null;
+            connection_id: string | null;
+            interest: components["schemas"]["RelationInterest"] | null;
             is_passed: boolean;
             is_shortlisted: boolean;
             photo_access: components["schemas"]["RelationPhotoAccess"];
-            shortlist_note?: string | null;
+            shortlist_note: string | null;
             tier: components["schemas"]["Tier"];
         };
         /** @description `Relation.interest`: the pending interest between the two members. */
@@ -4876,7 +4876,7 @@ export interface components {
             expires_at: string;
             /** Format: uuid */
             id: string;
-            message?: string | null;
+            message: string | null;
             /** @description Always `pending`. */
             status: components["schemas"]["InterestStatus"];
         };
@@ -4928,10 +4928,10 @@ export interface components {
         /** @description The reported photo of a `photo` report. */
         ReportPhoto: {
             /** @description Signed, unblurred. `null` when the object is gone. */
-            large_url?: string | null;
+            large_url: string | null;
             /** Format: uuid */
             photo_id: string;
-            status?: string | null;
+            status: string | null;
         };
         /**
          * @description `report_reason` (05 section 2).
@@ -4939,7 +4939,7 @@ export interface components {
          */
         ReportReason: "fake_profile" | "already_married" | "misleading_information" | "inappropriate_photo" | "harassment" | "asking_for_money" | "marriage_bureau_or_agent" | "underage" | "impersonation" | "offensive_content" | "other";
         ReportReporter: {
-            first_name?: string | null;
+            first_name: string | null;
             /** Format: uuid */
             profile_id: string;
             public_code: string;
@@ -4960,7 +4960,7 @@ export interface components {
          */
         ReportSubject: "profile" | "photo" | "message";
         ReportTarget: {
-            first_name?: string | null;
+            first_name: string | null;
             /** Format: uuid */
             profile_id: string;
             public_code: string;
@@ -5040,7 +5040,7 @@ export interface components {
         /** @description `GET /v1/me/saved-searches`: at most 10 entries, so always one page. */
         SavedSearchesPage: {
             items: components["schemas"]["SavedSearch"][];
-            next_cursor?: string | null;
+            next_cursor: string | null;
         };
         /**
          * @description Search filters (15 section 4.8). Keys match `Preferences`. A missing key, `null` or an
@@ -5110,12 +5110,12 @@ export interface components {
         /** @description The answer of `POST /v1/search`. */
         SearchResults: {
             items: components["schemas"]["ProfileCard"][];
-            next_cursor?: string | null;
+            next_cursor: string | null;
             /**
              * Format: int64
              * @description Exact up to 500, `null` above; computed on the first page only.
              */
-            total_estimate?: number | null;
+            total_estimate: number | null;
         };
         /**
          * @description The order of search results (10 section 9.3).
@@ -5153,15 +5153,15 @@ export interface components {
         };
         /** @description The answer of `POST /v1/interests`: `connection` is set when a mutual interest created one. */
         SentInterest: {
-            connection?: components["schemas"]["Connection"] | null;
+            connection: components["schemas"]["Connection"] | null;
             interest: components["schemas"]["Interest"];
         };
         SettingItem: {
             default: Record<string, never>;
             key: string;
             /** Format: date-time */
-            updated_at?: string | null;
-            updated_by_email?: string | null;
+            updated_at: string | null;
+            updated_by_email: string | null;
             value: Record<string, never>;
         };
         /**
@@ -5169,19 +5169,19 @@ export interface components {
          *     others `null` (09 section 10.2 rule 4).
          */
         SharedContact: {
-            best_time_to_call?: string | null;
-            contact_email?: string | null;
-            guardian?: components["schemas"]["SharedGuardian"] | null;
-            phone_e164?: string | null;
+            best_time_to_call: string | null;
+            contact_email: string | null;
+            guardian: components["schemas"]["SharedGuardian"] | null;
+            phone_e164: string | null;
             /** @description `self` or `guardian`: whom to call first. */
             preferred_contact: components["schemas"]["PreferredContact"];
-            whatsapp_e164?: string | null;
+            whatsapp_e164: string | null;
         };
         /** @description The guardian item of a shared contact. */
         SharedGuardian: {
-            name?: string | null;
-            phone_e164?: string | null;
-            relation?: components["schemas"]["GuardianRelation"] | null;
+            name: string | null;
+            phone_e164: string | null;
+            relation: components["schemas"]["GuardianRelation"] | null;
         };
         /** @description `PUT /v1/shortlist/{profile_id}`. */
         ShortlistBody: {
@@ -5195,14 +5195,14 @@ export interface components {
         ShortlistItem: {
             /** Format: date-time */
             created_at: string;
-            note?: string | null;
-            profile?: components["schemas"]["ProfileCard"] | null;
+            note: string | null;
+            profile: components["schemas"]["ProfileCard"] | null;
             /** Format: uuid */
             profile_id: string;
         };
         ShortlistPage: {
             items: components["schemas"]["ShortlistItem"][];
-            next_cursor?: string | null;
+            next_cursor: string | null;
         };
         /**
          * @description `smoking` (05 section 2).
@@ -5326,7 +5326,7 @@ export interface components {
         /** @description `GET /v1/me/verifications` (15 section 9). */
         VerificationOverview: {
             id_verified: boolean;
-            identity?: components["schemas"]["IdentitySummary"] | null;
+            identity: components["schemas"]["IdentitySummary"] | null;
             phone_verified: boolean;
             photo_verified: boolean;
             /** @description Newest first, at most 10. */
@@ -5344,9 +5344,9 @@ export interface components {
             /** Format: uuid */
             id: string;
             kind: components["schemas"]["VerificationKind"];
-            rejection_reason?: components["schemas"]["VerificationRejectionReason"] | null;
+            rejection_reason: components["schemas"]["VerificationRejectionReason"] | null;
             /** Format: date-time */
-            reviewed_at?: string | null;
+            reviewed_at: string | null;
             status: components["schemas"]["VerificationStatus"];
         };
         /**
@@ -5368,7 +5368,7 @@ export interface components {
         /** @description `GET /v1/me/visited`. */
         VisitedPage: {
             items: components["schemas"]["VisitorItem"][];
-            next_cursor?: string | null;
+            next_cursor: string | null;
         };
         /** @description One visitor or one visited profile (15 section 10). */
         VisitorItem: {
@@ -5383,7 +5383,7 @@ export interface components {
             /** @description True when the caller browses privately and therefore sees no visitors (09 section 8.2). */
             hidden_because_private: boolean;
             items: components["schemas"]["VisitorItem"][];
-            next_cursor?: string | null;
+            next_cursor: string | null;
         };
         WarnBody: {
             /** @description Shown to the member. 3 to 500 characters. */

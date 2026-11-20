@@ -8089,8 +8089,8 @@
         "type": "object",
         "description": "The answer of `POST /v1/interests/{interest_id}/accept`.",
         "required": [
-          "interest",
-          "connection"
+          "connection",
+          "interest"
         ],
         "properties": {
           "connection": {
@@ -8133,6 +8133,10 @@
       "AccountForSection": {
         "type": "object",
         "description": "Who manages the profile.",
+        "required": [
+          "managed_by",
+          "manager_name"
+        ],
         "properties": {
           "managed_by": {
             "oneOf": [
@@ -8157,10 +8161,10 @@
       "AdminApprovedPhoto": {
         "type": "object",
         "required": [
-          "photo_id",
-          "status",
           "is_primary",
-          "large_url"
+          "large_url",
+          "photo_id",
+          "status"
         ],
         "properties": {
           "is_primary": {
@@ -8182,11 +8186,13 @@
         "type": "object",
         "description": "A caste or sub-caste, active or not.",
         "required": [
-          "code",
-          "name",
           "aliases",
-          "sort_order",
-          "is_active"
+          "code",
+          "is_active",
+          "name",
+          "name_ur",
+          "parent_code",
+          "sort_order"
         ],
         "properties": {
           "aliases": {
@@ -8225,9 +8231,9 @@
       "AdminConsent": {
         "type": "object",
         "required": [
+          "accepted_at",
           "document",
-          "version",
-          "accepted_at"
+          "version"
         ],
         "properties": {
           "accepted_at": {
@@ -8245,8 +8251,10 @@
       "AdminDevice": {
         "type": "object",
         "required": [
-          "platform",
-          "last_seen_at"
+          "app_version",
+          "device_model",
+          "last_seen_at",
+          "platform"
         ],
         "properties": {
           "app_version": {
@@ -8274,10 +8282,10 @@
         "type": "object",
         "description": "Another photo of the same profile, shown beside the one under review.",
         "required": [
-          "photo_id",
-          "status",
           "is_primary",
-          "medium_url"
+          "medium_url",
+          "photo_id",
+          "status"
         ],
         "properties": {
           "is_primary": {
@@ -8300,8 +8308,8 @@
         "description": "`GET /v1/admin/overview`.",
         "required": [
           "generated_at",
-          "queues",
-          "metrics"
+          "metrics",
+          "queues"
         ],
         "properties": {
           "generated_at": {
@@ -8401,10 +8409,11 @@
       "AdminPreviousRequest": {
         "type": "object",
         "required": [
+          "created_at",
           "id",
           "kind",
-          "status",
-          "created_at"
+          "rejection_reason",
+          "status"
         ],
         "properties": {
           "created_at": {
@@ -8437,14 +8446,18 @@
         "type": "object",
         "description": "`GET /v1/admin/profiles/{profile_id}`.\n\n`profile`, `preferences` and `privacy` carry the objects of 15 sections 4.3 and 4.5 exactly\n(`OwnProfile`, `Preferences`, `Privacy`); the unblurred photo URLs and, for admins, the\ncontact details are included.",
         "required": [
-          "user",
+          "audit",
+          "first_activated_at",
+          "last_active_at",
+          "preferences",
+          "privacy",
           "profile",
-          "stats",
           "reports_against",
           "reports_filed",
           "sanctions",
-          "verification_requests",
-          "audit"
+          "stats",
+          "user",
+          "verification_requests"
         ],
         "properties": {
           "audit": {
@@ -8614,13 +8627,13 @@
       "AdminProfileStats": {
         "type": "object",
         "required": [
-          "interests_sent",
-          "interests_received",
-          "interests_accepted_by_others",
           "active_connections",
+          "blocks_received",
           "connections_ended_by_others",
-          "money_flags_30d",
-          "blocks_received"
+          "interests_accepted_by_others",
+          "interests_received",
+          "interests_sent",
+          "money_flags_30d"
         ],
         "properties": {
           "active_connections": {
@@ -8658,11 +8671,16 @@
       "AdminProfileUser": {
         "type": "object",
         "required": [
-          "id",
+          "created_at",
+          "email",
           "email_verified",
+          "id",
+          "last_seen_at",
+          "phone_e164",
           "role",
           "status",
-          "created_at"
+          "status_reason",
+          "suspended_until"
         ],
         "properties": {
           "created_at": {
@@ -8720,13 +8738,14 @@
       "AdminRelease": {
         "type": "object",
         "required": [
-          "id",
-          "platform",
-          "version_code",
-          "version_name",
-          "min_supported_version_code",
           "download_url",
-          "released_at"
+          "id",
+          "min_supported_version_code",
+          "platform",
+          "release_notes",
+          "released_at",
+          "version_code",
+          "version_name"
         ],
         "properties": {
           "download_url": {
@@ -8840,15 +8859,17 @@
         "type": "object",
         "description": "A row of the report queue.",
         "required": [
-          "report_id",
-          "source",
+          "created_at",
+          "handled_by_email",
+          "open_reports_on_target",
           "priority",
           "reason",
-          "subject_type",
+          "report_id",
+          "reporter",
+          "source",
           "status",
-          "target",
-          "open_reports_on_target",
-          "created_at"
+          "subject_type",
+          "target"
         ],
         "properties": {
           "created_at": {
@@ -8907,10 +8928,15 @@
         "type": "object",
         "description": "A row of `sanctions` with the staff emails resolved.",
         "required": [
+          "created_by_email",
+          "ends_at",
           "id",
-          "type",
           "reason",
-          "starts_at"
+          "report_id",
+          "revoked_at",
+          "revoked_by_email",
+          "starts_at",
+          "type"
         ],
         "properties": {
           "created_by_email": {
@@ -9124,13 +9150,18 @@
         "type": "object",
         "description": "A row of the user search.",
         "required": [
-          "user_id",
+          "created_at",
+          "email",
+          "first_name",
+          "gender",
+          "last_name",
+          "last_seen_at",
           "profile_id",
+          "profile_status",
           "public_code",
           "role",
           "status",
-          "profile_status",
-          "created_at"
+          "user_id"
         ],
         "properties": {
           "created_at": {
@@ -9198,16 +9229,17 @@
         "type": "object",
         "description": "One request in full (18 section 4.4).",
         "required": [
-          "request_id",
-          "kind",
-          "status",
+          "created_at",
           "gesture",
           "gesture_valid",
-          "created_at",
+          "identity",
           "images",
+          "kind",
           "media_purged",
+          "previous_requests",
           "profile",
-          "previous_requests"
+          "request_id",
+          "status"
         ],
         "properties": {
           "created_at": {
@@ -9283,6 +9315,11 @@
       "AdminVerificationImages": {
         "type": "object",
         "description": "Signed image URLs, valid for 10 minutes. `null` when the slot was not used or the image has\nbeen purged.",
+        "required": [
+          "back_url",
+          "front_url",
+          "selfie_url"
+        ],
         "properties": {
           "back_url": {
             "type": [
@@ -9349,9 +9386,17 @@
         "type": "object",
         "description": "The profile data to compare with the documents.",
         "required": [
+          "age",
+          "date_of_birth",
+          "first_name",
+          "gender",
+          "last_name",
+          "managed_by",
+          "manager_name",
+          "marital_status",
+          "photos",
           "profile_id",
-          "public_code",
-          "photos"
+          "public_code"
         ],
         "properties": {
           "age": {
@@ -9436,10 +9481,12 @@
       "AdminVerificationRequest": {
         "type": "object",
         "required": [
+          "created_at",
           "id",
           "kind",
-          "status",
-          "created_at"
+          "rejection_reason",
+          "reviewed_at",
+          "status"
         ],
         "properties": {
           "created_at": {
@@ -9493,7 +9540,9 @@
         "type": "object",
         "description": "The optional home-screen banner (`announcement.banner`).",
         "required": [
-          "text_en"
+          "text_en",
+          "text_ur",
+          "url"
         ],
         "properties": {
           "text_en": {
@@ -9544,10 +9593,11 @@
         "type": "object",
         "description": "The newest Android release (04 section 11, `app_releases`).",
         "required": [
-          "version_code",
-          "version_name",
+          "download_url",
           "min_supported_version_code",
-          "download_url"
+          "release_notes",
+          "version_code",
+          "version_name"
         ],
         "properties": {
           "download_url": {
@@ -9601,6 +9651,7 @@
       "AuditActor": {
         "type": "object",
         "required": [
+          "email",
           "user_id"
         ],
         "properties": {
@@ -9620,13 +9671,13 @@
         "type": "object",
         "description": "One row of `admin_audit_log`.",
         "required": [
-          "id",
-          "actor",
           "action",
-          "target_type",
-          "target_id",
+          "actor",
+          "created_at",
           "details",
-          "created_at"
+          "id",
+          "target_id",
+          "target_type"
         ],
         "properties": {
           "action": {
@@ -9792,10 +9843,10 @@
         "type": "object",
         "description": "One blocked profile: only the name at tier `member` and the code (15 section 13).",
         "required": [
-          "profile_id",
+          "created_at",
           "display_name",
-          "public_code",
-          "created_at"
+          "profile_id",
+          "public_code"
         ],
         "properties": {
           "created_at": {
@@ -9817,7 +9868,8 @@
       "BlocksPage": {
         "type": "object",
         "required": [
-          "items"
+          "items",
+          "next_cursor"
         ],
         "properties": {
           "items": {
@@ -9861,9 +9913,10 @@
       "BootstrapCaste": {
         "type": "object",
         "required": [
+          "aliases",
           "code",
           "name",
-          "aliases",
+          "name_ur",
           "sub_castes"
         ],
         "properties": {
@@ -9897,7 +9950,9 @@
         "type": "object",
         "required": [
           "code",
-          "name"
+          "dial_code",
+          "name",
+          "name_ur"
         ],
         "properties": {
           "code": {
@@ -9925,6 +9980,7 @@
         "required": [
           "code",
           "name",
+          "name_ur",
           "rank"
         ],
         "properties": {
@@ -9949,9 +10005,10 @@
       "BootstrapHobby": {
         "type": "object",
         "required": [
+          "category",
           "code",
           "name",
-          "category"
+          "name_ur"
         ],
         "properties": {
           "category": {
@@ -9977,6 +10034,7 @@
           "code",
           "currency_code",
           "label",
+          "label_ur",
           "rank"
         ],
         "properties": {
@@ -10006,6 +10064,7 @@
         "required": [
           "code",
           "name",
+          "name_ur",
           "sects"
         ],
         "properties": {
@@ -10055,9 +10114,12 @@
         "type": "object",
         "description": "`ProfileCard.relation`: the short form of [`Relation`].",
         "required": [
-          "tier",
+          "can_send_interest",
+          "connection_id",
+          "interest_direction",
+          "interest_status",
           "is_shortlisted",
-          "can_send_interest"
+          "tier"
         ],
         "properties": {
           "can_send_interest": {
@@ -10118,13 +10180,15 @@
       "CasteSuggestionItem": {
         "type": "object",
         "required": [
+          "created_at",
           "id",
           "name",
           "normalized_name",
-          "usage_count",
-          "status",
+          "parent_code",
+          "parent_name",
           "similar",
-          "created_at"
+          "status",
+          "usage_count"
         ],
         "properties": {
           "created_at": {
@@ -10214,9 +10278,11 @@
         "type": "object",
         "description": "A city with its region, as every response shows it.",
         "required": [
+          "country_code",
           "id",
           "name",
-          "country_code"
+          "region_id",
+          "region_name"
         ],
         "properties": {
           "country_code": {
@@ -10327,10 +10393,10 @@
         "description": "The compatibility block of the profile screen (15 section 4.6 `Compatibility`).",
         "required": [
           "compat",
-          "reasons",
-          "viewer_fit",
+          "dimensions",
           "owner_fit",
-          "dimensions"
+          "reasons",
+          "viewer_fit"
         ],
         "properties": {
           "compat": {
@@ -10373,8 +10439,8 @@
         "required": [
           "dimension",
           "importance",
-          "score",
-          "matched"
+          "matched",
+          "score"
         ],
         "properties": {
           "dimension": {
@@ -10446,13 +10512,23 @@
         "type": "object",
         "description": "A connection as one of its members sees it (15 section 4.7).",
         "required": [
-          "id",
-          "status",
-          "stage",
           "created_at",
-          "unread_count",
+          "ended_at",
+          "ended_by",
+          "ended_reason",
+          "id",
+          "is_archived",
           "is_muted",
-          "is_archived"
+          "last_message_at",
+          "last_message_preview",
+          "my_contact_share",
+          "other",
+          "pending_stage_proposal",
+          "stage",
+          "status",
+          "their_contact",
+          "their_last_read_message_id",
+          "unread_count"
         ],
         "properties": {
           "created_at": {
@@ -10589,7 +10665,8 @@
         "type": "object",
         "description": "A page of connections, latest activity first.",
         "required": [
-          "items"
+          "items",
+          "next_cursor"
         ],
         "properties": {
           "items": {
@@ -10655,12 +10732,12 @@
         "type": "object",
         "description": "The caller's own contact share on a connection (15 section 4.7).",
         "required": [
-          "share_phone",
-          "share_whatsapp",
+          "created_at",
           "share_email",
           "share_guardian",
-          "status",
-          "created_at"
+          "share_phone",
+          "share_whatsapp",
+          "status"
         ],
         "properties": {
           "created_at": {
@@ -10791,9 +10868,9 @@
       "Counters": {
         "type": "object",
         "required": [
-          "unread_chats",
           "pending_interests",
           "pending_photo_requests",
+          "unread_chats",
           "unread_notifications"
         ],
         "properties": {
@@ -10939,8 +11016,14 @@
         "type": "object",
         "description": "`ProfileDetail.basics`.",
         "required": [
+          "body_type",
+          "children_count",
+          "children_status",
+          "complexion",
+          "current_wives_count",
+          "height_cm",
           "marital_status",
-          "height_cm"
+          "weight_kg"
         ],
         "properties": {
           "body_type": {
@@ -11007,9 +11090,12 @@
         "type": "object",
         "description": "`ProfileDetail.community`.",
         "required": [
-          "religion_code",
+          "caste_label",
+          "language_codes",
           "mother_tongue_code",
-          "language_codes"
+          "religion_code",
+          "sect_code",
+          "sub_caste_label"
         ],
         "properties": {
           "caste_label": {
@@ -11050,8 +11136,15 @@
         "type": "object",
         "description": "`ProfileDetail.education_career`.",
         "required": [
+          "degree_title",
+          "education_field_code",
           "education_level_code",
-          "employment_type"
+          "employer_name",
+          "employment_type",
+          "income_band_code",
+          "institute_name",
+          "job_title",
+          "profession_code"
         ],
         "properties": {
           "degree_title": {
@@ -11112,6 +11205,25 @@
       "DetailFamily": {
         "type": "object",
         "description": "`ProfileDetail.family`: the fields of group `family`, except `about_family`, and the home\nfields of group `home`. A hidden group's fields are `null`.",
+        "required": [
+          "brothers_count",
+          "brothers_married",
+          "family_city_name",
+          "family_class",
+          "family_country_code",
+          "family_type",
+          "family_values",
+          "father_occupation",
+          "father_status",
+          "home_ownership",
+          "home_size_unit",
+          "home_size_value",
+          "home_type",
+          "mother_occupation",
+          "mother_status",
+          "sisters_count",
+          "sisters_married"
+        ],
         "properties": {
           "brothers_count": {
             "type": [
@@ -11258,7 +11370,20 @@
         "type": "object",
         "description": "`ProfileDetail.lifestyle`: the lifestyle section without the appearance fields and\n`about_me`. The health fields belong to group `health`.",
         "required": [
-          "hobby_codes"
+          "beard",
+          "blood_group",
+          "disability",
+          "disability_details",
+          "hijab",
+          "hobby_codes",
+          "jahez_stance",
+          "living_arrangement",
+          "marriage_timeline",
+          "prayer_frequency",
+          "religiosity",
+          "religious_education",
+          "smoking",
+          "work_after_marriage"
         ],
         "properties": {
           "beard": {
@@ -11399,8 +11524,14 @@
         "type": "object",
         "description": "`ProfileDetail.location`.",
         "required": [
+          "area",
+          "city_name",
           "country_code",
-          "city_name"
+          "nationality_code",
+          "origin_label",
+          "region_name",
+          "relocation",
+          "residency_status"
         ],
         "properties": {
           "area": {
@@ -11671,8 +11802,8 @@
         "type": "object",
         "required": [
           "code",
-          "message",
           "details",
+          "message",
           "request_id"
         ],
         "properties": {
@@ -11942,8 +12073,8 @@
         "type": "object",
         "description": "One invalid field of a request body.",
         "required": [
-          "field",
           "code",
+          "field",
           "message"
         ],
         "properties": {
@@ -12094,16 +12225,16 @@
         "type": "object",
         "description": "`GET /v1/home`.",
         "required": [
-          "recommendations",
-          "new_members",
-          "nearby",
-          "recent_visitors",
-          "visitors_count_7d",
-          "pending_interests",
           "completeness",
+          "nearby",
+          "new_members",
           "nudges",
+          "pending_interests",
           "pool_exhausted",
-          "relaxation_hints"
+          "recent_visitors",
+          "recommendations",
+          "relaxation_hints",
+          "visitors_count_7d"
         ],
         "properties": {
           "completeness": {
@@ -12231,7 +12362,8 @@
         "required": [
           "document_type",
           "number_masked",
-          "status"
+          "status",
+          "verified_at"
         ],
         "properties": {
           "document_type": {
@@ -12267,13 +12399,18 @@
         "type": "object",
         "description": "An interest as one of its two members sees it (15 section 4.7).",
         "required": [
-          "id",
-          "direction",
-          "status",
-          "display_status",
-          "seen",
+          "compat_score",
+          "connection_id",
           "created_at",
-          "expires_at"
+          "direction",
+          "display_status",
+          "expires_at",
+          "id",
+          "message",
+          "profile",
+          "responded_at",
+          "seen",
+          "status"
         ],
         "properties": {
           "compat_score": {
@@ -12357,7 +12494,8 @@
         "type": "object",
         "description": "A page of interests, newest first.",
         "required": [
-          "items"
+          "items",
+          "next_cursor"
         ],
         "properties": {
           "items": {
@@ -12576,6 +12714,8 @@
         "type": "object",
         "description": "The status of the latest export, with a download link once it is ready.",
         "required": [
+          "download_url",
+          "expires_at",
           "status"
         ],
         "properties": {
@@ -12601,9 +12741,9 @@
       "LegalVersions": {
         "type": "object",
         "required": [
-          "terms_version",
+          "guidelines_version",
           "privacy_version",
-          "guidelines_version"
+          "terms_version"
         ],
         "properties": {
           "guidelines_version": {
@@ -12977,8 +13117,9 @@
         "description": "One line of [`LookingFor`].",
         "required": [
           "dimension",
+          "importance",
           "summary_values",
-          "importance"
+          "viewer_matches"
         ],
         "properties": {
           "dimension": {
@@ -13041,13 +13182,13 @@
       "Me": {
         "type": "object",
         "required": [
-          "user",
-          "profile",
-          "gate",
+          "config",
           "consents_required",
           "counters",
+          "gate",
+          "profile",
           "usage",
-          "config"
+          "user"
         ],
         "properties": {
           "config": {
@@ -13079,12 +13220,13 @@
       "MeConfig": {
         "type": "object",
         "required": [
+          "announcement",
+          "deletion_grace_days",
           "identity_required",
+          "legal",
           "photo_required",
           "photos_max",
-          "legal",
-          "support_email",
-          "deletion_grace_days"
+          "support_email"
         ],
         "properties": {
           "announcement": {
@@ -13123,12 +13265,17 @@
       "MeProfile": {
         "type": "object",
         "required": [
+          "badges",
+          "completeness",
+          "first_name",
+          "gender",
           "id",
+          "managed_by",
+          "onboarding_step",
+          "photo",
           "public_code",
           "status",
-          "onboarding_step",
-          "completeness",
-          "badges"
+          "status_reason"
         ],
         "properties": {
           "badges": {
@@ -13202,8 +13349,8 @@
       "MeUsage": {
         "type": "object",
         "required": [
-          "interests_sent_today",
-          "interests_per_day"
+          "interests_per_day",
+          "interests_sent_today"
         ],
         "properties": {
           "interests_per_day": {
@@ -13220,14 +13367,19 @@
       "MeUser": {
         "type": "object",
         "required": [
-          "id",
+          "created_at",
+          "email",
           "email_verified",
+          "id",
+          "locale",
+          "phone_e164",
           "phone_verified",
+          "purge_after",
           "role",
           "status",
-          "locale",
-          "timezone",
-          "created_at"
+          "status_reason",
+          "suspended_until",
+          "timezone"
         ],
         "properties": {
           "created_at": {
@@ -13306,12 +13458,17 @@
         "type": "object",
         "description": "A chat message as one member sees it (15 section 4.7).",
         "required": [
-          "id",
+          "body",
+          "client_message_id",
           "connection_id",
-          "sender",
-          "kind",
+          "created_at",
+          "id",
           "is_deleted",
-          "created_at"
+          "kind",
+          "safety_notice",
+          "sender",
+          "system_data",
+          "system_event"
         ],
         "properties": {
           "body": {
@@ -13399,8 +13556,8 @@
         "type": "object",
         "description": "One page of the message history.",
         "required": [
-          "items",
-          "has_more"
+          "has_more",
+          "items"
         ],
         "properties": {
           "has_more": {
@@ -13419,9 +13576,9 @@
       "Meta": {
         "type": "object",
         "required": [
+          "environment",
           "name",
-          "version",
-          "environment"
+          "version"
         ],
         "properties": {
           "environment": {
@@ -13462,7 +13619,8 @@
         "type": "object",
         "required": [
           "code",
-          "name"
+          "name",
+          "name_ur"
         ],
         "properties": {
           "code": {
@@ -13548,8 +13706,9 @@
         "type": "object",
         "description": "Who caused a notification, rendered for the recipient (09 section 4, 14 section 3).",
         "required": [
-          "profile_id",
-          "display_name"
+          "display_name",
+          "photo",
+          "profile_id"
         ],
         "properties": {
           "display_name": {
@@ -13576,15 +13735,17 @@
         "type": "object",
         "description": "`notification_preferences` without the key and timestamps (15 section 6).",
         "required": [
+          "email_announcements",
+          "email_interests",
+          "email_match_digest",
+          "email_messages",
           "push_interests",
+          "push_matches",
           "push_messages",
           "push_photo_requests",
           "push_profile_views",
-          "push_matches",
-          "email_interests",
-          "email_messages",
-          "email_match_digest",
-          "email_announcements"
+          "quiet_hours_end",
+          "quiet_hours_start"
         ],
         "properties": {
           "email_announcements": {
@@ -13689,6 +13850,12 @@
       "OldestWaiting": {
         "type": "object",
         "description": "Created time of the longest-waiting item of each queue, `null` when the queue is empty.",
+        "required": [
+          "photos",
+          "profiles",
+          "reports",
+          "verifications"
+        ],
         "properties": {
           "photos": {
             "type": [
@@ -13742,7 +13909,8 @@
         "type": "object",
         "required": [
           "code",
-          "label"
+          "label",
+          "label_ur"
         ],
         "properties": {
           "code": {
@@ -13787,27 +13955,27 @@
       "OverviewMetrics": {
         "type": "object",
         "required": [
-          "users_total",
-          "signups_today",
-          "signups_7d",
-          "profiles_by_status",
-          "active_male",
           "active_female",
           "active_id_verified",
-          "active_photo_verified",
           "active_last_7d",
-          "interests_sent_today",
-          "interests_sent_7d",
-          "interests_accepted_7d",
+          "active_male",
+          "active_photo_verified",
           "connections_active",
           "connections_created_7d",
-          "stage_counts",
-          "messages_7d",
-          "reports_filed_7d",
-          "users_suspended",
-          "users_banned",
           "deletions_scheduled",
-          "jobs_dead"
+          "interests_accepted_7d",
+          "interests_sent_7d",
+          "interests_sent_today",
+          "jobs_dead",
+          "messages_7d",
+          "profiles_by_status",
+          "reports_filed_7d",
+          "signups_7d",
+          "signups_today",
+          "stage_counts",
+          "users_banned",
+          "users_suspended",
+          "users_total"
         ],
         "properties": {
           "active_female": {
@@ -13899,15 +14067,15 @@
       "OverviewQueues": {
         "type": "object",
         "required": [
-          "profiles_pending",
-          "photos_pending",
-          "photos_flagged",
-          "texts_pending",
-          "verifications_pending",
-          "reports_open",
-          "reports_in_review",
           "caste_suggestions_pending",
-          "oldest_waiting"
+          "oldest_waiting",
+          "photos_flagged",
+          "photos_pending",
+          "profiles_pending",
+          "reports_in_review",
+          "reports_open",
+          "texts_pending",
+          "verifications_pending"
         ],
         "properties": {
           "caste_suggestions_pending": {
@@ -13985,11 +14153,15 @@
         "type": "object",
         "description": "A member's own photo.",
         "required": [
+          "created_at",
           "id",
-          "status",
           "is_primary",
+          "large_url",
+          "medium_url",
           "position",
-          "created_at"
+          "rejection_reason",
+          "status",
+          "thumb_url"
         ],
         "properties": {
           "created_at": {
@@ -14045,24 +14217,26 @@
         "type": "object",
         "description": "The owner's complete view of the profile (15 section 4.3).",
         "required": [
-          "id",
-          "public_code",
-          "status",
-          "onboarding_step",
-          "completeness",
-          "missing",
-          "locked_fields",
           "account_for",
           "basics",
           "community",
-          "location",
+          "completeness",
+          "contacts",
           "education_career",
           "family",
+          "id",
+          "identity",
           "lifestyle",
-          "contacts",
+          "location",
+          "locked_fields",
+          "missing",
+          "onboarding_step",
           "photos",
-          "verification",
-          "text_status"
+          "public_code",
+          "status",
+          "status_reason",
+          "text_status",
+          "verification"
         ],
         "properties": {
           "account_for": {
@@ -14154,10 +14328,10 @@
         "type": "object",
         "description": "Verification flags and the requests still waiting for a moderator.",
         "required": [
-          "phone_verified",
-          "photo_verified",
           "id_verified",
-          "pending"
+          "pending",
+          "phone_verified",
+          "photo_verified"
         ],
         "properties": {
           "id_verified": {
@@ -14178,7 +14352,8 @@
         "type": "object",
         "description": "One page of a list.",
         "required": [
-          "items"
+          "items",
+          "next_cursor"
         ],
         "properties": {
           "items": {
@@ -14279,7 +14454,8 @@
         "type": "object",
         "description": "One page of a list.",
         "required": [
-          "items"
+          "items",
+          "next_cursor"
         ],
         "properties": {
           "items": {
@@ -14393,7 +14569,8 @@
         "type": "object",
         "description": "One page of a list.",
         "required": [
-          "items"
+          "items",
+          "next_cursor"
         ],
         "properties": {
           "items": {
@@ -14479,7 +14656,8 @@
         "type": "object",
         "description": "One page of a list.",
         "required": [
-          "items"
+          "items",
+          "next_cursor"
         ],
         "properties": {
           "items": {
@@ -14549,7 +14727,8 @@
         "type": "object",
         "description": "One page of a list.",
         "required": [
-          "items"
+          "items",
+          "next_cursor"
         ],
         "properties": {
           "items": {
@@ -14642,7 +14821,8 @@
         "type": "object",
         "description": "One page of a list.",
         "required": [
-          "items"
+          "items",
+          "next_cursor"
         ],
         "properties": {
           "items": {
@@ -14702,7 +14882,8 @@
         "type": "object",
         "description": "One page of a list.",
         "required": [
-          "items"
+          "items",
+          "next_cursor"
         ],
         "properties": {
           "items": {
@@ -14761,7 +14942,8 @@
         "type": "object",
         "description": "One page of a list.",
         "required": [
-          "items"
+          "items",
+          "next_cursor"
         ],
         "properties": {
           "items": {
@@ -14834,7 +15016,8 @@
         "type": "object",
         "description": "One page of a list.",
         "required": [
-          "items"
+          "items",
+          "next_cursor"
         ],
         "properties": {
           "items": {
@@ -14896,7 +15079,8 @@
         "type": "object",
         "description": "One page of a list.",
         "required": [
-          "items"
+          "items",
+          "next_cursor"
         ],
         "properties": {
           "items": {
@@ -15068,10 +15252,10 @@
         "type": "object",
         "description": "The pending stage proposal of a connection.",
         "required": [
+          "created_at",
           "id",
-          "stage",
           "proposed_by",
-          "created_at"
+          "stage"
         ],
         "properties": {
           "created_at": {
@@ -15197,10 +15381,11 @@
         "description": "Another member's photo as the viewer may see it (15 section 4.4). In blurred mode the URLs\npoint at the separate blurred files and `large_url` is `null` (09 section 6.2).",
         "required": [
           "id",
-          "is_primary",
           "is_blurred",
-          "thumb_url",
-          "medium_url"
+          "is_primary",
+          "large_url",
+          "medium_url",
+          "thumb_url"
         ],
         "properties": {
           "id": {
@@ -15605,22 +15790,22 @@
         "type": "object",
         "description": "Every column of `profile_privacy` except `profile_id` and the timestamps.",
         "required": [
+          "allow_photo_requests",
+          "area_visibility",
+          "career_details_visibility",
+          "caste_visibility",
           "discovery_visibility",
+          "family_visibility",
+          "health_visibility",
+          "home_visibility",
+          "income_visibility",
           "interest_permission",
           "name_display",
           "photo_visibility",
-          "caste_visibility",
-          "income_visibility",
-          "family_visibility",
-          "career_details_visibility",
-          "home_visibility",
-          "area_visibility",
-          "health_visibility",
-          "show_last_active",
-          "show_online_status",
           "record_my_visits",
           "send_read_receipts",
-          "allow_photo_requests"
+          "show_last_active",
+          "show_online_status"
         ],
         "properties": {
           "allow_photo_requests": {
@@ -15830,24 +16015,31 @@
         "type": "object",
         "description": "The compact form of another member's profile, used in every list (15 section 4.6).",
         "required": [
-          "id",
-          "public_code",
-          "display_name",
           "age",
-          "gender",
-          "managed_by",
-          "height_cm",
-          "marital_status",
-          "religion_code",
-          "mother_tongue_code",
+          "badges",
+          "caste_label",
           "city_name",
+          "compat",
           "country_code",
+          "display_name",
           "education_level_code",
           "employment_type",
+          "gender",
+          "height_cm",
+          "id",
+          "last_active",
+          "managed_by",
+          "marital_status",
+          "mother_tongue_code",
+          "photo",
           "photo_count",
-          "badges",
+          "profession_code",
+          "public_code",
           "reasons",
-          "relation"
+          "region_name",
+          "relation",
+          "religion_code",
+          "sect_code"
         ],
         "properties": {
           "age": {
@@ -15979,15 +16171,21 @@
         "type": "object",
         "description": "The full form of another member's profile (15 section 4.6). A hidden value is `null`; the\ngroups listed in `locked` are those that connecting would reveal (09 section 5.5).",
         "required": [
-          "card",
-          "photos",
+          "about_family",
+          "about_me",
           "basics",
+          "card",
           "community",
-          "location",
+          "compatibility",
           "education_career",
+          "family",
+          "is_online",
           "lifestyle",
-          "looking_for",
+          "location",
           "locked",
+          "looking_for",
+          "partner_notes",
+          "photos",
           "relation"
         ],
         "properties": {
@@ -16104,12 +16302,12 @@
       "ProfilesByStatus": {
         "type": "object",
         "required": [
-          "draft",
-          "pending_review",
-          "changes_requested",
           "active",
-          "paused",
+          "changes_requested",
           "closed",
+          "draft",
+          "paused",
+          "pending_review",
           "suspended"
         ],
         "properties": {
@@ -16240,9 +16438,11 @@
         "type": "object",
         "description": "`GET /v1/recommendations`.",
         "required": [
-          "items",
           "is_refreshing",
+          "items",
+          "next_cursor",
           "pool_exhausted",
+          "refreshed_at",
           "relaxation_hints"
         ],
         "properties": {
@@ -16285,17 +16485,17 @@
         "type": "object",
         "description": "Everything a client needs to render pickers.",
         "required": [
-          "version",
-          "options",
-          "religions",
           "castes",
-          "languages",
-          "education_levels",
+          "countries",
           "education_fields",
-          "profession_categories",
-          "income_bands",
+          "education_levels",
           "hobbies",
-          "countries"
+          "income_bands",
+          "languages",
+          "options",
+          "profession_categories",
+          "religions",
+          "version"
         ],
         "properties": {
           "castes": {
@@ -16375,7 +16575,8 @@
         "type": "object",
         "required": [
           "id",
-          "name"
+          "name",
+          "name_ur"
         ],
         "properties": {
           "id": {
@@ -16464,11 +16665,17 @@
         "type": "object",
         "description": "What links the viewer to the owner, and what the viewer may do next (15 section 4.6).",
         "required": [
-          "tier",
-          "is_shortlisted",
+          "can_send_interest",
+          "can_send_interest_after",
+          "cannot_send_detail",
+          "cannot_send_reason",
+          "connection_id",
+          "interest",
           "is_passed",
+          "is_shortlisted",
           "photo_access",
-          "can_send_interest"
+          "shortlist_note",
+          "tier"
         ],
         "properties": {
           "can_send_interest": {
@@ -16544,11 +16751,12 @@
         "type": "object",
         "description": "`Relation.interest`: the pending interest between the two members.",
         "required": [
-          "id",
-          "direction",
-          "status",
           "created_at",
-          "expires_at"
+          "direction",
+          "expires_at",
+          "id",
+          "message",
+          "status"
         ],
         "properties": {
           "created_at": {
@@ -16676,7 +16884,9 @@
         "type": "object",
         "description": "The reported photo of a `photo` report.",
         "required": [
-          "photo_id"
+          "large_url",
+          "photo_id",
+          "status"
         ],
         "properties": {
           "large_url": {
@@ -16718,6 +16928,7 @@
       "ReportReporter": {
         "type": "object",
         "required": [
+          "first_name",
           "profile_id",
           "public_code"
         ],
@@ -16767,9 +16978,10 @@
       "ReportTarget": {
         "type": "object",
         "required": [
+          "first_name",
           "profile_id",
-          "user_id",
-          "public_code"
+          "public_code",
+          "user_id"
         ],
         "properties": {
           "first_name": {
@@ -16794,13 +17006,13 @@
       "ReportTargetSummary": {
         "type": "object",
         "required": [
-          "user_status",
-          "profile_status",
-          "reports_against_total",
-          "reports_against_actioned",
-          "sanctions",
           "is_id_verified",
-          "is_photo_verified"
+          "is_photo_verified",
+          "profile_status",
+          "reports_against_actioned",
+          "reports_against_total",
+          "sanctions",
+          "user_status"
         ],
         "properties": {
           "is_id_verified": {
@@ -16835,9 +17047,9 @@
         "type": "object",
         "description": "How many reports a reporter filed and how they were decided (`reporter_summary`).",
         "required": [
-          "filed",
           "actioned",
-          "dismissed"
+          "dismissed",
+          "filed"
         ],
         "properties": {
           "actioned": {
@@ -16857,9 +17069,9 @@
       "ReportsFiled": {
         "type": "object",
         "required": [
-          "total",
           "actioned",
-          "dismissed"
+          "dismissed",
+          "total"
         ],
         "properties": {
           "actioned": {
@@ -16953,11 +17165,11 @@
         "type": "object",
         "description": "A saved search (15 section 10).",
         "required": [
+          "created_at",
+          "filters",
           "id",
           "name",
-          "filters",
-          "notify_new",
-          "created_at"
+          "notify_new"
         ],
         "properties": {
           "created_at": {
@@ -17002,7 +17214,8 @@
         "type": "object",
         "description": "`GET /v1/me/saved-searches`: at most 10 entries, so always one page.",
         "required": [
-          "items"
+          "items",
+          "next_cursor"
         ],
         "properties": {
           "items": {
@@ -17319,7 +17532,9 @@
         "type": "object",
         "description": "The answer of `POST /v1/search`.",
         "required": [
-          "items"
+          "items",
+          "next_cursor",
+          "total_estimate"
         ],
         "properties": {
           "items": {
@@ -17456,6 +17671,7 @@
         "type": "object",
         "description": "The answer of `POST /v1/interests`: `connection` is set when a mutual interest created one.",
         "required": [
+          "connection",
           "interest"
         ],
         "properties": {
@@ -17477,9 +17693,11 @@
       "SettingItem": {
         "type": "object",
         "required": [
+          "default",
           "key",
-          "value",
-          "default"
+          "updated_at",
+          "updated_by_email",
+          "value"
         ],
         "properties": {
           "default": {
@@ -17510,7 +17728,12 @@
         "type": "object",
         "description": "The other member's contact details shared with the caller: only the selected items, the\nothers `null` (09 section 10.2 rule 4).",
         "required": [
-          "preferred_contact"
+          "best_time_to_call",
+          "contact_email",
+          "guardian",
+          "phone_e164",
+          "preferred_contact",
+          "whatsapp_e164"
         ],
         "properties": {
           "best_time_to_call": {
@@ -17556,6 +17779,11 @@
       "SharedGuardian": {
         "type": "object",
         "description": "The guardian item of a shared contact.",
+        "required": [
+          "name",
+          "phone_e164",
+          "relation"
+        ],
         "properties": {
           "name": {
             "type": [
@@ -17599,8 +17827,10 @@
         "type": "object",
         "description": "One shortlist entry. `profile` is `null` when the profile is no longer visible; the client\nshows \"No longer available\" with a remove button.",
         "required": [
-          "profile_id",
-          "created_at"
+          "created_at",
+          "note",
+          "profile",
+          "profile_id"
         ],
         "properties": {
           "created_at": {
@@ -17632,7 +17862,8 @@
       "ShortlistPage": {
         "type": "object",
         "required": [
-          "items"
+          "items",
+          "next_cursor"
         ],
         "properties": {
           "items": {
@@ -17662,8 +17893,8 @@
         "type": "object",
         "required": [
           "chatting",
-          "families_talking",
           "engaged",
+          "families_talking",
           "nikah_done"
         ],
         "properties": {
@@ -17810,8 +18041,8 @@
         "type": "object",
         "description": "The status of each moderated text (03 section 4.5).",
         "required": [
-          "about_me",
           "about_family",
+          "about_me",
           "partner_notes"
         ],
         "properties": {
@@ -17869,10 +18100,10 @@
         "type": "object",
         "description": "Where and how to `PUT` a file (15 section 8).",
         "required": [
-          "upload_key",
-          "upload_url",
+          "expires_at",
           "headers",
-          "expires_at"
+          "upload_key",
+          "upload_url"
         ],
         "properties": {
           "expires_at": {
@@ -17902,8 +18133,8 @@
       "UserFlags": {
         "type": "object",
         "required": [
-          "reporter_misuse",
           "money_flags_30d",
+          "reporter_misuse",
           "shared_device_with_sanctioned_user"
         ],
         "properties": {
@@ -17954,9 +18185,10 @@
         "type": "object",
         "description": "`GET /v1/me/verifications` (15 section 9).",
         "required": [
+          "id_verified",
+          "identity",
           "phone_verified",
           "photo_verified",
-          "id_verified",
           "requests"
         ],
         "properties": {
@@ -18006,10 +18238,12 @@
         "type": "object",
         "description": "One verification request as its owner sees it. The reviewer's note stays with staff.",
         "required": [
+          "created_at",
           "id",
           "kind",
-          "status",
-          "created_at"
+          "rejection_reason",
+          "reviewed_at",
+          "status"
         ],
         "properties": {
           "created_at": {
@@ -18083,7 +18317,8 @@
         "type": "object",
         "description": "`GET /v1/me/visited`.",
         "required": [
-          "items"
+          "items",
+          "next_cursor"
         ],
         "properties": {
           "items": {
@@ -18104,8 +18339,8 @@
         "type": "object",
         "description": "One visitor or one visited profile (15 section 10).",
         "required": [
-          "profile",
           "last_viewed_at",
+          "profile",
           "view_count"
         ],
         "properties": {
@@ -18126,8 +18361,9 @@
         "type": "object",
         "description": "`GET /v1/me/visitors`.",
         "required": [
+          "hidden_because_private",
           "items",
-          "hidden_because_private"
+          "next_cursor"
         ],
         "properties": {
           "hidden_because_private": {

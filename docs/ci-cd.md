@@ -116,8 +116,10 @@ everything again.
 - **Staging:** automatic for every merge to `main` that changes the web app or the API.
 - **Production:** Actions > CD > Run workflow, branch `main`, environment `production`, then
   pick the apps. It re-runs the checks before deploying.
-- **Android:** push a tag such as `android-v1.2.0` from `main`. The version name comes from the
-  tag, the version code from the run number.
+- **Android:** push a tag such as `android-v1.2.0` on a commit that is on `main`. The version
+  name comes from the tag, the version code from the run number. The release job refuses tags
+  that are not on `main` and tags older than the newest `android-v*` tag, so a late or re-run
+  older release can't replace the latest download. If a publish fails part way, re-run the job.
 - Deploys stay off until the repository variable `DEPLOY_ENABLED` is `true`. Secrets,
   variables (including `WEB_URL` for the smoke tests) and environments are listed in the
   [Azure runbook](../infra/azure/README.md#6-github-settings-for-deploys).

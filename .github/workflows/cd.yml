@@ -149,11 +149,14 @@ jobs:
 
   deploy-web:
     name: Deploy web (${{ needs.changes.outputs.environment }})
-    needs: [changes, web, deploy-api]
-    # Runs after the API deploy, or without it when the API had nothing to deploy.
+    needs: [changes, web, api, deploy-api]
+    # Runs after the API deploy, or without it when the API had nothing to deploy. A skipped API
+    # job means the API was not selected; a failed one blocks this deploy, because a failed API
+    # check also skips deploy-api and the web app must not go out ahead of an API it depends on.
     if: >-
       !cancelled() && vars.DEPLOY_ENABLED == 'true' && github.ref == 'refs/heads/main'
       && needs.web.result == 'success'
+      && (needs.api.result == 'success' || needs.api.result == 'skipped')
       && (needs.deploy-api.result == 'success' || needs.deploy-api.result == 'skipped')
     runs-on: ubuntu-26.04
     timeout-minutes: 20
@@ -181,6 +184,21 @@ jobs:
         run: |
           if [ "$DEPLOY_ENVIRONMENT" = staging ]; then export CLOUDFLARE_ENV=staging; fi
           pnpm build:web
+
+      # The Cloudflare Vite plugin writes the chosen environment into the generated config, and
+      # `wrangler deploy` reads that file. Stop here if the build names the wrong Worker, rather
+      # than overwrite production with a staging build or the other way round.
+      - name: Check the build targets the right Worker
+        env:
+          DEPLOY_ENVIRONMENT: ${{ needs.changes.outputs.environment }}
+        run: |
+          expected=khandani-web
+          if [ "$DEPLOY_ENVIRONMENT" = staging ]; then expected=khandani-web-staging; fi
+          actual="$(jq -r .name apps/web/dist/server/wrangler.json)"
+          if [ "$actual" != "$expected" ]; then
+            echo "::error::The $DEPLOY_ENVIRONMENT build names the Worker '$actual', expected '$expected'."
+            exit 1
+          fi
 
       - name: Deploy to Cloudflare Workers
         working-directory: apps/web

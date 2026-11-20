@@ -29,12 +29,33 @@ jobs:
     permissions:
       contents: write # creates the GitHub Release
     steps:
-      - name: Check the tag is a version number
+      # Runs before checkout, so nothing from the tagged commit executes until it passes.
+      - name: Check the tag is a release from main
         env:
           TAG: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           if ! [[ "$TAG" =~ ^android-v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "::error::Release tags look like android-v1.2.0, got $TAG"
+            exit 1
+          fi
+
+          # The signing key and Cloudflare token must only reach code that was reviewed and
+          # merged. A tag can point at any commit, so require one that is on main.
+          status="$(gh api "repos/$GITHUB_REPOSITORY/compare/main...$GITHUB_SHA" --jq .status)"
+          if [ "$status" != behind ] && [ "$status" != identical ]; then
+            echo "::error::$TAG points at a commit that is not on main (compare status: $status)."
+            exit 1
+          fi
+
+          # The version code comes from the run number and the shared "latest" download is
+          # overwritten on every release, so an older tag published late would replace a newer
+          # release. Only the newest tag may publish. A newer tag also supersedes an older one
+          # still waiting in the queue.
+          newest="$(gh api "repos/$GITHUB_REPOSITORY/git/matching-refs/tags/android-v" --paginate \
+            --jq '.[].ref | ltrimstr("refs/tags/")' | sort -V | tail -n 1)"
+          if [ "$newest" != "$TAG" ]; then
+            echo "::error::$newest is newer than $TAG, so $TAG is not published."
             exit 1
           fi
 
@@ -89,5 +110,11 @@ jobs:
             pnpm --filter @khandani/web exec wrangler r2 object put "kr-public/$key" \
               --file "$RUNNER_TEMP/$APK" --content-type application/vnd.android.package-archive --remote
           done
-          gh release create "$GITHUB_REF_NAME" "$RUNNER_TEMP/$APK" "$RUNNER_TEMP/$APK.sha256" \
-            --verify-tag --title "Android ${GITHUB_REF_NAME#android-v}" --generate-notes
+          # Safe to re-run: if an earlier attempt failed part way, running the job again finishes
+          # the publish instead of failing on a release that already exists.
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$RUNNER_TEMP/$APK" "$RUNNER_TEMP/$APK.sha256" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "$RUNNER_TEMP/$APK" "$RUNNER_TEMP/$APK.sha256" \
+              --verify-tag --title "Android ${GITHUB_REF_NAME#android-v}" --generate-notes
+          fi

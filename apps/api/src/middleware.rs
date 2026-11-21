@@ -1,11 +1,13 @@
 //! Cross-cutting request steps that run before the extractors: the Android version check
-//! (15 section 3, 06 section 6.4) and per-IP rate limits for requests without a token.
+//! (15 section 3, 06 section 6.4) and the rate limits counted before a handler runs
+//! (15 section 3.1).
 
 use std::net::SocketAddr;
 use std::time::Duration;
 
 use axum::extract::{ConnectInfo, Request, State};
 use axum::http::header::AUTHORIZATION;
+use axum::http::{Extensions, HeaderMap};
 use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 use moka::sync::Cache;
@@ -13,8 +15,9 @@ use serde::Serialize;
 use sqlx::PgPool;
 use utoipa::ToSchema;
 
+use crate::auth::token::{bearer_token, verify};
 use crate::error::ApiError;
-use crate::ratelimit::Group;
+use crate::ratelimit::{Group, user_key};
 use crate::state::AppState;
 
 /// The newest Android release (04 section 11, `app_releases`).
@@ -107,58 +110,140 @@ pub async fn android_version_check(
 
 /// The client IP: Cloudflare's `CF-Connecting-IP`, else the socket peer.
 pub fn client_ip(request: &Request) -> String {
-    request
-        .headers()
+    client_ip_of(request.headers(), request.extensions())
+}
+
+/// [`client_ip`] from the parts of a request, for extractors.
+pub fn client_ip_of(headers: &HeaderMap, extensions: &Extensions) -> String {
+    headers
         .get("cf-connecting-ip")
         .and_then(|value| value.to_str().ok())
         .map(str::to_owned)
         .or_else(|| {
-            request
-                .extensions()
+            extensions
                 .get::<ConnectInfo<SocketAddr>>()
                 .map(|info| info.0.ip().to_string())
         })
         .unwrap_or_else(|| "unknown".to_owned())
 }
 
-/// Per-IP limits (15 section 3.1): webhooks, the WebSocket upgrade, and every request without
-/// a bearer token. Authenticated requests are limited per user in the extractors.
+/// Whether a path belongs to a route of level `public` (15 section 3). No access-level
+/// extractor runs on these, so nothing after this middleware counts their requests.
+fn is_public(path: &str) -> bool {
+    path == "/v1/meta" || path.starts_with("/v1/meta/") || path.starts_with("/v1/reference/")
+}
+
+/// What a request counts against before its handler runs (15 section 3.1).
+enum Charge {
+    /// Nothing here: health checks, and requests with a token to routes whose access-level
+    /// extractor counts them, per user or, when it refuses the token, per IP. A token sent to
+    /// a path with no route is counted by [`unmatched`].
+    Nothing,
+    /// The client IP, in each of these groups.
+    Ip(String, &'static [Group]),
+    /// A public route with a bearer token: per user in `user_group` when the token is valid,
+    /// otherwise like [`Charge::Ip`].
+    Public {
+        token: String,
+        user_group: Group,
+        ip: String,
+        ip_groups: &'static [Group],
+    },
+}
+
+impl Charge {
+    fn of(request: &Request) -> Self {
+        let path = request.uri().path();
+        if path.starts_with("/webhooks/") {
+            return Self::Ip(client_ip(request), &[Group::Webhooks]);
+        }
+        if path == "/v1/ws" {
+            return Self::Ip(client_ip(request), &[Group::WebSocket]);
+        }
+        if path == "/healthz" || path == "/readyz" {
+            return Self::Nothing;
+        }
+        let header = request.headers().get(AUTHORIZATION);
+        if is_public(path) {
+            let ip_groups: &'static [Group] = if path == "/v1/reference/cities" {
+                &[Group::Search, Group::Unauthenticated]
+            } else {
+                &[Group::Unauthenticated]
+            };
+            let token = header
+                .and_then(|value| value.to_str().ok())
+                .and_then(|value| bearer_token(Some(value)).ok());
+            return match token {
+                Some(token) => Self::Public {
+                    token: token.to_owned(),
+                    user_group: Group::for_request(request.method(), path),
+                    ip: client_ip(request),
+                    ip_groups,
+                },
+                None => Self::Ip(client_ip(request), ip_groups),
+            };
+        }
+        if header.is_some() {
+            Self::Nothing
+        } else {
+            Self::Ip(client_ip(request), &[Group::Unauthenticated])
+        }
+    }
+
+    /// Counts the request. `Err(seconds)` when one of its limits is used up.
+    async fn count(self, state: &AppState) -> Result<(), u64> {
+        let per_ip = |ip: &str, groups: &[Group]| {
+            groups
+                .iter()
+                .try_for_each(|group| state.limiter.check(*group, ip))
+        };
+        match self {
+            Self::Nothing => Ok(()),
+            Self::Ip(ip, groups) => per_ip(&ip, groups),
+            Self::Public {
+                token,
+                user_group,
+                ip,
+                ip_groups,
+            } => match verify(&token, &state.jwks, &state.config.clerk).await {
+                Ok(claims) => state.limiter.check(user_group, &user_key(&claims.sub)),
+                Err(_) => per_ip(&ip, ip_groups),
+            },
+        }
+    }
+}
+
+/// The rate limits counted before the handler runs (15 section 3.1). Webhooks, the WebSocket
+/// upgrade and requests without a token count per IP. Public routes count per user when the
+/// token is valid and per IP otherwise. Every other request with a token is counted by its
+/// access-level extractor: per user, or per IP when the token is refused.
 pub async fn ip_rate_limit(
     State(state): State<AppState>,
     request: Request,
     next: Next,
 ) -> Response {
-    let path = request.uri().path();
-    let group = if path.starts_with("/webhooks/") {
-        Some(Group::Webhooks)
-    } else if path == "/v1/ws" {
-        Some(Group::WebSocket)
-    } else if path == "/healthz"
-        || path == "/readyz"
-        || request.headers().contains_key(AUTHORIZATION)
-    {
-        None
-    } else if path == "/v1/reference/cities" {
-        Some(Group::Search)
-    } else {
-        Some(Group::Unauthenticated)
-    };
-    if let Some(group) = group {
-        let ip = client_ip(&request);
-        if let Err(retry_after_seconds) = state.limiter.check(group, &ip) {
-            return ApiError::RateLimited {
-                retry_after_seconds,
-            }
-            .into_response();
+    match Charge::of(&request).count(&state).await {
+        Ok(()) => next.run(request).await,
+        Err(retry_after_seconds) => ApiError::RateLimited {
+            retry_after_seconds,
         }
-        if group == Group::Search
-            && let Err(retry_after_seconds) = state.limiter.check(Group::Unauthenticated, &ip)
-        {
-            return ApiError::RateLimited {
-                retry_after_seconds,
-            }
-            .into_response();
-        }
+        .into_response(),
     }
-    next.run(request).await
+}
+
+/// Answers `404 not_found` to a path with no route. No access-level extractor runs here, so a
+/// request that carries an `Authorization` header, which [`ip_rate_limit`] leaves to the
+/// extractors, is counted against its client IP in the `Unauthenticated` group instead.
+pub async fn unmatched(State(state): State<AppState>, request: Request) -> Response {
+    if request.headers().contains_key(AUTHORIZATION)
+        && let Err(retry_after_seconds) = state
+            .limiter
+            .check(Group::Unauthenticated, &client_ip(&request))
+    {
+        return ApiError::RateLimited {
+            retry_after_seconds,
+        }
+        .into_response();
+    }
+    ApiError::NotFound.into_response()
 }

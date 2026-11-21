@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android-only copy of onboarding, the own-profile forms and the partner preferences. Everything
+     the web app also shows lives in copy.xml. Placeholders such as {min} are filled by name with
+     ui/text/Text.kt. -->
+<resources>
+    <!-- A saved city whose name is not known yet (the API has no lookup of a city by id). -->
+    <string name="onboarding_android_city_saved">Saved city</string>
+    <!-- The age range of the partner preferences, shown next to the slider: "25 to 32 years". -->
+    <string name="onboarding_android_age_range">{min} to {max} years</string>
+    <!-- The height range of the partner preferences: "5 ft 0 in to 6 ft 0 in". -->
+    <string name="onboarding_android_height_range">{min} to {max}</string>
+</resources>

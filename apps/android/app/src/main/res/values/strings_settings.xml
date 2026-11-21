@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android-only copy of the settings and gate screens (specs/16 sections 6.2 and 6.24 to 6.30).
+     Everything the web app also shows lives in copy.xml. -->
+<resources>
+    <!-- SET-HELP "Contact support": the end of the email body (specs/16 section 6.30). -->
+    <string name="settings_android_support_body">App version: {version}\nPlatform: Android</string>
+</resources>

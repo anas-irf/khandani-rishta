@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lint>
+    <!--
+        The launcher icons are adaptive icons in mipmap-anydpi-v26. With minSdk 26 lint calls the
+        -v26 qualifier unnecessary, but the build left the icons out entirely when they were moved
+        to an unversioned mipmap-anydpi folder (AGP 9.5.1), so they stay where they are.
+    -->
+    <issue id="ObsoleteSdkInt">
+        <ignore path="src/main/res/mipmap-anydpi-v26" />
+    </issue>
+</lint>

@@ -1,5 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Android-only copy. Everything the web app also shows lives in copy.xml, generated from the
+     web's English copy (scripts/generate-android-strings.mjs). -->
 <resources>
     <string name="app_name">Khandani Rishta</string>
-    <string name="coming_soon">Coming soon.</string>
+
+    <!-- Push notifications: the title is the app name, the body a fixed text per type (specs/14 section 4.2). -->
+    <string name="channel_messages">Messages</string>
+    <string name="channel_interests">Interests</string>
+    <string name="channel_activity">Activity</string>
+    <string name="channel_account">Your account</string>
+    <string name="push_public_text">New activity on Khandani Rishta</string>
+    <string name="push_message">You have a new message</string>
+    <string name="push_interest_received">You have received a new interest</string>
+    <string name="push_interest_reminder">An interest is waiting for your answer</string>
+    <string name="push_interest_accepted">Your interest was accepted</string>
+    <string name="push_photo_request_received">A member asked to see your photos</string>
+    <string name="push_photo_request_granted">A member shared their photos with you</string>
+    <string name="push_contact_shared">A connection shared contact details with you</string>
+    <string name="push_stage_proposed">A connection suggested the next step</string>
+    <string name="push_stage_confirmed">Your suggestion was confirmed</string>
+    <string name="push_new_matches">You have new matches</string>
+    <string name="push_profile_views">People viewed your profile today</string>
+    <string name="push_profile_approved">Your profile is live</string>
+    <string name="push_profile_changes">Your profile needs a few changes</string>
+    <string name="push_photo_rejected">A photo was not approved</string>
+    <string name="push_text_rejected">Part of your profile text was not approved</string>
+    <string name="push_verification_approved">Your verification was approved</string>
+    <string name="push_verification_rejected">Your verification was not approved</string>
+    <string name="push_account_warning">Important notice about your account</string>
+    <string name="push_announcement">News from Khandani Rishta</string>
+
+    <!-- Sign-in (AUTH-SIGNIN, specs/16 section 6.1) -->
+    <string name="auth_tagline">Find a rishta the family way.</string>
+    <string name="auth_legal">By continuing you agree to the &lt;terms&gt;Terms of Use&lt;/terms&gt; and &lt;privacy&gt;Privacy Policy&lt;/privacy&gt;.</string>
+    <string name="auth_not_configured">Sign-in is not configured for this build. Add CLERK_PUBLISHABLE_KEY to local.properties.</string>
+    <string name="auth_init_failed">Sign-in could not start. Check your connection and try again.</string>
+    <string name="auth_feature_verified">Profiles checked by our team</string>
+    <string name="auth_feature_privacy">You decide who sees your photos</string>
+    <string name="auth_feature_family">Made for families and candidates</string>
+    <string name="auth_get_started">Get started</string>
+
+    <!-- Update screens (GATE-UPGRADE, specs/16 section 6.2 and 22 section 13) -->
+    <string name="upgrade_title">Please update the app</string>
+    <string name="upgrade_text">This version is no longer supported. Install the latest version to continue. Your account and chats are safe.</string>
+    <string name="upgrade_latest">Latest version: {version}</string>
+    <string name="upgrade_download">Download the update</string>
+    <string name="upgrade_install_note">Android will ask you to allow installing apps from your browser. Allow it once to install the update.</string>
+    <string name="update_banner_text">A new version is available</string>
+    <string name="update_banner_action">Update</string>
+
+    <!-- Start-up -->
+    <string name="splash_loading">Loading Khandani Rishta</string>
+
+    <!-- Permissions -->
+    <string name="notifications_permission_title">Stay in the loop</string>
+    <string name="notifications_permission_text">Allow notifications to hear about new interests, accepted interests and messages as soon as they arrive. We never show names or message text on the lock screen.</string>
+    <string name="notifications_permission_allow">Allow notifications</string>
+    <string name="notifications_permission_later">Not now</string>
+    <string name="notifications_off_banner">Notifications are turned off for this app on this phone.</string>
+    <string name="notifications_open_settings">Open phone settings</string>
+    <string name="camera_permission_settings">Open settings</string>
+
+    <!-- Copy from specs/16 that the web app does not use -->
+    <string name="discovery_shortlist_failed">Could not update the shortlist.</string>
+
+    <!-- Accessibility -->
+    <string name="a11y_back">Back</string>
+    <string name="a11y_more_options">More options</string>
+    <string name="a11y_close">Close</string>
+    <string name="a11y_private_photo">Private photo</string>
 </resources>

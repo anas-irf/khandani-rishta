@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | Design complete, not implemented |
+| Status | Implemented (`apps/android`, 2026-11-21) |
 | Applies to | `apps/android` (Kotlin, Jetpack Compose, Material 3, Hilt, Navigation 3, Retrofit, OkHttp) |
 | Related | [16-screens-and-flows.md](16-screens-and-flows.md) for what each screen contains, [17-web-app.md](17-web-app.md) for the web counterpart, [15-api-contract.md](15-api-contract.md), [06-auth-and-accounts.md](06-auth-and-accounts.md), [14-notifications.md](14-notifications.md), `docs/tech-stack.md` section 9 |
 
@@ -175,7 +175,7 @@ Google sign-in on Android needs the OAuth clients and fingerprints described in 
 
 ### 5.1 Client
 
-- Retrofit service interfaces generated from `packages/api-contract/openapi.json` with OpenAPI Generator (tech stack section 9). Never hand-write request or response models.
+- Retrofit service interfaces and kotlinx.serialization models generated from `packages/api-contract/openapi.json` by `scripts/generate-android-client.mjs` (`pnpm generate:android-client`) into `core/network/generated/`, one file per type and one interface per tag. CI fails when they are out of date. Never hand-write request or response models. Enumerations carry an `UNKNOWN` entry for values a newer API may add; a union request body (`SectionBody`, `SubmitVerification`) gets one method per variant.
 - One `OkHttpClient` for the API (and a second one, without the auth interceptor, for uploads to presigned R2 URLs).
 - Timeouts: connect 10 s, read 30 s, write 30 s.
 
@@ -205,7 +205,7 @@ Google sign-in on Android needs the OAuth clients and fingerprints described in 
 | Screen state | One immutable `UiState` data class per screen, exposed as `StateFlow` from the ViewModel, collected with `collectAsStateWithLifecycle()` |
 | Repositories | `MeRepository`, `ReferenceRepository`, `ProfileRepository` (own profile, photos, preferences, privacy, identity, verification), `DiscoveryRepository`, `InterestRepository`, `ConnectionRepository`, `RelationRepository` (shortlist, pass, block, photo access, reports), `NotificationRepository`. Singletons provided by Hilt. |
 | Shared state | `MeRepository.me: StateFlow<Me?>` is the single holder of `Me`, counters included. `ConnectionRepository` holds the chat list and open conversations in memory. |
-| Lists | Paging 3 with a `PagingSource` per cursor endpoint. Pull to refresh on every list. |
+| Lists | `Paginator` (`core/data/Paginator.kt`) per cursor endpoint: the items stay in memory so screens can apply the optimistic changes of rule G7 directly, and `PagedList` draws the standard states. Pull to refresh on every list. |
 | Refresh rules | Mirror the web invalidation table (17 section 6.3): after a mutation, refresh the same data the web app invalidates. |
 | Optimistic updates | Only for the cases of 16 section 1.2 rule G7: the "sending" state of a chat message, shortlist on and off, pass and its undo, marking notifications or messages read, mute and archive |
 | Persistence | No Room database. Nothing from the member APIs is written to disk. |
@@ -290,7 +290,7 @@ Server validation errors map onto fields exactly as on the web (17 section 8.3).
 | Shapes | 12 dp cards, 8 dp inputs |
 | Touch targets | At least 48 dp |
 | Language | Per-app language with `AppCompatDelegate.setApplicationLocales`. The choice on `SET-ACCOUNT` calls `PATCH /v1/me` and switches the app. `android:supportsRtl="true"` stays on. Urdu strings (`values-ur`) are added in the Urdu phase. |
-| Strings | Everything in `strings.xml`. Enumeration labels come from the reference data, not from resources. |
+| Strings | The copy shared with the web app is generated from `apps/web/src/locales/en` into `res/values/copy.xml` (`pnpm generate:android-strings`): resource name = namespace and key path, for example `chat_composer_placeholder`; i18next placeholders become named placeholders such as `{name}`, filled by name with `ui/text/Text.kt`. Android-only text lives in `strings.xml`. Enumeration labels come from the reference data, not from resources. |
 | Content descriptions | Every icon button and every member photo ("Photo of <display name>" or "Private photo") |
 | TalkBack | Profile cards are one focusable item with a combined description; actions are custom accessibility actions |
 | Numbers and dates | Western digits; dates with `java.time` and the active locale |
@@ -318,7 +318,7 @@ The app is distributed as an APK outside the Play Store (tech stack section 9).
 | `BuildConfig.SENTRY_DSN` | From `local.properties` (key `SENTRY_DSN`), optional |
 | Build types | `debug` (staging or local API, cleartext allowed to `10.0.2.2` only), `release` (production API, minified, signed in CI) |
 | Network security config | Cleartext traffic off, except the emulator host in debug |
-| Permissions | `INTERNET`, `POST_NOTIFICATIONS`, `CAMERA`. No location, contacts or storage permissions. |
+| Permissions | `INTERNET`, `ACCESS_NETWORK_STATE`, `POST_NOTIFICATIONS`, `CAMERA`. No location, contacts or storage permissions. Debug builds also declare `ACCESS_LOCAL_NETWORK` and ask for it at start: Android 17 blocks private network addresses (the local API at `10.0.2.2`) for apps targeting it. |
 
 ## 15. Tests
 

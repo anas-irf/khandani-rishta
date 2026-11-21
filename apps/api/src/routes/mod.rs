@@ -152,7 +152,7 @@ mod tests {
     use serde_json::json;
     use sqlx::PgPool;
 
-    use crate::test_support::TestApp;
+    use crate::test_support::{TestApp, TestResponse};
 
     #[sqlx::test]
     async fn healthz_reports_ok(db: PgPool) {
@@ -274,5 +274,88 @@ mod tests {
             )
             .await;
         assert_eq!(current.status, StatusCode::OK);
+    }
+
+    /// The status codes of `count` GET requests.
+    async fn statuses(app: &TestApp, path: &str, token: Option<&str>, count: usize) -> Vec<u16> {
+        let mut statuses = Vec::with_capacity(count);
+        for _ in 0..count {
+            statuses.push(app.get(path, token).await.status.as_u16());
+        }
+        statuses
+    }
+
+    /// The first `429` among up to `attempts` more GET requests. Several attempts rather than
+    /// one, so a slow run that earns back part of an allowance between requests still passes.
+    async fn first_refusal(
+        app: &TestApp,
+        path: &str,
+        token: Option<&str>,
+        attempts: usize,
+    ) -> Option<TestResponse> {
+        for _ in 0..attempts {
+            let response = app.get(path, token).await;
+            if response.status == StatusCode::TOO_MANY_REQUESTS {
+                return Some(response);
+            }
+        }
+        None
+    }
+
+    #[sqlx::test]
+    async fn public_routes_count_bad_tokens_per_ip(db: PgPool) {
+        let app = TestApp::new(db).await;
+        let user = app.member().await;
+        // A token that does not verify counts as none: 60 a minute per IP (15 section 3.1).
+        let answered = statuses(&app, "/v1/meta", Some("not-a-token"), 60).await;
+        assert!(answered.iter().all(|status| *status == 200), "{answered:?}");
+        let refused = first_refusal(&app, "/v1/meta", Some("not-a-token"), 5)
+            .await
+            .expect("the IP allowance runs out");
+        assert_eq!(refused.code(), "rate_limited");
+        assert!(refused.headers.contains_key("retry-after"));
+        // A valid token counts per user instead, so the member is not affected.
+        let own = app.get("/v1/meta", Some(&user.token)).await;
+        assert_eq!(own.status, StatusCode::OK);
+    }
+
+    #[sqlx::test]
+    async fn city_search_counts_bad_tokens_per_ip(db: PgPool) {
+        let app = TestApp::new(db).await;
+        let path = "/v1/reference/cities?country_code=PK&q=la";
+        // The search group allows 30 a minute.
+        let answered = statuses(&app, path, Some("not-a-token"), 30).await;
+        assert!(answered.iter().all(|status| *status == 200), "{answered:?}");
+        assert!(
+            first_refusal(&app, path, Some("not-a-token"), 5)
+                .await
+                .is_some()
+        );
+    }
+
+    #[sqlx::test]
+    async fn refused_tokens_count_against_the_ip_once(db: PgPool) {
+        let app = TestApp::new(db).await;
+        let user = app.member().await;
+        // Counted once, by the extractor that refuses the token, not also by the middleware.
+        let answered = statuses(&app, "/v1/me", Some("not-a-token"), 60).await;
+        assert!(answered.iter().all(|status| *status == 401), "{answered:?}");
+        let refused = first_refusal(&app, "/v1/me", Some("not-a-token"), 5)
+            .await
+            .expect("the IP allowance runs out");
+        assert_eq!(refused.code(), "rate_limited");
+        // Members with a valid token from the same IP are not affected.
+        assert_eq!(
+            app.get("/v1/me", Some(&user.token)).await.status,
+            StatusCode::OK
+        );
+    }
+
+    #[sqlx::test]
+    async fn requests_without_a_token_count_against_the_ip_once(db: PgPool) {
+        let app = TestApp::new(db).await;
+        let answered = statuses(&app, "/v1/me", None, 60).await;
+        assert!(answered.iter().all(|status| *status == 401), "{answered:?}");
+        assert!(first_refusal(&app, "/v1/me", None, 5).await.is_some());
     }
 }

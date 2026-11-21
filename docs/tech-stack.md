@@ -190,7 +190,7 @@ Each app commits an `.env.example`. Real env files are git-ignored (section 15).
 - Background jobs live in a PostgreSQL table and are claimed with `FOR UPDATE SKIP LOCKED`. No Redis, no message broker.
 - Real-time updates use Axum WebSockets with in-process fan-out over Tokio channels. Clients ping every 30 seconds because Cloudflare closes idle connections.
 - Caching uses `moka`, always with a size cap (`max_capacity`), because each VM has 1 GiB of RAM.
-- Rate limits are kept in memory, keyed by the verified user id (checked after token verification, so a forged `sub` cannot drain someone else's allowance), or by client IP from Cloudflare's `CF-Connecting-IP` header for requests without a token.
+- Rate limits are kept in memory, keyed by the verified user id (checked after token verification, so a forged `sub` cannot drain someone else's allowance), or by client IP from Cloudflare's `CF-Connecting-IP` header for requests without a valid token (including refused tokens, so a flood of bad tokens is limited too).
 - The cache, rate limiter and pub/sub sit behind small traits, so Redis (or Valkey) can replace them once we run more than one API instance.
 
 ### API conventions

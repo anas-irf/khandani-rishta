@@ -20,6 +20,7 @@ use crate::auth::provisioning::resolve_account;
 use crate::auth::token::{bearer_token, verify};
 use crate::domain::types::{ProfileStatus, UserRole, UserStatus};
 use crate::error::ApiError;
+use crate::middleware::client_ip_of;
 use crate::ratelimit::Group;
 use crate::state::AppState;
 
@@ -32,23 +33,27 @@ async fn authenticate(
     if let Some(snapshot) = parts.extensions.get::<Arc<AccountSnapshot>>() {
         return Ok(snapshot.clone());
     }
+    if let Some(refused) = parts.extensions.get::<Refused>() {
+        return Err(refused.error());
+    }
     let header = parts
         .headers
         .get(AUTHORIZATION)
         .and_then(|value| value.to_str().ok());
-    let token = bearer_token(header).map_err(|reason| {
-        tracing::debug!(%reason, "unauthenticated");
-        ApiError::Unauthenticated
-    })?;
-    let claims = verify(token, &state.jwks, &state.config.clerk)
-        .await
-        .map_err(|reason| {
+    let claims = match bearer_token(header) {
+        Ok(token) => verify(token, &state.jwks, &state.config.clerk).await,
+        Err(reason) => Err(reason),
+    };
+    let claims = match claims {
+        Ok(claims) => claims,
+        Err(reason) => {
             tracing::debug!(%reason, "token refused");
-            ApiError::Unauthenticated
-        })?;
+            return Err(refuse(parts, state));
+        }
+    };
     let snapshot = resolve_account(state, &claims.sub).await?;
     if snapshot.user_status == UserStatus::Deleted {
-        return Err(ApiError::Unauthenticated);
+        return Err(refuse(parts, state));
     }
 
     let path = parts
@@ -68,6 +73,43 @@ async fn authenticate(
         .touch(&state.db, snapshot.user_id, snapshot.profile_id);
     parts.extensions.insert(snapshot.clone());
     Ok(snapshot)
+}
+
+/// How a request whose token was refused was answered. It is kept in the request extensions so
+/// that a second extractor on the same request answers alike without counting it again.
+#[derive(Debug, Clone, Copy)]
+struct Refused {
+    retry_after_seconds: Option<u64>,
+}
+
+impl Refused {
+    fn error(self) -> ApiError {
+        match self.retry_after_seconds {
+            Some(retry_after_seconds) => ApiError::RateLimited {
+                retry_after_seconds,
+            },
+            None => ApiError::Unauthenticated,
+        }
+    }
+}
+
+/// Refuses a request with no token, a malformed, invalid or expired token, or a deleted
+/// account. A request that carried a token counts against its client IP in the
+/// `Unauthenticated` group (15 section 3.1), so a flood of bad tokens meets the same limit as
+/// requests without one; `middleware::ip_rate_limit` already counted the requests without one.
+/// Answers `401 unauthenticated`, or `429 rate_limited` once the IP has used its allowance.
+fn refuse(parts: &mut Parts, state: &AppState) -> ApiError {
+    let retry_after_seconds = if parts.headers.contains_key(AUTHORIZATION) {
+        let ip = client_ip_of(&parts.headers, &parts.extensions);
+        state.limiter.check(Group::Unauthenticated, &ip).err()
+    } else {
+        None
+    };
+    let refused = Refused {
+        retry_after_seconds,
+    };
+    parts.extensions.insert(refused);
+    refused.error()
 }
 
 fn require_open(snapshot: &AccountSnapshot) -> Result<(), ApiError> {

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug builds talk to the API on the development machine (10.0.2.2 from the emulator). Android 17
+     blocks private network addresses for apps targeting SDK 37 unless they hold this runtime
+     permission. Release builds use the public HTTPS API and never ask for it. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
+
+</manifest>

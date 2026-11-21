@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Brand colours for places Compose does not draw: launcher icon, splash screen, notifications.
+     The Compose theme (ui/theme/Theme.kt) holds the same values. -->
+<resources>
+    <color name="brand_primary">#0F766E</color>
+    <color name="brand_primary_deep">#073F3B</color>
+    <color name="brand_ring_light">#FEF3C7</color>
+    <color name="brand_background">#FAFAF9</color>
+</resources>

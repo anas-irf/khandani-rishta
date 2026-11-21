@@ -28,6 +28,8 @@ blob-report/
 .gradle/
 .kotlin/
 local.properties
+# Firebase config for push (specs/22 section 8): provided by CI from a secret, or placed by each developer
+google-services.json
 captures/
 .externalNativeBuild/
 .cxx/

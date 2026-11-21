@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android-only copy of the own-profile, photo and verification screens (ME-PROFILE, ME-PHOTOS,
+     ME-VERIFY, ME-VERIFY-ID, ME-VERIFY-SELFIE). Everything the web app also shows lives in
+     copy.xml under the namespaces me, photos, verification and identity. -->
+<resources>
+    <!-- The completeness ring on ME-PROFILE (specs/08 section 6). -->
+    <string name="me_android_percent" formatted="false">{value}%</string>
+
+    <!-- The in-app camera of the verification flows (specs/12 section 4.3, specs/22 section 9). -->
+    <string name="me_android_camera_explain">The camera opens inside the app. Photos taken here go only to our review team and are not saved to your gallery.</string>
+    <string name="me_android_camera_unavailable">The camera could not be started. Close other apps that are using it and try again.</string>
+    <string name="me_android_camera_failed">The photo could not be taken. Please try again.</string>
+    <string name="me_android_camera_close">Close the camera</string>
+    <string name="me_android_camera_face_hint">Keep the face and the hand inside the frame</string>
+    <string name="me_android_camera_card_hint">Fit the whole card inside the frame</string>
+
+    <!-- ME-VERIFY-ID step 2: the back camera or the Photo Picker (specs/16 section 6.23). -->
+    <string name="me_android_card_camera">Use the camera</string>
+    <string name="me_android_card_gallery">Choose from the gallery</string>
+    <string name="me_android_step_of">Step {current} of {total}</string>
+</resources>

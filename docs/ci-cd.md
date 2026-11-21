@@ -46,7 +46,7 @@ every app's checks.
 | Unused code and dependencies | Knip | cargo-shear | Android Lint |
 | Dependency policy | Dependency review (pull requests) | cargo-deny: advisories, licenses, sources | Dependency review, Gradle dependency submission |
 | Unit tests | Vitest + Testing Library, coverage | cargo-nextest with `#[sqlx::test]` against PostgreSQL 18 | JUnit |
-| Generated files current | API types, route tree | `openapi.json` | |
+| Generated files current | API types, route tree | `openapi.json` | API client and copy (`scripts/generate-android-*.mjs --check`) |
 | Build | Production build, reused by the e2e job | Release binary (CD only) | Debug APK, uploaded for reviewers |
 | End-to-end | Playwright on desktop and mobile Chrome, axe accessibility scan | | |
 

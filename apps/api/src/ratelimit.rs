@@ -62,6 +62,13 @@ impl Group {
     }
 }
 
+/// The limiter key of a signed-in user. Every route counts a user under this one key, so the
+/// middleware (which has only the token) and the extractors (which also have the account) share
+/// one allowance per group instead of two.
+pub fn user_key(clerk_user_id: &str) -> String {
+    format!("clerk:{clerk_user_id}")
+}
+
 /// Keyed GCRA limiter.
 pub struct RateLimiter {
     arrivals: Cache<(Group, String), Arc<Mutex<Instant>>>,

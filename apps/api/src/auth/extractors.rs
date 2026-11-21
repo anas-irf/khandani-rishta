@@ -21,7 +21,7 @@ use crate::auth::token::{bearer_token, verify};
 use crate::domain::types::{ProfileStatus, UserRole, UserStatus};
 use crate::error::ApiError;
 use crate::middleware::client_ip_of;
-use crate::ratelimit::Group;
+use crate::ratelimit::{Group, user_key};
 use crate::state::AppState;
 
 /// Verifies the token, resolves the account and applies the per-user rate limit, once per
@@ -51,7 +51,12 @@ async fn authenticate(
             return Err(refuse(parts, state));
         }
     };
-    let snapshot = resolve_account(state, &claims.sub).await?;
+    let snapshot = match resolve_account(state, &claims.sub).await {
+        Ok(snapshot) => snapshot,
+        // A signed token for a user Clerk no longer has is refused like any other bad token.
+        Err(ApiError::Unauthenticated) => return Err(refuse(parts, state)),
+        Err(error) => return Err(error),
+    };
     if snapshot.user_status == UserStatus::Deleted {
         return Err(refuse(parts, state));
     }
@@ -63,7 +68,7 @@ async fn authenticate(
     let group = Group::for_request(&parts.method, &path);
     state
         .limiter
-        .check(group, &snapshot.user_id.to_string())
+        .check(group, &user_key(&claims.sub))
         .map_err(|retry_after_seconds| ApiError::RateLimited {
             retry_after_seconds,
         })?;

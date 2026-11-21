@@ -120,7 +120,7 @@ pub fn app(state: AppState) -> Router {
 
     router
         .layer(DefaultBodyLimit::max(BODY_LIMIT_BYTES))
-        .fallback(|| async { ApiError::NotFound })
+        .fallback(crate::middleware::unmatched)
         .layer(middleware)
         .with_state(state)
 }
@@ -302,6 +302,43 @@ mod tests {
         None
     }
 
+    /// A GET request as if it came through Cloudflare from `ip`.
+    async fn get_from(app: &TestApp, ip: &str, path: &str, token: Option<&str>) -> TestResponse {
+        app.request_with_headers("GET", path, token, None, &[("cf-connecting-ip", ip)])
+            .await
+    }
+
+    /// The status codes of `count` GET requests from `ip`.
+    async fn statuses_from(
+        app: &TestApp,
+        ip: &str,
+        path: &str,
+        token: Option<&str>,
+        count: usize,
+    ) -> Vec<u16> {
+        let mut statuses = Vec::with_capacity(count);
+        for _ in 0..count {
+            statuses.push(get_from(app, ip, path, token).await.status.as_u16());
+        }
+        statuses
+    }
+
+    /// Whether one of up to `attempts` more GET requests from `ip` is answered `429`.
+    async fn refused_from(
+        app: &TestApp,
+        ip: &str,
+        path: &str,
+        token: Option<&str>,
+        attempts: usize,
+    ) -> bool {
+        for _ in 0..attempts {
+            if get_from(app, ip, path, token).await.status == StatusCode::TOO_MANY_REQUESTS {
+                return true;
+            }
+        }
+        false
+    }
+
     #[sqlx::test]
     async fn public_routes_count_bad_tokens_per_ip(db: PgPool) {
         let app = TestApp::new(db).await;
@@ -320,6 +357,56 @@ mod tests {
     }
 
     #[sqlx::test]
+    async fn bad_token_allowances_are_kept_per_ip(db: PgPool) {
+        let app = TestApp::new(db).await;
+        let bad = Some("not-a-token");
+        let answered = statuses_from(&app, "203.0.113.1", "/v1/meta", bad, 60).await;
+        assert!(answered.iter().all(|status| *status == 200), "{answered:?}");
+        assert!(refused_from(&app, "203.0.113.1", "/v1/meta", bad, 5).await);
+        // Another IP has its own allowance.
+        assert_eq!(
+            get_from(&app, "203.0.113.2", "/v1/meta", bad).await.status,
+            StatusCode::OK
+        );
+    }
+
+    #[sqlx::test]
+    async fn unknown_paths_count_tokens_against_the_ip_once(db: PgPool) {
+        let app = TestApp::new(db).await;
+        let path = "/v1/no-such-route";
+        let bad = Some("not-a-token");
+        // With a token, the extractors never run, so the fallback counts the request.
+        let answered = statuses_from(&app, "203.0.113.1", path, bad, 60).await;
+        assert!(answered.iter().all(|status| *status == 404), "{answered:?}");
+        assert!(refused_from(&app, "203.0.113.1", path, bad, 5).await);
+        // Without one, the middleware counts it, and the fallback does not count it again.
+        let answered = statuses_from(&app, "203.0.113.2", path, None, 60).await;
+        assert!(answered.iter().all(|status| *status == 404), "{answered:?}");
+        assert!(refused_from(&app, "203.0.113.2", path, None, 5).await);
+        // Another IP is not affected.
+        assert_eq!(
+            get_from(&app, "203.0.113.3", path, bad).await.status,
+            StatusCode::NOT_FOUND
+        );
+    }
+
+    #[sqlx::test]
+    async fn public_and_protected_routes_share_a_user_allowance(db: PgPool) {
+        let app = TestApp::new(db).await;
+        let user = app.member().await;
+        let token = Some(user.token.as_str());
+        // The default group allows 120 a minute per user: split between the two kinds of route.
+        let public = statuses(&app, "/v1/meta", token, 60).await;
+        assert!(public.iter().all(|status| *status == 200), "{public:?}");
+        let protected = statuses(&app, "/v1/me", token, 60).await;
+        assert!(
+            protected.iter().all(|status| *status == 200),
+            "{protected:?}"
+        );
+        assert!(first_refusal(&app, "/v1/me", token, 5).await.is_some());
+    }
+
+    #[sqlx::test]
     async fn city_search_counts_bad_tokens_per_ip(db: PgPool) {
         let app = TestApp::new(db).await;
         let path = "/v1/reference/cities?country_code=PK&q=la";
@@ -331,6 +418,9 @@ mod tests {
                 .await
                 .is_some()
         );
+        // Another IP has its own allowance.
+        let other = get_from(&app, "203.0.113.9", path, Some("not-a-token")).await;
+        assert_eq!(other.status, StatusCode::OK);
     }
 
     #[sqlx::test]

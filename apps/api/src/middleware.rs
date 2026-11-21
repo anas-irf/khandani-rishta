@@ -17,7 +17,7 @@ use utoipa::ToSchema;
 
 use crate::auth::token::{bearer_token, verify};
 use crate::error::ApiError;
-use crate::ratelimit::Group;
+use crate::ratelimit::{Group, user_key};
 use crate::state::AppState;
 
 /// The newest Android release (04 section 11, `app_releases`).
@@ -136,7 +136,8 @@ fn is_public(path: &str) -> bool {
 /// What a request counts against before its handler runs (15 section 3.1).
 enum Charge {
     /// Nothing here: health checks, and requests with a token to routes whose access-level
-    /// extractor counts them, per user or, when it refuses the token, per IP.
+    /// extractor counts them, per user or, when it refuses the token, per IP. A token sent to
+    /// a path with no route is counted by [`unmatched`].
     Nothing,
     /// The client IP, in each of these groups.
     Ip(String, &'static [Group]),
@@ -205,9 +206,7 @@ impl Charge {
                 ip,
                 ip_groups,
             } => match verify(&token, &state.jwks, &state.config.clerk).await {
-                Ok(claims) => state
-                    .limiter
-                    .check(user_group, &format!("clerk:{}", claims.sub)),
+                Ok(claims) => state.limiter.check(user_group, &user_key(&claims.sub)),
                 Err(_) => per_ip(&ip, ip_groups),
             },
         }
@@ -230,4 +229,21 @@ pub async fn ip_rate_limit(
         }
         .into_response(),
     }
+}
+
+/// Answers `404 not_found` to a path with no route. No access-level extractor runs here, so a
+/// request that carries an `Authorization` header, which [`ip_rate_limit`] leaves to the
+/// extractors, is counted against its client IP in the `Unauthenticated` group instead.
+pub async fn unmatched(State(state): State<AppState>, request: Request) -> Response {
+    if request.headers().contains_key(AUTHORIZATION)
+        && let Err(retry_after_seconds) = state
+            .limiter
+            .check(Group::Unauthenticated, &client_ip(&request))
+    {
+        return ApiError::RateLimited {
+            retry_after_seconds,
+        }
+        .into_response();
+    }
+    ApiError::NotFound.into_response()
 }

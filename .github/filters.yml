@@ -26,6 +26,10 @@ android:
   - apps/android/**
   - .github/workflows/_android.yml
   - .github/workflows/release-android.yml
+  # Sources of the generated API client and copy (scripts/generate-android-*.mjs)
+  - packages/api-contract/openapi.json
+  - apps/web/src/locales/en/**
+  - scripts/generate-android-*.mjs
 
 # Changes to the pipeline itself run every app's checks.
 pipeline:

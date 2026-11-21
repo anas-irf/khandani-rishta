@@ -99,7 +99,7 @@ Android clients also send `x-app-platform: android` and `x-app-version-code: <in
 
 ### 3.1 Rate limits
 
-In-memory limits (`tower_governor`), keyed by user id when authenticated, otherwise by `CF-Connecting-IP`.
+In-memory limits (a GCRA limiter in the API process), keyed by user id when authenticated, otherwise by `CF-Connecting-IP`. A request whose token is missing, malformed, invalid or expired is not authenticated, whatever route it calls: it counts against its IP in the Unauthenticated group. On `public` routes a valid token is optional; when one is sent, the request counts per user in its group.
 
 | Group | Limit | Applies to |
 |---|---|---|
@@ -107,7 +107,7 @@ In-memory limits (`tower_governor`), keyed by user id when authenticated, otherw
 | Writes | 40 per minute | `POST`, `PUT`, `PATCH`, `DELETE` |
 | Search | 30 per minute | `POST /v1/search`, `GET /v1/reference/cities` |
 | Uploads | 20 per hour | Upload URL endpoints |
-| Unauthenticated | 60 per minute per IP | `public` routes |
+| Unauthenticated | 60 per minute per IP | Requests without a valid token: `public` routes, and refused tokens on any route |
 | Webhooks | 300 per minute | `POST /webhooks/clerk` |
 
 Product limits such as interests per day are separate and return `limit_reached`.

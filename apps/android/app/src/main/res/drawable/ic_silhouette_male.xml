@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Neutral placeholder for a male profile without a photo (specs/16 rule G10). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    <path
+        android:fillColor="#B9C7C4"
+        android:pathData="M60,28 a18,18 0 1,1 0,36 a18,18 0 1,1 0,-36 Z" />
+    <path
+        android:fillColor="#B9C7C4"
+        android:pathData="M22,120 C22,92 38,74 60,74 C82,74 98,92 98,120 Z" />
+</vector>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Neutral placeholder for a female profile without a photo: a head with a covering (specs/16 rule G10). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    <path
+        android:fillColor="#C9BFB6"
+        android:pathData="M60,22 C76,22 86,35 86,52 C86,66 80,76 74,80 C88,84 100,99 100,120 L20,120 C20,99 32,84 46,80 C40,76 34,66 34,52 C34,35 44,22 60,22 Z" />
+    <path
+        android:fillColor="#E2DAD3"
+        android:pathData="M60,36 a15,15 0 1,1 0,30 a15,15 0 1,1 0,-30 Z" />
+</vector>

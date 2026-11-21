@@ -3,6 +3,8 @@
 
 plugins {
     alias(libs.plugins.spotless)
+    // Applied by app/build.gradle.kts only when google-services.json is present.
+    alias(libs.plugins.google.services) apply false
 }
 
 // ktlint settings for every Kotlin file. They live here rather than in .editorconfig because
@@ -15,6 +17,9 @@ val ktlintSettings =
         "ktlint_function_naming_ignore_when_annotated_with" to "Composable",
         // Keeps Compose modifier chains as Android Studio formats them.
         "ktlint_standard_multiline-expression-wrapping" to "disabled",
+        // App-wide values provided once by the root composable (ui/KhandaniApp.kt) and the theme.
+        "compose_allowed_composition_locals" to
+            "LocalNavigator,LocalReference,LocalMe,LocalViewerCountry,LocalAppViewModel,LocalExtendedColors",
     )
 
 // Formatting and style for all Kotlin and Gradle Kotlin DSL files, with ktlint and the
@@ -22,7 +27,8 @@ val ktlintSettings =
 spotless {
     kotlin {
         target("**/*.kt")
-        targetExclude("**/build/**")
+        // The API client is generated from the OpenAPI contract (scripts/generate-android-client.mjs).
+        targetExclude("**/build/**", "**/core/network/generated/**")
         ktlint(libs.versions.ktlint.get())
             .editorConfigOverride(ktlintSettings)
             .customRuleSets(

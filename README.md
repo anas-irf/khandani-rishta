@@ -44,7 +44,15 @@ Locally the API listens on port 8787, not 8080, because 8080 is often taken by o
 
 Every checkout uses the same PostgreSQL server. If you work in a second checkout (a git worktree) whose branch has different migrations, give it its own database: change the database name at the end of `DATABASE_URL` in that checkout's `apps/api/.env`, and `pnpm bootstrap` creates it. Otherwise the API stops with "migration N was previously applied but is missing in the resolved migrations".
 
-For the Android app, open `apps/android` in Android Studio and run the `app` configuration on an emulator.
+For the Android app, open `apps/android` in Android Studio and run the `app` configuration on an emulator. Put these values in `apps/android/local.properties` (git-ignored; none of them is secret):
+
+| Key | Value |
+|---|---|
+| `CLERK_PUBLISHABLE_KEY` | The Clerk Development publishable key (the same `pk_test_...` as `VITE_CLERK_PUBLISHABLE_KEY` in `apps/web/.env.local`) |
+| `API_BASE_URL` | Optional. Defaults to `http://10.0.2.2:8787`, the local API as seen from the emulator |
+| `SENTRY_DSN` | Optional. The DSN of the Sentry project `khandani-rishta-android` |
+
+On Android 17, debug builds ask once for access to devices on the local network: allow it, or the app cannot reach the API on your computer. Push notifications need `apps/android/app/google-services.json` from the Firebase console; without it the app runs without push.
 
 ## Common tasks
 
@@ -57,7 +65,8 @@ For the Android app, open `apps/android` in Android Studio and run the `app` con
 | Run the end-to-end tests | `pnpm test:e2e` (repository root; first time: `pnpm --filter @khandani/e2e exec playwright install chromium`) |
 | Check the API | `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test`, `cargo deny check` (in `apps/api`, database running) |
 | Check the Android app | `./gradlew spotlessCheck lintDebug testDebugUnitTest assembleDebug` (in `apps/android`; `gradlew.bat` on Windows); fix formatting with `./gradlew spotlessApply` |
-| Update the API contract after changing routes | `cargo run -- openapi > ../../packages/api-contract/openapi.json` (in `apps/api`), then `pnpm generate:api-client` (repository root) |
+| Update the API contract after changing routes | `cargo run -- openapi > ../../packages/api-contract/openapi.json` (in `apps/api`), then `pnpm generate:api-client` and `pnpm generate:android-client` (repository root) |
+| Update the Android copy after changing the web's English copy | `pnpm generate:android-strings` (repository root) |
 
 ## Contributing
 

@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Window theme only. Colors and typography come from the Compose theme (ui/theme/Theme.kt). -->
-    <style name="Theme.KhandaniRishta" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.KhandaniRishta" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/brand_background</item>
+    </style>
+
+    <!-- Shown while the app starts (core-splashscreen), then replaced by Theme.KhandaniRishta. -->
+    <style name="Theme.KhandaniRishta.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/brand_primary</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.KhandaniRishta</item>
+    </style>
 </resources>

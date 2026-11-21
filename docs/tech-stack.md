@@ -286,10 +286,12 @@ Cloudflare Workers hosting:
 | Dependency injection | Hilt, with KSP for code generation | 2.60, KSP 2.3 |
 | Navigation | Navigation 3 (back stack of serializable keys) | 1.2 |
 | Networking | Retrofit + OkHttp + kotlinx.serialization. An OkHttp interceptor adds the Clerk token | 3.0, 5.5, 1.13 |
-| API client | Generated from `openapi.json` with OpenAPI Generator (`kotlin` generator, `jvm-retrofit2` library, kotlinx.serialization) | |
+| API client | Generated from `openapi.json` by `scripts/generate-android-client.mjs`: kotlinx.serialization models and Retrofit interfaces, checked for drift in CI. Unknown enum values read as `UNKNOWN`, so a newer API never breaks an installed build. OpenAPI Generator was not used: its Kotlin output does not handle the contract's OpenAPI 3.1 nullable unions | |
+| Copy | Generated from the web app's English copy (`apps/web/src/locales/en`) into `res/values/copy.xml` by `scripts/generate-android-strings.mjs`, so both apps use the same words | |
 | Images | Coil | 3.6 |
 | Local storage | DataStore. Room only if offline caching becomes necessary | |
-| Auth | Clerk Android SDK (`com.clerk:clerk-android-ui`, which includes `clerk-android-api`) | 1.4 |
+| Camera | CameraX (verification selfies and identity document photos) | 1.7 |
+| Auth | Clerk Android SDK (`com.clerk:clerk-android-ui`, which includes `clerk-android-api`) | 1.5 |
 | Push | Firebase Cloud Messaging (Firebase BOM) | 35.2 |
 | Crash and error reporting | Sentry Android SDK | 8.x |
 | Lint and tests | Android Lint (warnings as errors), ktlint with the Compose rules (through Spotless), JUnit, Compose UI tests | ktlint 1.8 |

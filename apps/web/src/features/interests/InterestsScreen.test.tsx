@@ -9,6 +9,7 @@ import { makeInterest, makeMe } from '~/mocks/factories'
 import { interestsState } from '~/mocks/handlers/interests'
 import { apiError, apiUrl } from '~/mocks/http'
 import { server } from '~/mocks/server'
+import { pinSeededClock } from '~/test/clock'
 import { renderWithProviders } from '~/test/render'
 import { InterestsScreen } from './InterestsScreen'
 
@@ -30,6 +31,8 @@ function rowOf(id: string): HTMLElement {
   if (!row) throw new Error(`No row ${id}`)
   return row
 }
+
+pinSeededClock()
 
 describe('APP-INTERESTS', () => {
   it('shows a skeleton, then the received new interests with message, expiry and unseen dot', async () => {

@@ -1,5 +1,6 @@
 package com.khandanirishta.app.ui.feature.lists
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khandanirishta.app.R
@@ -12,7 +13,6 @@ import com.khandanirishta.app.core.network.ApiError
 import com.khandanirishta.app.core.network.ErrorCode
 import com.khandanirishta.app.core.network.apiError
 import com.khandanirishta.app.core.network.generated.model.ShortlistItem
-import com.khandanirishta.app.core.realtime.ConnectivityObserver
 import com.khandanirishta.app.ui.messages.MessageBus
 import com.khandanirishta.app.ui.messages.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,17 +24,17 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /** The "Edit note" dialog of one entry. */
+@Immutable
 data class NoteEditor(
     val profileId: String,
     val name: String,
     val note: String?,
 )
 
+@Immutable
 data class ShortlistUiState(
     val editor: NoteEditor? = null,
     val savingNote: Boolean = false,
-    /** Buttons that need the network are disabled while offline (rule G14). */
-    val online: Boolean = true,
 )
 
 /**
@@ -47,7 +47,6 @@ class ShortlistViewModel
     constructor(
         private val relations: RelationRepository,
         private val bus: MessageBus,
-        connectivity: ConnectivityObserver,
         invalidation: Invalidation,
     ) : ViewModel() {
         private val mutableState = MutableStateFlow(ShortlistUiState())
@@ -61,9 +60,6 @@ class ShortlistViewModel
             paginator.refresh()
             viewModelScope.launch {
                 invalidation.on(DataKey.Shortlist).collect { paginator.refresh(showSpinner = false) }
-            }
-            viewModelScope.launch {
-                connectivity.online.collect { online -> mutableState.update { it.copy(online = online) } }
             }
         }
 

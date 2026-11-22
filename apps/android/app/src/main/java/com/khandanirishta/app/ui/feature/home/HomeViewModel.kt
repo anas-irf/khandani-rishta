@@ -1,5 +1,6 @@
 package com.khandanirishta.app.ui.feature.home
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khandanirishta.app.core.data.DataKey
@@ -26,8 +27,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@Immutable
 data class HomeUiState(
     val home: Home? = null,
+    /** "Not interested" since the member came to the screen. */
+    val passed: PassedCards = PassedCards(),
     val loading: Boolean = true,
     val refreshing: Boolean = false,
     val error: ApiError? = null,
@@ -49,12 +53,9 @@ class HomeViewModel
         private val mutableState = MutableStateFlow(HomeUiState())
         val state: StateFlow<HomeUiState> = mutableState.asStateFlow()
 
-        /** Tips and banners dismissed on this device. */
-        val dismissed: StateFlow<Set<String>> = preferences.dismissed.stateIn(
-            viewModelScope,
-            SharingStarted.Eagerly,
-            emptySet(),
-        )
+        /** Tips and banners dismissed on this device. `null` until read, so none flashes up and goes. */
+        val dismissed: StateFlow<Set<String>?> =
+            preferences.dismissed.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
         private var loadJob: Job? = null
         private var findingJob: Job? = null
@@ -110,15 +111,11 @@ class HomeViewModel
                                 it.copy(
                                     loading = false,
                                     refreshing = false,
-                                    error = if (it.home ==
-                                        null
-                                    ) {
-                                        error.apiError
-                                    } else {
-                                        null
-                                    },
+                                    error = if (it.home == null) error.apiError else null,
                                 )
                             }
+                            // A failed retry of "Finding your matches..." still counts towards the three.
+                            mutableState.value.home?.let(::scheduleFinding)
                         }
                 }
         }
@@ -146,15 +143,56 @@ class HomeViewModel
             }
         }
 
+        /** "Not interested": the panel takes the card's place until the member leaves the screen. */
         fun pass(card: ProfileCard) {
-            val before = mutableState.value.home ?: return
+            val home = mutableState.value.home ?: return
+            val shown = mutableState.value.passed.arrange(home.matchesRow())
+            val place = shown.indexOfFirst { it.id == card.id }
+            mutableState.update { it.copy(passed = it.passed.pass(card, shown)) }
             viewModelScope.launch {
-                actions.pass(
-                    card = card,
-                    remove = { removeCard(card.id) },
-                    restore = { mutableState.update { it.copy(home = before) } },
-                    launchUndo = { block -> viewModelScope.launch { block() } },
-                    onUndo = { load(silent = true) },
+                actions.pass(card.id) {
+                    mutableState.update { state ->
+                        state.copy(
+                            passed = state.passed.without(card.id),
+                            home = state.home?.let {
+                                it.copy(
+                                    recommendations = it.recommendations.putBack(card, place),
+                                )
+                            },
+                        )
+                    }
+                    load(silent = true)
+                }
+            }
+        }
+
+        fun undoPass(id: String) {
+            mutableState.update { it.copy(passed = it.passed.restore(id)) }
+            viewModelScope.launch {
+                actions.undoPass(id) { mutableState.update { it.copy(passed = it.passed.passAgain(id)) } }
+            }
+        }
+
+        /** The panels end with the visit. */
+        fun leaveScreen() {
+            mutableState.update { it.copy(passed = it.passed.leave()) }
+        }
+
+        /** Back from elsewhere: the cards passed in the last visit leave the rows. */
+        fun returnToScreen() {
+            mutableState.update { state ->
+                if (!state.passed.left) return@update state
+                val passed = state.passed
+                state.copy(
+                    passed = PassedCards(),
+                    home =
+                        state.home?.let {
+                            it.copy(
+                                recommendations = passed.hide(it.recommendations),
+                                newMembers = passed.hide(it.newMembers),
+                                nearby = passed.hide(it.nearby),
+                            )
+                        },
                 )
             }
         }
@@ -190,6 +228,7 @@ class HomeViewModel
 
                 fun List<ProfileCard>.map() = map { if (it.id == id) transform(it) else it }
                 state.copy(
+                    passed = state.passed.update(id, transform),
                     home =
                         home.copy(
                             recommendations = home.recommendations.map(),
@@ -200,24 +239,13 @@ class HomeViewModel
             }
         }
 
-        private fun removeCard(id: String) {
-            mutableState.update { state ->
-                val home = state.home ?: return@update state
-
-                fun List<ProfileCard>.without() = filterNot { it.id == id }
-                state.copy(
-                    home =
-                        home.copy(
-                            recommendations = home.recommendations.without(),
-                            newMembers = home.newMembers.without(),
-                            nearby = home.nearby.without(),
-                        ),
-                )
-            }
-        }
-
         companion object {
             const val FINDING_RETRIES = 3
             const val FINDING_RETRY_MS = 5_000L
         }
     }
+
+/** "Your matches" on Home shows up to 10 (specs/16 section 6.4). */
+internal fun Home.matchesRow(): List<ProfileCard> = recommendations.take(MATCHES_ON_HOME)
+
+private const val MATCHES_ON_HOME = 10

@@ -1,9 +1,5 @@
 package com.khandanirishta.app.ui.feature.me
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.SearchOff
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -16,11 +12,12 @@ import androidx.lifecycle.viewModelScope
 import com.khandanirishta.app.R
 import com.khandanirishta.app.core.data.ProfileRepository
 import com.khandanirishta.app.core.data.ReferenceRepository
+import com.khandanirishta.app.ui.components.Band
 import com.khandanirishta.app.ui.components.ConfirmDialog
-import com.khandanirishta.app.ui.components.DetailTopBar
-import com.khandanirishta.app.ui.components.EmptyState
 import com.khandanirishta.app.ui.components.ErrorState
 import com.khandanirishta.app.ui.components.FormSkeleton
+import com.khandanirishta.app.ui.components.LocalOnline
+import com.khandanirishta.app.ui.components.NoLongerAvailable
 import com.khandanirishta.app.ui.feature.profilesections.AfterSave
 import com.khandanirishta.app.ui.feature.profilesections.FormMode
 import com.khandanirishta.app.ui.feature.profilesections.FormScreenScaffold
@@ -31,10 +28,10 @@ import com.khandanirishta.app.ui.feature.profilesections.SaveBar
 import com.khandanirishta.app.ui.feature.profilesections.SectionFields
 import com.khandanirishta.app.ui.feature.profilesections.SectionFormController
 import com.khandanirishta.app.ui.feature.profilesections.rememberFieldLocator
-import com.khandanirishta.app.ui.feature.profilesections.rememberOnline
 import com.khandanirishta.app.ui.messages.MessageBus
 import com.khandanirishta.app.ui.navigation.LocalNavigator
 import com.khandanirishta.app.ui.navigation.MyPreferences
+import com.khandanirishta.app.ui.theme.Sizes
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -119,17 +116,10 @@ fun EditSectionScreen(
 ) {
     val navigator = LocalNavigator.current
     if (section !in SECTION_KEYS) {
-        Scaffold(
-            modifier = modifier,
-            topBar = { DetailTopBar(title = "", onBack = { navigator.back() }) },
-        ) { padding ->
-            EmptyState(
-                title = stringResource(R.string.me_edit_not_found),
-                icon = Icons.Outlined.SearchOff,
-                actionLabel = stringResource(R.string.errors_go_back),
-                onAction = { navigator.back() },
-                modifier = Modifier.padding(padding),
-            )
+        MeScaffold(title = stringResource(R.string.me_profile_title), onBack = navigator::back, modifier = modifier) {
+            Band(maxWidth = Sizes.formWidth) {
+                NoLongerAvailable(onBack = navigator::back, title = stringResource(R.string.me_edit_not_found))
+            }
         }
         return
     }
@@ -140,12 +130,13 @@ fun EditSectionScreen(
 private fun EditSection(
     section: String,
     modifier: Modifier = Modifier,
+    viewModel: EditSectionViewModel =
+        hiltViewModel<EditSectionViewModel, EditSectionViewModel.Factory> { it.create(section) },
 ) {
-    val viewModel = hiltViewModel<EditSectionViewModel, EditSectionViewModel.Factory> { it.create(section) }
     val navigator = LocalNavigator.current
     val ui by viewModel.form.state.collectAsStateWithLifecycle()
     val result by viewModel.result.collectAsStateWithLifecycle()
-    val online = rememberOnline()
+    val online = LocalOnline.current
     val locator = rememberFieldLocator()
     val form = ui.form
     val context = viewModel.form.sectionContext
@@ -210,6 +201,8 @@ private fun EditSection(
                 text = null,
                 confirmLabel = stringResource(R.string.me_edit_review),
                 dismissLabel = stringResource(R.string.me_edit_later),
+                // It only opens ME-PREFS or goes back.
+                needsNetwork = false,
                 onConfirm = {
                     viewModel.consumeResult()
                     navigator.replaceTop(MyPreferences)

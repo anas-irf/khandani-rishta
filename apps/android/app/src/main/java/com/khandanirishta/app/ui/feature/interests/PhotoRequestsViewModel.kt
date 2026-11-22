@@ -1,5 +1,6 @@
 package com.khandanirishta.app.ui.feature.interests
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khandanirishta.app.R
@@ -14,7 +15,6 @@ import com.khandanirishta.app.core.network.ApiError
 import com.khandanirishta.app.core.network.ErrorCode
 import com.khandanirishta.app.core.network.apiError
 import com.khandanirishta.app.core.network.generated.model.PhotoAccessItem
-import com.khandanirishta.app.core.realtime.ConnectivityObserver
 import com.khandanirishta.app.ui.messages.MessageBus
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -27,11 +27,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /** "Remove access" waiting for its confirmation (16 section 6.16). */
+@Immutable
 data class RevokeDialog(
     val item: PhotoAccessItem,
     val name: String,
 )
 
+@Immutable
 data class PhotoRequestsUiState(
     /** `received` or `sent`. */
     val box: String = PhotoRequestsViewModel.RECEIVED,
@@ -42,8 +44,6 @@ data class PhotoRequestsUiState(
     val denying: Set<String> = emptySet(),
     val revoke: RevokeDialog? = null,
     val revokeBusy: Boolean = false,
-    /** Buttons that need the network are disabled while offline (rule G14). */
-    val online: Boolean = true,
 ) {
     /** The list on screen for the tab and the filter. */
     val listKey: String
@@ -67,7 +67,6 @@ class PhotoRequestsViewModel
         private val relations: RelationRepository,
         private val me: MeRepository,
         private val bus: MessageBus,
-        connectivity: ConnectivityObserver,
         invalidation: Invalidation,
     ) : ViewModel() {
         @AssistedFactory
@@ -87,9 +86,6 @@ class PhotoRequestsViewModel
         init {
             paginator(current())
             viewModelScope.launch { invalidation.on(DataKey.PhotoAccess).collect { refetch() } }
-            viewModelScope.launch {
-                connectivity.online.collect { online -> mutableState.update { it.copy(online = online) } }
-            }
         }
 
         /** One of the three lists: [RECEIVED_WAITING], [RECEIVED_APPROVED] or [SENT_ALL]. */

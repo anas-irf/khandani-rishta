@@ -1,30 +1,24 @@
 package com.khandanirishta.app.ui.feature.home
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Tune
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -43,17 +37,21 @@ import com.khandanirishta.app.core.network.generated.model.RelaxationHint
 import com.khandanirishta.app.core.util.Formatters
 import com.khandanirishta.app.ui.components.CardSkeleton
 import com.khandanirishta.app.ui.components.DetailTopBar
-import com.khandanirishta.app.ui.components.EmptyState
+import com.khandanirishta.app.ui.components.KrIconButton
+import com.khandanirishta.app.ui.components.LocalOnline
 import com.khandanirishta.app.ui.components.PagedList
-import com.khandanirishta.app.ui.components.ProfileCardView
 import com.khandanirishta.app.ui.components.StatusBanner
+import com.khandanirishta.app.ui.components.rememberNow
 import com.khandanirishta.app.ui.messages.MessageBus
 import com.khandanirishta.app.ui.navigation.GateRouter
 import com.khandanirishta.app.ui.navigation.LocalNavigator
 import com.khandanirishta.app.ui.navigation.MyPreferences
 import com.khandanirishta.app.ui.navigation.Profile
 import com.khandanirishta.app.ui.navigation.Tab
+import com.khandanirishta.app.ui.text.rememberCandidate
 import com.khandanirishta.app.ui.text.text
+import com.khandanirishta.app.ui.theme.Sizes
+import com.khandanirishta.app.ui.theme.Spacing
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -90,16 +88,35 @@ class MatchesViewModel
         private val mutableFinding = MutableStateFlow(0)
         val finding: StateFlow<Int> = mutableFinding.asStateFlow()
 
+        private val mutablePassed = MutableStateFlow(PassedCards())
+
+        /** "Not interested" since the member came to the screen. */
+        val passed: StateFlow<PassedCards> = mutablePassed.asStateFlow()
+
+        /** The last first page had nothing, though the pool is not exhausted. */
+        private var foundNone = false
+
         val paginator =
             Paginator<ProfileCard>(viewModelScope, key = { it.id }) { cursor ->
-                discovery.recommendations(cursor).map { page ->
-                    if (cursor == null) {
-                        mutableMeta.value =
-                            MatchesMeta(page.isRefreshing, page.poolExhausted, page.refreshedAt, page.relaxationHints)
-                        scheduleFollowUps(page.isRefreshing, page.items.isEmpty() && !page.poolExhausted)
+                discovery
+                    .recommendations(cursor)
+                    .map { page ->
+                        if (cursor == null) {
+                            mutableMeta.value =
+                                MatchesMeta(
+                                    isRefreshing = page.isRefreshing,
+                                    poolExhausted = page.poolExhausted,
+                                    refreshedAt = page.refreshedAt,
+                                    hints = page.relaxationHints,
+                                )
+                            foundNone = page.items.isEmpty() && !page.poolExhausted
+                            scheduleFollowUps(page.isRefreshing, foundNone)
+                        }
+                        Page(page.items, page.nextCursor)
+                    }.onFailure {
+                        // A failed retry of "Finding your matches..." still counts towards the three.
+                        if (cursor == null && foundNone) scheduleFollowUps(refreshing = false, empty = true)
                     }
-                    Page(page.items, page.nextCursor)
-                }
             }
 
         private var followUp: Job? = null
@@ -113,7 +130,7 @@ class MatchesViewModel
             }
             viewModelScope.launch {
                 actions.shortlistChanges.collect { change ->
-                    paginator.updateItem(change.profileId) { it.withShortlist(change.shortlisted) }
+                    setShortlisted(change.profileId, change.shortlisted)
                 }
             }
         }
@@ -159,21 +176,49 @@ class MatchesViewModel
 
         fun toggleShortlist(card: ProfileCard) {
             viewModelScope.launch {
-                actions.toggleShortlist(card) { value -> paginator.updateItem(card.id) { it.withShortlist(value) } }
+                actions.toggleShortlist(card) { value -> setShortlisted(card.id, value) }
             }
         }
 
+        private fun setShortlisted(
+            id: String,
+            value: Boolean,
+        ) {
+            paginator.updateItem(id) { it.withShortlist(value) }
+            mutablePassed.update { passed -> passed.update(id) { it.withShortlist(value) } }
+        }
+
+        /** "Not interested": the panel takes the card's place until the member leaves the screen. */
         fun pass(card: ProfileCard) {
-            val before = paginator.state.value.items
+            val shown = mutablePassed.value.arrange(paginator.state.value.items)
+            val place = shown.indexOfFirst { it.id == card.id }
+            mutablePassed.update { it.pass(card, shown) }
             viewModelScope.launch {
-                actions.pass(
-                    card = card,
-                    remove = { paginator.remove(card.id) },
-                    restore = { paginator.update { before } },
-                    launchUndo = { block -> viewModelScope.launch { block() } },
-                    onUndo = { paginator.refresh(showSpinner = false) },
-                )
+                actions.pass(card.id) {
+                    mutablePassed.update { it.without(card.id) }
+                    paginator.update { it.putBack(card, place) }
+                }
             }
+        }
+
+        fun undoPass(id: String) {
+            mutablePassed.update { it.restore(id) }
+            viewModelScope.launch {
+                actions.undoPass(id) { mutablePassed.update { it.passAgain(id) } }
+            }
+        }
+
+        /** The panels end with the visit. */
+        fun leaveScreen() {
+            mutablePassed.update { it.leave() }
+        }
+
+        /** Back from elsewhere: the cards passed in the last visit leave the list. */
+        fun returnToScreen() {
+            val passed = mutablePassed.value
+            if (!passed.left) return
+            paginator.update(passed::hide)
+            mutablePassed.value = PassedCards()
         }
     }
 
@@ -184,119 +229,116 @@ fun MatchesScreen(
     viewModel: MatchesViewModel = hiltViewModel(),
 ) {
     val navigator = LocalNavigator.current
+    val candidate = rememberCandidate()
+    val online = LocalOnline.current
     val state by viewModel.paginator.state.collectAsStateWithLifecycle()
+    val passed by viewModel.passed.collectAsStateWithLifecycle()
     val meta by viewModel.meta.collectAsStateWithLifecycle()
     val finding by viewModel.finding.collectAsStateWithLifecycle()
     val res = LocalResources.current
+    val now = rememberNow()
     LifecycleResumeEffect(Unit) {
         viewModel.paginator.refreshIfStale()
         onPauseOrDispose { }
     }
+    VisitEffect(onLeave = viewModel::leaveScreen, onReturn = viewModel::returnToScreen)
+    val shown = remember(state, passed) { state.copy(items = passed.arrange(state.items)) }
+    val title = candidate.heading(R.string.discovery_matches_title, R.string.discovery_matches_title_named)
     Scaffold(
         modifier = modifier,
         topBar = {
             DetailTopBar(
-                title = stringResource(R.string.discovery_matches_title),
-                subtitle = meta.refreshedAt?.let {
-                    text(
-                        R.string.discovery_matches_updated,
-                        "time" to Formatters.relative(res, it),
-                    )
-                },
+                title = text(title, "name" to candidate.name),
+                subtitle =
+                    meta.refreshedAt?.let {
+                        text(R.string.discovery_matches_updated, "time" to Formatters.relative(res, it, now))
+                    },
                 onBack = { navigator.back() },
                 actions = {
-                    IconButton(onClick = viewModel::refreshMatches) {
-                        Icon(
-                            Icons.Outlined.Refresh,
-                            contentDescription = stringResource(R.string.discovery_matches_refresh),
-                        )
-                    }
-                    IconButton(onClick = { navigator.push(MyPreferences) }) {
-                        Icon(
-                            Icons.Outlined.Tune,
-                            contentDescription = stringResource(R.string.discovery_matches_preferences),
-                        )
-                    }
+                    KrIconButton(
+                        icon = Icons.Outlined.Refresh,
+                        contentDescription = stringResource(R.string.discovery_matches_refresh),
+                        onClick = viewModel::refreshMatches,
+                        enabled = online,
+                    )
+                    KrIconButton(
+                        icon = Icons.Outlined.Tune,
+                        contentDescription = stringResource(R.string.discovery_matches_preferences),
+                        onClick = { navigator.push(MyPreferences) },
+                    )
                 },
             )
         },
     ) { padding ->
-        Box(Modifier.padding(padding)) {
+        Box(Modifier.padding(padding).consumeWindowInsets(padding)) {
             StatusGate(GateRouter.Level.BROWSE) {
                 PagedList(
-                    state = state,
+                    state = shown,
                     key = { it.id },
                     onRefresh = { viewModel.paginator.refresh() },
                     onLoadMore = { viewModel.paginator.loadMore() },
-                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
-                    spacing = Arrangement.spacedBy(16.dp),
+                    spacing = Spacing.s40,
+                    dividers = false,
+                    contentType = { CARD_TYPE },
                     skeleton = { CardSkeleton() },
                     header = {
                         if (meta.isRefreshing) {
-                            item(key = "refreshing") {
+                            item(key = "refreshing", contentType = "banner") {
                                 StatusBanner(
                                     text = stringResource(R.string.discovery_matches_refreshing),
-                                    container = MaterialTheme.colorScheme.primaryContainer,
-                                    content = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    icon = Icons.Outlined.Refresh,
+                                    announce = true,
                                 )
                             }
                         }
                     },
                     empty = {
-                        when {
-                            meta.poolExhausted -> {
-                                ExhaustedNotice(empty = true, hints = meta.hints)
-                            }
-
-                            finding < HomeViewModel.FINDING_RETRIES -> {
-                                Row(
-                                    Modifier.fillMaxWidth().padding(24.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
-                                    Spacer(Modifier.width(12.dp))
-                                    Text(
-                                        stringResource(R.string.discovery_matches_state_finding),
-                                        style = MaterialTheme.typography.bodyMedium,
-                                    )
-                                }
-                            }
-
-                            else -> {
-                                EmptyState(
-                                    title = stringResource(R.string.discovery_matches_state_none_title),
-                                    text = stringResource(R.string.discovery_matches_state_none_text),
-                                    actionLabel = stringResource(R.string.discovery_matches_state_search),
-                                    onAction = { navigator.selectTab(Tab.SEARCH) },
-                                )
-                            }
-                        }
+                        MatchesEmpty(
+                            exhausted = meta.poolExhausted,
+                            hints = meta.hints,
+                            finding = finding < HomeViewModel.FINDING_RETRIES,
+                            onSearch = { navigator.selectTab(Tab.SEARCH) },
+                            skeleton = { CardSkeleton() },
+                        )
                     },
                     footer = {
-                        if (state.endReached && state.items.isNotEmpty()) {
-                            item(key = "end") {
-                                if (meta.poolExhausted) {
-                                    ExhaustedNotice(empty = false, hints = meta.hints)
-                                } else {
-                                    Text(
-                                        stringResource(R.string.discovery_matches_end),
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.padding(16.dp),
-                                    )
-                                }
-                            }
+                        if (shown.endReached && shown.items.isNotEmpty()) {
+                            item(key = "end", contentType = "end") { MatchesEnd(meta) }
                         }
                     },
                 ) { card ->
-                    ProfileCardView(
-                        card = card,
-                        onOpen = { navigator.push(Profile(card.id)) },
-                        onToggleShortlist = { viewModel.toggleShortlist(card) },
-                        onPass = { viewModel.pass(card) },
-                    )
+                    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+                        DiscoveryCard(
+                            card = card,
+                            passed = passed.isPassed(card.id),
+                            onOpen = { navigator.push(Profile(card.id)) },
+                            onToggleShortlist = { viewModel.toggleShortlist(card) },
+                            onPass = { viewModel.pass(card) },
+                            onUndo = { viewModel.undoPass(card.id) },
+                            modifier = Modifier.widthIn(max = Sizes.cardMax),
+                        )
+                    }
                 }
             }
         }
     }
 }
+
+/** The end of the list: the exhausted card, or that it is everyone for now. */
+@Composable
+private fun MatchesEnd(meta: MatchesMeta) {
+    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        if (meta.poolExhausted) {
+            ExhaustedNotice(empty = false, hints = meta.hints, modifier = Modifier.widthIn(max = Sizes.cardMax))
+        } else {
+            Text(
+                text = stringResource(R.string.discovery_matches_end),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
+}
+
+private const val CARD_TYPE = "card"

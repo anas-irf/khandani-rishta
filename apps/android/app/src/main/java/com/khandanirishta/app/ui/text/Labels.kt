@@ -21,32 +21,126 @@ val LocalMe = staticCompositionLocalOf<Me?> { null }
 /** The viewer's country, so cards name another country only when it differs (specs/16 section 1.5). */
 val LocalViewerCountry = staticCompositionLocalOf { "PK" }
 
-/** Match reason chips (10 section 7). Unknown codes fall back to the code with spaces. */
+/** A card and the compatibility block show at most this many reasons (10 section 7). */
+const val REASONS_MAX = 3
+
+/**
+ * The label of a match reason in the candidate's form (10 section 7). `null` for a code outside
+ * the closed list: `verified` and `new_member` are not reasons any more, because a badge says
+ * both, and like any unknown code they are not shown.
+ */
 @StringRes
-fun reasonLabel(code: String): Int? =
+fun reasonLabel(
+    code: String,
+    subject: Subject = Subject.SELF,
+): Int? =
     when (code) {
-        "same_city" -> R.string.shared_reason_same_city
-        "same_caste" -> R.string.shared_reason_same_caste
-        "same_sect" -> R.string.shared_reason_same_sect
-        "you_meet_their_preferences" -> R.string.shared_reason_you_meet_their_preferences
-        "age_fits" -> R.string.shared_reason_age_fits
-        "education_fits" -> R.string.shared_reason_education_fits
-        "religiosity_fits" -> R.string.shared_reason_religiosity_fits
-        "family_values_fit" -> R.string.shared_reason_family_values_fit
-        "profession_fits" -> R.string.shared_reason_profession_fits
-        "same_mother_tongue" -> R.string.shared_reason_same_mother_tongue
-        "same_region" -> R.string.shared_reason_same_region
-        "shared_hobbies" -> R.string.shared_reason_shared_hobbies
-        "meets_your_must_haves" -> R.string.shared_reason_meets_your_must_haves
-        "verified" -> R.string.shared_reason_verified
-        "new_member" -> R.string.shared_reason_new_member
-        "recently_active" -> R.string.shared_reason_recently_active
-        else -> null
+        "same_city" -> {
+            subject.pick(
+                R.string.shared_reason_same_city,
+                R.string.shared_reason_same_city_male,
+                R.string.shared_reason_same_city_female,
+            )
+        }
+
+        "same_caste" -> {
+            R.string.shared_reason_same_caste
+        }
+
+        "same_sect" -> {
+            R.string.shared_reason_same_sect
+        }
+
+        "you_meet_their_preferences" -> {
+            subject.pick(
+                R.string.shared_reason_you_meet_their_preferences,
+                R.string.shared_reason_you_meet_their_preferences_male,
+                R.string.shared_reason_you_meet_their_preferences_female,
+            )
+        }
+
+        "age_fits" -> {
+            subject.pick(
+                R.string.shared_reason_age_fits,
+                R.string.shared_reason_age_fits_male,
+                R.string.shared_reason_age_fits_female,
+            )
+        }
+
+        "education_fits" -> {
+            subject.pick(
+                R.string.shared_reason_education_fits,
+                R.string.shared_reason_education_fits_male,
+                R.string.shared_reason_education_fits_female,
+            )
+        }
+
+        "religiosity_fits" -> {
+            subject.pick(
+                R.string.shared_reason_religiosity_fits,
+                R.string.shared_reason_religiosity_fits_male,
+                R.string.shared_reason_religiosity_fits_female,
+            )
+        }
+
+        "family_values_fit" -> {
+            subject.pick(
+                R.string.shared_reason_family_values_fit,
+                R.string.shared_reason_family_values_fit_male,
+                R.string.shared_reason_family_values_fit_female,
+            )
+        }
+
+        "profession_fits" -> {
+            subject.pick(
+                R.string.shared_reason_profession_fits,
+                R.string.shared_reason_profession_fits_male,
+                R.string.shared_reason_profession_fits_female,
+            )
+        }
+
+        "same_mother_tongue" -> {
+            subject.pick(
+                R.string.shared_reason_same_mother_tongue,
+                R.string.shared_reason_same_mother_tongue_male,
+                R.string.shared_reason_same_mother_tongue_female,
+            )
+        }
+
+        "same_region" -> {
+            subject.pick(
+                R.string.shared_reason_same_region,
+                R.string.shared_reason_same_region_male,
+                R.string.shared_reason_same_region_female,
+            )
+        }
+
+        "shared_hobbies" -> {
+            R.string.shared_reason_shared_hobbies
+        }
+
+        "meets_your_must_haves" -> {
+            subject.pick(
+                R.string.shared_reason_meets_your_must_haves,
+                R.string.shared_reason_meets_your_must_haves_male,
+                R.string.shared_reason_meets_your_must_haves_female,
+            )
+        }
+
+        "recently_active" -> {
+            R.string.shared_reason_recently_active
+        }
+
+        else -> {
+            null
+        }
     }
 
-@Composable
-@ReadOnlyComposable
-fun reasonText(code: String): String = reasonLabel(code)?.let { stringResource(it) } ?: Reference.fallback(code)
+/** The first [REASONS_MAX] reasons this build knows, as string resources. */
+fun reasonLabels(
+    codes: List<String>,
+    subject: Subject = Subject.SELF,
+): List<Int> = codes.mapNotNull { reasonLabel(it, subject) }.take(REASONS_MAX)
 
 @StringRes
 fun badgeLabel(badge: Badge): Int? =
@@ -58,9 +152,13 @@ fun badgeLabel(badge: Badge): Int? =
         Badge.UNKNOWN -> null
     }
 
-/** Badges in the order of 12 section 1.2. */
-fun List<Badge>.ordered(): List<Badge> =
-    listOf(Badge.ID_VERIFIED, Badge.PHOTO_VERIFIED, Badge.PHONE_VERIFIED, Badge.NEW).filter { it in this }
+private val VERIFICATION_BADGES = listOf(Badge.ID_VERIFIED, Badge.PHOTO_VERIFIED, Badge.PHONE_VERIFIED)
+
+/**
+ * The earned checks, in the order of 12 section 1.2. `new` is not one of them: it is the label on
+ * the photo. Unknown badges are left out.
+ */
+fun List<Badge>.verifications(): List<Badge> = VERIFICATION_BADGES.filter { it in this }
 
 @StringRes
 fun activityLabel(lastActive: LastActive?): Int? =

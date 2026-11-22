@@ -3,6 +3,7 @@ package com.khandanirishta.app.ui.feature.profilesections
 import android.content.res.Resources
 import androidx.annotation.StringRes
 import com.khandanirishta.app.R
+import com.khandanirishta.app.ui.text.Subject
 import com.khandanirishta.app.ui.text.text
 import java.util.Locale
 

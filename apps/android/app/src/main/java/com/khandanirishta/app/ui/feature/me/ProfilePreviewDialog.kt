@@ -2,38 +2,35 @@ package com.khandanirishta.app.ui.feature.me
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -51,10 +48,31 @@ import com.khandanirishta.app.core.network.generated.model.OwnProfile
 import com.khandanirishta.app.core.network.generated.model.ProfileDetail
 import com.khandanirishta.app.core.network.generated.model.ProfileStatus
 import com.khandanirishta.app.core.network.generated.model.TextStatus
+import com.khandanirishta.app.ui.components.Band
+import com.khandanirishta.app.ui.components.BandDefaults
+import com.khandanirishta.app.ui.components.BandTone
+import com.khandanirishta.app.ui.components.CaptionText
+import com.khandanirishta.app.ui.components.DarkSystemBarIcons
 import com.khandanirishta.app.ui.components.ErrorState
+import com.khandanirishta.app.ui.components.FieldLabel
+import com.khandanirishta.app.ui.components.IconText
+import com.khandanirishta.app.ui.components.KrActionBar
+import com.khandanirishta.app.ui.components.KrIconButton
+import com.khandanirishta.app.ui.components.KrTopBar
+import com.khandanirishta.app.ui.components.LoadingRegion
+import com.khandanirishta.app.ui.components.LocalOnline
+import com.khandanirishta.app.ui.components.SingleChoiceChips
 import com.khandanirishta.app.ui.components.SkeletonBox
+import com.khandanirishta.app.ui.components.StatusBanner
+import com.khandanirishta.app.ui.components.StatusTone
+import com.khandanirishta.app.ui.components.exceptBottom
 import com.khandanirishta.app.ui.feature.profile.ProfileDetailBody
 import com.khandanirishta.app.ui.text.text
+import com.khandanirishta.app.ui.theme.ARCH_RATIO
+import com.khandanirishta.app.ui.theme.KrType
+import com.khandanirishta.app.ui.theme.LargeArchShape
+import com.khandanirishta.app.ui.theme.Sizes
+import com.khandanirishta.app.ui.theme.Spacing
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -72,14 +90,17 @@ import javax.inject.Inject
  */
 @Composable
 fun ProfilePreviewDialog(onDismiss: () -> Unit) {
-    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        PreviewContent(onDismiss = onDismiss)
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+    ) {
+        DarkSystemBarIcons()
+        PreviewRoute(onDismiss = onDismiss)
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PreviewContent(
+private fun PreviewRoute(
     onDismiss: () -> Unit,
     viewModel: ProfilePreviewViewModel = hiltViewModel(),
 ) {
@@ -89,66 +110,51 @@ private fun PreviewContent(
         onDispose { viewModel.close() }
     }
     val state by viewModel.state.collectAsStateWithLifecycle()
+    ProfilePreviewContent(
+        state = state,
+        onSwitch = viewModel::switchTo,
+        onRetry = viewModel::reload,
+        onDismiss = onDismiss,
+    )
+}
+
+/** The preview without its dialog and view model. Read-only: no control on it changes anything. */
+@Composable
+internal fun ProfilePreviewContent(
+    state: ProfilePreviewUiState,
+    onSwitch: (asConnection: Boolean) -> Unit,
+    onRetry: () -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val position =
         stringResource(if (state.asConnection) R.string.me_preview_connection else R.string.me_preview_member)
+    val detail = state.detail
     Scaffold(
+        modifier = modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text(
-                            stringResource(R.string.me_preview_title),
-                            style = MaterialTheme.typography.titleLarge,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        Text(
-                            text(R.string.me_preview_as, "position" to position),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.me_preview_close))
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
-                windowInsets = WindowInsets(0, 0, 0, 0),
-            )
+            PreviewTopBar(subtitle = text(R.string.me_preview_as, "position" to position), onClose = onDismiss)
         },
+        bottomBar = { if (detail != null) PreviewNote() },
         containerColor = MaterialTheme.colorScheme.background,
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        modifier = Modifier.fillMaxSize(),
     ) { padding ->
         Column(
             Modifier
-                .padding(padding)
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
+                .padding(padding.exceptBottom())
+                .consumeWindowInsets(padding)
+                .verticalScroll(rememberScrollState())
+                // The bands run on behind the note, under its rounded corners.
+                .padding(bottom = padding.calculateBottomPadding()),
         ) {
-            PreviewHeader(
-                asConnection = state.asConnection,
-                status = state.profile?.status,
-                hidden = hiddenTexts(state.profile),
-                onSwitch = viewModel::switchTo,
-            )
-            val detail = state.detail
+            PreviewHeader(state = state, onSwitch = onSwitch)
             when {
                 detail != null -> {
-                    MeNotice(
-                        text = stringResource(R.string.me_preview_banner),
-                        icon = Icons.Outlined.Info,
-                        modifier = Modifier.padding(horizontal = MeScreenPadding),
-                    )
-                    ProfileDetailBody(detail = detail, modifier = Modifier.padding(top = 12.dp))
+                    ProfileDetailBody(detail = detail)
                 }
 
                 state.error != null -> {
-                    ErrorState(error = state.error, onRetry = viewModel::reload)
+                    Band { ErrorState(error = state.error, onRetry = onRetry) }
                 }
 
                 else -> {
@@ -159,54 +165,95 @@ private fun PreviewContent(
     }
 }
 
+/** Close, then the title over "Preview as: ...", which wrap rather than being cut. */
+@Composable
+private fun PreviewTopBar(
+    subtitle: String,
+    onClose: () -> Unit,
+) {
+    KrTopBar {
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Spacing.s4, vertical = Spacing.s8),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s4),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            KrIconButton(
+                icon = Icons.Outlined.Close,
+                contentDescription = stringResource(R.string.me_preview_close),
+                onClick = onClose,
+            )
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.me_preview_title),
+                    style = KrType.name,
+                    modifier = Modifier.semantics { heading() },
+                )
+                CaptionText(
+                    text = subtitle,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                )
+            }
+        }
+    }
+}
+
+/** The switch of 08 section 4 and what only the owner is told. */
 @Composable
 private fun PreviewHeader(
-    asConnection: Boolean,
-    status: ProfileStatus?,
-    hidden: List<Int>,
-    onSwitch: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
+    state: ProfilePreviewUiState,
+    onSwitch: (asConnection: Boolean) -> Unit,
 ) {
-    val switchLabel = stringResource(R.string.me_preview_switch_label)
-    Column(
-        modifier
-            .fillMaxWidth()
-            .padding(start = MeScreenPadding, end = MeScreenPadding, top = 4.dp, bottom = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        SingleChoiceSegmentedButtonRow(
-            Modifier
-                .fillMaxWidth()
-                .semantics { contentDescription = switchLabel },
-        ) {
-            SegmentedButton(
-                selected = !asConnection,
-                onClick = { onSwitch(false) },
-                shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-                label = { Text(stringResource(R.string.me_preview_member)) },
-            )
-            SegmentedButton(
-                selected = asConnection,
-                onClick = { onSwitch(true) },
-                shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-                label = { Text(stringResource(R.string.me_preview_connection)) },
+    val member = stringResource(R.string.me_preview_member)
+    val connection = stringResource(R.string.me_preview_connection)
+    val positions = remember(member, connection) { listOf(false to member, true to connection) }
+    val hidden = remember(state.profile) { hiddenTexts(state.profile) }
+    val notVisible = state.profile
+        ?.status
+        ?.takeIf { it != ProfileStatus.ACTIVE }
+        ?.let(::profileStatusLabel)
+    Band(padding = BandDefaults.compactPadding, maxWidth = Sizes.contentWidth, spacing = Spacing.s12) {
+        Column {
+            FieldLabel(stringResource(R.string.me_preview_switch_label))
+            SingleChoiceChips(
+                options = positions,
+                selected = state.asConnection,
+                onSelect = onSwitch,
+                // Each position asks the server.
+                enabled = LocalOnline.current,
             )
         }
-        val notVisible = status?.takeIf { it != ProfileStatus.ACTIVE }?.let { profileStatusLabel(it) }
         if (notVisible != null) {
-            MeNotice(
+            StatusBanner(
                 text = text(R.string.me_preview_not_visible, "status" to stringResource(notVisible)),
-                tone = MeNoticeTone.WARNING,
+                tone = StatusTone.WARNING,
                 icon = Icons.Outlined.VisibilityOff,
             )
         }
         hidden.forEach { title ->
-            Text(
-                text(R.string.me_preview_hidden_text, "text" to stringResource(title)),
+            IconText(
+                icon = Icons.Outlined.VisibilityOff,
+                text = text(R.string.me_preview_hidden_text, "text" to stringResource(title)),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                iconSize = Sizes.iconMedium,
             )
         }
+    }
+}
+
+/** "This is a preview. ..." in place of the action bar (08 section 4.1). */
+@Composable
+private fun PreviewNote() {
+    KrActionBar(maxWidth = Sizes.contentWidth) {
+        IconText(
+            icon = Icons.Outlined.Info,
+            text = stringResource(R.string.me_preview_banner),
+            style = MaterialTheme.typography.bodySmall,
+            tint = MaterialTheme.colorScheme.primary,
+        )
     }
 }
 
@@ -220,31 +267,30 @@ private fun hiddenTexts(profile: OwnProfile?): List<Int> {
     ).filter { (status, _) -> status == TextStatus.PENDING || status == TextStatus.REJECTED }.map { it.second }
 }
 
+/** The shape of the hero: the arch of the gallery, then the name and a line. */
 @Composable
-private fun PreviewSkeleton(modifier: Modifier = Modifier) {
-    Column(
-        modifier.padding(MeScreenPadding),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        SkeletonBox(
-            Modifier
-                .fillMaxWidth()
-                .aspectRatio(0.9f),
-            corner = 20.dp,
-        )
-        SkeletonBox(
-            Modifier
-                .fillMaxWidth(0.6f)
-                .height(24.dp),
-        )
-        SkeletonBox(
-            Modifier
-                .fillMaxWidth(0.8f)
-                .height(16.dp),
-        )
+private fun PreviewSkeleton() {
+    LoadingRegion(Modifier.fillMaxWidth()) {
+        Band(tone = BandTone.SAND, maxWidth = Sizes.contentWidth, spacing = Spacing.s16) {
+            SkeletonBox(
+                modifier =
+                    Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .widthIn(max = Sizes.galleryMax)
+                        .fillMaxWidth()
+                        .aspectRatio(ARCH_RATIO),
+                shape = LargeArchShape,
+            )
+            SkeletonBox(Modifier.fillMaxWidth(SKELETON_TITLE).height(Spacing.s32))
+            SkeletonBox(Modifier.fillMaxWidth(SKELETON_LINE).height(Spacing.s20))
+        }
     }
 }
 
+private const val SKELETON_TITLE = 0.6f
+private const val SKELETON_LINE = 0.8f
+
+@Immutable
 data class ProfilePreviewUiState(
     val asConnection: Boolean = false,
     val detail: ProfileDetail? = null,

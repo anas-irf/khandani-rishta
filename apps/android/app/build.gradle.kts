@@ -140,6 +140,12 @@ android {
     }
 }
 
+composeCompiler {
+    // The API's models are immutable data classes: telling the compiler lets lists skip what has
+    // not changed (specs/22 section 12).
+    stabilityConfigurationFiles.add(layout.projectDirectory.file("compose-stability.conf"))
+}
+
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)

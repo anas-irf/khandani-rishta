@@ -1,5 +1,6 @@
 package com.khandanirishta.app.ui.feature.preferences
 
+import androidx.compose.runtime.Immutable
 import com.khandanirishta.app.core.data.MeRepository
 import com.khandanirishta.app.core.data.ProfileRepository
 import com.khandanirishta.app.core.data.Reference
@@ -29,6 +30,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /** What the preferences form shows: a skeleton, an error with "Try again", or the form. */
+@Immutable
 data class PreferencesFormUi(
     val mode: FormMode,
     val loading: Boolean = true,

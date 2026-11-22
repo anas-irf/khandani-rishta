@@ -1,297 +1,197 @@
 package com.khandanirishta.app.ui.components
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Cancel
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.ErrorOutline
-import androidx.compose.material.icons.outlined.Inbox
 import androidx.compose.material.icons.outlined.PauseCircle
 import androidx.compose.material.icons.outlined.SearchOff
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.node.CompositionLocalConsumerModifierNode
-import androidx.compose.ui.node.DrawModifierNode
-import androidx.compose.ui.node.ModifierNodeElement
-import androidx.compose.ui.node.currentValueOf
-import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.khandanirishta.app.R
 import com.khandanirishta.app.core.network.ApiError
 import com.khandanirishta.app.core.network.generated.model.ProfileStatus
 import com.khandanirishta.app.ui.text.text
-import com.khandanirishta.app.ui.theme.LocalExtendedColors
-import kotlinx.coroutines.launch
+import com.khandanirishta.app.ui.theme.ArchShape
+import com.khandanirishta.app.ui.theme.InnerArchShape
+import com.khandanirishta.app.ui.theme.KrTheme
+import com.khandanirishta.app.ui.theme.LocalTonalColor
+import com.khandanirishta.app.ui.theme.Sizes
+import com.khandanirishta.app.ui.theme.Spacing
+import com.khandanirishta.app.ui.theme.Strokes
 
-/** A moving highlight for skeletons (rule G1: a skeleton that matches the final layout). */
-fun Modifier.shimmer(): Modifier = this then ShimmerElement
+/*
+ * The states every screen shares (specs/16 rules G2, G3, G14 and section 1.4, DESIGN.md 6.15):
+ * empty, error, no longer available, paused or closed, offline, and banners. Each has words, and
+ * an icon wherever a colour says something.
+ */
 
-private data object ShimmerElement : ModifierNodeElement<ShimmerNode>() {
-    override fun create(): ShimmerNode = ShimmerNode()
+/** The colour of the icon in the middle arch of an [EmptyState]. */
+enum class PanelTone { PRIMARY, WARNING, DANGER }
 
-    override fun update(node: ShimmerNode) = Unit
-
-    override fun InspectorInfo.inspectableProperties() {
-        name = "shimmer"
-    }
-}
-
-/** Fills its bounds with the skeleton colour, with a highlight sweeping across it on a loop. */
-private class ShimmerNode :
-    Modifier.Node(),
-    DrawModifierNode,
-    CompositionLocalConsumerModifierNode {
-    private val progress = Animatable(0f)
-
-    override fun onAttach() {
-        coroutineScope.launch {
-            progress.snapTo(0f)
-            progress.animateTo(
-                targetValue = 1f,
-                animationSpec = infiniteRepeatable(tween(SHIMMER_MILLIS, easing = LinearEasing), RepeatMode.Restart),
-            )
-        }
-    }
-
-    override fun ContentDrawScope.draw() {
-        val colors = currentValueOf(LocalExtendedColors)
-        val shift = progress.value * SHIMMER_TRAVEL
-        drawRect(
-            Brush.linearGradient(
-                colors = listOf(colors.skeleton, colors.skeletonHighlight, colors.skeleton),
-                start = Offset(x = -600f + shift, y = 0f),
-                end = Offset(x = -200f + shift, y = 400f),
-            ),
-        )
-        drawContent()
-    }
-}
-
-private const val SHIMMER_MILLIS = 1200
-private const val SHIMMER_TRAVEL = 1600f
-
-@Composable
-fun SkeletonBox(
-    modifier: Modifier = Modifier,
-    corner: Dp = 8.dp,
-) {
-    Box(
-        modifier
-            .clip(RoundedCornerShape(corner))
-            .shimmer(),
-    )
-}
-
-/** Skeleton rows for compact lists. */
-@Composable
-fun ListSkeleton(
-    modifier: Modifier = Modifier,
-    rows: Int = 6,
-) {
-    Column(modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        repeat(rows) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                SkeletonBox(Modifier.size(64.dp), corner = 32.dp)
-                Spacer(Modifier.width(12.dp))
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SkeletonBox(
-                        Modifier
-                            .fillMaxWidth(0.6f)
-                            .height(16.dp),
-                    )
-                    SkeletonBox(
-                        Modifier
-                            .fillMaxWidth(0.85f)
-                            .height(12.dp),
-                    )
-                    SkeletonBox(
-                        Modifier
-                            .fillMaxWidth(0.4f)
-                            .height(12.dp),
-                    )
-                }
-            }
-        }
-    }
-}
-
-/** Skeleton cards for the full-size card lists. */
-@Composable
-fun CardSkeleton(
-    modifier: Modifier = Modifier,
-    cards: Int = 2,
-) {
-    Column(modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
-        repeat(cards) {
-            SkeletonBox(
-                Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(0.85f),
-                corner = 20.dp,
-            )
-        }
-    }
-}
-
-/** Skeleton for forms and settings screens. */
-@Composable
-fun FormSkeleton(
-    modifier: Modifier = Modifier,
-    fields: Int = 6,
-) {
-    Column(modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
-        repeat(fields) {
-            SkeletonBox(
-                Modifier
-                    .fillMaxWidth(0.35f)
-                    .height(14.dp),
-            )
-            SkeletonBox(
-                Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-            )
-        }
-    }
-}
-
-/** Rule G2: an icon, a title, one line of text and, where useful, one primary button. */
+/**
+ * The standard panel (DESIGN.md section 6.15): three arches with the icon or a diamond in the
+ * middle one, a title, a line and, where useful, a primary action with at most one beside it.
+ * [content] goes between the text and the actions. The caller gives the screen's gutters.
+ */
 @Composable
 fun EmptyState(
     title: String,
     modifier: Modifier = Modifier,
     text: String? = null,
-    icon: ImageVector = Icons.Outlined.Inbox,
+    icon: ImageVector? = null,
+    tone: PanelTone = PanelTone.PRIMARY,
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
+    actionEnabled: Boolean = true,
+    actionBusy: Boolean = false,
+    secondaryLabel: String? = null,
+    onSecondary: (() -> Unit)? = null,
+    footnote: String? = null,
+    content: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
-    Column(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .padding(horizontal = 32.dp, vertical = 48.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+    TonalPanel(
+        modifier = modifier,
+        shape = MaterialTheme.shapes.extraLarge,
+        padding = PanelPadding,
+        spacing = Spacing.s16,
     ) {
-        Box(
-            Modifier
-                .size(88.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(40.dp),
-            )
-        }
+        EmptyArches(icon = icon, tone = tone)
         Text(
-            title,
-            style = MaterialTheme.typography.titleMedium,
-            textAlign = TextAlign.Center,
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.semantics { heading() },
         )
         if (text != null) {
             Text(
-                text,
+                text = text,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
+                color = KrTheme.colors.textSecondary,
+                modifier = Modifier.widthIn(max = Sizes.measure),
             )
         }
-        if (actionLabel != null && onAction != null) {
-            Spacer(Modifier.height(4.dp))
-            Button(onClick = onAction) { Text(actionLabel) }
+        content?.invoke(this)
+        val hasAction = actionLabel != null && onAction != null
+        val hasSecondary = secondaryLabel != null && onSecondary != null
+        if (hasAction || hasSecondary) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s12),
+                verticalArrangement = Arrangement.spacedBy(Spacing.s12),
+            ) {
+                if (actionLabel != null && onAction != null) {
+                    KrButton(actionLabel, onAction, enabled = actionEnabled, loading = actionBusy)
+                }
+                if (secondaryLabel != null && onSecondary != null) {
+                    KrButton(
+                        text = secondaryLabel,
+                        onClick = onSecondary,
+                        variant = KrButtonVariant.SECONDARY,
+                        size = KrButtonSize.LARGE,
+                    )
+                }
+            }
         }
+        if (footnote != null) CaptionText(footnote)
     }
 }
 
-/** Rule G3: the screen-level error with "Try again" and the request id in small type. */
+@Composable
+private fun EmptyArches(
+    icon: ImageVector?,
+    tone: PanelTone,
+) {
+    val gold = KrTheme.colors.ornament
+    val colors = MaterialTheme.colorScheme
+    Row(
+        modifier = Modifier.clearAndSetSemantics {},
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
+        verticalAlignment = Alignment.Bottom,
+    ) {
+        val side = Modifier.size(Sizes.arch64).dashedBorder(InnerArchShape, gold)
+        Box(side)
+        Box(
+            Modifier
+                .size(Sizes.arch96)
+                .border(Strokes.control, gold, ArchShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (icon == null) {
+                Diamond(size = PanelDiamond)
+            } else {
+                val tint =
+                    when (tone) {
+                        PanelTone.PRIMARY -> colors.primary
+                        PanelTone.WARNING -> KrTheme.colors.warning
+                        PanelTone.DANGER -> colors.error
+                    }
+                Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(PanelIcon))
+            }
+        }
+        Box(side)
+    }
+}
+
+/**
+ * Rule G3: the screen-level error with "Try again" and the request id in small type. Offline it
+ * says so and "Try again" waits for the network (rule G14); [needsNetwork] is false only at start,
+ * where retrying is the one way on.
+ */
 @Composable
 fun ErrorState(
     error: ApiError?,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
+    retrying: Boolean = false,
+    needsNetwork: Boolean = true,
 ) {
-    val offline = error?.isNetwork == true
-    Column(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .padding(horizontal = 32.dp, vertical = 48.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Icon(
-            if (offline) Icons.Outlined.CloudOff else Icons.Outlined.ErrorOutline,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.error,
-            modifier = Modifier.size(48.dp),
-        )
-        Text(
-            if (offline) {
-                stringResource(
-                    R.string.common_offline,
-                )
-            } else {
-                stringResource(R.string.errors_generic_screen_title)
-            },
-            style = MaterialTheme.typography.titleMedium,
-            textAlign = TextAlign.Center,
-        )
-        Text(
-            stringResource(R.string.errors_generic_screen_text),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-        )
-        Button(onClick = onRetry) { Text(stringResource(R.string.errors_generic_try_again)) }
-        error?.requestId?.let {
-            Text(
-                text(R.string.errors_reference, "id" to it),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
+    val connected = LocalOnline.current
+    val offline = error?.isNetwork == true || !connected
+    EmptyState(
+        title = stringResource(if (offline) R.string.common_offline else R.string.errors_generic_screen_title),
+        text = stringResource(R.string.errors_generic_screen_text),
+        icon = if (offline) Icons.Outlined.CloudOff else Icons.Outlined.ErrorOutline,
+        tone = PanelTone.DANGER,
+        actionLabel = stringResource(R.string.errors_generic_try_again),
+        onAction = onRetry,
+        actionEnabled = connected || !needsNetwork,
+        actionBusy = retrying,
+        footnote = error?.requestId?.let { text(R.string.errors_reference, "id" to it) },
+        modifier = modifier.semantics { liveRegion = LiveRegionMode.Polite },
+    )
 }
 
 /** "This is no longer available." with "Go back" (specs/16 section 1.3). */
@@ -310,32 +210,26 @@ fun NoLongerAvailable(
     )
 }
 
-/** Rule G14: "You are offline" under the top bar. */
+/** A state that stands in for a whole screen: centred, with gutters, and it scrolls when tall. */
 @Composable
-fun OfflineBanner(modifier: Modifier = Modifier) {
-    Surface(color = MaterialTheme.colorScheme.inverseSurface, modifier = modifier.fillMaxWidth()) {
-        Row(
-            Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            Icon(
-                Icons.Outlined.CloudOff,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.inverseOnSurface,
-                modifier = Modifier.size(16.dp),
-            )
-            Spacer(Modifier.width(8.dp))
-            Text(
-                stringResource(R.string.common_offline),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.inverseOnSurface,
-            )
-        }
-    }
+fun StateScreen(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Column(
+        modifier =
+            modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .navigationBarsPadding()
+                .contentWidth(Sizes.formWidth)
+                .padding(horizontal = Spacing.gutter, vertical = Spacing.s24),
+        verticalArrangement = Arrangement.spacedBy(Spacing.s16, Alignment.CenterVertically),
+        content = content,
+    )
 }
 
-/** The status panel of specs/16 section 1.4, shown in place of a screen the profile status refuses. */
+/** The panel of specs/16 section 1.4, in place of a screen the profile's status refuses. */
 @Composable
 fun StatusPanel(
     status: ProfileStatus,
@@ -348,62 +242,154 @@ fun StatusPanel(
     val title = if (paused) R.string.shared_status_panel_paused_title else R.string.shared_status_panel_closed_title
     val body = if (paused) R.string.shared_status_panel_paused_text else R.string.shared_status_panel_closed_text
     val action = if (paused) R.string.shared_status_panel_paused_action else R.string.shared_status_panel_closed_action
-    Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(
-            Modifier.padding(32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Icon(
-                Icons.Outlined.PauseCircle,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.tertiary,
-                modifier = Modifier.size(56.dp),
-            )
-            Text(
-                stringResource(title),
-                style = MaterialTheme.typography.titleLarge,
-                textAlign = TextAlign.Center,
-            )
-            Text(
-                stringResource(body),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-            )
-            Button(onClick = if (paused) onResume else onReopen, enabled = !busy) {
-                Text(stringResource(action))
+    StateScreen(modifier) {
+        EmptyState(
+            title = stringResource(title),
+            text = stringResource(body),
+            icon = if (paused) Icons.Outlined.PauseCircle else Icons.Outlined.Cancel,
+            tone = PanelTone.WARNING,
+            actionLabel = stringResource(action),
+            onAction = if (paused) onResume else onReopen,
+            actionEnabled = !paused || LocalOnline.current,
+            actionBusy = busy,
+        )
+    }
+}
+
+/**
+ * A soft banner for profile and moderation states, notices and warnings: always an icon and
+ * words (rule G13). [content] is what sits under the text, when it is more than one link or
+ * button.
+ */
+@Composable
+fun StatusBanner(
+    text: String?,
+    modifier: Modifier = Modifier,
+    tone: StatusTone = StatusTone.INFO,
+    title: String? = null,
+    icon: ImageVector? = null,
+    actionLabel: String? = null,
+    onAction: (() -> Unit)? = null,
+    actionEnabled: Boolean = true,
+    announce: Boolean = false,
+    content: (@Composable ColumnScope.() -> Unit)? = null,
+) {
+    val look = toneColors(tone)
+    val spoken = if (announce) Modifier.semantics { liveRegion = LiveRegionMode.Polite } else Modifier
+    val titleStyle = MaterialTheme.typography.titleSmall
+    val textStyle = if (title == null) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodySmall
+    Surface(
+        color = look.container,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        shape = MaterialTheme.shapes.large,
+        modifier = modifier.fillMaxWidth().then(spoken),
+    ) {
+        CompositionLocalProvider(LocalTonalColor provides MaterialTheme.colorScheme.background) {
+            IconTextLine(
+                icon = icon ?: look.icon,
+                style = if (title != null) titleStyle else textStyle,
+                tint = look.accent,
+                gap = Spacing.s12,
+                modifier = Modifier.padding(horizontal = Spacing.s20, vertical = Spacing.s16),
+            ) {
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.s4)) {
+                    if (title != null) Text(title, style = titleStyle)
+                    if (text != null) Text(text, style = textStyle)
+                    content?.invoke(this)
+                    if (actionLabel != null && onAction != null) {
+                        KrButton(
+                            text = actionLabel,
+                            onClick = onAction,
+                            variant = KrButtonVariant.SECONDARY,
+                            enabled = actionEnabled,
+                            modifier = Modifier.padding(top = Spacing.s8),
+                        )
+                    }
+                }
             }
         }
     }
 }
 
-/** A tinted information banner (profile and moderation states). */
+/**
+ * A banner the member can hide: the announcement on gold soft, the update prompt, the first-run
+ * tip. [onAction] is a link under the words.
+ */
 @Composable
-fun StatusBanner(
+fun DismissibleBanner(
     text: String,
+    icon: ImageVector,
+    onClose: () -> Unit,
+    closeLabel: String,
     modifier: Modifier = Modifier,
-    icon: ImageVector? = null,
     container: Color = MaterialTheme.colorScheme.tertiaryContainer,
-    content: Color = MaterialTheme.colorScheme.onTertiaryContainer,
+    iconTint: Color = MaterialTheme.colorScheme.onSurface,
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
 ) {
+    val style = MaterialTheme.typography.bodySmall
     Surface(
         color = container,
-        contentColor = content,
-        shape = MaterialTheme.shapes.medium,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        shape = MaterialTheme.shapes.large,
         modifier = modifier.fillMaxWidth(),
     ) {
-        Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-            if (icon != null) {
-                Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(10.dp))
+        Row(
+            modifier = Modifier.padding(start = Spacing.s16, top = Spacing.s4, end = Spacing.s4, bottom = Spacing.s4),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s12),
+        ) {
+            Box(Modifier.padding(top = Spacing.s12)) {
+                FirstLineMark(style) {
+                    Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(Sizes.iconSmall))
+                }
             }
-            Text(text, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-            if (actionLabel != null && onAction != null) {
-                OutlinedButton(onClick = onAction) { Text(actionLabel) }
+            Column(Modifier.weight(1f)) {
+                MemberText(text, style = style, modifier = Modifier.padding(vertical = Spacing.s12))
+                if (actionLabel != null && onAction != null) KrTextLink(actionLabel, onAction)
             }
+            KrIconButton(icon = Icons.Outlined.Close, contentDescription = closeLabel, onClick = onClose)
         }
     }
 }
+
+/** Rule G14: "You are offline", in the inverse band above the screen. */
+@Composable
+fun OfflineBanner(modifier: Modifier = Modifier) {
+    val colors = MaterialTheme.colorScheme
+    Surface(
+        color = colors.inverseSurface,
+        contentColor = colors.inverseOnSurface,
+        modifier = modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
+    ) {
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = Spacing.s40)
+                    .padding(horizontal = Spacing.gutter, vertical = Spacing.s8),
+            contentAlignment = Alignment.Center,
+        ) {
+            IconText(
+                icon = Icons.Outlined.CloudOff,
+                text = stringResource(R.string.common_offline),
+                style = MaterialTheme.typography.labelSmall,
+                iconSize = Sizes.iconTiny,
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
+}
+
+/** "Reference: {id}" in small type. */
+@Composable
+fun ReferenceLine(
+    requestId: String?,
+    modifier: Modifier = Modifier,
+) {
+    if (requestId == null) return
+    CaptionText(text(R.string.errors_reference, "id" to requestId), modifier)
+}
+
+private val PanelPadding = PaddingValues(28.dp)
+private val PanelDiamond = 10.dp
+private val PanelIcon = 30.dp

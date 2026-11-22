@@ -15,6 +15,7 @@ import com.khandanirishta.app.core.data.ProfileRepository
 import com.khandanirishta.app.core.data.ReferenceRepository
 import com.khandanirishta.app.ui.components.ErrorState
 import com.khandanirishta.app.ui.components.FormSkeleton
+import com.khandanirishta.app.ui.components.LocalOnline
 import com.khandanirishta.app.ui.feature.profilesections.AfterSave
 import com.khandanirishta.app.ui.feature.profilesections.FormMode
 import com.khandanirishta.app.ui.feature.profilesections.GenderChangeDialog
@@ -23,12 +24,11 @@ import com.khandanirishta.app.ui.feature.profilesections.RevealEffect
 import com.khandanirishta.app.ui.feature.profilesections.SectionFields
 import com.khandanirishta.app.ui.feature.profilesections.SectionFormController
 import com.khandanirishta.app.ui.feature.profilesections.rememberFieldLocator
-import com.khandanirishta.app.ui.feature.profilesections.rememberOnline
 import com.khandanirishta.app.ui.feature.profilesections.sectionSubtitle
 import com.khandanirishta.app.ui.feature.profilesections.sectionTitle
-import com.khandanirishta.app.ui.feature.profilesections.subjectOf
 import com.khandanirishta.app.ui.messages.MessageBus
 import com.khandanirishta.app.ui.text.LocalMe
+import com.khandanirishta.app.ui.text.subjectOf
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -138,13 +138,14 @@ class SectionStepViewModel
 internal fun SectionStep(
     step: String,
     edit: Boolean,
+    viewModel: SectionStepViewModel =
+        hiltViewModel<SectionStepViewModel, SectionStepViewModel.Factory> { it.create(step, edit) },
 ) {
-    val viewModel = hiltViewModel<SectionStepViewModel, SectionStepViewModel.Factory> { it.create(step, edit) }
     val me = LocalMe.current ?: return
     val ui by viewModel.form.state.collectAsStateWithLifecycle()
     val outcome by viewModel.outcome.collectAsStateWithLifecycle()
     val skipping by viewModel.skipping.collectAsStateWithLifecycle()
-    val online = rememberOnline()
+    val online = LocalOnline.current
     val locator = rememberFieldLocator()
     var askSave by rememberSaveable { mutableStateOf(false) }
     val form = ui.form
@@ -173,32 +174,39 @@ internal fun SectionStep(
                     onPrimary = viewModel::submit,
                     busy = form.busy,
                     enabled = online && !skipping,
-                    secondaryLabel = if (skippable) stringResource(R.string.onboarding_actions_skip) else null,
-                    onSecondary = { if (form.dirty) askSave = true else viewModel.skip() },
-                    secondaryBusy = skipping,
                     failure = form.failure,
                 )
             }
         },
     ) {
-        when {
-            ui.loadError != null && form == null -> {
-                ErrorState(ui.loadError, onRetry = viewModel.form::load)
-            }
+        StepBody {
+            when {
+                ui.loadError != null && form == null -> {
+                    ErrorState(ui.loadError, onRetry = viewModel.form::load)
+                }
 
-            form == null || context == null -> {
-                FormSkeleton(fields = 5)
-            }
+                form == null || context == null -> {
+                    FormSkeleton(fields = SKELETON_FIELDS)
+                }
 
-            else -> {
-                SectionFields(
-                    ui = ui,
-                    context = context,
-                    locator = locator,
-                    onEdit = viewModel.form::edit,
-                    onIncomeCurrency = viewModel.form::setIncomeCurrency,
-                    onUseHelpMeWrite = viewModel::helpMeWriteUsed,
-                )
+                else -> {
+                    SectionFields(
+                        ui = ui,
+                        context = context,
+                        locator = locator,
+                        onEdit = viewModel.form::edit,
+                        onIncomeCurrency = viewModel.form::setIncomeCurrency,
+                        onUseHelpMeWrite = viewModel::helpMeWriteUsed,
+                    )
+                    if (skippable) {
+                        StepSecondaryAction(
+                            label = stringResource(R.string.onboarding_actions_skip),
+                            onClick = { if (form.dirty) askSave = true else viewModel.skip() },
+                            enabled = online && !form.busy,
+                            loading = skipping,
+                        )
+                    }
+                }
             }
         }
     }
@@ -224,3 +232,5 @@ internal fun SectionStep(
         )
     }
 }
+
+private const val SKELETON_FIELDS = 5

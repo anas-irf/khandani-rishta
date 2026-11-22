@@ -17,6 +17,7 @@ import com.khandanirishta.app.core.data.ProfileRepository
 import com.khandanirishta.app.core.data.ReferenceRepository
 import com.khandanirishta.app.ui.components.ErrorState
 import com.khandanirishta.app.ui.components.FormSkeleton
+import com.khandanirishta.app.ui.components.LocalOnline
 import com.khandanirishta.app.ui.feature.preferences.PreferencesFields
 import com.khandanirishta.app.ui.feature.preferences.PreferencesFormController
 import com.khandanirishta.app.ui.feature.profilesections.AfterSave
@@ -25,10 +26,10 @@ import com.khandanirishta.app.ui.feature.profilesections.FormScreenScaffold
 import com.khandanirishta.app.ui.feature.profilesections.RevealEffect
 import com.khandanirishta.app.ui.feature.profilesections.SaveBar
 import com.khandanirishta.app.ui.feature.profilesections.rememberFieldLocator
-import com.khandanirishta.app.ui.feature.profilesections.rememberOnline
 import com.khandanirishta.app.ui.messages.MessageBus
 import com.khandanirishta.app.ui.navigation.LocalNavigator
 import com.khandanirishta.app.ui.text.plural
+import com.khandanirishta.app.ui.theme.KrTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -85,7 +86,7 @@ fun MyPreferencesScreen(
     val navigator = LocalNavigator.current
     val ui by viewModel.form.state.collectAsStateWithLifecycle()
     val saved by viewModel.saved.collectAsStateWithLifecycle()
-    val online = rememberOnline()
+    val online = LocalOnline.current
     val locator = rememberFieldLocator()
     val form = ui.form
     RevealEffect(form?.reveal, locator)
@@ -117,9 +118,9 @@ fun MyPreferencesScreen(
         modifier = modifier,
     ) {
         Text(
-            stringResource(R.string.me_prefs_intro),
+            text = stringResource(R.string.me_prefs_intro),
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = KrTheme.colors.textSecondary,
         )
         when {
             ui.loadError != null && form == null -> ErrorState(ui.loadError, onRetry = viewModel.form::load)

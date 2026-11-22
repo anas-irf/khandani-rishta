@@ -1,34 +1,22 @@
 package com.khandanirishta.app.ui.feature.settings
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.icons.outlined.Visibility
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.khandanirishta.app.R
@@ -41,28 +29,42 @@ import com.khandanirishta.app.core.network.generated.model.PhotoVisibility
 import com.khandanirishta.app.core.network.generated.model.Privacy
 import com.khandanirishta.app.core.network.generated.model.PrivacyPatch
 import com.khandanirishta.app.core.network.serialization.WireEnum
+import com.khandanirishta.app.ui.components.Band
+import com.khandanirishta.app.ui.components.BandDefaults
+import com.khandanirishta.app.ui.components.BandTone
+import com.khandanirishta.app.ui.components.CaptionText
 import com.khandanirishta.app.ui.components.ConfirmDialog
 import com.khandanirishta.app.ui.components.ErrorState
+import com.khandanirishta.app.ui.components.KrTextLink
+import com.khandanirishta.app.ui.components.NavRow
 import com.khandanirishta.app.ui.components.RowDivider
+import com.khandanirishta.app.ui.components.StateScreen
 import com.khandanirishta.app.ui.feature.me.ProfilePreviewDialog
 import com.khandanirishta.app.ui.feature.settings.kit.RadioOption
 import com.khandanirishta.app.ui.feature.settings.kit.SettingOption
 import com.khandanirishta.app.ui.feature.settings.kit.SettingRadioGroup
-import com.khandanirishta.app.ui.feature.settings.kit.SettingSelectRow
+import com.khandanirishta.app.ui.feature.settings.kit.SettingSelect
 import com.khandanirishta.app.ui.feature.settings.kit.SettingSwitch
-import com.khandanirishta.app.ui.feature.settings.kit.SettingsColumn
-import com.khandanirishta.app.ui.feature.settings.kit.SettingsNote
-import com.khandanirishta.app.ui.feature.settings.kit.SettingsRow
+import com.khandanirishta.app.ui.feature.settings.kit.SettingsBands
+import com.khandanirishta.app.ui.feature.settings.kit.SettingsGroup
 import com.khandanirishta.app.ui.feature.settings.kit.SettingsScaffold
-import com.khandanirishta.app.ui.feature.settings.kit.SettingsSection
 import com.khandanirishta.app.ui.feature.settings.kit.SettingsSkeleton
-import com.khandanirishta.app.ui.feature.settings.kit.TintedIcon
 import com.khandanirishta.app.ui.navigation.LocalNavigator
 import com.khandanirishta.app.ui.navigation.MyPreferences
 import com.khandanirishta.app.ui.navigation.PhotoRequests
 import com.khandanirishta.app.ui.text.LocalMe
 import com.khandanirishta.app.ui.text.text
+import com.khandanirishta.app.ui.theme.Spacing
 import java.text.BreakIterator
+
+/** What the groups of SET-PRIVACY can do; they get these instead of the view model. */
+@Immutable
+internal class PrivacyActions(
+    val save: (PrivacyControl, PrivacyPatch) -> Unit,
+    val preview: () -> Unit,
+    val mustHaves: () -> Unit,
+    val photoRequests: () -> Unit,
+)
 
 /**
  * SET-PRIVACY: every privacy choice in one place, in the four groups of specs/16 section 6.25
@@ -74,53 +76,85 @@ fun PrivacySettingsScreen(
     viewModel: PrivacySettingsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val navigator = LocalNavigator.current
+    val me = LocalMe.current
     var showPreview by rememberSaveable { mutableStateOf(false) }
-    SettingsScaffold(title = stringResource(R.string.settings_privacy_title), modifier = modifier) { padding ->
+    val actions =
+        remember(viewModel, navigator) {
+            PrivacyActions(
+                save = viewModel::save,
+                preview = { showPreview = true },
+                mustHaves = { navigator.push(MyPreferences) },
+                photoRequests = { navigator.push(PhotoRequests("received")) },
+            )
+        }
+    val firstName = me?.profile?.firstName
+    val code = me?.profile?.publicCode.orEmpty()
+    val examples = remember(firstName, state.lastName, code) { nameExamples(firstName, state.lastName, code) }
+
+    SettingsScaffold(title = stringResource(R.string.settings_privacy_title), modifier = modifier) {
         val privacy = state.privacy
         when {
             privacy != null -> {
                 PrivacyGroups(
                     privacy = privacy,
                     state = state,
-                    padding = padding,
-                    onSave = viewModel::save,
-                    onPreview = { showPreview = true },
+                    examples = examples,
+                    // APP-PHOTO-REQUESTS is open only under the gate `ok` (specs/16 section 3.2).
+                    showPhotoRequests = me?.gate == Gate.OK,
+                    actions = actions,
                 )
             }
 
             state.error != null -> {
-                Box(Modifier.padding(padding)) {
-                    ErrorState(error = state.error, onRetry = viewModel::load)
-                }
+                StateScreen { ErrorState(error = state.error, onRetry = viewModel::load) }
             }
 
             else -> {
-                SettingsSkeleton(Modifier.padding(padding), groups = 4)
+                SettingsSkeleton(groups = 4)
             }
         }
         if (showPreview) ProfilePreviewDialog(onDismiss = { showPreview = false })
     }
 }
 
+/** The preview link, then the four groups, each on a band of its own. */
 @Composable
-private fun PrivacyGroups(
+internal fun PrivacyGroups(
     privacy: Privacy,
     state: PrivacyUiState,
-    padding: PaddingValues,
-    onSave: (PrivacyControl, PrivacyPatch) -> Unit,
-    onPreview: () -> Unit,
+    examples: Map<NameDisplay, String>,
+    showPhotoRequests: Boolean,
+    actions: PrivacyActions,
     modifier: Modifier = Modifier,
 ) {
-    val me = LocalMe.current
-    val navigator = LocalNavigator.current
     var confirmHidden by rememberSaveable { mutableStateOf(false) }
-    val mustHaves: @Composable () -> Unit = { MustHavesLink(onClick = { navigator.push(MyPreferences) }) }
-    val examples = nameExamples(me?.profile?.firstName, state.lastName, me?.profile?.publicCode.orEmpty())
+    val onSave = actions.save
+    val mustHaves: @Composable () -> Unit = {
+        // To ME-PREFS, under both must-have choices (specs/16 section 6.25).
+        KrTextLink(
+            text = stringResource(R.string.settings_privacy_review_must_haves),
+            onClick = actions.mustHaves,
+            icon = Icons.Outlined.Tune,
+            modifier = Modifier.padding(start = Spacing.s16),
+        )
+    }
 
-    SettingsColumn(padding, modifier) {
-        PreviewCard(onClick = onPreview, modifier = Modifier.padding(top = 8.dp))
+    SettingsBands(modifier = modifier, endTone = BandTone.PAGE) {
+        Band(padding = BandDefaults.compactPadding) {
+            // "Preview how others see the profile" at the top (specs/08 section 4).
+            KrTextLink(
+                text = stringResource(R.string.settings_privacy_preview_link),
+                onClick = actions.preview,
+                icon = Icons.Outlined.Visibility,
+            )
+        }
 
-        SettingsSection(title = stringResource(R.string.settings_privacy_groups_find)) {
+        SettingsGroup(
+            title = stringResource(R.string.settings_privacy_groups_find),
+            tone = BandTone.SAND,
+            spacing = Spacing.s24,
+        ) {
             SettingRadioGroup(
                 title = stringResource(R.string.settings_privacy_fields_discovery_visibility_title),
                 options =
@@ -141,7 +175,6 @@ private fun PrivacyGroups(
                     }
                 },
             )
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             SettingRadioGroup(
                 title = stringResource(R.string.settings_privacy_fields_interest_permission_title),
                 options =
@@ -159,7 +192,11 @@ private fun PrivacyGroups(
             )
         }
 
-        SettingsSection(title = stringResource(R.string.settings_privacy_groups_name_photos)) {
+        SettingsGroup(
+            title = stringResource(R.string.settings_privacy_groups_name_photos),
+            tone = BandTone.PAGE,
+            spacing = Spacing.s24,
+        ) {
             SettingRadioGroup(
                 title = stringResource(R.string.settings_privacy_fields_name_display_title),
                 options =
@@ -185,7 +222,6 @@ private fun PrivacyGroups(
                     }
                 },
             )
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             SettingRadioGroup(
                 title = stringResource(R.string.settings_privacy_fields_photo_visibility_title),
                 options = PHOTO_CHOICES.map { choice -> choice.toOption() },
@@ -198,7 +234,6 @@ private fun PrivacyGroups(
                     }
                 },
             )
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             SettingSwitch(
                 title = stringResource(R.string.settings_privacy_fields_allow_photo_requests_title),
                 helper = stringResource(R.string.settings_privacy_fields_allow_photo_requests_help),
@@ -208,23 +243,23 @@ private fun PrivacyGroups(
                     onSave(PrivacyControl.ALLOW_PHOTO_REQUESTS, PrivacyPatch(allowPhotoRequests = checked))
                 },
             )
-            // APP-PHOTO-REQUESTS is open only under the gate `ok` (specs/16 section 3.2).
-            if (me?.gate == Gate.OK) {
-                RowDivider()
-                SettingsRow(
-                    title = stringResource(R.string.settings_privacy_photo_requests_link),
-                    icon = Icons.Outlined.PhotoLibrary,
-                    onClick = { navigator.push(PhotoRequests("received")) },
-                )
+            if (showPhotoRequests) {
+                Column {
+                    RowDivider()
+                    NavRow(
+                        title = stringResource(R.string.settings_privacy_photo_requests_link),
+                        icon = Icons.Outlined.PhotoLibrary,
+                        onClick = actions.photoRequests,
+                    )
+                }
             }
         }
 
-        SettingsSection(title = stringResource(R.string.settings_privacy_groups_details)) {
+        SettingsGroup(title = stringResource(R.string.settings_privacy_groups_details), tone = BandTone.SAND) {
             val visibilityOptions =
                 VISIBILITY_CHOICES.map { (value, label) -> SettingOption(value.wire, stringResource(label)) }
-            PRIVACY_DETAIL_ROWS.forEachIndexed { index, row ->
-                if (index > 0) RowDivider()
-                SettingSelectRow(
+            PRIVACY_DETAIL_ROWS.forEach { row ->
+                SettingSelect(
                     title = stringResource(row.title),
                     helper = stringResource(row.help),
                     options = visibilityOptions,
@@ -235,19 +270,20 @@ private fun PrivacyGroups(
                     },
                 )
             }
-            SettingsNote(stringResource(R.string.settings_privacy_details_note))
+            CaptionText(stringResource(R.string.settings_privacy_details_note))
         }
 
-        SettingsSection(title = stringResource(R.string.settings_privacy_groups_activity)) {
-            PRIVACY_ACTIVITY_ROWS.forEachIndexed { index, row ->
-                if (index > 0) RowDivider()
-                SettingSwitch(
-                    title = stringResource(row.title),
-                    helper = stringResource(row.help),
-                    checked = row.value(privacy),
-                    saveState = state.saveState(row.control),
-                    onCheckedChange = { checked -> onSave(row.control, row.patch(checked)) },
-                )
+        SettingsGroup(title = stringResource(R.string.settings_privacy_groups_activity), tone = BandTone.PAGE) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.s4)) {
+                PRIVACY_ACTIVITY_ROWS.forEach { row ->
+                    SettingSwitch(
+                        title = stringResource(row.title),
+                        helper = stringResource(row.help),
+                        checked = row.value(privacy),
+                        saveState = state.saveState(row.control),
+                        onCheckedChange = { checked -> onSave(row.control, row.patch(checked)) },
+                    )
+                }
             }
         }
 
@@ -266,53 +302,6 @@ private fun PrivacyGroups(
                 onDismiss = { confirmHidden = false },
             )
         }
-    }
-}
-
-/** "Preview how others see the profile" at the top of the screen (specs/08 section 4). */
-@Composable
-private fun PreviewCard(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Surface(
-        onClick = onClick,
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            TintedIcon(
-                icon = Icons.Outlined.Visibility,
-                tint = MaterialTheme.colorScheme.primary,
-                container = MaterialTheme.colorScheme.surfaceContainerLowest,
-            )
-            Spacer(Modifier.width(14.dp))
-            Text(
-                stringResource(R.string.settings_privacy_preview_link),
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.weight(1f),
-            )
-            Icon(
-                Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-            )
-        }
-    }
-}
-
-/** "Review my must-haves" under both must-have choices, to ME-PREFS (specs/16 section 6.25). */
-@Composable
-private fun MustHavesLink(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    TextButton(onClick = onClick, modifier = modifier.padding(start = 4.dp)) {
-        Icon(Icons.Outlined.Tune, contentDescription = null, modifier = Modifier.size(18.dp))
-        Spacer(Modifier.width(6.dp))
-        Text(stringResource(R.string.settings_privacy_review_must_haves))
     }
 }
 

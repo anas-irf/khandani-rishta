@@ -1,51 +1,27 @@
 package com.khandanirishta.app.ui.feature.onboarding
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.union
-import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,37 +30,46 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.khandanirishta.app.R
 import com.khandanirishta.app.core.network.ApiError
 import com.khandanirishta.app.ui.LocalAppViewModel
+import com.khandanirishta.app.ui.components.Band
+import com.khandanirishta.app.ui.components.BandTone
+import com.khandanirishta.app.ui.components.BrandMark
+import com.khandanirishta.app.ui.components.CaptionText
 import com.khandanirishta.app.ui.components.ConfirmDialog
+import com.khandanirishta.app.ui.components.KrActionBar
+import com.khandanirishta.app.ui.components.KrButton
+import com.khandanirishta.app.ui.components.KrButtonVariant
+import com.khandanirishta.app.ui.components.KrDialog
+import com.khandanirishta.app.ui.components.KrIconButton
+import com.khandanirishta.app.ui.components.KrMenu
+import com.khandanirishta.app.ui.components.KrMenuItem
+import com.khandanirishta.app.ui.components.KrTopBar
+import com.khandanirishta.app.ui.components.LocalOnline
+import com.khandanirishta.app.ui.components.Wordmark
 import com.khandanirishta.app.ui.feature.profilesections.BusyOverlay
 import com.khandanirishta.app.ui.feature.profilesections.FieldSpacing
 import com.khandanirishta.app.ui.feature.profilesections.InlineFailureBox
 import com.khandanirishta.app.ui.navigation.Help
 import com.khandanirishta.app.ui.navigation.LocalNavigator
 import com.khandanirishta.app.ui.text.LocalMe
-import com.khandanirishta.app.ui.text.text
+import com.khandanirishta.app.ui.theme.KrTheme
+import com.khandanirishta.app.ui.theme.Sizes
+import com.khandanirishta.app.ui.theme.Spacing
 
 /**
- * The frame of every onboarding step (07 sections 2.3, 2.5 and 2.6): a top bar with the step title,
- * Back (hidden on ONB-01) and a menu with Help and "Sign out", the four-part progress indicator,
- * one scrolling column, and the [bottomBar] with the step's buttons. Back with unsaved input asks
- * "Discard changes?"; nothing can be left while a save runs.
+ * The frame of every onboarding step with its ways out (07 section 2.5): Back, which asks
+ * "Discard changes?" when input is unsaved, Help and "Sign out". Nothing can be left while a save
+ * runs. [StepFrame] is what it draws.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun OnboardingScaffold(
     step: String,
@@ -100,10 +85,12 @@ internal fun OnboardingScaffold(
 ) {
     val navigator = LocalNavigator.current
     val appViewModel = LocalAppViewModel.current
-    val me = LocalMe.current
+    val currentStep = LocalMe.current
+        ?.profile
+        ?.onboardingStep
+        ?.wire
     var discard by rememberSaveable { mutableStateOf(false) }
     var signOut by rememberSaveable { mutableStateOf(false) }
-    var menu by remember { mutableStateOf(false) }
     val canGoBack = edit || Steps.previous(step) != null
 
     fun back() {
@@ -111,100 +98,22 @@ internal fun OnboardingScaffold(
     }
 
     // No way out while the save runs; unsaved input asks first (07 section 2.5).
-    BackHandler(enabled = busy) { }
+    BackHandler(enabled = busy) {}
     BackHandler(enabled = !busy && dirty) { discard = true }
 
-    Scaffold(
+    StepFrame(
+        step = step,
+        currentStep = currentStep,
+        title = title,
+        busy = busy,
+        onBack = if (canGoBack) ::back else null,
+        onHelp = { navigator.push(Help) },
+        onSignOut = { signOut = true },
         modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.background,
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        topBar = {
-            Column(Modifier.background(MaterialTheme.colorScheme.background)) {
-                TopAppBar(
-                    title = {
-                        Text(
-                            title,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            style = MaterialTheme.typography.titleLarge,
-                            autoSize = TextAutoSize.StepBased(minFontSize = 15.sp, maxFontSize = 20.sp),
-                        )
-                    },
-                    navigationIcon = {
-                        if (canGoBack) {
-                            IconButton(onClick = ::back, enabled = !busy) {
-                                Icon(
-                                    Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = stringResource(R.string.a11y_back),
-                                )
-                            }
-                        }
-                    },
-                    actions = {
-                        Box {
-                            IconButton(onClick = { menu = true }) {
-                                Icon(
-                                    Icons.Outlined.MoreVert,
-                                    contentDescription = stringResource(R.string.onboarding_menu_label),
-                                )
-                            }
-                            DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.settings_help_title)) },
-                                    leadingIcon = {
-                                        Icon(Icons.AutoMirrored.Outlined.HelpOutline, contentDescription = null)
-                                    },
-                                    onClick = {
-                                        menu = false
-                                        navigator.push(Help)
-                                    },
-                                )
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.onboarding_menu_sign_out)) },
-                                    leadingIcon = {
-                                        Icon(Icons.AutoMirrored.Outlined.Logout, contentDescription = null)
-                                    },
-                                    enabled = !busy,
-                                    onClick = {
-                                        menu = false
-                                        signOut = true
-                                    },
-                                )
-                            }
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
-                )
-                if (me != null) ProgressHeader(step = step, currentStep = me.profile.onboardingStep.wire)
-            }
-        },
+        subtitle = subtitle,
         bottomBar = bottomBar,
-    ) { padding ->
-        Box(
-            Modifier
-                .fillMaxSize()
-                .padding(padding),
-        ) {
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(FieldSpacing),
-            ) {
-                if (subtitle != null) {
-                    Text(
-                        subtitle,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                content()
-                Spacer(Modifier.height(8.dp))
-            }
-            BusyOverlay(busy)
-        }
-    }
+        content = content,
+    )
 
     if (discard) {
         ConfirmDialog(
@@ -213,6 +122,7 @@ internal fun OnboardingScaffold(
             confirmLabel = stringResource(R.string.onboarding_discard_discard),
             dismissLabel = stringResource(R.string.onboarding_discard_keep),
             destructive = true,
+            needsNetwork = false,
             onConfirm = {
                 discard = false
                 navigator.back()
@@ -226,6 +136,8 @@ internal fun OnboardingScaffold(
             title = stringResource(R.string.common_sign_out_dialog_title),
             text = stringResource(R.string.common_sign_out_dialog_body),
             confirmLabel = stringResource(R.string.common_actions_sign_out),
+            variant = KrButtonVariant.INK,
+            needsNetwork = false,
             onConfirm = {
                 signOut = false
                 onSignOut()
@@ -237,88 +149,161 @@ internal fun OnboardingScaffold(
 }
 
 /**
- * The progress indicator of 07 section 2.3: four segments, one per group, each filled in
- * proportion to the completed steps of its group; under it the group name and "Step N of 11".
- * Display only, not a navigation control.
+ * One onboarding step as drawn (07 section 2.6): the bar with Back and the menu, then on sand the
+ * progress, the title and its line, then [content] in bands of its own ([StepBody] for a form).
+ * Only the bar is pinned, so at 200% text the fields keep most of the screen.
  */
 @Composable
-private fun ProgressHeader(
+internal fun StepFrame(
     step: String,
-    currentStep: String,
+    currentStep: String?,
+    title: String,
+    busy: Boolean,
+    onBack: (() -> Unit)?,
+    onHelp: () -> Unit,
+    onSignOut: () -> Unit,
     modifier: Modifier = Modifier,
+    subtitle: String? = null,
+    bottomBar: @Composable () -> Unit = {},
+    content: @Composable ColumnScope.() -> Unit,
 ) {
-    val res = LocalResources.current
-    val current = Steps.index(currentStep).let { if (it < 0) Steps.ORDER.size else it }
-    val group = Steps.groupOf(step)
-    val description =
-        res.getString(R.string.onboarding_progress_label) + ". " +
-            Steps.GROUPS.joinToString(". ") { entry ->
-                val done = entry.steps.count { Steps.index(it) < current }
-                res.text(
-                    R.string.onboarding_progress_group_done,
-                    "group" to res.getString(entry.name),
-                    "done" to done,
-                    "total" to entry.steps.size,
-                )
-            }
-    Column(
-        modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Row(
+    Scaffold(
+        modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.background,
+        // A step without an action bar still keeps its field above the keyboard.
+        contentWindowInsets = WindowInsets.safeDrawing,
+        topBar = { StepTopBar(busy = busy, onBack = onBack, onHelp = onHelp, onSignOut = onSignOut) },
+        bottomBar = bottomBar,
+    ) { padding ->
+        Box(
             Modifier
-                .fillMaxWidth()
-                .clearAndSetSemantics { contentDescription = description },
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                .fillMaxSize()
+                .padding(padding)
+                .consumeWindowInsets(padding),
         ) {
-            Steps.GROUPS.forEach { entry ->
-                val done = entry.steps.count { Steps.index(it) < current }
-                val fraction by animateFloatAsState(done.toFloat() / entry.steps.size, label = "progress")
-                val track =
-                    if (entry == group) {
-                        MaterialTheme.colorScheme.primaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.surfaceContainerHighest
-                    }
-                Box(
-                    Modifier
-                        .weight(1f)
-                        .height(6.dp)
-                        .clip(CircleShape)
-                        .background(track),
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                Band(
+                    tone = BandTone.SAND,
+                    padding = HeaderPadding,
+                    maxWidth = Sizes.formWidth,
+                    spacing = Spacing.s8,
                 ) {
-                    Box(
-                        Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(fraction)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary),
+                    if (currentStep != null) {
+                        StepProgress(
+                            step = step,
+                            currentStep = currentStep,
+                            modifier = Modifier.padding(bottom = Spacing.s16),
+                        )
+                    }
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.headlineMedium,
+                        modifier = Modifier.semantics { heading() },
                     )
+                    if (subtitle != null) {
+                        Text(
+                            text = subtitle,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = KrTheme.colors.textSecondary,
+                        )
+                    }
                 }
+                content()
             }
-        }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                stringResource(group.name),
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f),
-            )
-            Text(
-                text(R.string.onboarding_progress_step, "n" to Steps.index(step) + 1, "total" to Steps.ORDER.size),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            BusyOverlay(busy)
         }
     }
 }
 
 /**
- * The sticky bottom bar of a step: an inline [failure] with "Try again" (07 section 16.9), an
- * optional [summary] line, the primary button with a spinner while it runs, then the skip control
- * and its [note] (07 section 2.6).
+ * Back, the brand and the menu. Beside Back the name gives way to the mark at large text, where it
+ * would break inside a word.
+ */
+@Composable
+private fun StepTopBar(
+    busy: Boolean,
+    onBack: (() -> Unit)?,
+    onHelp: () -> Unit,
+    onSignOut: () -> Unit,
+) {
+    var menu by remember { mutableStateOf(false) }
+    val named = onBack == null || LocalDensity.current.fontScale <= NAME_FITS
+    KrTopBar(color = MaterialTheme.colorScheme.surfaceContainer, divider = false) {
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(Spacing.s4),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (onBack != null) {
+                KrIconButton(
+                    icon = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.a11y_back),
+                    onClick = onBack,
+                    enabled = !busy,
+                )
+            }
+            Box(
+                Modifier
+                    .weight(1f)
+                    .padding(start = if (onBack == null) Spacing.s16 else Spacing.s4, end = Spacing.s4),
+            ) {
+                if (named) Wordmark() else BrandMark()
+            }
+            Box {
+                KrIconButton(
+                    icon = Icons.Outlined.MoreVert,
+                    contentDescription = stringResource(R.string.onboarding_menu_label),
+                    onClick = { menu = true },
+                )
+                KrMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                    KrMenuItem(
+                        text = stringResource(R.string.settings_help_title),
+                        icon = Icons.AutoMirrored.Outlined.HelpOutline,
+                        onClick = {
+                            menu = false
+                            onHelp()
+                        },
+                    )
+                    KrMenuItem(
+                        text = stringResource(R.string.onboarding_menu_sign_out),
+                        icon = Icons.AutoMirrored.Outlined.Logout,
+                        enabled = !busy,
+                        onClick = {
+                            menu = false
+                            onSignOut()
+                        },
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** The one column of a step: the form width, centred, on the page. */
+@Composable
+internal fun StepBody(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Band(
+        modifier = modifier,
+        padding = BodyPadding,
+        maxWidth = Sizes.formWidth,
+        spacing = FieldSpacing,
+        content = content,
+    )
+}
+
+/**
+ * The action bar of a step (DESIGN.md section 6.14): an inline [failure] with "Try again"
+ * (07 section 16.9), the live [summary] above the button (07 section 11.3 rule 4), and one
+ * primary. The skip control follows the fields, see [StepSecondaryAction].
  */
 @Composable
 internal fun StepBottomBar(
@@ -327,88 +312,73 @@ internal fun StepBottomBar(
     onPrimary: () -> Unit = {},
     busy: Boolean = false,
     enabled: Boolean = true,
-    secondaryLabel: String? = null,
-    onSecondary: (() -> Unit)? = null,
-    secondaryBusy: Boolean = false,
-    note: String? = null,
     summary: String? = null,
     failure: ApiError? = null,
     onRetry: () -> Unit = onPrimary,
 ) {
-    if (primaryLabel == null && secondaryLabel == null && failure == null) return
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shadowElevation = 8.dp,
-        modifier = modifier.fillMaxWidth(),
+    if (primaryLabel == null && failure == null) return
+    KrActionBar(
+        modifier = modifier,
+        maxWidth = Sizes.formWidth,
+        banner =
+            failure?.let { error ->
+                {
+                    InlineFailureBox(
+                        text = stringResource(R.string.onboarding_failed),
+                        error = error,
+                        onRetry = onRetry,
+                        busy = busy,
+                        enabled = enabled,
+                    )
+                }
+            },
     ) {
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.navigationBars.union(WindowInsets.ime))
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            if (failure != null) {
-                InlineFailureBox(
-                    text = stringResource(R.string.onboarding_failed),
-                    error = failure,
-                    onRetry = onRetry,
-                    busy = busy,
-                )
-            }
-            if (summary != null) {
-                Text(
-                    summary,
-                    style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
-                )
-            }
-            if (primaryLabel != null) {
-                Button(
-                    onClick = onPrimary,
-                    enabled = enabled && !busy,
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 52.dp),
-                ) {
-                    if (busy) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            strokeWidth = 2.dp,
-                            color = LocalContentColor.current,
-                        )
-                    } else {
-                        Text(primaryLabel)
-                    }
-                }
-            }
-            if (secondaryLabel != null && onSecondary != null) {
-                TextButton(
-                    onClick = onSecondary,
-                    enabled = enabled && !busy && !secondaryBusy,
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 48.dp),
-                ) {
-                    if (secondaryBusy) {
-                        CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
-                    } else {
-                        Text(secondaryLabel)
-                    }
-                }
-            }
-            if (note != null) {
-                Text(
-                    note,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
+        if (summary != null) {
+            Text(
+                text = summary,
+                style = MaterialTheme.typography.labelSmall,
+                textAlign = TextAlign.Center,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .semantics { liveRegion = LiveRegionMode.Polite },
+            )
         }
+        if (primaryLabel != null) {
+            KrButton(
+                text = primaryLabel,
+                onClick = onPrimary,
+                enabled = enabled,
+                loading = busy,
+                fullWidth = true,
+            )
+        }
+    }
+}
+
+/**
+ * "Skip for now" or "Add photos later", outlined after the fields (07 section 2.6), with the line
+ * that goes with it.
+ */
+@Composable
+internal fun StepSecondaryAction(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    loading: Boolean = false,
+    note: String? = null,
+) {
+    Column(modifier.padding(top = Spacing.s12)) {
+        KrButton(
+            text = label,
+            onClick = onClick,
+            variant = KrButtonVariant.SECONDARY,
+            enabled = enabled,
+            loading = loading,
+            fullWidth = true,
+        )
+        if (note != null) CaptionText(note, Modifier.padding(top = Spacing.s8))
     }
 }
 
@@ -419,10 +389,21 @@ internal fun SkipDialog(
     onSkip: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
+    KrDialog(
+        title = stringResource(R.string.onboarding_skip_dialog_title),
+        confirmLabel = stringResource(R.string.onboarding_skip_dialog_save),
+        onConfirm = onSave,
+        confirmEnabled = LocalOnline.current,
+        dismissLabel = stringResource(R.string.onboarding_skip_dialog_skip),
+        dismissEnabled = LocalOnline.current,
+        onDismiss = onSkip,
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.onboarding_skip_dialog_title)) },
-        confirmButton = { TextButton(onClick = onSave) { Text(stringResource(R.string.onboarding_skip_dialog_save)) } },
-        dismissButton = { TextButton(onClick = onSkip) { Text(stringResource(R.string.onboarding_skip_dialog_skip)) } },
     )
 }
+
+/** Up to this text scale the wordmark fits between Back and the menu at 320. */
+private const val NAME_FITS = 1.3f
+private val HeaderPadding =
+    PaddingValues(start = Spacing.gutter, top = Spacing.s4, end = Spacing.gutter, bottom = Spacing.s24)
+private val BodyPadding =
+    PaddingValues(start = Spacing.gutter, top = Spacing.s24, end = Spacing.gutter, bottom = Spacing.s40)

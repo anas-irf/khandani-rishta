@@ -1,31 +1,11 @@
 package com.khandanirishta.app.ui.feature.settings
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.DeleteOutline
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,17 +13,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -52,17 +28,18 @@ import com.khandanirishta.app.R
 import com.khandanirishta.app.core.data.MeRepository
 import com.khandanirishta.app.core.network.ErrorCode
 import com.khandanirishta.app.core.network.apiError
-import com.khandanirishta.app.core.realtime.ConnectivityObserver
+import com.khandanirishta.app.ui.components.KrButtonVariant
+import com.khandanirishta.app.ui.components.KrSheet
 import com.khandanirishta.app.ui.components.KrTextField
-import com.khandanirishta.app.ui.components.rememberModalSheetState
-import com.khandanirishta.app.ui.feature.settings.kit.ActionButton
-import com.khandanirishta.app.ui.feature.settings.kit.ActionStyle
+import com.khandanirishta.app.ui.components.SheetAnswers
+import com.khandanirishta.app.ui.feature.settings.kit.BulletLine
 import com.khandanirishta.app.ui.feature.settings.kit.longDateInZone
 import com.khandanirishta.app.ui.messages.MessageBus
 import com.khandanirishta.app.ui.messages.UiText
 import com.khandanirishta.app.ui.messages.fieldTexts
 import com.khandanirishta.app.ui.text.LocalMe
 import com.khandanirishta.app.ui.text.text
+import com.khandanirishta.app.ui.theme.Spacing
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -84,8 +61,8 @@ private const val REASON_MAX = 300
  * GATE-BLOCKED ("Delete my data") and GATE-CONSENT: the consequences with the dates computed from
  * `deletion_grace_days` (never a fixed 30), an optional reason and the typed `DELETE`. Calls
  * `POST /v1/me/deletion`; the returned `Me` replaces the cached one and the gate host follows it.
+ * This is the confirmation, so its button alone is danger.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun DeleteAccountSheet(
     onDismiss: () -> Unit,
@@ -94,17 +71,9 @@ internal fun DeleteAccountSheet(
 ) {
     val me = LocalMe.current ?: return
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val online by viewModel.online.collectAsStateWithLifecycle()
     val res = LocalResources.current
     var reason by rememberSaveable { mutableStateOf("") }
     var phrase by rememberSaveable { mutableStateOf("") }
-    val busy by rememberUpdatedState(state.busy)
-    // The sheet stays while the request runs.
-    val sheetState =
-        rememberModalSheetState(
-            skipPartiallyExpanded = true,
-            confirmValueChange = { value -> value != SheetValue.Hidden || !busy },
-        )
     val currentOnDismiss by rememberUpdatedState(onDismiss)
     LaunchedEffect(state.done) {
         if (state.done) {
@@ -131,106 +100,57 @@ internal fun DeleteAccountSheet(
         )
     val listLabel = stringResource(R.string.settings_account_delete_confirm_list_label)
 
-    ModalBottomSheet(
-        onDismissRequest = { if (!state.busy) onDismiss() },
-        sheetState = sheetState,
+    // The sheet stays while the request runs.
+    KrSheet(
+        title = stringResource(R.string.settings_account_delete_confirm_title),
+        onDismissRequest = onDismiss,
         modifier = modifier,
+        dismissible = !state.busy,
+        actions = {
+            SheetAnswers(
+                confirmLabel = stringResource(R.string.settings_account_delete_confirm_button),
+                onConfirm = { viewModel.submit(reason) },
+                onCancel = onDismiss,
+                variant = KrButtonVariant.DANGER,
+                // Exactly DELETE, as typed (specs/16 section 6.27).
+                enabled = phrase == DELETE_PHRASE,
+                busy = state.busy,
+            )
+        },
     ) {
         Column(
-            Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .imePadding()
-                .padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            Modifier.semantics { contentDescription = listLabel },
+            verticalArrangement = Arrangement.spacedBy(Spacing.s12),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    Modifier
-                        .size(44.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.errorContainer),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        Icons.Outlined.DeleteOutline,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error,
-                    )
-                }
-                Spacer(Modifier.width(14.dp))
-                Text(
-                    stringResource(R.string.settings_account_delete_confirm_title),
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.semantics { heading() },
-                )
-            }
-            Column(
-                Modifier.semantics { contentDescription = listLabel },
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                points.forEach { point -> BulletPoint(point) }
-            }
-            KrTextField(
-                value = reason,
-                onValueChange = { reason = it },
-                label = stringResource(R.string.settings_account_delete_confirm_reason_label),
-                error = state.fieldErrors["reason"]?.resolve(res),
-                maxLength = REASON_MAX,
-                singleLine = false,
-                minLines = 3,
-                enabled = !state.busy,
-            )
-            KrTextField(
-                value = phrase,
-                onValueChange = { phrase = it },
-                label = stringResource(R.string.settings_account_delete_confirm_phrase_label),
-                error = state.fieldErrors["confirm"]?.resolve(res),
-                enabled = !state.busy,
-                keyboardOptions =
-                    KeyboardOptions(
-                        capitalization = KeyboardCapitalization.Characters,
-                        autoCorrectEnabled = false,
-                        imeAction = ImeAction.Done,
-                    ),
-            )
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                ActionButton(
-                    text = stringResource(R.string.settings_account_delete_confirm_button),
-                    style = ActionStyle.DANGER,
-                    busy = state.busy,
-                    // Exactly DELETE, as typed (specs/16 section 6.27).
-                    enabled = phrase == DELETE_PHRASE && online,
-                    onClick = { viewModel.submit(reason) },
-                )
-                TextButton(
-                    onClick = onDismiss,
-                    enabled = !state.busy,
-                    modifier = Modifier.fillMaxWidth(),
-                ) { Text(stringResource(R.string.common_actions_cancel)) }
-            }
+            points.forEach { point -> BulletLine(point) }
         }
-    }
-}
-
-@Composable
-private fun BulletPoint(
-    point: String,
-    modifier: Modifier = Modifier,
-) {
-    Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
-        Box(
-            Modifier
-                .padding(top = 9.dp)
-                .size(6.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.onSurfaceVariant),
+        KrTextField(
+            value = reason,
+            onValueChange = { reason = it },
+            label = stringResource(R.string.settings_account_delete_confirm_reason_label),
+            error = state.fieldErrors["reason"]?.resolve(res),
+            maxLength = REASON_MAX,
+            singleLine = false,
+            minLines = 3,
+            enabled = !state.busy,
         )
-        Spacer(Modifier.width(12.dp))
-        Text(point, style = MaterialTheme.typography.bodyMedium)
+        KrTextField(
+            value = phrase,
+            onValueChange = { phrase = it },
+            label = stringResource(R.string.settings_account_delete_confirm_phrase_label),
+            error = state.fieldErrors["confirm"]?.resolve(res),
+            enabled = !state.busy,
+            keyboardOptions =
+                KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Characters,
+                    autoCorrectEnabled = false,
+                    imeAction = ImeAction.Done,
+                ),
+        )
     }
 }
 
+@Immutable
 data class DeleteAccountUiState(
     val busy: Boolean = false,
     /** Messages of a `validation_failed` answer, by field (`reason`, `confirm`). */
@@ -246,13 +166,9 @@ class DeleteAccountViewModel
     constructor(
         private val meRepository: MeRepository,
         private val bus: MessageBus,
-        connectivity: ConnectivityObserver,
     ) : ViewModel() {
         private val mutableState = MutableStateFlow(DeleteAccountUiState())
         val state: StateFlow<DeleteAccountUiState> = mutableState.asStateFlow()
-
-        /** Network actions are disabled while offline (rule G14). */
-        val online: StateFlow<Boolean> = connectivity.online
 
         fun submit(reason: String) {
             if (mutableState.value.busy) return

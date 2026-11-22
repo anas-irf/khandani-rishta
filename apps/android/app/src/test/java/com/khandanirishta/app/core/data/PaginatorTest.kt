@@ -1,6 +1,7 @@
 package com.khandanirishta.app.core.data
 
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -11,6 +12,7 @@ import org.junit.Test
 import java.io.IOException
 
 /** Cursor lists with optimistic edits and quiet refreshes (specs/16 rules G1, G5, G6, G7). */
+@OptIn(ExperimentalCoroutinesApi::class)
 class PaginatorTest {
     @Test
     fun `the first load shows the skeleton, then the items`() =

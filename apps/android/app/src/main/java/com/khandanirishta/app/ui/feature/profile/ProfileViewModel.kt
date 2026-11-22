@@ -1,6 +1,7 @@
 package com.khandanirishta.app.ui.feature.profile
 
 import android.os.SystemClock
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khandanirishta.app.R
@@ -8,6 +9,7 @@ import com.khandanirishta.app.core.data.DataKey
 import com.khandanirishta.app.core.data.DiscoveryRepository
 import com.khandanirishta.app.core.data.InterestRepository
 import com.khandanirishta.app.core.data.Invalidation
+import com.khandanirishta.app.core.data.MeRepository
 import com.khandanirishta.app.core.data.ProfileRepository
 import com.khandanirishta.app.core.data.RelationRepository
 import com.khandanirishta.app.core.network.ApiError
@@ -19,6 +21,8 @@ import com.khandanirishta.app.core.network.generated.model.ReportReason
 import com.khandanirishta.app.core.network.generated.model.ReportSubject
 import com.khandanirishta.app.ui.messages.MessageBus
 import com.khandanirishta.app.ui.messages.UiText
+import com.khandanirishta.app.ui.text.pick
+import com.khandanirishta.app.ui.text.subjectOf
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -57,6 +61,7 @@ class ProfileCache
         }
     }
 
+@Immutable
 data class ProfileUiState(
     val detail: ProfileDetail? = null,
     val loading: Boolean = true,
@@ -65,6 +70,8 @@ data class ProfileUiState(
     val viewLimit: Boolean = false,
     val statusPanel: Boolean = false,
     val busy: Boolean = false,
+    /** Accept is on its way: the spinner in its button. */
+    val accepting: Boolean = false,
     /** "You are both interested!" after a mutual interest, with the new connection. */
     val mutualConnectionId: String? = null,
     /** "This member accepts interests only from verified members." (send refused). */
@@ -102,6 +109,7 @@ class ProfileViewModel
         private val relations: RelationRepository,
         private val profiles: ProfileRepository,
         private val cache: ProfileCache,
+        private val me: MeRepository,
         private val bus: MessageBus,
         invalidation: Invalidation,
     ) : ViewModel() {
@@ -139,9 +147,12 @@ class ProfileViewModel
                     .profile(profileId)
                     .onSuccess { detail ->
                         cache.put(detail)
-                        mutableState.update { it.copy(detail = detail, loading = false, error = null) }
+                        mutableState.update {
+                            it.copy(detail = detail, loading = false, error = null, statusPanel = false)
+                        }
                     }.onFailure { failure ->
                         val error = failure.apiError
+                        if (error.code == ErrorCode.NOT_FOUND) forget()
                         mutableState.update {
                             when (error.code) {
                                 ErrorCode.NOT_FOUND -> it.copy(loading = false, notFound = true)
@@ -154,12 +165,21 @@ class ProfileViewModel
             }
         }
 
-        private fun action(block: suspend () -> Unit) {
+        /** A member who is no longer available leaves the cached lists (16 section 1.3). */
+        private fun forget() {
+            cache.remove(profileId)
+            discovery.dropFromHome(profileId)
+        }
+
+        private fun action(
+            accepting: Boolean = false,
+            block: suspend () -> Unit,
+        ) {
             if (mutableState.value.busy) return
-            mutableState.update { it.copy(busy = true) }
+            mutableState.update { it.copy(busy = true, accepting = accepting) }
             viewModelScope.launch {
                 block()
-                mutableState.update { it.copy(busy = false) }
+                mutableState.update { it.copy(busy = false, accepting = false) }
             }
         }
 
@@ -249,7 +269,7 @@ class ProfileViewModel
         fun dismissVerifiedOnly() = mutableState.update { it.copy(verifiedOnlyDialog = false) }
 
         fun accept() =
-            action {
+            action(accepting = true) {
                 val interest = mutableState.value.detail
                     ?.relation
                     ?.interest ?: return@action
@@ -352,7 +372,7 @@ class ProfileViewModel
                         if (failure.apiError.code == ErrorCode.LIMIT_REACHED) {
                             bus.toast(R.string.shared_shortlist_full)
                         } else {
-                            bus.toast(R.string.discovery_shortlist_failed)
+                            bus.toast(R.string.shared_shortlist_failed)
                         }
                     }
             }
@@ -447,33 +467,7 @@ class ProfileViewModel
                 relations
                     .requestPhotos(profileId)
                     .onSuccess { bus.toast(R.string.shared_photo_access_sent) }
-                    .onFailure { failure ->
-                        val error = failure.apiError
-                        when (error.code) {
-                            ErrorCode.NOT_PERMITTED_BY_MEMBER -> {
-                                bus.toast(R.string.shared_photo_access_not_permitted)
-                            }
-
-                            ErrorCode.COOLDOWN_ACTIVE -> {
-                                bus.toast(
-                                    R.string.shared_photo_access_cooldown,
-                                    "date" to MessageBus.formatDetailDate(error.detailString("retry_after_date")),
-                                )
-                            }
-
-                            ErrorCode.LIMIT_REACHED -> {
-                                bus.limit(UiText.of(R.string.shared_photo_access_limit))
-                            }
-
-                            ErrorCode.INVALID_STATE, ErrorCode.ALREADY_EXISTS -> {
-                                load(silent = true)
-                            }
-
-                            else -> {
-                                bus.error(error)
-                            }
-                        }
-                    }
+                    .onFailure { photoRequestFailed(bus, it.apiError, refetch = { load(silent = true) }) }
             }
 
         /** "Let {name} see my photos" (16 section 6.7). */
@@ -481,7 +475,47 @@ class ProfileViewModel
             action {
                 relations
                     .giveAccess(profileId)
-                    .onSuccess { bus.toast(R.string.profile_actions_photos_granted, "name" to name) }
-                    .onFailure { bus.error(it.apiError) }
+                    .onSuccess {
+                        val own = me.me.value?.profile
+                        val granted =
+                            subjectOf(own?.managedBy, own?.gender).pick(
+                                R.string.profile_actions_photos_granted,
+                                R.string.profile_actions_photos_granted_male,
+                                R.string.profile_actions_photos_granted_female,
+                            )
+                        bus.toast(granted, "name" to name)
+                    }.onFailure { bus.error(it.apiError) }
             }
     }
+
+/** The errors of "Request photos" (16 section 6.7), on the profile and in the viewer. */
+internal fun photoRequestFailed(
+    bus: MessageBus,
+    error: ApiError,
+    refetch: () -> Unit,
+) {
+    when (error.code) {
+        ErrorCode.NOT_PERMITTED_BY_MEMBER -> {
+            bus.toast(R.string.shared_photo_access_not_permitted)
+        }
+
+        ErrorCode.COOLDOWN_ACTIVE -> {
+            bus.toast(
+                R.string.shared_photo_access_cooldown,
+                "date" to MessageBus.formatDetailDate(error.detailString("retry_after_date")),
+            )
+        }
+
+        ErrorCode.LIMIT_REACHED -> {
+            bus.limit(UiText.of(R.string.shared_photo_access_limit))
+        }
+
+        ErrorCode.INVALID_STATE, ErrorCode.ALREADY_EXISTS -> {
+            refetch()
+        }
+
+        else -> {
+            bus.error(error)
+        }
+    }
+}

@@ -1,142 +1,170 @@
 package com.khandanirishta.app.ui.components
 
-import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.khandanirishta.app.core.data.Reference
 import com.khandanirishta.app.core.network.generated.model.Badge
-import com.khandanirishta.app.core.network.generated.model.CardRelation
-import com.khandanirishta.app.core.network.generated.model.EmploymentType
 import com.khandanirishta.app.core.network.generated.model.Gender
 import com.khandanirishta.app.core.network.generated.model.InterestDirection
-import com.khandanirishta.app.core.network.generated.model.InterestStatus
 import com.khandanirishta.app.core.network.generated.model.ManagedBy
 import com.khandanirishta.app.core.network.generated.model.MaritalStatus
-import com.khandanirishta.app.core.network.generated.model.PhotoView
+import com.khandanirishta.app.core.network.generated.model.Me
 import com.khandanirishta.app.core.network.generated.model.ProfileCard
-import com.khandanirishta.app.core.network.generated.model.ReferenceBootstrap
-import com.khandanirishta.app.core.network.generated.model.Tier
-import com.khandanirishta.app.ui.text.LocalReference
-import com.khandanirishta.app.ui.theme.KhandaniTheme
+import com.khandanirishta.app.ui.preview.SampleData
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/** The shared profile card of specs/16 section 1.5 (specs/22 section 15). */
+/** The shared profile card of specs/16 section 1.5 and DESIGN.md section 6.9 (specs/22 section 15). */
 @RunWith(AndroidJUnit4::class)
 class ProfileCardViewTest {
     @get:Rule
     val rule = createComposeRule()
 
-    private val reference =
-        Reference(
-            ReferenceBootstrap(
-                castes = emptyList(),
-                countries = emptyList(),
-                educationFields = emptyList(),
-                educationLevels = emptyList(),
-                hobbies = emptyList(),
-                incomeBands = emptyList(),
-                languages = emptyList(),
-                options = emptyMap(),
-                professionCategories = emptyList(),
-                religions = emptyList(),
-                version = "test",
-            ),
-        )
+    private var opened = 0
+    private var toggled = 0
+    private var passed = 0
 
-    private fun card(
-        photo: PhotoView? = null,
-        direction: InterestDirection? = null,
-    ) = ProfileCard(
-        age = 26,
-        badges = listOf(Badge.ID_VERIFIED),
-        casteLabel = "Rajput",
-        cityName = "Lahore",
-        compat = 87,
-        countryCode = "PK",
-        displayName = "Ayesha K.",
-        educationLevelCode = "masters",
-        employmentType = EmploymentType.PRIVATE_JOB,
-        gender = Gender.FEMALE,
-        heightCm = 163,
-        id = "p1",
-        lastActive = null,
-        managedBy = ManagedBy.SELF,
-        maritalStatus = MaritalStatus.NEVER_MARRIED,
-        motherTongueCode = "urdu",
-        photo = photo,
-        photoCount = if (photo == null) 0 else 3,
-        professionCode = null,
-        publicCode = "KR7F3K2QX9",
-        reasons = listOf("same_city"),
-        regionName = "Punjab",
-        relation =
-            CardRelation(
-                canSendInterest = true,
-                connectionId = null,
-                interestDirection = direction,
-                interestStatus = direction?.let { InterestStatus.PENDING },
-                isShortlisted = false,
-                tier = Tier.MEMBER,
-            ),
-        religionCode = "islam",
-        sectCode = null,
-    )
-
-    private fun show(
+    private fun showCard(
         card: ProfileCard,
-        onOpen: () -> Unit = {},
-        onHeart: () -> Unit = {},
+        me: Me = SampleData.me(),
+        phone: TestPhone = TestPhone(),
+        online: Boolean = true,
     ) {
-        rule.setContent {
-            KhandaniTheme {
-                CompositionLocalProvider(LocalReference provides reference) {
-                    ProfileCardView(card = card, onOpen = onOpen, onToggleShortlist = onHeart, onPass = {})
-                }
-            }
+        rule.show(phone = phone, me = me, online = online) {
+            ProfileCardView(
+                card = card,
+                onOpen = { opened++ },
+                onToggleShortlist = { toggled++ },
+                onPass = { passed++ },
+            )
         }
     }
 
+    private fun text(value: String): SemanticsNodeInteraction =
+        rule.onNodeWithText(value, useUnmergedTree = true).performScrollTo()
+
+    private fun customActions(cardText: String) =
+        rule
+            .onNodeWithText(cardText, substring = true)
+            .fetchSemanticsNode()
+            .config
+            .getOrElse(SemanticsActions.CustomActions) { emptyList() }
+
     @Test
-    fun showsNameAgeMatchAndReasonWithoutAPhoto() {
-        show(card())
-        rule.onNodeWithText("Ayesha K., 26").assertIsDisplayed()
-        rule.onNodeWithText("87% match").assertIsDisplayed()
-        rule.onNodeWithText("Lives in your city").assertIsDisplayed()
+    fun showsNameAgeMatchReasonsAndFacts() {
+        showCard(SampleData.card())
+        rule.onNodeWithText("Ayesha K.,\u00A026", useUnmergedTree = true).assertExists()
+        text("87% match").assertIsDisplayed()
+        text("Lives in your city").assertIsDisplayed()
+        text("ID verified").assertIsDisplayed()
+        text("Photo verified").assertIsDisplayed()
     }
 
     @Test
-    fun aBlurredPhotoIsMarkedPrivate() {
-        val blurred =
-            PhotoView(
-                id = "ph1",
-                isBlurred = true,
-                isPrimary = true,
-                largeUrl = null,
-                mediumUrl = "https://example.invalid/photo/medium.jpg",
-                thumbUrl = "https://example.invalid/photo/thumb.jpg",
-            )
-        show(card(photo = blurred))
-        rule.onNodeWithText("Photo is private").assertIsDisplayed()
-        rule.onNodeWithContentDescription("Private photo").assertExists()
-        rule.onNodeWithText("3 photos").assertIsDisplayed()
+    fun leavesTheDetailsToTheProfile() {
+        showCard(SampleData.card())
+        rule.onNodeWithText("Rajput", substring = true, useUnmergedTree = true).assertDoesNotExist()
+        rule.onNodeWithText("masters", substring = true, useUnmergedTree = true).assertDoesNotExist()
+        rule.onNodeWithText("Never married", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
     @Test
-    fun relationHintAndActions() {
-        var opened = 0
-        var hearts = 0
-        show(card(direction = InterestDirection.SENT), onOpen = { opened++ }, onHeart = { hearts++ })
-        rule.onNodeWithText("Interest sent").assertIsDisplayed()
-        rule.onNodeWithContentDescription("Add Ayesha K. to shortlist").performClick()
-        rule.onNodeWithText("Ayesha K., 26").performClick()
-        assertEquals(1, hearts)
+    fun aMissingPhotoIsSaidAfterTheName() {
+        showCard(SampleData.card())
+        rule
+            .onNodeWithContentDescription("Ayesha K.,\u00A026. No photo added yet", useUnmergedTree = true)
+            .assertExists()
+    }
+
+    @Test
+    fun aPrivatePhotoIsSaidAfterTheNameWithTheCount() {
+        showCard(SampleData.card(photo = SampleData.photo(blurred = true)))
+        rule
+            .onNodeWithContentDescription("Ayesha K.,\u00A026. Photo is private, 3 photos", useUnmergedTree = true)
+            .assertExists()
+    }
+
+    @Test
+    fun newIsOnThePhotoAndNotInTheBadgeRow() {
+        showCard(SampleData.card(badges = listOf(Badge.NEW)))
+        rule.onNodeWithContentDescription("New", substring = true, useUnmergedTree = true).assertExists()
+        rule.onNodeWithText("ID verified", useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    @Test
+    fun theWholeCardOpensTheProfile() {
+        showCard(SampleData.card())
+        rule.onNodeWithText("87% match").performClick()
         assertEquals(1, opened)
+    }
+
+    @Test
+    fun shortlistIsALabelledToggle() {
+        showCard(SampleData.card())
+        rule.onNodeWithText("Shortlist", useUnmergedTree = true).performScrollTo().performClick()
+        assertEquals(1, toggled)
+        assertEquals(0, opened)
+    }
+
+    @Test
+    fun aShortlistedCardSaysSo() {
+        showCard(SampleData.card(shortlisted = true))
+        text("Shortlisted").assertIsDisplayed()
+    }
+
+    @Test
+    fun talkBackHasShortlistAndNotInterestedAsActions() {
+        showCard(SampleData.card())
+        val actions = customActions("87% match")
+        assertEquals(listOf("Add Ayesha K. to shortlist", "Not interested"), actions.map { it.label })
+        rule.runOnIdle { actions.forEach { assertTrue(it.action()) } }
+        assertEquals(1, toggled)
+        assertEquals(1, passed)
+    }
+
+    @Test
+    fun offlineThereAreNoActions() {
+        showCard(SampleData.card(), online = false)
+        assertTrue(customActions("87% match").isEmpty())
+    }
+
+    @Test
+    fun theRelationIsInWords() {
+        showCard(SampleData.card(direction = InterestDirection.SENT))
+        text("Interest sent").assertIsDisplayed()
+    }
+
+    @Test
+    fun aManagedViewerReadsTheCandidatesForm() {
+        showCard(
+            card = SampleData.card(direction = InterestDirection.RECEIVED),
+            me = SampleData.me(managedBy = ManagedBy.PARENT, gender = Gender.FEMALE),
+        )
+        text("Interested in her").assertIsDisplayed()
+    }
+
+    @Test
+    fun nothingIsCutAt200PercentOnASmallPhone() {
+        showCard(
+            card =
+                SampleData.card(
+                    name = SampleData.LONG_NAME,
+                    badges = listOf(Badge.ID_VERIFIED, Badge.PHOTO_VERIFIED, Badge.PHONE_VERIFIED, Badge.NEW),
+                    direction = InterestDirection.RECEIVED,
+                    managedBy = ManagedBy.PARENT,
+                    maritalStatus = MaritalStatus.DIVORCED,
+                ),
+            phone = SmallPhoneLargeText,
+        )
+        rule.assertNoTextIsCut()
     }
 }

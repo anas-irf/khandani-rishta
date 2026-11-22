@@ -1,30 +1,26 @@
 package com.khandanirishta.app.ui.feature.notifications
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.NotificationsNone
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,29 +29,39 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalResources
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.khandanirishta.app.R
+import com.khandanirishta.app.core.data.PagedState
 import com.khandanirishta.app.core.network.generated.model.Notification
 import com.khandanirishta.app.core.network.generated.model.NotificationActor
-import com.khandanirishta.app.core.util.Formatters
 import com.khandanirishta.app.ui.LinkOpener
-import com.khandanirishta.app.ui.components.Avatar
+import com.khandanirishta.app.ui.components.BrandMark
+import com.khandanirishta.app.ui.components.CaptionText
 import com.khandanirishta.app.ui.components.DetailTopBar
 import com.khandanirishta.app.ui.components.EmptyState
+import com.khandanirishta.app.ui.components.KrButton
+import com.khandanirishta.app.ui.components.KrButtonVariant
+import com.khandanirishta.app.ui.components.KrDialog
+import com.khandanirishta.app.ui.components.LoadingRegion
+import com.khandanirishta.app.ui.components.LocalOnline
+import com.khandanirishta.app.ui.components.MemberAvatar
+import com.khandanirishta.app.ui.components.MemberText
 import com.khandanirishta.app.ui.components.PagedList
-import com.khandanirishta.app.ui.feature.lists.ButtonSpinner
+import com.khandanirishta.app.ui.components.RowDivider
+import com.khandanirishta.app.ui.components.SkeletonBox
+import com.khandanirishta.app.ui.components.tappable
+import com.khandanirishta.app.ui.feature.lists.RowMeta
+import com.khandanirishta.app.ui.feature.lists.UnseenMark
+import com.khandanirishta.app.ui.feature.lists.rememberRelativeTime
 import com.khandanirishta.app.ui.navigation.AppKey
 import com.khandanirishta.app.ui.navigation.AppNavigator
 import com.khandanirishta.app.ui.navigation.DeepLink
@@ -65,6 +71,19 @@ import com.khandanirishta.app.ui.navigation.Tab
 import com.khandanirishta.app.ui.rememberLinkOpener
 import com.khandanirishta.app.ui.text.LocalMe
 import com.khandanirishta.app.ui.text.LocalReference
+import com.khandanirishta.app.ui.theme.ArchShape
+import com.khandanirishta.app.ui.theme.KrTheme
+import com.khandanirishta.app.ui.theme.Sizes
+import com.khandanirishta.app.ui.theme.Spacing
+
+/** What the parts of APP-NOTIFS can do. */
+@Immutable
+internal class NotificationsActions(
+    val refresh: () -> Unit,
+    val loadMore: () -> Unit,
+    val markAllRead: () -> Unit,
+    val open: (item: Notification, target: NotificationTarget?) -> Unit,
+)
 
 /**
  * APP-NOTIFS: the in-app feed with "Mark all as read" (specs/16 section 6.15, 14 section 3).
@@ -80,7 +99,6 @@ fun NotificationsScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val list by viewModel.list.collectAsStateWithLifecycle()
     val unread = LocalMe.current?.counters?.unreadNotifications ?: 0L
-    val canMarkAll = state.online && (unread > 0 || list.items.any { !it.isRead })
     // The dialog of `account_warning`; its reason may be missing.
     var warningOpen by rememberSaveable { mutableStateOf(false) }
     var warningReason by rememberSaveable { mutableStateOf<String?>(null) }
@@ -89,70 +107,97 @@ fun NotificationsScreen(
         viewModel.onResume()
         onPauseOrDispose { }
     }
-
-    val open: (NotificationTarget?) -> Unit = { target ->
-        if (target is NotificationTarget.Warning) {
-            warningReason = target.reason
-            warningOpen = true
-        } else if (target != null) {
-            openTarget(target, navigator, links)
-        }
-    }
-
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            DetailTopBar(
-                title = stringResource(R.string.notifications_title),
-                onBack = { navigator.back() },
-                actions = {
-                    TextButton(onClick = viewModel::markAllRead, enabled = canMarkAll && !state.markingAll) {
-                        if (state.markingAll) {
-                            ButtonSpinner()
-                        } else {
-                            Text(stringResource(R.string.notifications_mark_all_read))
-                        }
+    val actions =
+        remember(viewModel, navigator, links) {
+            NotificationsActions(
+                refresh = viewModel::refresh,
+                loadMore = viewModel::loadMore,
+                markAllRead = viewModel::markAllRead,
+                open = { item, target ->
+                    viewModel.markRead(item)
+                    if (target is NotificationTarget.Warning) {
+                        warningReason = target.reason
+                        warningOpen = true
+                    } else if (target != null) {
+                        openTarget(target, navigator, links)
                     }
                 },
             )
-        },
-    ) { padding ->
-        PagedList(
-            state = list,
-            key = { it.id },
-            onRefresh = viewModel::refresh,
-            onLoadMore = viewModel::loadMore,
-            modifier = Modifier.padding(padding),
-            contentPadding = PaddingValues(top = 4.dp, bottom = 24.dp),
-            spacing = Arrangement.spacedBy(0.dp),
-            empty = {
-                EmptyState(
-                    title = stringResource(R.string.notifications_empty),
-                    icon = Icons.Outlined.NotificationsNone,
-                )
-            },
-        ) { item ->
-            NotificationRow(
-                item = item,
-                onOpen = { target ->
-                    viewModel.markRead(item)
-                    open(target)
-                },
-            )
         }
-        if (warningOpen) {
-            WarningDialog(
-                reason = warningReason,
-                onGuidelines = {
-                    openLink(DeepLinkResolver.fromTarget("PUB-GUIDELINES", emptyMap()), navigator, links)
-                },
-                onDismiss = { warningOpen = false },
-            )
+
+    Scaffold(
+        modifier = modifier,
+        topBar = { DetailTopBar(title = stringResource(R.string.notifications_title), onBack = { navigator.back() }) },
+    ) { padding ->
+        Box(Modifier.padding(padding).consumeWindowInsets(padding)) {
+            NotificationsContent(state = state, list = list, unread = unread, actions = actions)
+            if (warningOpen) {
+                WarningDialog(
+                    reason = warningReason,
+                    onOpenGuidelines = {
+                        openLink(DeepLinkResolver.fromTarget("PUB-GUIDELINES", emptyMap()), navigator, links)
+                    },
+                    onDismiss = { warningOpen = false },
+                )
+            }
         }
     }
 }
 
-/** One row: the actor's photo or the app icon, the text, the note, the time, and a dot while unread. */
+/**
+ * The feed. "Mark all as read" heads the list instead of sharing the top bar, where at large
+ * text it would leave the title no room.
+ */
+@Composable
+internal fun NotificationsContent(
+    state: NotificationsUiState,
+    list: PagedState<Notification>,
+    unread: Long,
+    actions: NotificationsActions,
+    modifier: Modifier = Modifier,
+) {
+    val canMarkAll = remember(list.items, unread) { unread > 0 || list.items.any { !it.isRead } }
+    val online = LocalOnline.current
+    PagedList(
+        state = list,
+        key = { it.id },
+        onRefresh = actions.refresh,
+        onLoadMore = actions.loadMore,
+        modifier = modifier,
+        skeleton = { FeedSkeleton() },
+        header = {
+            if (list.items.isNotEmpty() || canMarkAll) {
+                item(key = MARK_ALL_KEY, contentType = MARK_ALL_KEY) {
+                    Box(
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = Spacing.s8),
+                        contentAlignment = Alignment.CenterEnd,
+                    ) {
+                        KrButton(
+                            text = stringResource(R.string.notifications_mark_all_read),
+                            onClick = actions.markAllRead,
+                            variant = KrButtonVariant.QUIET,
+                            enabled = online && canMarkAll,
+                            loading = state.markingAll,
+                        )
+                    }
+                }
+            }
+        },
+        empty = {
+            EmptyState(title = stringResource(R.string.notifications_empty), icon = Icons.Outlined.NotificationsNone)
+        },
+    ) { item ->
+        NotificationRow(item = item, onOpen = { target -> actions.open(item, target) })
+    }
+}
+
+/**
+ * One row, all of it one target: the actor's arch or the app's mark, the text, the note, then
+ * the time and, while unread, a dot with its word.
+ */
 @Composable
 private fun NotificationRow(
     item: Notification,
@@ -164,102 +209,85 @@ private fun NotificationRow(
     val urdu = LocalConfiguration.current.locales[0]?.language == "ur"
     val view = remember(item, res, reference, urdu) { describeNotification(item, res, reference, urdu) }
     val unread = !item.isRead
-    val unreadLabel = stringResource(R.string.notifications_unread)
-    val rowColor = if (unread) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f) else Color.Transparent
+    val colors = MaterialTheme.colorScheme
 
-    Column(modifier.fillMaxWidth()) {
-        Row(
-            Modifier
+    Row(
+        modifier =
+            modifier
                 .fillMaxWidth()
-                .background(rowColor)
-                .clickable(role = Role.Button, onClick = { onOpen(view.target) })
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.Top,
-        ) {
-            NotificationAvatar(item.actor)
-            Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(
-                    view.text,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = if (unread) FontWeight.SemiBold else FontWeight.Normal,
-                )
-                view.note?.let { note ->
-                    Text(
-                        note,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        Formatters.relative(res, item.createdAt),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    if (view.target is NotificationTarget.External) {
-                        Spacer(Modifier.width(6.dp))
-                        Icon(
-                            Icons.AutoMirrored.Outlined.OpenInNew,
-                            contentDescription = stringResource(R.string.notifications_announcement_opens_in_new_tab),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(14.dp),
-                        )
-                    }
-                }
+                .tappable(shape = MaterialTheme.shapes.small, onClick = { onOpen(view.target) })
+                .heightIn(min = Sizes.rowPhoto.height)
+                .padding(vertical = Spacing.s12),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s12),
+    ) {
+        NotificationAvatar(item.actor)
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.s4)) {
+            Text(
+                text = view.text,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = if (unread) FontWeight.Bold else FontWeight.Normal,
+                color = colors.onSurface,
+            )
+            view.note?.let { note ->
+                MemberText(note, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
             }
-            if (unread) {
-                Spacer(Modifier.width(8.dp))
-                Box(
-                    Modifier
-                        .padding(top = 8.dp)
-                        .size(10.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary)
-                        .semantics { contentDescription = unreadLabel },
-                )
+            RowMeta {
+                if (unread) UnseenMark(stringResource(R.string.notifications_unread))
+                CaptionText(rememberRelativeTime(item.createdAt))
+                if (view.target is NotificationTarget.External) {
+                    Icon(
+                        Icons.AutoMirrored.Outlined.OpenInNew,
+                        contentDescription = stringResource(R.string.notifications_announcement_opens_in_new_tab),
+                        tint = colors.onSurfaceVariant,
+                        modifier = Modifier.size(Sizes.iconTiny),
+                    )
+                }
             }
         }
-        HorizontalDivider(Modifier.padding(start = 76.dp), color = MaterialTheme.colorScheme.outlineVariant)
     }
 }
 
-/** The actor's photo, the actor's initial without a photo, or the app icon for system notifications. */
+/** The actor's arch (photo or monogram), or the app's mark in one for system notifications. */
 @Composable
 private fun NotificationAvatar(actor: NotificationActor?) {
-    val photo = actor?.photo
-    when {
-        photo != null -> {
-            Avatar(photo = photo, gender = null, contentDescription = null, size = 48.dp)
-        }
+    if (actor != null) {
+        // The feed has no gender, and needs none: with a name there is a monogram, not a silhouette.
+        MemberAvatar(photo = actor.photo, name = actor.displayName, gender = null, decorative = true)
+        return
+    }
+    val label = stringResource(R.string.notifications_app_icon)
+    Box(
+        modifier =
+            Modifier
+                .clearAndSetSemantics { contentDescription = label }
+                .size(Sizes.arch46)
+                .clip(ArchShape)
+                .background(KrTheme.tonal),
+        contentAlignment = Alignment.Center,
+    ) {
+        BrandMark(height = Sizes.iconBar)
+    }
+}
 
-        actor != null -> {
-            Box(
-                Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center,
+/** The first load, in the shape of the rows. */
+@Composable
+private fun FeedSkeleton() {
+    LoadingRegion(Modifier.fillMaxWidth(), spacing = 0.dp) {
+        repeat(SKELETON_ROWS) {
+            Row(
+                modifier =
+                    Modifier
+                        .heightIn(min = Sizes.rowPhoto.height)
+                        .padding(vertical = Spacing.s12),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s12),
             ) {
-                Text(
-                    actor.displayName.take(1).uppercase(),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                )
+                SkeletonBox(Modifier.size(Sizes.arch46), shape = ArchShape)
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.s8)) {
+                    SkeletonBox(Modifier.fillMaxWidth().height(Spacing.s20))
+                    SkeletonBox(Modifier.fillMaxWidth(TIME_SHARE).height(Spacing.s16))
+                }
             }
-        }
-
-        else -> {
-            Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) {
-                Image(
-                    painter = painterResource(R.drawable.ic_logo_mark),
-                    contentDescription = stringResource(R.string.notifications_app_icon),
-                    modifier =
-                        Modifier
-                            .size(40.dp)
-                            .clip(MaterialTheme.shapes.small),
-                )
-            }
+            RowDivider()
         }
     }
 }
@@ -268,24 +296,23 @@ private fun NotificationAvatar(actor: NotificationActor?) {
 @Composable
 private fun WarningDialog(
     reason: String?,
-    onGuidelines: () -> Unit,
+    onOpenGuidelines: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
+    val body: (@Composable ColumnScope.() -> Unit)? =
+        if (reason == null) {
+            null
+        } else {
+            { MemberText(reason, style = MaterialTheme.typography.bodyMedium) }
+        }
+    KrDialog(
+        title = stringResource(R.string.notifications_warning_title),
+        confirmLabel = stringResource(R.string.notifications_warning_understand),
+        onConfirm = onDismiss,
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.notifications_warning_title)) },
-        text =
-            if (reason != null) {
-                { Text(reason, style = MaterialTheme.typography.bodyLarge) }
-            } else {
-                null
-            },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.notifications_warning_understand)) }
-        },
-        dismissButton = {
-            TextButton(onClick = onGuidelines) { Text(stringResource(R.string.notifications_warning_guidelines)) }
-        },
+        dismissLabel = stringResource(R.string.notifications_warning_guidelines),
+        onDismiss = onOpenGuidelines,
+        content = body,
     )
 }
 
@@ -347,3 +374,7 @@ private fun AppNavigator.pushAll(keys: List<AppKey>) {
         if (index == 0 && stack.firstOrNull()?.key == key) popUntil { it == key } else push(key)
     }
 }
+
+private const val MARK_ALL_KEY = "notifications:mark-all"
+private const val SKELETON_ROWS = 6
+private const val TIME_SHARE = 0.4f

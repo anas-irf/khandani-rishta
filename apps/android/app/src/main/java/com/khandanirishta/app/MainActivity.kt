@@ -2,9 +2,11 @@ package com.khandanirishta.app
 
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -32,7 +34,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splash = installSplashScreen()
-        enableEdgeToEdge()
+        // Light only (specs/22 section 12): dark icons on both bars, also when the phone is in dark mode.
+        val bars = SystemBarStyle.light(scrim = Color.TRANSPARENT, darkScrim = Color.TRANSPARENT)
+        enableEdgeToEdge(statusBarStyle = bars, navigationBarStyle = bars)
         super.onCreate(savedInstanceState)
         // Keep the system splash until the app knows what to show first.
         splash.setKeepOnScreenCondition { appViewModel.state.value == RootState.Starting }

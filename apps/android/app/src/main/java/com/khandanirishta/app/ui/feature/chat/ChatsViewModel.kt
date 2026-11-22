@@ -1,5 +1,6 @@
 package com.khandanirishta.app.ui.feature.chat
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khandanirishta.app.core.data.ConnectionRepository
@@ -38,6 +39,7 @@ enum class ChatFilter(
     ENDED("ended"),
 }
 
+@Immutable
 data class ChatsUiState(
     val filter: ChatFilter = ChatFilter.ACTIVE,
     val list: PagedState<Connection> = PagedState(),

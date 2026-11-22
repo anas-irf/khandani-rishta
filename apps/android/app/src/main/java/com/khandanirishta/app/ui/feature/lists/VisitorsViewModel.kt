@@ -1,5 +1,6 @@
 package com.khandanirishta.app.ui.feature.lists
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khandanirishta.app.core.data.DataKey
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@Immutable
 data class VisitorsUiState(
     /** 0: "Viewed me", 1: "I viewed". */
     val tab: Int = VisitorsViewModel.VIEWED_ME,

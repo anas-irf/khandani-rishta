@@ -1,5 +1,6 @@
 package com.khandanirishta.app.ui.feature.settings
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khandanirishta.app.core.data.NotificationRepository
@@ -25,6 +26,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
+@Immutable
 data class NotificationSettingsUiState(
     /** The values the API last confirmed; `null` until the first load. */
     val saved: NotificationPreferences? = null,

@@ -188,6 +188,18 @@ private val PK_MOBILE = Regex("^\\+92(\\d{3})(\\d{7})$")
 internal fun formatPhone(e164: String): String =
     PK_MOBILE.matchEntire(e164)?.let { "+92 ${it.groupValues[1]} ${it.groupValues[2]}" } ?: e164
 
+/**
+ * A phone number or an email keeps its left-to-right order inside right-to-left text (rule G12).
+ * The marks are invisible. Only for display: links get the raw value.
+ */
+internal fun leftToRight(value: String): String = if (value.isEmpty()) value else "$LTR_ISOLATE$value$POP_ISOLATE"
+
+/** [formatPhone] for a screen. */
+internal fun displayPhone(e164: String): String = leftToRight(formatPhone(e164))
+
+private const val LTR_ISOLATE = '\u2066'
+private const val POP_ISOLATE = '\u2069'
+
 /** The reasons a member can choose when ending a connection, with this dialog's wording (16 section 6.12). */
 internal val MEMBER_END_REASONS: List<MemberEndReason> =
     MemberEndReason.entries.filter { it != MemberEndReason.UNKNOWN }

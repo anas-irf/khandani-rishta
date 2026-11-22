@@ -1,6 +1,7 @@
 package com.khandanirishta.app.ui.feature.me
 
 import android.net.Uri
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khandanirishta.app.R
@@ -29,6 +30,7 @@ import java.time.Duration
 import java.time.Instant
 import javax.inject.Inject
 
+@Immutable
 data class PhotoManagerUiState(
     val photos: List<OwnPhoto> = emptyList(),
     val loading: Boolean = true,

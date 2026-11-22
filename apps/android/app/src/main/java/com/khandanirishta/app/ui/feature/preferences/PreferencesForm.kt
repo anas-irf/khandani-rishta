@@ -1,26 +1,14 @@
 package com.khandanirishta.app.ui.feature.preferences
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,24 +21,28 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import com.khandanirishta.app.R
 import com.khandanirishta.app.core.data.Lists
 import com.khandanirishta.app.core.data.Option
 import com.khandanirishta.app.core.network.generated.model.Gender
 import com.khandanirishta.app.core.network.generated.model.Importance
 import com.khandanirishta.app.core.util.Formatters
+import com.khandanirishta.app.ui.components.AdaptiveRow
 import com.khandanirishta.app.ui.components.FieldSupport
+import com.khandanirishta.app.ui.components.ImportanceField
 import com.khandanirishta.app.ui.components.IntRangeSlider
 import com.khandanirishta.app.ui.components.KrTextField
+import com.khandanirishta.app.ui.components.KrTextLink
 import com.khandanirishta.app.ui.components.MultiSelectField
 import com.khandanirishta.app.ui.components.RadioCard
 import com.khandanirishta.app.ui.components.RadioCardsField
+import com.khandanirishta.app.ui.components.RowDivider
 import com.khandanirishta.app.ui.components.SelectField
+import com.khandanirishta.app.ui.components.SwitchRow
+import com.khandanirishta.app.ui.feature.profilesections.CollapsibleContent
 import com.khandanirishta.app.ui.feature.profilesections.CollapsibleHeader
 import com.khandanirishta.app.ui.feature.profilesections.FieldLocator
-import com.khandanirishta.app.ui.feature.profilesections.FormSummaryBox
+import com.khandanirishta.app.ui.feature.profilesections.FormErrors
 import com.khandanirishta.app.ui.feature.profilesections.GroupTitle
 import com.khandanirishta.app.ui.feature.profilesections.HelperText
 import com.khandanirishta.app.ui.feature.profilesections.NOT_SPECIFIED
@@ -60,6 +52,8 @@ import com.khandanirishta.app.ui.feature.profilesections.WarningBox
 import com.khandanirishta.app.ui.feature.profilesections.locate
 import com.khandanirishta.app.ui.text.LocalReference
 import com.khandanirishta.app.ui.text.text
+import com.khandanirishta.app.ui.theme.Spacing
+import com.khandanirishta.app.ui.theme.TABULAR_FIGURES
 
 /** Five or more must-haves can leave very few matches (07 section 11.3 rule 3). */
 const val MUST_WARNING_AT = 5
@@ -67,7 +61,8 @@ const val MUST_WARNING_AT = 5
 /**
  * The partner preferences form of ONB-09 and ME-PREFS (07 section 11): the essentials, then
  * "More preferences" (collapsed, it opens when one of its fields has an error), each row with its
- * importance control, then the notes. The "{n} must-haves" line lives in the screen's bottom bar.
+ * importance control and a hairline under it, then the notes. The "{n} must-haves" line lives in
+ * the screen's bottom bar.
  */
 @Composable
 fun PreferencesFields(
@@ -84,6 +79,12 @@ fun PreferencesFields(
     val female = gender == Gender.FEMALE
     val enabled = !form.busy
     val any = stringResource(R.string.preferences_any)
+    val rules =
+        remember(gender, reference) {
+            PreferencesRules(gender) { religions ->
+                PreferencesFormController.sectsOf(reference, religions).isNotEmpty()
+            }
+        }
 
     fun error(field: String): String? = form.error(field)?.resolve(res)
 
@@ -133,18 +134,24 @@ fun PreferencesFields(
     }
 
     var tierTwoOpen by rememberSaveable { mutableStateOf(false) }
-    val tierTwoShown = tierTwoOpen || PreferencesRules.TIER_TWO.any { form.error(it) != null }
+    val tierTwoError = PreferencesRules.TIER_TWO.any { form.error(it) != null }
+    val tierTwoShown = tierTwoOpen || tierTwoError
     var placesOpen by rememberSaveable { mutableStateOf(false) }
     val placesShown =
         placesOpen || values.regionIds.isNotEmpty() || values.cityIds.isNotEmpty() ||
             form.error("region_ids") != null || form.error("city_ids") != null
     val musts = values.mustHaveCount(gender)
+    // Both stay open once opened, so neither closes on the field being changed.
+    LaunchedEffect(tierTwoError) { if (tierTwoError) tierTwoOpen = true }
+    LaunchedEffect(placesShown) { if (placesShown) placesOpen = true }
 
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        if (form.showSummary) FormSummaryBox(form.unmatched)
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(RowGap)) {
+        if (form.showSummary) FormErrors(form = form, fields = rules.fields(values), locator = locator)
         if (musts >= MUST_WARNING_AT) WarningBox(text(R.string.preferences_must_warning, "count" to musts))
-        GroupTitle(stringResource(R.string.preferences_tier_essentials))
-        HelperText(stringResource(R.string.fields_importance_help))
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.s8)) {
+            GroupTitle(stringResource(R.string.preferences_tier_essentials))
+            HelperText(stringResource(R.string.fields_importance_help))
+        }
 
         val ageLabel = stringResource(R.string.preferences_rows_age)
         DimensionRow(Dimension.AGE, ageLabel) {
@@ -161,18 +168,20 @@ fun PreferencesFields(
         val maritalLabel = stringResource(R.string.preferences_rows_marital_status)
         DimensionRow(Dimension.MARITAL_STATUS, maritalLabel) {
             // `married` is listed only when the candidate is female (07 section 11.2).
-            ChipsRow(
-                "marital_statuses",
-                maritalLabel,
-                reference.options(Lists.MARITAL_STATUS).filter { it.code != "married" || female },
-                values.maritalStatuses,
-            ) { input, codes -> input.copy(maritalStatuses = codes) }
+            val options =
+                remember(reference, female) {
+                    reference.options(Lists.MARITAL_STATUS).filter { it.code != "married" || female }
+                }
+            ChipsRow("marital_statuses", maritalLabel, options, values.maritalStatuses) { input, codes ->
+                input.copy(maritalStatuses = codes)
+            }
         }
         val religionLabel = stringResource(R.string.preferences_rows_religion)
         DimensionRow(Dimension.RELIGION, religionLabel) {
+            val options = remember(reference) { reference.religionOptions() }
             ToggleChipsField(
                 label = religionLabel,
-                groups = listOf(null to reference.religionOptions()),
+                groups = listOf(null to options),
                 selected = values.religionCodes,
                 onChange = { codes ->
                     // Sects stay only for the religions still selected.
@@ -191,7 +200,9 @@ fun PreferencesFields(
             )
         }
         val sectOptions =
-            if (values.religionCodes.isEmpty()) emptyList() else reference.sectOptions(values.religionCodes)
+            remember(reference, values.religionCodes) {
+                if (values.religionCodes.isEmpty()) emptyList() else reference.sectOptions(values.religionCodes)
+            }
         if (sectOptions.isNotEmpty()) {
             val sectLabel = stringResource(R.string.preferences_rows_sect)
             DimensionRow(Dimension.SECT, sectLabel) {
@@ -201,7 +212,7 @@ fun PreferencesFields(
             }
         }
         DimensionRow(Dimension.LOCATION, stringResource(R.string.preferences_rows_location)) {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.s16)) {
                 MultiSelectField(
                     label = stringResource(R.string.preferences_rows_countries),
                     options = remember(reference) { reference.countryOptions() },
@@ -211,6 +222,7 @@ fun PreferencesFields(
                     error = error("country_codes"),
                     max = PreferencesRules.PLACES_MAX,
                     chips = false,
+                    enabled = enabled,
                     modifier = Modifier.locate("country_codes", locator),
                 )
                 if (placesShown) {
@@ -219,6 +231,7 @@ fun PreferencesFields(
                         selected = values.regionIds,
                         onChange = { ids -> edit("region_ids") { it.copy(regionIds = ids) } },
                         error = error("region_ids"),
+                        enabled = enabled,
                         modifier = Modifier.locate("region_ids", locator),
                     )
                     CityIdsField(
@@ -230,24 +243,19 @@ fun PreferencesFields(
                         modifier = Modifier.locate("city_ids", locator),
                     )
                 } else {
-                    TextButton(onClick = { placesOpen = true }, enabled = enabled) {
-                        Text(stringResource(R.string.preferences_rows_add_places))
-                    }
+                    KrTextLink(
+                        text = stringResource(R.string.preferences_rows_add_places),
+                        onClick = { placesOpen = true },
+                        enabled = enabled,
+                    )
                 }
             }
         }
         val educationLabel = stringResource(R.string.preferences_rows_education)
         DimensionRow(Dimension.EDUCATION, educationLabel) {
-            val ranks =
-                reference.educationRanks().map { (rank, name) ->
-                    Option(
-                        rank.toString(),
-                        text(R.string.preferences_rows_education_option, "name" to name.withoutBrackets()),
-                    )
-                }
             SelectField(
                 label = educationLabel,
-                options = listOf(Option(NOT_SPECIFIED, any)) + ranks,
+                options = educationOptions(any),
                 selected = values.educationMinRank?.toString(),
                 onSelect = { code -> edit("education_min_rank") { it.copy(educationMinRank = code?.toIntOrNull()) } },
                 placeholder = any,
@@ -261,234 +269,256 @@ fun PreferencesFields(
         CollapsibleHeader(
             title = stringResource(R.string.preferences_more),
             expanded = tierTwoShown,
-            onToggle = { tierTwoOpen = !tierTwoShown },
-            modifier = Modifier.padding(top = 8.dp),
+            onToggle = { tierTwoOpen = tierTwoError || !tierTwoShown },
         )
-        AnimatedVisibility(visible = tierTwoShown) {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                val heightLabel = stringResource(R.string.preferences_rows_height)
-                DimensionRow(Dimension.HEIGHT, heightLabel) {
-                    HeightRangeControl(
-                        label = heightLabel,
-                        min = values.heightMin,
-                        max = values.heightMax,
-                        onChange = { min, max -> edit("height") { it.copy(heightMin = min, heightMax = max) } },
-                        enabled = enabled,
-                        error = error("height"),
-                        modifier = Modifier.locate("height", locator),
-                    )
-                }
-                val childrenLabel = stringResource(R.string.preferences_rows_children)
-                DimensionRow(Dimension.CHILDREN, childrenLabel) {
-                    RadioCardsField(
-                        cards = reference.options(Lists.CHILDREN_ACCEPTANCE).map { RadioCard(it.code, it.label) },
-                        selected = values.childrenAcceptance,
-                        onSelect = { code -> edit("children_acceptance") { it.copy(childrenAcceptance = code) } },
-                        label = childrenLabel,
-                        error = error("children_acceptance"),
-                        enabled = enabled,
-                        modifier = Modifier.locate("children_acceptance", locator),
-                    )
-                }
-                val casteLabel = stringResource(R.string.preferences_rows_caste)
-                DimensionRow(Dimension.CASTE, casteLabel) {
-                    MultiSelectField(
-                        label = casteLabel,
-                        options = remember(reference) { reference.casteOptions() },
-                        selected = values.casteCodes,
-                        onChange = { codes -> edit("caste_codes") { it.copy(casteCodes = codes) } },
-                        helper = if (values.casteCodes.isEmpty()) any else null,
-                        error = error("caste_codes"),
-                        max = PreferencesRules.CASTES_MAX,
-                        chips = false,
-                        modifier = Modifier.locate("caste_codes", locator),
-                    )
-                }
-                val tongueLabel = stringResource(R.string.preferences_rows_mother_tongue)
-                DimensionRow(Dimension.MOTHER_TONGUE, tongueLabel) {
-                    MultiSelectField(
-                        label = tongueLabel,
-                        options = remember(reference) { reference.languageOptions() },
-                        selected = values.motherTongueCodes,
-                        onChange = { codes -> edit("mother_tongue_codes") { it.copy(motherTongueCodes = codes) } },
-                        helper = if (values.motherTongueCodes.isEmpty()) any else null,
-                        error = error("mother_tongue_codes"),
-                        chips = false,
-                        modifier = Modifier.locate("mother_tongue_codes", locator),
-                    )
-                }
-                DimensionRow(Dimension.PROFESSION, stringResource(R.string.preferences_rows_profession)) {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        ChipsRow(
-                            "employment_types",
-                            stringResource(R.string.preferences_rows_employment),
-                            reference.options(Lists.EMPLOYMENT_TYPE),
-                            values.employmentTypes,
-                        ) { input, codes -> input.copy(employmentTypes = codes) }
-                        MultiSelectField(
-                            label = stringResource(R.string.preferences_rows_profession_list),
-                            options = remember(reference) { reference.professionOptions() },
-                            selected = values.professionCodes,
-                            onChange = { codes -> edit("profession_codes") { it.copy(professionCodes = codes) } },
-                            helper = if (values.professionCodes.isEmpty()) any else null,
-                            error = error("profession_codes"),
-                            max = PreferencesRules.PLACES_MAX,
-                            chips = false,
-                            modifier = Modifier.locate("profession_codes", locator),
-                        )
+        CollapsibleContent(visible = tierTwoShown, instant = tierTwoError, spacing = RowGap) {
+            val heightLabel = stringResource(R.string.preferences_rows_height)
+            DimensionRow(Dimension.HEIGHT, heightLabel) {
+                HeightRangeControl(
+                    label = heightLabel,
+                    min = values.heightMin,
+                    max = values.heightMax,
+                    onChange = { min, max -> edit("height") { it.copy(heightMin = min, heightMax = max) } },
+                    enabled = enabled,
+                    error = error("height"),
+                    modifier = Modifier.locate("height", locator),
+                )
+            }
+            val childrenLabel = stringResource(R.string.preferences_rows_children)
+            DimensionRow(Dimension.CHILDREN, childrenLabel) {
+                val cards =
+                    remember(reference) {
+                        reference.options(Lists.CHILDREN_ACCEPTANCE).map { RadioCard(it.code, it.label) }
                     }
-                }
-                val incomeLabel = stringResource(R.string.preferences_rows_income)
-                DimensionRow(Dimension.INCOME, incomeLabel) {
-                    val bands = incomeOptions()
-                    SelectField(
-                        label = incomeLabel,
-                        options = listOf(Option(NOT_SPECIFIED, any)) + bands,
-                        selected = values.incomeMinRank?.toString(),
-                        onSelect = { code -> edit("income_min_rank") { it.copy(incomeMinRank = code?.toIntOrNull()) } },
-                        placeholder = any,
-                        error = error("income_min_rank"),
-                        clearable = false,
-                        enabled = enabled,
-                        modifier = Modifier.locate("income_min_rank", locator),
-                    )
-                }
-                val religiosityLabel = stringResource(R.string.preferences_rows_religiosity)
-                DimensionRow(Dimension.RELIGIOSITY, religiosityLabel) {
+                RadioCardsField(
+                    cards = cards,
+                    selected = values.childrenAcceptance,
+                    onSelect = { code -> edit("children_acceptance") { it.copy(childrenAcceptance = code) } },
+                    label = childrenLabel,
+                    error = error("children_acceptance"),
+                    enabled = enabled,
+                    modifier = Modifier.locate("children_acceptance", locator),
+                )
+            }
+            val casteLabel = stringResource(R.string.preferences_rows_caste)
+            DimensionRow(Dimension.CASTE, casteLabel) {
+                MultiSelectField(
+                    label = casteLabel,
+                    options = remember(reference) { reference.casteOptions() },
+                    selected = values.casteCodes,
+                    onChange = { codes -> edit("caste_codes") { it.copy(casteCodes = codes) } },
+                    helper = if (values.casteCodes.isEmpty()) any else null,
+                    error = error("caste_codes"),
+                    max = PreferencesRules.CASTES_MAX,
+                    chips = false,
+                    enabled = enabled,
+                    modifier = Modifier.locate("caste_codes", locator),
+                )
+            }
+            val tongueLabel = stringResource(R.string.preferences_rows_mother_tongue)
+            DimensionRow(Dimension.MOTHER_TONGUE, tongueLabel) {
+                MultiSelectField(
+                    label = tongueLabel,
+                    options = remember(reference) { reference.languageOptions() },
+                    selected = values.motherTongueCodes,
+                    onChange = { codes -> edit("mother_tongue_codes") { it.copy(motherTongueCodes = codes) } },
+                    helper = if (values.motherTongueCodes.isEmpty()) any else null,
+                    error = error("mother_tongue_codes"),
+                    chips = false,
+                    enabled = enabled,
+                    modifier = Modifier.locate("mother_tongue_codes", locator),
+                )
+            }
+            DimensionRow(Dimension.PROFESSION, stringResource(R.string.preferences_rows_profession)) {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.s16)) {
                     ChipsRow(
-                        "religiosity_levels",
-                        religiosityLabel,
-                        reference.options(Lists.RELIGIOSITY),
-                        values.religiosityLevels,
-                    ) { input, codes ->
-                        input.copy(religiosityLevels = codes)
-                    }
-                }
-                // The candidate is female: the beard of the men she looks for; otherwise the hijab (07 section 11.2).
-                val appearanceLabel =
-                    stringResource(
-                        if (female) {
-                            R.string.preferences_rows_appearance_beard
-                        } else {
-                            R.string.preferences_rows_appearance_hijab
-                        },
+                        "employment_types",
+                        stringResource(R.string.preferences_rows_employment),
+                        reference.options(Lists.EMPLOYMENT_TYPE),
+                        values.employmentTypes,
+                    ) { input, codes -> input.copy(employmentTypes = codes) }
+                    MultiSelectField(
+                        label = stringResource(R.string.preferences_rows_profession_list),
+                        options = remember(reference) { reference.professionOptions() },
+                        selected = values.professionCodes,
+                        onChange = { codes -> edit("profession_codes") { it.copy(professionCodes = codes) } },
+                        helper = if (values.professionCodes.isEmpty()) any else null,
+                        error = error("profession_codes"),
+                        max = PreferencesRules.PLACES_MAX,
+                        chips = false,
+                        enabled = enabled,
+                        modifier = Modifier.locate("profession_codes", locator),
                     )
-                DimensionRow(Dimension.APPEARANCE, appearanceLabel) {
+                }
+            }
+            val incomeLabel = stringResource(R.string.preferences_rows_income)
+            DimensionRow(Dimension.INCOME, incomeLabel) {
+                SelectField(
+                    label = incomeLabel,
+                    options = incomeOptions(any),
+                    selected = values.incomeMinRank?.toString(),
+                    onSelect = { code -> edit("income_min_rank") { it.copy(incomeMinRank = code?.toIntOrNull()) } },
+                    placeholder = any,
+                    error = error("income_min_rank"),
+                    clearable = false,
+                    enabled = enabled,
+                    modifier = Modifier.locate("income_min_rank", locator),
+                )
+            }
+            val religiosityLabel = stringResource(R.string.preferences_rows_religiosity)
+            DimensionRow(Dimension.RELIGIOSITY, religiosityLabel) {
+                ChipsRow(
+                    "religiosity_levels",
+                    religiosityLabel,
+                    reference.options(Lists.RELIGIOSITY),
+                    values.religiosityLevels,
+                ) { input, codes ->
+                    input.copy(religiosityLevels = codes)
+                }
+            }
+            // The candidate is female: the beard of the men she looks for; otherwise the hijab (07 section 11.2).
+            val appearanceLabel =
+                stringResource(
                     if (female) {
-                        ChipsRow(
-                            "beard_types",
-                            appearanceLabel,
-                            reference.options(Lists.BEARD),
-                            values.beardTypes,
-                        ) { input, codes ->
-                            input.copy(beardTypes = codes)
-                        }
+                        R.string.preferences_rows_appearance_beard
                     } else {
-                        ChipsRow(
-                            "hijab_types",
-                            appearanceLabel,
-                            reference.options(Lists.HIJAB),
-                            values.hijabTypes,
-                        ) { input, codes ->
-                            input.copy(hijabTypes = codes)
-                        }
-                    }
-                }
-                DimensionRow(Dimension.FAMILY, stringResource(R.string.preferences_rows_family)) {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        ChipsRow(
-                            "family_values",
-                            stringResource(R.string.preferences_rows_family_values),
-                            reference.options(Lists.FAMILY_VALUES),
-                            values.familyValues,
-                        ) { input, codes -> input.copy(familyValues = codes) }
-                        ChipsRow(
-                            "family_types",
-                            stringResource(R.string.preferences_rows_family_types),
-                            reference.options(Lists.FAMILY_TYPE),
-                            values.familyTypes,
-                        ) { input, codes -> input.copy(familyTypes = codes) }
-                    }
-                }
-                val livingLabel = stringResource(R.string.preferences_rows_living_arrangement)
-                DimensionRow(Dimension.LIVING_ARRANGEMENT, livingLabel) {
+                        R.string.preferences_rows_appearance_hijab
+                    },
+                )
+            DimensionRow(Dimension.APPEARANCE, appearanceLabel) {
+                if (female) {
                     ChipsRow(
-                        "living_arrangements",
-                        livingLabel,
-                        reference.options(Lists.LIVING_ARRANGEMENT),
-                        values.livingArrangements,
+                        "beard_types",
+                        appearanceLabel,
+                        reference.options(Lists.BEARD),
+                        values.beardTypes,
                     ) { input, codes ->
-                        input.copy(livingArrangements = codes)
+                        input.copy(beardTypes = codes)
                     }
-                }
-                val workLabel =
-                    stringResource(
-                        if (female) {
-                            R.string.preferences_rows_work_after_marriage_female
-                        } else {
-                            R.string.preferences_rows_work_after_marriage_male
-                        },
-                    )
-                DimensionRow(Dimension.WORK_AFTER_MARRIAGE, workLabel) {
+                } else {
                     ChipsRow(
-                        "work_after_marriage_options",
-                        workLabel,
-                        reference.options(Lists.WORK_AFTER_MARRIAGE),
-                        values.workAfterMarriageOptions,
-                    ) { input, codes -> input.copy(workAfterMarriageOptions = codes) }
-                }
-                val smokingLabel = stringResource(R.string.preferences_rows_smoking)
-                DimensionRow(Dimension.SMOKING, smokingLabel) {
-                    ChipsRow(
-                        "smoking_options",
-                        smokingLabel,
-                        reference.options(Lists.SMOKING),
-                        values.smokingOptions,
+                        "hijab_types",
+                        appearanceLabel,
+                        reference.options(Lists.HIJAB),
+                        values.hijabTypes,
                     ) { input, codes ->
-                        input.copy(smokingOptions = codes)
+                        input.copy(hijabTypes = codes)
                     }
                 }
-                Column(Modifier.locate("notes", locator), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    KrTextField(
-                        value = values.notes,
-                        onValueChange = { text -> edit("notes") { it.copy(notes = text) } },
-                        label = stringResource(R.string.preferences_notes_label),
-                        helper = stringResource(R.string.preferences_notes_help),
-                        error = error("notes"),
-                        optional = true,
-                        maxLength = PreferencesRules.NOTES_MAX,
-                        singleLine = false,
-                        minLines = NOTES_LINES,
-                        enabled = enabled,
-                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-                    )
-                    TextStatusNote(ui.notesStatus)
+            }
+            DimensionRow(Dimension.FAMILY, stringResource(R.string.preferences_rows_family)) {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.s16)) {
+                    ChipsRow(
+                        "family_values",
+                        stringResource(R.string.preferences_rows_family_values),
+                        reference.options(Lists.FAMILY_VALUES),
+                        values.familyValues,
+                    ) { input, codes -> input.copy(familyValues = codes) }
+                    ChipsRow(
+                        "family_types",
+                        stringResource(R.string.preferences_rows_family_types),
+                        reference.options(Lists.FAMILY_TYPE),
+                        values.familyTypes,
+                    ) { input, codes -> input.copy(familyTypes = codes) }
                 }
+            }
+            val livingLabel = stringResource(R.string.preferences_rows_living_arrangement)
+            DimensionRow(Dimension.LIVING_ARRANGEMENT, livingLabel) {
+                ChipsRow(
+                    "living_arrangements",
+                    livingLabel,
+                    reference.options(Lists.LIVING_ARRANGEMENT),
+                    values.livingArrangements,
+                ) { input, codes ->
+                    input.copy(livingArrangements = codes)
+                }
+            }
+            val workLabel =
+                stringResource(
+                    if (female) {
+                        R.string.preferences_rows_work_after_marriage_female
+                    } else {
+                        R.string.preferences_rows_work_after_marriage_male
+                    },
+                )
+            DimensionRow(Dimension.WORK_AFTER_MARRIAGE, workLabel) {
+                ChipsRow(
+                    "work_after_marriage_options",
+                    workLabel,
+                    reference.options(Lists.WORK_AFTER_MARRIAGE),
+                    values.workAfterMarriageOptions,
+                ) { input, codes -> input.copy(workAfterMarriageOptions = codes) }
+            }
+            val smokingLabel = stringResource(R.string.preferences_rows_smoking)
+            DimensionRow(Dimension.SMOKING, smokingLabel) {
+                ChipsRow(
+                    "smoking_options",
+                    smokingLabel,
+                    reference.options(Lists.SMOKING),
+                    values.smokingOptions,
+                ) { input, codes ->
+                    input.copy(smokingOptions = codes)
+                }
+            }
+            Column(Modifier.locate("notes", locator), verticalArrangement = Arrangement.spacedBy(Spacing.s8)) {
+                KrTextField(
+                    value = values.notes,
+                    onValueChange = { text -> edit("notes") { it.copy(notes = text) } },
+                    label = stringResource(R.string.preferences_notes_label),
+                    helper = stringResource(R.string.preferences_notes_help),
+                    error = error("notes"),
+                    optional = true,
+                    maxLength = PreferencesRules.NOTES_MAX,
+                    singleLine = false,
+                    minLines = NOTES_LINES,
+                    enabled = enabled,
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+                )
+                TextStatusNote(ui.notesStatus)
             }
         }
     }
 }
 
-/** "Bachelor's degree (BA, BSc)" reads "Bachelor's degree" in "... or higher" (05 section 7). */
-private fun String.withoutBrackets(): String = replace(Regex("\\s*\\(.*\\)\\s*$"), "")
+private val BRACKETS = Regex("\\s*\\(.*\\)\\s*$")
+private val AMOUNT = Regex("\\d[\\d,]*")
 
-/** The PKR bands by rank as "At least ... PKR a month or the equivalent abroad" (05 section 10.3). */
+/** "Any", then each rank as "Bachelor's degree or higher", without the brackets of its name (05 section 7). */
 @Composable
-private fun incomeOptions(): List<Option> {
+private fun educationOptions(any: String): List<Option> {
     val reference = LocalReference.current
-    val amount = Regex("\\d[\\d,]*")
-    return reference.data.incomeBands
-        .filter { it.currencyCode == "PKR" }
-        .sortedBy { it.rank }
-        .mapNotNull { band ->
-            val value = amount.find(band.label)?.value
-            if (value == null || band.rank == 1) null else band.rank to value
-        }.map { (rank, value) ->
-            Option(rank.toString(), text(R.string.preferences_rows_income_option, "amount" to value))
-        }
+    val res = LocalResources.current
+    return remember(reference, res, any) {
+        listOf(Option(NOT_SPECIFIED, any)) +
+            reference.educationRanks().map { (rank, name) ->
+                Option(
+                    rank.toString(),
+                    res.text(R.string.preferences_rows_education_option, "name" to name.replace(BRACKETS, "")),
+                )
+            }
+    }
 }
 
-/** A matching dimension as a card: its value control and its importance (07 sections 11.2 and 11.3). */
+/** "Any", then the PKR bands as "At least ... PKR a month or the equivalent abroad" (05 section 10.3). */
+@Composable
+private fun incomeOptions(any: String): List<Option> {
+    val reference = LocalReference.current
+    val res = LocalResources.current
+    return remember(reference, res, any) {
+        listOf(Option(NOT_SPECIFIED, any)) +
+            reference.data.incomeBands
+                .filter { it.currencyCode == "PKR" }
+                .sortedBy { it.rank }
+                .mapNotNull { band ->
+                    val value = AMOUNT.find(band.label)?.value
+                    if (value == null || band.rank == 1) null else band.rank to value
+                }.map { (rank, value) ->
+                    Option(rank.toString(), res.text(R.string.preferences_rows_income_option, "amount" to value))
+                }
+    }
+}
+
+/** A matching dimension: its value, then its importance, and a hairline (07 sections 11.2 and 11.3). */
 @Composable
 private fun PreferenceRow(
     label: String,
@@ -499,27 +529,21 @@ private fun PreferenceRow(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shape = MaterialTheme.shapes.large,
-        shadowElevation = 1.dp,
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            content()
-            ImportanceSelector(
-                label = text(R.string.preferences_importance_label, "row" to label),
-                value = importance,
-                onChange = onImportance,
-                enabled = enabled,
-                error = error,
-            )
-        }
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.s16)) {
+        content()
+        ImportanceSelector(
+            label = text(R.string.preferences_importance_label, "row" to label),
+            value = importance,
+            onChange = onImportance,
+            enabled = enabled,
+            error = error,
+        )
+        RowDivider(Modifier.padding(top = Spacing.s8))
     }
 }
 
 /**
- * The four importance choices (07 section 11.3). Disabled and greyed when the row has no
+ * The four importance choices (07 section 11.3) as chips that wrap. Disabled when the row has no
  * preference; the stored value is kept. "Must have" shows its note directly under the row.
  */
 @Composable
@@ -531,63 +555,39 @@ private fun ImportanceSelector(
     error: String?,
     modifier: Modifier = Modifier,
 ) {
-    val reference = LocalReference.current
-    val options =
-        remember(reference) {
-            reference.optionsOf(
-                Lists.IMPORTANCE,
-                listOf(Importance.MUST, Importance.HIGH, Importance.MEDIUM, Importance.LOW),
-            )
-        }
     Column(modifier.fillMaxWidth()) {
         Text(
-            label,
+            text = label,
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 6.dp),
+            modifier = Modifier.padding(bottom = Spacing.s8),
         )
-        SingleChoiceSegmentedButtonRow(
-            Modifier
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min),
-        ) {
-            options.forEachIndexed { index, (option, text) ->
-                SegmentedButton(
-                    selected = option == value,
-                    onClick = { onChange(option) },
-                    shape = SegmentedButtonDefaults.itemShape(index, options.size),
-                    modifier = Modifier.fillMaxHeight(),
-                    enabled = enabled,
-                    colors =
-                        SegmentedButtonDefaults.colors(
-                            activeContainerColor =
-                                if (option == Importance.MUST) {
-                                    MaterialTheme.colorScheme.tertiaryContainer
-                                } else {
-                                    MaterialTheme.colorScheme.primaryContainer
-                                },
-                        ),
-                    icon = {},
-                    label = {
-                        Text(
-                            text,
-                            style = MaterialTheme.typography.labelMedium,
-                            textAlign = TextAlign.Center,
-                            maxLines = 2,
-                        )
-                    },
-                )
-            }
-        }
-        if (value == Importance.MUST && enabled) {
+        ImportanceField(value = value, onChange = onChange, enabled = enabled)
+        FieldSupport(null, error)
+    }
+}
+
+/** The label of a range and what is chosen, which drops under it when the two do not fit. */
+@Composable
+private fun RangeHeading(
+    label: String,
+    shown: String?,
+    modifier: Modifier = Modifier,
+) {
+    val style = MaterialTheme.typography.labelLarge
+    AdaptiveRow(
+        modifier = modifier.fillMaxWidth(),
+        lineSpacing = Spacing.s4,
+        verticalAlignment = Alignment.Top,
+    ) {
+        Text(label, style = style, modifier = Modifier.grow())
+        if (shown != null) {
             Text(
-                stringResource(R.string.preferences_must_note),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.tertiary,
-                modifier = Modifier.padding(top = 6.dp),
+                text = shown,
+                style = style.copy(fontFeatureSettings = TABULAR_FIGURES),
+                color = MaterialTheme.colorScheme.primary,
             )
         }
-        FieldSupport(null, error)
     }
 }
 
@@ -604,10 +604,7 @@ private fun AgeRangeControl(
 ) {
     val shown = text(R.string.onboarding_android_age_range, "min" to min, "max" to max)
     Column(modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(label, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-            Text(shown, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
-        }
+        RangeHeading(label = label, shown = shown)
         IntRangeSlider(
             start = min.coerceIn(AGE_MIN, AGE_MAX),
             end = max.coerceIn(AGE_MIN, AGE_MAX),
@@ -652,28 +649,17 @@ private fun HeightRangeControl(
             "max" to Formatters.heightShort(res, cmOf(to)),
         )
     Column(modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(label, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-            if (!noPreference) {
-                Text(shown, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
-            }
-        }
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
-            Text(
-                stringResource(R.string.fields_range_no_preference),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.weight(1f),
-            )
-            Switch(
-                checked = noPreference,
-                onCheckedChange = { on ->
-                    if (on) onChange(null, null) else onChange(Formatters.MIN_HEIGHT_CM, Formatters.MAX_HEIGHT_CM)
-                },
-                enabled = enabled,
-            )
-        }
+        RangeHeading(label = label, shown = if (noPreference) null else shown)
+        SwitchRow(
+            title = stringResource(R.string.fields_range_no_preference),
+            checked = noPreference,
+            onCheckedChange = { on ->
+                if (on) onChange(null, null) else onChange(Formatters.MIN_HEIGHT_CM, Formatters.MAX_HEIGHT_CM)
+            },
+            enabled = enabled,
+            modifier = Modifier.padding(top = Spacing.s8),
+        )
         if (!noPreference) {
-            Spacer(Modifier.size(4.dp))
             IntRangeSlider(
                 start = from,
                 end = to,
@@ -681,12 +667,16 @@ private fun HeightRangeControl(
                 onChange = { start, end -> onChange(cmOf(start), cmOf(end)) },
                 enabled = enabled,
                 stepped = true,
-                modifier = Modifier.semantics { contentDescription = "$label, $shown" },
+                modifier =
+                    Modifier
+                        .padding(top = Spacing.s8)
+                        .semantics { contentDescription = "$label, $shown" },
             )
         }
         FieldSupport(null, error)
     }
 }
 
+private val RowGap = Spacing.s24
 private const val INCHES = 12
 private const val NOTES_LINES = 4

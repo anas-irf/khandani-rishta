@@ -1,77 +1,100 @@
 package com.khandanirishta.app.ui.feature.profilesections
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.ErrorOutline
-import androidx.compose.material.icons.outlined.ExpandLess
-import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Remove
-import androidx.compose.material.icons.outlined.WarningAmber
-import androidx.compose.material3.FilledTonalIconButton
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.Icon
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.khandanirishta.app.R
 import com.khandanirishta.app.core.data.Option
 import com.khandanirishta.app.core.network.ApiError
 import com.khandanirishta.app.core.network.generated.model.TextStatus
+import com.khandanirishta.app.ui.components.CaptionText
+import com.khandanirishta.app.ui.components.ChoiceChips
+import com.khandanirishta.app.ui.components.DiamondTitle
+import com.khandanirishta.app.ui.components.DisclosureHeader
 import com.khandanirishta.app.ui.components.FieldLabel
 import com.khandanirishta.app.ui.components.FieldSupport
+import com.khandanirishta.app.ui.components.IconTextLine
+import com.khandanirishta.app.ui.components.KrButton
+import com.khandanirishta.app.ui.components.KrButtonVariant
+import com.khandanirishta.app.ui.components.KrChoiceChip
+import com.khandanirishta.app.ui.components.KrOutlinedIconButton
+import com.khandanirishta.app.ui.components.KrTextLink
+import com.khandanirishta.app.ui.components.LocalOnline
+import com.khandanirishta.app.ui.components.MemberText
 import com.khandanirishta.app.ui.components.ReferenceLine
+import com.khandanirishta.app.ui.components.StatusBanner
+import com.khandanirishta.app.ui.components.StatusTone
 import com.khandanirishta.app.ui.messages.UiText
 import com.khandanirishta.app.ui.rememberLinkOpener
 import com.khandanirishta.app.ui.text.LocalMe
 import com.khandanirishta.app.ui.text.linkedText
 import com.khandanirishta.app.ui.text.text
 import com.khandanirishta.app.ui.theme.KrTheme
+import com.khandanirishta.app.ui.theme.KrType
+import com.khandanirishta.app.ui.theme.Motion
+import com.khandanirishta.app.ui.theme.Spacing
+import com.khandanirishta.app.ui.theme.TABULAR_FIGURES
+import kotlinx.coroutines.launch
+
+/*
+ * What the own-profile forms share (the web's form-shell.tsx and fields.tsx): flat groups under
+ * diamond headings, labels above fields, and errors that are an icon and words. None of it has
+ * side padding: the screen gives the gutters.
+ */
 
 /** Spacing between the fields of a form column. */
-val FieldSpacing = 20.dp
+val FieldSpacing = Spacing.s20
+
+/** The room over a group's heading, on top of [FieldSpacing]. */
+internal val GroupSpace = Spacing.s12
 
 /**
  * Finds a field on screen, so a failed submit can scroll to the first invalid one (07 section 2.4
@@ -131,33 +154,56 @@ fun BoxScope.BusyOverlay(
     )
 }
 
-/** "Please check the highlighted fields." and the server errors that belong to no field. */
+/**
+ * The error summary at the top of a form (07 section 2.4, 17 section 8.3): "Please check the
+ * highlighted fields.", the server errors that belong to no field and, with [onShowFirstError],
+ * the [firstError] as a link that leads to its field.
+ */
 @Composable
 fun FormSummaryBox(
     unmatched: List<UiText>,
     modifier: Modifier = Modifier,
+    onShowFirstError: (() -> Unit)? = null,
+    firstError: String? = null,
 ) {
     val res = LocalResources.current
-    Surface(
-        color = MaterialTheme.colorScheme.errorContainer,
-        contentColor = MaterialTheme.colorScheme.onErrorContainer,
-        shape = MaterialTheme.shapes.medium,
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .semantics { liveRegion = LiveRegionMode.Polite },
+    StatusBanner(
+        text = null,
+        title = stringResource(R.string.errors_form_summary),
+        tone = StatusTone.DANGER,
+        announce = true,
+        modifier = modifier,
     ) {
-        Row(Modifier.padding(14.dp), verticalAlignment = Alignment.Top) {
-            Icon(Icons.Outlined.ErrorOutline, contentDescription = null, modifier = Modifier.size(20.dp))
-            Spacer(Modifier.width(10.dp))
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(stringResource(R.string.errors_form_summary), style = MaterialTheme.typography.titleSmall)
-                unmatched.forEach { message ->
-                    Text("• " + message.resolve(res), style = MaterialTheme.typography.bodyMedium)
-                }
-            }
+        unmatched.forEach { message ->
+            Text(message.resolve(res), style = MaterialTheme.typography.bodySmall)
+        }
+        if (!firstError.isNullOrBlank() && onShowFirstError != null) {
+            KrTextLink(text = firstError, onClick = onShowFirstError)
         }
     }
+}
+
+/** The [FormSummaryBox] of [form]: its link leads to the first invalid one of [fields]. */
+@Composable
+internal fun <V> FormErrors(
+    form: FormState<V>,
+    fields: List<String>,
+    locator: FieldLocator,
+    modifier: Modifier = Modifier,
+) {
+    val res = LocalResources.current
+    val scope = rememberCoroutineScope()
+    val first = form.firstError(fields)
+    FormSummaryBox(
+        unmatched = form.unmatched,
+        firstError = first?.let { form.error(it) }?.resolve(res),
+        onShowFirstError = {
+            if (first != null) {
+                scope.launch { locator.reveal(first) }
+            }
+        },
+        modifier = modifier,
+    )
 }
 
 /** "Something went wrong..." with "Try again" and the request id (07 section 16.9, 08 section 2.5). */
@@ -168,73 +214,43 @@ fun InlineFailureBox(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     busy: Boolean = false,
+    enabled: Boolean = true,
 ) {
-    Surface(
-        color = MaterialTheme.colorScheme.errorContainer,
-        contentColor = MaterialTheme.colorScheme.onErrorContainer,
-        shape = MaterialTheme.shapes.medium,
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .semantics { liveRegion = LiveRegionMode.Polite },
-    ) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Row(verticalAlignment = Alignment.Top) {
-                Icon(Icons.Outlined.ErrorOutline, contentDescription = null, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(10.dp))
-                Text(text, style = MaterialTheme.typography.bodyMedium)
-            }
-            OutlinedButton(onClick = onRetry, enabled = !busy) {
-                Text(stringResource(R.string.profile_sections_form_try_again))
-            }
-            ReferenceLine(error?.requestId)
-        }
+    StatusBanner(text = text, tone = StatusTone.DANGER, announce = true, modifier = modifier) {
+        KrButton(
+            text = stringResource(R.string.profile_sections_form_try_again),
+            onClick = onRetry,
+            variant = KrButtonVariant.SECONDARY,
+            enabled = enabled && LocalOnline.current,
+            loading = busy,
+            modifier = Modifier.padding(top = Spacing.s8),
+        )
+        ReferenceLine(error?.requestId)
     }
 }
 
-/** A warning in a tinted box (the gender and date of birth warning, 07 section 4.1). */
+/** A warning: an icon and words on attention soft (the warning of 07 section 4.1). */
 @Composable
 fun WarningBox(
     text: String,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
-        color = KrTheme.colors.warningContainer,
-        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-        shape = MaterialTheme.shapes.medium,
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Row(Modifier.padding(14.dp), verticalAlignment = Alignment.Top) {
-            Icon(
-                Icons.Outlined.WarningAmber,
-                contentDescription = null,
-                tint = KrTheme.colors.warning,
-                modifier = Modifier.size(20.dp),
-            )
-            Spacer(Modifier.width(10.dp))
-            Text(text, style = MaterialTheme.typography.bodyMedium)
-        }
-    }
+    StatusBanner(text = text, tone = StatusTone.WARNING, modifier = modifier)
 }
 
-/** A heading over a group of fields (07 sections 8 and 9). */
+/** A diamond heading over a group of fields (07 sections 8 and 9, DESIGN.md section 6.10). */
 @Composable
 fun GroupTitle(
     title: String,
     modifier: Modifier = Modifier,
     optional: Boolean = false,
 ) {
-    Row(modifier.semantics(mergeDescendants = true) { heading() }, verticalAlignment = Alignment.CenterVertically) {
-        Text(title, style = MaterialTheme.typography.titleMedium)
-        if (optional) {
-            Spacer(Modifier.width(6.dp))
-            Text(
-                stringResource(R.string.common_optional),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
+    DiamondTitle(
+        title = title,
+        style = MaterialTheme.typography.titleMedium,
+        note = if (optional) stringResource(R.string.common_optional) else null,
+        modifier = modifier.semantics(mergeDescendants = true) { heading() },
+    )
 }
 
 /** A group heading that opens and closes its fields (07 section 9.1, 07 section 11.2). */
@@ -246,38 +262,41 @@ fun CollapsibleHeader(
     modifier: Modifier = Modifier,
     optional: Boolean = false,
 ) {
-    Surface(
-        shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .heightIn(min = 52.dp)
-                .clickable(role = Role.Button, onClick = onToggle),
-    ) {
-        Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Row(
-                Modifier
-                    .weight(1f)
-                    .semantics { heading() },
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(title, style = MaterialTheme.typography.titleMedium)
-                if (optional) {
-                    Spacer(Modifier.width(6.dp))
-                    Text(
-                        stringResource(R.string.common_optional),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-            Icon(
-                if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+    DisclosureHeader(
+        title = title,
+        expanded = expanded,
+        onExpandedChange = { onToggle() },
+        note = if (optional) stringResource(R.string.common_optional) else null,
+        ornament = true,
+        modifier = modifier,
+    )
+}
+
+/**
+ * The fields that a [CollapsibleHeader] or a switch shows. When they open for an error
+ * ([instant]) they do so at once, so [RevealEffect] finds the field where it will stay.
+ */
+@Composable
+internal fun CollapsibleContent(
+    visible: Boolean,
+    modifier: Modifier = Modifier,
+    instant: Boolean = false,
+    spacing: Dp = FieldSpacing,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val enter =
+        if (instant) {
+            EnterTransition.None
+        } else {
+            fadeIn(Motion.base()) + expandVertically(Motion.base(), expandFrom = Alignment.Top)
         }
+    AnimatedVisibility(
+        visible = visible,
+        modifier = modifier,
+        enter = enter,
+        exit = fadeOut(Motion.fast()) + shrinkVertically(Motion.base(), shrinkTowards = Alignment.Top),
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(spacing), content = content)
     }
 }
 
@@ -287,15 +306,10 @@ fun HelperText(
     text: String,
     modifier: Modifier = Modifier,
 ) {
-    Text(
-        text,
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = modifier,
-    )
+    CaptionText(text, modifier)
 }
 
-/** "Under review" or "Not approved" next to a moderated text (08 section 1.4). */
+/** "Under review" or "Not approved" next to a moderated text (08 section 1.4): icon and words. */
 @Composable
 fun TextStatusNote(
     status: TextStatus?,
@@ -303,28 +317,23 @@ fun TextStatusNote(
 ) {
     val pending = status == TextStatus.PENDING
     if (!pending && status != TextStatus.REJECTED) return
-    Surface(
-        color = if (pending) KrTheme.colors.warningContainer else MaterialTheme.colorScheme.errorContainer,
-        shape = MaterialTheme.shapes.small,
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Text(
-            stringResource(
-                if (pending) {
-                    R.string.profile_sections_form_text_pending
-                } else {
-                    R.string.profile_sections_form_text_rejected
-                },
-            ),
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-        )
-    }
+    val note =
+        if (pending) {
+            R.string.profile_sections_form_text_pending
+        } else {
+            R.string.profile_sections_form_text_rejected
+        }
+    StatusBanner(
+        text = stringResource(note),
+        tone = if (pending) StatusTone.WARNING else StatusTone.DANGER,
+        icon = if (pending) Icons.Outlined.Schedule else Icons.Outlined.Cancel,
+        modifier = modifier,
+    )
 }
 
 /**
- * A field the owner can no longer edit (08 section 2.2): read-only text with a lock, and how to
- * ask support for a correction, with the support address as a mail link.
+ * A field the owner can no longer edit (08 section 2.2): read-only text with a lock on sand
+ * strong, and how to ask support for a correction, with the support address as a mail link.
  */
 @Composable
 fun LockedField(
@@ -338,44 +347,50 @@ fun LockedField(
     val code = me?.profile?.publicCode.orEmpty()
     val subject = text(R.string.profile_sections_locked_mail_subject, "code" to code)
     val raw = text(R.string.profile_sections_locked_explanation, "email" to email, "code" to code)
+    val lockedState = stringResource(R.string.profile_sections_locked_icon)
     val linkColor = MaterialTheme.colorScheme.primary
+    val valueStyle = MaterialTheme.typography.bodyMedium
     Column(modifier.fillMaxWidth()) {
         FieldLabel(label)
         Surface(
-            shape = MaterialTheme.shapes.small,
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            shape = MaterialTheme.shapes.medium,
+            color = KrTheme.colors.disabledContainer,
+            contentColor = KrTheme.colors.onDisabledContainer,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Row(
-                Modifier
-                    .heightIn(min = 56.dp)
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
-                verticalAlignment = Alignment.CenterVertically,
+            IconTextLine(
+                icon = Icons.Outlined.Lock,
+                style = valueStyle,
+                gap = Spacing.s12,
+                modifier =
+                    Modifier
+                        .semantics(mergeDescendants = true) { stateDescription = lockedState }
+                        .padding(Spacing.s16),
             ) {
-                Icon(
-                    Icons.Outlined.Lock,
-                    contentDescription = stringResource(R.string.profile_sections_locked_icon),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(18.dp),
+                MemberText(
+                    text = value,
+                    style = valueStyle,
+                    color = KrTheme.colors.onDisabledContainer,
+                    modifier = Modifier.weight(1f),
                 )
-                Spacer(Modifier.width(10.dp))
-                Text(value, style = MaterialTheme.typography.bodyLarge)
             }
         }
         Text(
-            remember(raw, linkColor, email, subject) {
-                linkedText(raw, linkColor, mapOf("mail" to { links.email(email, subject) }))
-            },
-            style = MaterialTheme.typography.bodySmall,
+            text =
+                remember(raw, linkColor, links, email, subject) {
+                    linkedText(raw, linkColor, mapOf("mail" to { links.email(email, subject) }))
+                },
+            style = KrType.caption,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 6.dp),
+            modifier = Modifier.padding(top = Spacing.s8),
         )
     }
 }
 
 /**
- * A number chosen with minus and plus buttons (07 sections 4.1 and 8.1). An empty stepper shows
- * [emptyText] ("Not set") with a plus button; with [clearable], minus at the lowest value empties it.
+ * A number chosen with minus and plus buttons under its label (07 sections 4.1 and 8.1). An empty
+ * stepper shows [emptyText] ("Not set") with a plus button; with [clearable], minus at the lowest
+ * value empties it.
  */
 @Composable
 fun StepperField(
@@ -390,69 +405,54 @@ fun StepperField(
     enabled: Boolean = true,
     emptyText: String? = null,
 ) {
+    val shown = value?.toString() ?: emptyText.orEmpty()
+    val spoken = if (shown.isEmpty()) label else "$label, $shown"
+    val typography = MaterialTheme.typography
+    val colors = MaterialTheme.colorScheme
+    // Wide enough for "Not set" at any text size, so plus does not move as the number grows.
+    val valueWidth = StepperValueWidth * LocalDensity.current.fontScale.coerceAtLeast(1f)
     Column(modifier.fillMaxWidth()) {
-        Surface(
-            shape = MaterialTheme.shapes.small,
-            color = MaterialTheme.colorScheme.surfaceContainerLowest,
-            border =
-                BorderStroke(
-                    1.dp,
-                    if (error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outlineVariant,
-                ),
-            modifier = Modifier.fillMaxWidth(),
+        FieldLabel(label, optional = optional)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s12),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(
-                Modifier
-                    .heightIn(min = 64.dp)
-                    .padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column(Modifier.weight(1f)) {
-                    Text(label, style = MaterialTheme.typography.labelLarge)
-                    if (optional) {
-                        Text(
-                            stringResource(R.string.common_optional),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-                val canDecrease = enabled && value != null && (value > range.first || clearable)
-                FilledTonalIconButton(
-                    onClick = { if (value != null) onChange(if (value > range.first) value - 1 else null) },
-                    enabled = canDecrease,
-                ) {
-                    Icon(
-                        Icons.Outlined.Remove,
-                        contentDescription = text(R.string.fields_number_decrease, "label" to label),
-                    )
-                }
-                val set = value != null
-                val colors = MaterialTheme.colorScheme
-                Text(
-                    value?.toString() ?: emptyText.orEmpty(),
-                    style = if (set) MaterialTheme.typography.titleMedium else MaterialTheme.typography.bodyMedium,
-                    color = if (set) colors.onSurface else colors.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    maxLines = 1,
-                    modifier = Modifier.width(if (value != null) 40.dp else 64.dp),
-                )
-                FilledTonalIconButton(
-                    onClick = { onChange(if (value == null) range.first else (value + 1).coerceAtMost(range.last)) },
-                    enabled = enabled && (value == null || value < range.last),
-                ) {
-                    Icon(
-                        Icons.Outlined.Add,
-                        contentDescription = text(R.string.fields_number_increase, "label" to label),
-                    )
-                }
-            }
+            KrOutlinedIconButton(
+                icon = Icons.Outlined.Remove,
+                contentDescription = text(R.string.fields_number_decrease, "label" to label),
+                onClick = { if (value != null) onChange(if (value > range.first) value - 1 else null) },
+                enabled = enabled && value != null && (value > range.first || clearable),
+            )
+            Text(
+                text = shown,
+                style =
+                    if (value != null) {
+                        typography.titleMedium.copy(fontFeatureSettings = TABULAR_FIGURES)
+                    } else {
+                        typography.bodyMedium
+                    },
+                color = if (value != null) colors.onSurface else colors.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier =
+                    Modifier
+                        .weight(1f, fill = false)
+                        .semantics {
+                            contentDescription = spoken
+                            liveRegion = LiveRegionMode.Polite
+                        }.widthIn(min = valueWidth),
+            )
+            KrOutlinedIconButton(
+                icon = Icons.Outlined.Add,
+                contentDescription = text(R.string.fields_number_increase, "label" to label),
+                onClick = { onChange(if (value == null) range.first else (value + 1).coerceAtMost(range.last)) },
+                enabled = enabled && (value == null || value < range.last),
+            )
         }
         FieldSupport(null, error)
     }
 }
 
-/** Two to four choices as a segmented control (07 section 2.6). */
+/** Two to four choices (07 section 2.6), as chips that wrap where segments would cut their words. */
 @Composable
 fun SegmentedField(
     label: String,
@@ -466,17 +466,7 @@ fun SegmentedField(
 ) {
     Column(modifier.fillMaxWidth()) {
         FieldLabel(label, optional = optional)
-        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-            options.forEachIndexed { index, option ->
-                SegmentedButton(
-                    selected = option.code == selected,
-                    onClick = { onSelect(option.code) },
-                    shape = SegmentedButtonDefaults.itemShape(index, options.size),
-                    enabled = enabled,
-                    label = { Text(option.label, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                )
-            }
-        }
+        ChoiceChips(options = options, selected = selected, onSelect = onSelect, enabled = enabled)
         FieldSupport(null, error)
     }
 }
@@ -486,7 +476,6 @@ fun SegmentedField(
  * 07 section 9.1). With [max] the other chips are disabled once it is reached and [maxMessage]
  * is shown. With [emptyLabel] a pressed chip ("Any") stands for the empty selection and clears it.
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ToggleChipsField(
     label: String,
@@ -503,40 +492,54 @@ fun ToggleChipsField(
     showLabel: Boolean = true,
 ) {
     val reached = max != null && selected.size >= max
+    // The chips keep the same lambdas, so typing elsewhere in the form does not redraw all of them.
+    val latestSelected by rememberUpdatedState(selected)
+    val latestOnChange by rememberUpdatedState(onChange)
+    val toggle =
+        remember {
+            { code: String ->
+                val current = latestSelected
+                latestOnChange(if (code in current) current - code else current + code)
+            }
+        }
+    val clear =
+        remember {
+            {
+                if (latestSelected.isNotEmpty()) latestOnChange(emptySet())
+            }
+        }
     Column(modifier.fillMaxWidth()) {
         if (showLabel) FieldLabel(label, optional = optional)
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.s12)) {
             groups.forEachIndexed { index, (title, options) ->
                 Column {
                     if (title != null) {
                         Text(
-                            title,
-                            style = MaterialTheme.typography.bodySmall,
+                            text = title,
+                            style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(bottom = 4.dp),
+                            modifier = Modifier.padding(bottom = Spacing.s8),
                         )
                     }
                     FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.s8),
                     ) {
                         if (index == 0 && emptyLabel != null) {
-                            ChoiceChip(
-                                label = emptyLabel,
-                                chosen = selected.isEmpty(),
+                            KrChoiceChip(
+                                text = emptyLabel,
+                                selected = selected.isEmpty(),
+                                onClick = clear,
                                 enabled = enabled,
-                                onClick = { if (selected.isNotEmpty()) onChange(emptySet()) },
                             )
                         }
                         options.forEach { option ->
                             val chosen = option.code in selected
-                            ChoiceChip(
-                                label = option.label,
-                                chosen = chosen,
+                            KrChoiceChip(
+                                text = option.label,
+                                selected = chosen,
+                                onClick = { toggle(option.code) },
                                 enabled = enabled && (chosen || !reached),
-                                onClick = {
-                                    onChange(if (chosen) selected - option.code else selected + option.code)
-                                },
                             )
                         }
                     }
@@ -544,55 +547,11 @@ fun ToggleChipsField(
             }
         }
         if (reached && maxMessage != null) {
-            FieldSupport(maxMessage, error)
+            FieldSupport(maxMessage, error, Modifier.semantics { liveRegion = LiveRegionMode.Polite })
         } else {
             FieldSupport(null, error)
         }
     }
 }
 
-@Composable
-private fun ChoiceChip(
-    label: String,
-    chosen: Boolean,
-    enabled: Boolean,
-    onClick: () -> Unit,
-) {
-    FilterChip(
-        selected = chosen,
-        onClick = onClick,
-        enabled = enabled,
-        label = { Text(label) },
-        leadingIcon =
-            if (chosen) {
-                { Icon(Icons.Outlined.Check, contentDescription = null, modifier = Modifier.size(18.dp)) }
-            } else {
-                null
-            },
-        colors =
-            FilterChipDefaults.filterChipColors(
-                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            ),
-    )
-}
-
-/** A card that groups related fields, with an optional title. */
-@Composable
-fun FormCard(
-    modifier: Modifier = Modifier,
-    title: String? = null,
-    content: @Composable () -> Unit,
-) {
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shape = MaterialTheme.shapes.large,
-        shadowElevation = 1.dp,
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            if (title != null) GroupTitle(title)
-            content()
-        }
-    }
-}
+private val StepperValueWidth = 88.dp

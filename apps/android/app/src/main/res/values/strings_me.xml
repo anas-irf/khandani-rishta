@@ -3,9 +3,6 @@
      ME-VERIFY, ME-VERIFY-ID, ME-VERIFY-SELFIE). Everything the web app also shows lives in
      copy.xml under the namespaces me, photos, verification and identity. -->
 <resources>
-    <!-- The completeness ring on ME-PROFILE (specs/08 section 6). -->
-    <string name="me_android_percent" formatted="false">{value}%</string>
-
     <!-- The in-app camera of the verification flows (specs/12 section 4.3, specs/22 section 9). -->
     <string name="me_android_camera_explain">The camera opens inside the app. Photos taken here go only to our review team and are not saved to your gallery.</string>
     <string name="me_android_camera_unavailable">The camera could not be started. Close other apps that are using it and try again.</string>

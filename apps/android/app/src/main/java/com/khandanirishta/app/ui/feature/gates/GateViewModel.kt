@@ -1,6 +1,7 @@
 package com.khandanirishta.app.ui.feature.gates
 
 import androidx.annotation.StringRes
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khandanirishta.app.R
@@ -16,7 +17,6 @@ import com.khandanirishta.app.core.network.generated.model.FieldCode
 import com.khandanirishta.app.core.network.generated.model.FieldError
 import com.khandanirishta.app.core.network.generated.model.OwnProfile
 import com.khandanirishta.app.core.network.generated.model.PhotoStatus
-import com.khandanirishta.app.core.realtime.ConnectivityObserver
 import com.khandanirishta.app.ui.messages.MessageBus
 import com.khandanirishta.app.ui.messages.UiText
 import com.khandanirishta.app.ui.navigation.AppKey
@@ -34,6 +34,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@Immutable
 data class GateUiState(
     /** An action of the screen is running. */
     val busy: Boolean = false,
@@ -55,14 +56,10 @@ class GateViewModel
         private val meRepository: MeRepository,
         private val profiles: ProfileRepository,
         private val bus: MessageBus,
-        connectivity: ConnectivityObserver,
         invalidation: Invalidation,
     ) : ViewModel() {
         private val mutableState = MutableStateFlow(GateUiState())
         val state: StateFlow<GateUiState> = mutableState.asStateFlow()
-
-        /** Network actions are disabled while offline (rule G14). */
-        val online: StateFlow<Boolean> = connectivity.online
 
         /** The own profile, for the action cards of GATE-REVIEW (07 section 15.1). */
         val ownProfile: StateFlow<OwnProfile?> = profiles.ownProfile

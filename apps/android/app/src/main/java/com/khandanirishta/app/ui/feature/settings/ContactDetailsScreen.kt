@@ -1,17 +1,16 @@
 package com.khandanirishta.app.ui.feature.settings
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -25,10 +24,11 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -43,33 +43,34 @@ import com.khandanirishta.app.core.network.apiError
 import com.khandanirishta.app.core.network.generated.model.ContactShareStatus
 import com.khandanirishta.app.core.network.generated.model.ManagedBy
 import com.khandanirishta.app.core.network.generated.model.OwnProfile
+import com.khandanirishta.app.ui.components.CaptionText
 import com.khandanirishta.app.ui.components.CheckboxRow
+import com.khandanirishta.app.ui.components.DiamondTitle
 import com.khandanirishta.app.ui.components.ErrorState
 import com.khandanirishta.app.ui.components.FormSkeleton
 import com.khandanirishta.app.ui.components.KrTextField
-import com.khandanirishta.app.ui.components.NoteBox
+import com.khandanirishta.app.ui.components.KrTextLink
+import com.khandanirishta.app.ui.components.LocalOnline
 import com.khandanirishta.app.ui.components.Phone
 import com.khandanirishta.app.ui.components.PhoneField
 import com.khandanirishta.app.ui.components.RadioCard
 import com.khandanirishta.app.ui.components.RadioCardsField
 import com.khandanirishta.app.ui.components.SelectField
+import com.khandanirishta.app.ui.components.StatusBanner
+import com.khandanirishta.app.ui.components.StatusTone
 import com.khandanirishta.app.ui.feature.profilesections.ContactsInput
 import com.khandanirishta.app.ui.feature.profilesections.ContactsRules
 import com.khandanirishta.app.ui.feature.profilesections.FieldLocator
-import com.khandanirishta.app.ui.feature.profilesections.FormCard
+import com.khandanirishta.app.ui.feature.profilesections.FormErrors
 import com.khandanirishta.app.ui.feature.profilesections.FormScreenScaffold
 import com.khandanirishta.app.ui.feature.profilesections.FormState
-import com.khandanirishta.app.ui.feature.profilesections.FormSummaryBox
-import com.khandanirishta.app.ui.feature.profilesections.HelperText
 import com.khandanirishta.app.ui.feature.profilesections.RevealEffect
 import com.khandanirishta.app.ui.feature.profilesections.SaveBar
-import com.khandanirishta.app.ui.feature.profilesections.WarningBox
 import com.khandanirishta.app.ui.feature.profilesections.begin
 import com.khandanirishta.app.ui.feature.profilesections.edit
 import com.khandanirishta.app.ui.feature.profilesections.failed
 import com.khandanirishta.app.ui.feature.profilesections.locate
 import com.khandanirishta.app.ui.feature.profilesections.rememberFieldLocator
-import com.khandanirishta.app.ui.feature.profilesections.rememberOnline
 import com.khandanirishta.app.ui.feature.profilesections.savedAs
 import com.khandanirishta.app.ui.feature.profilesections.shownByForm
 import com.khandanirishta.app.ui.messages.MessageBus
@@ -77,6 +78,8 @@ import com.khandanirishta.app.ui.navigation.LocalNavigator
 import com.khandanirishta.app.ui.text.LocalMe
 import com.khandanirishta.app.ui.text.LocalReference
 import com.khandanirishta.app.ui.text.text
+import com.khandanirishta.app.ui.theme.KrTheme
+import com.khandanirishta.app.ui.theme.Spacing
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -85,6 +88,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@Immutable
 data class ContactsUi(
     val loading: Boolean = true,
     val loadError: ApiError? = null,
@@ -191,11 +195,12 @@ class ContactDetailsViewModel
 fun ContactDetailsScreen(
     focus: String?,
     returnConnectionId: String?,
+    modifier: Modifier = Modifier,
     viewModel: ContactDetailsViewModel = hiltViewModel(),
 ) {
     val navigator = LocalNavigator.current
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val online = rememberOnline()
+    val online = LocalOnline.current
     val locator = rememberFieldLocator()
     val form = state.form
     val target = focus?.takeIf { it in ContactsInput.FOCUSABLE }
@@ -212,6 +217,7 @@ fun ContactDetailsScreen(
 
     FormScreenScaffold(
         title = stringResource(R.string.me_contacts_title),
+        modifier = modifier,
         busy = form?.busy == true,
         dirty = form?.dirty == true,
         onLeave = { navigator.back() },
@@ -300,8 +306,15 @@ private fun ColumnScope.ContactsFields(
         }
     }
 
-    if (form.showSummary) FormSummaryBox(form.unmatched)
-    NoteBox(stringResource(R.string.me_contacts_intro))
+    if (form.showSummary) {
+        val fields = remember(values) { ContactsRules.fields(values) }
+        FormErrors(form = form, fields = fields, locator = locator)
+    }
+    Text(
+        text = stringResource(R.string.me_contacts_intro),
+        style = MaterialTheme.typography.bodyMedium,
+        color = KrTheme.colors.textSecondary,
+    )
 
     Column(Modifier.locate("phone_e164", locator)) {
         key(phoneVersion) {
@@ -317,13 +330,18 @@ private fun ColumnScope.ContactsFields(
         val verified = me?.user?.takeIf { it.phoneVerified }?.phoneE164
         if (verified != null && values.phone == null) {
             val dialCodes = remember(reference) { reference.data.countries.mapNotNull { it.dialCode } }
-            TextButton(onClick = { onUseVerifiedPhone(verified) }, enabled = enabled) {
-                Text(text(R.string.me_contacts_use_verified_phone, "phone" to displayPhone(verified, dialCodes)))
-            }
+            KrTextLink(
+                text = text(R.string.me_contacts_use_verified_phone, "phone" to displayPhone(verified, dialCodes)),
+                onClick = { onUseVerifiedPhone(verified) },
+                enabled = enabled,
+            )
         }
     }
 
-    Column(Modifier.locate("whatsapp_same", locator)) {
+    Column(
+        Modifier.locate("whatsapp_same", locator),
+        verticalArrangement = Arrangement.spacedBy(Spacing.s8),
+    ) {
         CheckboxRow(
             checked = values.whatsappSame,
             onCheckedChange = { same ->
@@ -353,10 +371,8 @@ private fun ColumnScope.ContactsFields(
         maxLength = EMAIL_MAX,
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
-        modifier =
-            Modifier
-                .locate("contact_email", locator)
-                .focusRequester(emailFocus),
+        inputModifier = Modifier.focusRequester(emailFocus),
+        modifier = Modifier.locate("contact_email", locator),
     )
 
     RadioCardsField(
@@ -377,9 +393,17 @@ private fun ColumnScope.ContactsFields(
     )
 
     if (guardianShown) {
-        FormCard(title = stringResource(R.string.me_contacts_guardian_group)) {
+        Column(
+            modifier = Modifier.padding(top = Spacing.s8),
+            verticalArrangement = Arrangement.spacedBy(Spacing.s20),
+        ) {
+            DiamondTitle(
+                title = stringResource(R.string.me_contacts_guardian_group),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.semantics(mergeDescendants = true) { heading() },
+            )
             val managing = profile.accountFor.managedBy != null && profile.accountFor.managedBy != ManagedBy.SELF
-            if (managing) HelperText(stringResource(R.string.me_contacts_managing_hint))
+            if (managing) CaptionText(stringResource(R.string.me_contacts_managing_hint))
             KrTextField(
                 value = values.guardianName,
                 onValueChange = { name -> edit("guardian_name") { it.copy(guardianName = name) } },
@@ -390,10 +414,8 @@ private fun ColumnScope.ContactsFields(
                 enabled = enabled,
                 keyboardOptions =
                     KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Next),
-                modifier =
-                    Modifier
-                        .locate("guardian_name", locator)
-                        .focusRequester(guardianNameFocus),
+                inputModifier = Modifier.focusRequester(guardianNameFocus),
+                modifier = Modifier.locate("guardian_name", locator),
             )
             SelectField(
                 label = stringResource(R.string.me_contacts_guardian_relation),
@@ -415,11 +437,12 @@ private fun ColumnScope.ContactsFields(
             )
         }
     } else {
-        TextButton(onClick = { guardianOpen = true }, enabled = enabled) {
-            Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(6.dp))
-            Text(stringResource(R.string.me_contacts_guardian_add))
-        }
+        KrTextLink(
+            text = stringResource(R.string.me_contacts_guardian_add),
+            onClick = { guardianOpen = true },
+            icon = Icons.Outlined.Add,
+            enabled = enabled,
+        )
     }
 
     KrTextField(
@@ -436,7 +459,11 @@ private fun ColumnScope.ContactsFields(
     )
 
     if (sharing && form.dirty) {
-        WarningBox(stringResource(R.string.me_contacts_shared_warning))
+        StatusBanner(
+            text = stringResource(R.string.me_contacts_shared_warning),
+            tone = StatusTone.WARNING,
+            announce = true,
+        )
     }
 }
 

@@ -1,5 +1,5 @@
 [versions]
-androidGradlePlugin = "9.5.1"
+androidGradlePlugin = "9.4.0"
 kotlin = "2.4.21"
 ksp = "2.3.14"
 androidxActivity = "1.13.0"

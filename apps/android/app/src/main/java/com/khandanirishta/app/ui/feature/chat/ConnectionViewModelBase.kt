@@ -1,6 +1,7 @@
 package com.khandanirishta.app.ui.feature.chat
 
 import android.os.SystemClock
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khandanirishta.app.R
@@ -135,6 +136,7 @@ sealed interface ConnectionDialog {
 }
 
 /** The part of the screen state that the chat and the connection details share. */
+@Immutable
 data class ConnectionCore(
     val connection: Connection? = null,
     /** The first load is running and nothing is shown yet (skeleton, rule G1). */

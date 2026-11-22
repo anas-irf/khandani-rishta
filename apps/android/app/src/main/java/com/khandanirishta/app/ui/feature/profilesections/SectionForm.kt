@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
@@ -14,6 +15,8 @@ import com.khandanirishta.app.core.data.Lists
 import com.khandanirishta.app.core.network.generated.model.OwnProfile
 import com.khandanirishta.app.ui.components.ConfirmDialog
 import com.khandanirishta.app.ui.text.LocalReference
+import com.khandanirishta.app.ui.text.Subject
+import com.khandanirishta.app.ui.text.pick
 import com.khandanirishta.app.ui.text.text
 
 /** What the fields of one section need: its values, errors, how to change them, and the [locator] that marks them. */
@@ -60,8 +63,9 @@ fun SectionFields(
 ) {
     val form = ui.form ?: return
     val res = LocalResources.current
+    val rules = remember(context) { SectionRules(context) }
     Column(modifier, verticalArrangement = Arrangement.spacedBy(FieldSpacing)) {
-        if (form.showSummary) FormSummaryBox(form.unmatched)
+        if (form.showSummary) FormErrors(form = form, fields = rules.fields(form.values), locator = locator)
         when (val values = form.values) {
             is AccountForInput -> {
                 AccountForFields(FieldsScope(values, context, form, res, locator, onEdit))
@@ -118,6 +122,8 @@ fun GenderChangeDialog(
         text = stringResource(R.string.profile_sections_basics_gender_dialog_body),
         confirmLabel = stringResource(R.string.profile_sections_basics_gender_dialog_confirm),
         dismissLabel = stringResource(R.string.profile_sections_basics_gender_dialog_cancel),
+        // The choice is made on the phone: offline, the save after it fails inline and keeps the input.
+        needsNetwork = false,
         onConfirm = onConfirm,
         onDismiss = onDismiss,
     )

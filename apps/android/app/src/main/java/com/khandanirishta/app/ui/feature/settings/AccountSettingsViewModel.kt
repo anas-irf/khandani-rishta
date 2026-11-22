@@ -1,5 +1,6 @@
 package com.khandanirishta.app.ui.feature.settings
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khandanirishta.app.R
@@ -14,7 +15,6 @@ import com.khandanirishta.app.core.network.generated.model.ExportStatus
 import com.khandanirishta.app.core.network.generated.model.LatestExport
 import com.khandanirishta.app.core.network.generated.model.Me
 import com.khandanirishta.app.core.network.generated.model.ProfileStatus
-import com.khandanirishta.app.core.realtime.ConnectivityObserver
 import com.khandanirishta.app.ui.feature.settings.kit.saveFailed
 import com.khandanirishta.app.ui.messages.MessageBus
 import com.khandanirishta.app.ui.messages.UiText
@@ -56,6 +56,7 @@ enum class AccountDialog {
 }
 
 /** "Your data": the latest export (16 section 6.27, 09 section 12.1). */
+@Immutable
 data class ExportUi(
     /** The first answer has arrived. */
     val loaded: Boolean = false,
@@ -68,6 +69,7 @@ data class ExportUi(
 )
 
 /** The check before reopening a closed profile: a connection at `nikah_done` (08 section 7.4). */
+@Immutable
 data class NikahCheck(
     val loading: Boolean = false,
     val found: Boolean = false,
@@ -75,6 +77,7 @@ data class NikahCheck(
     val partnerName: String? = null,
 )
 
+@Immutable
 data class AccountUiState(
     val dialog: AccountDialog? = null,
     /** Pause, resume, close or reopen is running. */
@@ -95,13 +98,9 @@ class AccountSettingsViewModel
         private val meRepository: MeRepository,
         private val connections: ConnectionRepository,
         private val bus: MessageBus,
-        connectivity: ConnectivityObserver,
     ) : ViewModel() {
         private val mutableState = MutableStateFlow(AccountUiState())
         val state: StateFlow<AccountUiState> = mutableState.asStateFlow()
-
-        /** Network actions are disabled while offline (rule G14). */
-        val online: StateFlow<Boolean> = connectivity.online
 
         private var visible = false
         private var exportJob: Job? = null

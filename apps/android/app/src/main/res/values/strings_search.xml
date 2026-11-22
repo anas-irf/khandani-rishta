@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Android-only copy of APP-SEARCH (specs/16 section 6.6). Everything the web app also shows
-     comes from copy.xml (namespace discovery). -->
-<resources>
-    <!-- State of a filter group card, read by TalkBack. -->
-    <string name="search_android_expanded">Expanded</string>
-    <string name="search_android_collapsed">Collapsed</string>
-</resources>

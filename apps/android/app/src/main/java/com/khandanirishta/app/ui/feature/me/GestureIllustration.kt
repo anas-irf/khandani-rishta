@@ -15,7 +15,9 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import com.khandanirishta.app.R
 import com.khandanirishta.app.core.network.generated.model.Gesture
@@ -32,6 +34,7 @@ import kotlin.math.min
 private const val VIEW_WIDTH = 170f
 private const val VIEW_HEIGHT = 190f
 private const val LINE_WIDTH = 3f
+private val LineStroke = Stroke(width = LINE_WIDTH, cap = StrokeCap.Round, join = StrokeJoin.Round)
 
 /** The mouth and the shoulders. The head and eyes are drawn as an oval and two dots. */
 private val FacePaths =
@@ -87,30 +90,42 @@ private fun handPaths(gesture: Gesture): List<String> =
         }
     }
 
-/** A line drawing of a face and the requested gesture, described by its instruction. */
+/**
+ * A line drawing of a face and the requested gesture, described by its instruction unless it is
+ * [decorative], beside words that already say it.
+ */
 @Composable
 internal fun GestureIllustration(
     gesture: Gesture,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.primary,
+    decorative: Boolean = false,
 ) {
     val instruction = gestureInstruction(gesture)?.let { stringResource(it) }.orEmpty()
     val description = text(R.string.verification_gesture_illustration, "instruction" to instruction)
+    val described =
+        if (decorative) {
+            Modifier
+        } else {
+            Modifier.semantics {
+                contentDescription = description
+                role = Role.Image
+            }
+        }
     val paths =
         remember(gesture) {
             (FacePaths + handPaths(gesture)).map { data -> PathParser().parsePathString(data).toPath() }
         }
-    Canvas(modifier.semantics { contentDescription = description }) {
+    Canvas(modifier.then(described)) {
         val factor = min(size.width / VIEW_WIDTH, size.height / VIEW_HEIGHT)
         val left = (size.width - VIEW_WIDTH * factor) / 2f
         val top = (size.height - VIEW_HEIGHT * factor) / 2f
-        val stroke = Stroke(width = LINE_WIDTH, cap = StrokeCap.Round, join = StrokeJoin.Round)
         translate(left = left, top = top) {
             scale(scaleX = factor, scaleY = factor, pivot = Offset.Zero) {
-                drawOval(color = color, topLeft = Offset(30f, 32f), size = Size(64f, 76f), style = stroke)
+                drawOval(color = color, topLeft = Offset(30f, 32f), size = Size(64f, 76f), style = LineStroke)
                 drawCircle(color = color, radius = 2.5f, center = Offset(51f, 64f))
                 drawCircle(color = color, radius = 2.5f, center = Offset(73f, 64f))
-                paths.forEach { path -> drawPath(path = path, color = color, style = stroke) }
+                paths.forEach { path -> drawPath(path = path, color = color, style = LineStroke) }
             }
         }
     }

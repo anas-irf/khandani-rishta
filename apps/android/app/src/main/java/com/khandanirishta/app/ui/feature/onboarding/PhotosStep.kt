@@ -1,11 +1,20 @@
 package com.khandanirishta.app.ui.feature.onboarding
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -23,20 +32,21 @@ import com.khandanirishta.app.core.network.generated.model.OwnPhoto
 import com.khandanirishta.app.core.network.generated.model.PhotoStatus
 import com.khandanirishta.app.core.network.generated.model.PhotoVisibility
 import com.khandanirishta.app.core.network.generated.model.PrivacyPatch
+import com.khandanirishta.app.ui.components.CaptionText
 import com.khandanirishta.app.ui.components.ConfirmDialog
 import com.khandanirishta.app.ui.components.ErrorState
 import com.khandanirishta.app.ui.components.FieldSupport
 import com.khandanirishta.app.ui.components.FormSkeleton
+import com.khandanirishta.app.ui.components.LocalOnline
 import com.khandanirishta.app.ui.components.RadioCard
 import com.khandanirishta.app.ui.components.RadioCardsField
 import com.khandanirishta.app.ui.feature.me.PhotoManager
-import com.khandanirishta.app.ui.feature.profilesections.HelperText
 import com.khandanirishta.app.ui.feature.profilesections.isFormFailure
-import com.khandanirishta.app.ui.feature.profilesections.rememberOnline
 import com.khandanirishta.app.ui.feature.profilesections.wireCode
 import com.khandanirishta.app.ui.feature.profilesections.wireOf
 import com.khandanirishta.app.ui.messages.MessageBus
 import com.khandanirishta.app.ui.text.LocalMe
+import com.khandanirishta.app.ui.theme.Spacing
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -52,6 +62,7 @@ import kotlinx.coroutines.launch
 fun usablePhotos(photos: List<OwnPhoto>?): List<OwnPhoto> =
     photos.orEmpty().filter { it.status != PhotoStatus.REJECTED && it.status != PhotoStatus.FAILED }
 
+@Immutable
 data class PhotosStepUi(
     val loading: Boolean = true,
     val loadError: ApiError? = null,
@@ -224,14 +235,16 @@ fun photoVisibilityTitle(code: String?): Int =
 
 /** ONB-08 (07 section 10): the photo grid, the photo privacy choice, and "Add photos later". */
 @Composable
-internal fun PhotosStep(edit: Boolean) {
-    val viewModel = hiltViewModel<PhotosStepViewModel, PhotosStepViewModel.Factory> { it.create(edit) }
+internal fun PhotosStep(
+    edit: Boolean,
+    viewModel: PhotosStepViewModel =
+        hiltViewModel<PhotosStepViewModel, PhotosStepViewModel.Factory> { it.create(edit) },
+) {
     val me = LocalMe.current ?: return
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val online = rememberOnline()
+    val online = LocalOnline.current
     var askWithout by rememberSaveable { mutableStateOf(false) }
     val required = me.config.photoRequired
-    val usable = usablePhotos(state.photos)
     // The skip control of this step: shown while the grid is empty and photos are optional.
     val showAddLater = !required && !edit && state.photos?.isEmpty() == true
 
@@ -255,44 +268,41 @@ internal fun PhotosStep(edit: Boolean) {
                     onPrimary = viewModel::submit,
                     busy = state.busy,
                     enabled = online,
-                    secondaryLabel = if (showAddLater) stringResource(R.string.onboarding_photos_add_later) else null,
-                    onSecondary = { askWithout = true },
                     failure = state.failure,
                 )
             }
         },
     ) {
-        PhotoManager(onPhotosChange = viewModel::onPhotosChanged)
-        when {
-            state.loadError != null -> {
-                ErrorState(state.loadError, onRetry = viewModel::load)
-            }
+        StepBody {
+            PhotoManager(onPhotosChange = viewModel::onPhotosChanged)
+            when {
+                state.loadError != null -> {
+                    ErrorState(state.loadError, onRetry = viewModel::load)
+                }
 
-            state.loading -> {
-                FormSkeleton(fields = 3)
-            }
+                state.loading -> {
+                    FormSkeleton(fields = SKELETON_FIELDS)
+                }
 
-            else -> {
-                Column {
-                    RadioCardsField(
-                        cards =
-                            VISIBILITY.map { (code, title, help) ->
-                                RadioCard(code, stringResource(title), stringResource(help))
-                            },
+                else -> {
+                    PhotoPrivacyChoice(
                         selected = state.visibility,
                         onSelect = viewModel::choose,
-                        label = stringResource(R.string.onboarding_photos_visibility_label),
                         enabled = !state.busy,
+                        modifier = Modifier.padding(top = Spacing.s12),
                     )
                 }
             }
-        }
-        HelperText(stringResource(R.string.onboarding_photos_visibility_note))
-        if (state.photoMissing || (required && usable.isEmpty())) {
-            FieldSupport(
-                helper = if (state.photoMissing) null else stringResource(R.string.onboarding_photos_required),
-                error = if (state.photoMissing) stringResource(R.string.onboarding_photos_required) else null,
-            )
+            if (state.photoMissing || (required && usablePhotos(state.photos).isEmpty())) {
+                PhotoNeeded(missing = state.photoMissing)
+            }
+            if (showAddLater && !state.loading && state.loadError == null) {
+                StepSecondaryAction(
+                    label = stringResource(R.string.onboarding_photos_add_later),
+                    onClick = { askWithout = true },
+                    enabled = online && !state.busy,
+                )
+            }
         }
     }
 
@@ -311,3 +321,45 @@ internal fun PhotosStep(edit: Boolean) {
         )
     }
 }
+
+/** "Who can see the photos?": the four choices with the line under them (07 section 10.1). */
+@Composable
+internal fun PhotoPrivacyChoice(
+    selected: String?,
+    onSelect: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
+    val res = LocalResources.current
+    val cards =
+        remember(res) {
+            VISIBILITY.map { (code, title, help) -> RadioCard(code, res.getString(title), res.getString(help)) }
+        }
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(Spacing.s8)) {
+        RadioCardsField(
+            cards = cards,
+            selected = selected,
+            onSelect = onSelect,
+            label = stringResource(R.string.onboarding_photos_visibility_label),
+            enabled = enabled,
+        )
+        CaptionText(stringResource(R.string.onboarding_photos_visibility_note))
+    }
+}
+
+/** "Add at least one photo to continue." It comes into view when Continue found none. */
+@Composable
+private fun PhotoNeeded(missing: Boolean) {
+    val requester = remember { BringIntoViewRequester() }
+    LaunchedEffect(missing) {
+        if (missing) requester.bringIntoView()
+    }
+    val message = stringResource(R.string.onboarding_photos_required)
+    FieldSupport(
+        helper = if (missing) null else message,
+        error = if (missing) message else null,
+        modifier = Modifier.bringIntoViewRequester(requester),
+    )
+}
+
+private const val SKELETON_FIELDS = 3

@@ -1,92 +1,79 @@
 package com.khandanirishta.app.ui.components
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.PhoneAndroid
-import androidx.compose.material.icons.filled.PhotoCamera
-import androidx.compose.material.icons.filled.Verified
-import androidx.compose.material.icons.filled.VerifiedUser
-import androidx.compose.material.icons.outlined.LocationOn
-import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material.icons.outlined.School
+import androidx.compose.material.icons.outlined.Groups
+import androidx.compose.material.icons.outlined.MoreHoriz
+import androidx.compose.material.icons.outlined.PersonOff
 import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
-import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.hideFromAccessibility
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.khandanirishta.app.R
 import com.khandanirishta.app.core.data.Lists
 import com.khandanirishta.app.core.network.generated.model.Badge
-import com.khandanirishta.app.core.network.generated.model.InterestDirection
 import com.khandanirishta.app.core.network.generated.model.ManagedBy
 import com.khandanirishta.app.core.network.generated.model.MaritalStatus
 import com.khandanirishta.app.core.network.generated.model.ProfileCard
-import com.khandanirishta.app.core.network.generated.model.Tier
-import com.khandanirishta.app.core.util.Formatters
 import com.khandanirishta.app.ui.text.LocalReference
 import com.khandanirishta.app.ui.text.LocalViewerCountry
-import com.khandanirishta.app.ui.text.activityLabel
-import com.khandanirishta.app.ui.text.badgeLabel
-import com.khandanirishta.app.ui.text.ordered
 import com.khandanirishta.app.ui.text.plural
-import com.khandanirishta.app.ui.text.reasonText
+import com.khandanirishta.app.ui.text.rememberCandidate
 import com.khandanirishta.app.ui.text.text
+import com.khandanirishta.app.ui.theme.ARCH_RATIO
 import com.khandanirishta.app.ui.theme.KrTheme
+import com.khandanirishta.app.ui.theme.KrType
+import com.khandanirishta.app.ui.theme.Sizes
+import com.khandanirishta.app.ui.theme.Spacing
+import kotlin.math.max
 
-/** "Ayesha K., 26". */
-@Composable
-fun nameAndAge(card: ProfileCard): String =
-    text(
-        R.string.common_format_name_age,
-        "name" to card.displayName,
-        "age" to card.age,
-    )
+/*
+ * The one card for every list of members (specs/16 section 1.5, DESIGN.md section 6.9), in two
+ * sizes and a tile. Lists decide, profiles explain: education, height, religion or sect, caste
+ * and activity are on the profile, never on a card. Cards have no box, no shadow and no hairline.
+ */
 
 /** The city, with the country when it is not the viewer's (specs/16 section 1.5). */
 @Composable
@@ -106,202 +93,80 @@ fun locationLine(
     }
 }
 
-/** Education level, then the profession or, without one, the employment type. */
+/** What the meta line of a card says. */
+@Immutable
+data class CardFacts(
+    val location: String,
+    /** The profession or, without one, the employment type. */
+    val work: String,
+    /** `null` when never married. */
+    val maritalStatus: String?,
+)
+
 @Composable
-fun educationAndWork(card: ProfileCard): String {
-    val ref = LocalReference.current
-    val work = card.professionCode?.let { ref.profession(it) } ?: ref.option(Lists.EMPLOYMENT_TYPE, card.employmentType)
-    return listOf(ref.educationLevel(card.educationLevelCode), work).filter { it.isNotBlank() }.joinToString(" · ")
-}
-
-/** Height, marital status (unless never married), sect or religion, and caste. */
-@Composable
-fun keyFacts(card: ProfileCard): List<String> {
-    val ref = LocalReference.current
-    val res = LocalResources.current
-    return buildList {
-        add(Formatters.heightShort(res, card.heightCm))
-        if (card.maritalStatus != MaritalStatus.NEVER_MARRIED) add(ref.option(Lists.MARITAL_STATUS, card.maritalStatus))
-        add(card.sectCode?.let { ref.sect(it) } ?: ref.religion(card.religionCode))
-        card.casteLabel?.let { add(it) }
-    }.filter { it.isNotBlank() }
-}
-
-/** "Interest sent", "Interested in you" or "Connected" (specs/16 section 1.5). */
-@Composable
-fun relationHint(card: ProfileCard): String? =
-    when {
-        card.relation.tier == Tier.CONNECTION -> stringResource(R.string.shared_card_relation_connected)
-
-        card.relation.interestDirection == InterestDirection.SENT -> stringResource(R.string.shared_card_relation_sent)
-
-        card.relation.interestDirection == InterestDirection.RECEIVED -> stringResource(
-            R.string.shared_card_relation_received,
-        )
-
-        else -> null
-    }
-
-/** The "{n}% match" pill (`CompatBadge`). */
-@Composable
-fun CompatBadge(
-    value: Int,
-    modifier: Modifier = Modifier,
-    onPhoto: Boolean = false,
-) {
-    Box(
-        modifier
-            .clip(CircleShape)
-            .background(KrTheme.colors.compatGradient)
-            .padding(horizontal = 10.dp, vertical = 4.dp),
-    ) {
-        Text(
-            text(R.string.shared_compat, "value" to value),
-            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-            color = Color.White,
-        )
-    }
-    if (onPhoto) Unit
-}
-
-/** Badge icons after the name, in the order of 12 section 1.2, with their labels for TalkBack. */
-@Composable
-fun BadgeIcons(
-    badges: List<Badge>,
-    modifier: Modifier = Modifier,
-    tint: Color = MaterialTheme.colorScheme.primary,
-    onPhoto: Boolean = false,
-) {
-    val ordered = badges.ordered()
-    if (ordered.isEmpty()) return
-    Row(modifier, horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-        ordered.forEach { badge ->
-            val label = badgeLabel(badge)?.let { stringResource(it) }.orEmpty()
-            when (badge) {
-                Badge.NEW -> {
-                    Box(
-                        Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(
-                                if (onPhoto) {
-                                    Color.White.copy(
-                                        alpha = 0.25f,
-                                    )
-                                } else {
-                                    MaterialTheme.colorScheme.tertiaryContainer
-                                },
-                            ).padding(horizontal = 6.dp, vertical = 1.dp),
-                    ) {
-                        Text(
-                            label,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = if (onPhoto) Color.White else MaterialTheme.colorScheme.onTertiaryContainer,
-                        )
-                    }
-                }
-
-                else -> {
-                    Icon(
-                        badgeIcon(badge),
-                        contentDescription = label,
-                        tint = if (onPhoto) Color.White else tint,
-                        modifier = Modifier.size(18.dp),
-                    )
-                }
-            }
-        }
-    }
-}
-
-private fun badgeIcon(badge: Badge): ImageVector =
-    when (badge) {
-        Badge.ID_VERIFIED -> Icons.Filled.VerifiedUser
-        Badge.PHOTO_VERIFIED -> Icons.Filled.Verified
-        else -> Icons.Filled.PhoneAndroid
-    }
-
-/** Up to 3 reason chips (`ReasonChips`). */
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun ReasonChips(
-    reasons: List<String>,
-    modifier: Modifier = Modifier,
-) {
-    if (reasons.isEmpty()) return
-    FlowRow(
-        modifier,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
-        reasons.take(3).forEach { code ->
-            Surface(
-                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                shape = CircleShape,
-            ) {
-                Text(
-                    reasonText(code),
-                    style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                )
-            }
-        }
-    }
-}
-
-/** The shortlist heart (optimistic, rule G7), with a small pop when it fills. */
-@Composable
-fun ShortlistHeart(
-    shortlisted: Boolean,
-    name: String,
-    onToggle: () -> Unit,
-    modifier: Modifier = Modifier,
-    onPhoto: Boolean = false,
-) {
-    val scale by animateFloatAsState(
-        if (shortlisted) 1.12f else 1f,
-        animationSpec = spring(dampingRatio = 0.4f),
-        label = "heart",
-    )
-    val tint by animateColorAsState(
-        when {
-            shortlisted -> Color(0xFFE11D48)
-            onPhoto -> Color.White
-            else -> MaterialTheme.colorScheme.onSurfaceVariant
-        },
-        label = "heart-tint",
-    )
-    val label =
-        if (shortlisted) {
-            text(R.string.shared_card_shortlist_remove, "name" to name)
-        } else {
-            text(R.string.shared_card_shortlist_add, "name" to name)
-        }
-    IconButton(
-        onClick = onToggle,
-        modifier =
-            modifier.then(
-                if (onPhoto) {
-                    Modifier
-                        .clip(CircleShape)
-                        .background(Color.Black.copy(alpha = 0.28f))
+fun rememberCardFacts(card: ProfileCard): CardFacts {
+    val reference = LocalReference.current
+    val location = locationLine(card.cityName, card.countryCode)
+    return remember(card, reference, location) {
+        CardFacts(
+            location = location,
+            work =
+                card.professionCode?.let { reference.profession(it) }
+                    ?: reference.option(Lists.EMPLOYMENT_TYPE, card.employmentType),
+            maritalStatus =
+                if (card.maritalStatus == MaritalStatus.NEVER_MARRIED) {
+                    null
                 } else {
-                    Modifier
+                    reference.option(Lists.MARITAL_STATUS, card.maritalStatus)
                 },
-            ),
-    ) {
-        Icon(
-            if (shortlisted) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-            contentDescription = label,
-            tint = tint,
-            modifier = Modifier.scale(scale),
         )
     }
 }
 
 /**
- * The full-size profile card of specs/16 section 1.5 for matches and search: a large photo with
- * the name, badges and place over it, then education, key facts, reasons and the actions.
+ * The name as TalkBack reads it: then what the arch shows (DESIGN.md section 8, item 3), because
+ * the photo itself is decoration inside a card.
+ */
+@Composable
+private fun spokenName(
+    card: ProfileCard,
+    withCount: Boolean,
+): String {
+    val state = ArrayList<String>(SPOKEN_STATES)
+    if (Badge.NEW in card.badges) state += stringResource(R.string.shared_badge_new)
+    if (card.photo?.isBlurred == true) state += stringResource(R.string.shared_photo_private)
+    if (card.photo == null) state += stringResource(R.string.shared_photo_none)
+    if (withCount && card.photoCount >= 2) {
+        state += plural(R.plurals.shared_card_photo_count, card.photoCount.toInt())
+    }
+    val name = nameAndAge(card.displayName, card.age)
+    return if (state.isEmpty()) name else "$name. ${state.joinToString(", ")}"
+}
+
+@Composable
+private fun CardName(
+    card: ProfileCard,
+    style: TextStyle,
+    withCount: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val spoken = spokenName(card, withCount)
+    NameAge(
+        name = card.displayName,
+        age = card.age,
+        style = style,
+        modifier = modifier.semantics { contentDescription = spoken },
+    )
+}
+
+/**
+ * The full-size card of matches, search and "Your matches" (DESIGN.md section 6.9): the photo;
+ * the name, match and relation with the badges by the name; the reasons; who they are; then
+ * Shortlist and More.
+ *
+ * To TalkBack the whole card is one item with custom actions (specs/22 section 12), so the two
+ * buttons are for touch and keyboards and are not read again. Cards of a phone keep their own
+ * height, so one long name does not lengthen the others.
  */
 @Composable
 fun ProfileCardView(
@@ -311,483 +176,157 @@ fun ProfileCardView(
     modifier: Modifier = Modifier,
     onPass: (() -> Unit)? = null,
 ) {
-    val name = nameAndAge(card)
+    val facts = rememberCardFacts(card)
+    val online = LocalOnline.current
+    val shortlisted = card.relation.isShortlisted
+    val openLabel = stringResource(R.string.a11y_open_profile)
     val notInterested = stringResource(R.string.discovery_card_not_interested)
+    val shortlistedLabel = stringResource(R.string.shared_card_shortlisted)
     val shortlistLabel =
-        if (card.relation.isShortlisted) {
-            text(R.string.shared_card_shortlist_remove, "name" to card.displayName)
-        } else {
-            text(R.string.shared_card_shortlist_add, "name" to card.displayName)
-        }
-    Surface(
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shadowElevation = 2.dp,
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .semantics {
-                    customActions =
-                        buildList {
-                            add(
-                                CustomAccessibilityAction(shortlistLabel) {
-                                    onToggleShortlist()
-                                    true
-                                },
-                            )
-                            if (onPass != null) {
-                                add(
-                                    CustomAccessibilityAction(notInterested) {
-                                        onPass()
-                                        true
-                                    },
-                                )
+        text(
+            if (shortlisted) R.string.shared_card_shortlist_remove else R.string.shared_card_shortlist_add,
+            "name" to card.displayName,
+        )
+    val accessibility =
+        Modifier.semantics {
+            if (shortlisted) stateDescription = shortlistedLabel
+            if (online) {
+                customActions =
+                    listOfNotNull(
+                        CustomAccessibilityAction(shortlistLabel) {
+                            onToggleShortlist()
+                            true
+                        },
+                        onPass?.let { pass ->
+                            CustomAccessibilityAction(notInterested) {
+                                pass()
+                                true
                             }
-                        }
-                },
+                        },
+                    )
+            }
+        }
+    Column(
+        modifier
+            .fillMaxWidth()
+            .then(accessibility)
+            // Square: a card has no padding, so a rounded corner would cut into its last line.
+            .tappable(shape = RectangleShape, onClick = onOpen, onClickLabel = openLabel),
     ) {
-        Column(Modifier.clickable(role = Role.Button, onClick = onOpen)) {
-            Box(
+        MemberPhoto(
+            photo = card.photo,
+            name = card.displayName,
+            gender = card.gender,
+            size = PhotoSize.MEDIUM,
+            variant = PhotoVariant.CARD,
+            decorative = true,
+            count = card.photoCount,
+            isNew = Badge.NEW in card.badges,
+            modifier =
                 Modifier
                     .fillMaxWidth()
-                    .aspectRatio(0.86f),
+                    .aspectRatio(ARCH_RATIO),
+        )
+        Spacer(Modifier.height(Spacing.s12))
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.s8)) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
+                verticalArrangement = Arrangement.spacedBy(Spacing.s8),
+                itemVerticalAlignment = Alignment.CenterVertically,
             ) {
-                MemberPhoto(
-                    photo = card.photo,
-                    gender = card.gender,
-                    size = PhotoSize.MEDIUM,
-                    contentDescription =
-                        if (card.photo?.isBlurred == true) {
-                            stringResource(R.string.a11y_private_photo)
-                        } else {
-                            text(R.string.shared_photo_alt, "name" to card.displayName)
-                        },
-                    modifier = Modifier.fillMaxSize(),
-                    showLock = false,
-                )
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .background(KrTheme.colors.photoScrim),
-                )
-                Row(
-                    Modifier
-                        .align(Alignment.TopStart)
-                        .padding(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    card.compat?.let { CompatBadge(it) }
-                    if (card.photo?.isBlurred ==
-                        true
-                    ) {
-                        PhotoChip(text = stringResource(R.string.shared_photo_private), icon = null)
-                    }
-                }
-                Row(
-                    Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    if (card.photoCount >= 2) {
-                        PhotoChip(
-                            text = plural(R.plurals.shared_card_photo_count, card.photoCount.toInt()),
-                            icon = Icons.Filled.PhotoCamera,
-                        )
-                        Spacer(Modifier.width(6.dp))
-                    }
-                    ShortlistHeart(
-                        shortlisted = card.relation.isShortlisted,
-                        name = card.displayName,
-                        onToggle = onToggleShortlist,
-                        onPhoto = true,
-                    )
-                    if (onPass != null) CardMenu(onPass = onPass, onPhoto = true)
-                }
-                Column(
-                    Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(horizontal = 16.dp, vertical = 14.dp),
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            name,
-                            style = MaterialTheme.typography.headlineSmall,
-                            color = Color.White,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f, fill = false),
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        BadgeIcons(card.badges, onPhoto = true)
-                    }
-                    Spacer(Modifier.height(2.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Outlined.LocationOn,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(16.dp),
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        Text(
-                            locationLine(card.cityName, card.countryCode),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White.copy(alpha = 0.92f),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        activityLabel(card.lastActive)?.let { activity ->
-                            Text(
-                                "  ·  " + stringResource(activity),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.White.copy(alpha = 0.92f),
-                                maxLines = 1,
-                            )
-                        }
-                    }
-                }
+                CardName(card, MaterialTheme.typography.titleLarge, withCount = true)
+                card.compat?.let { CompatBadge(it) }
+                hintOf(card.relation)?.let { RelationHint(it) }
             }
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Outlined.School,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(18.dp),
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        educationAndWork(card),
-                        style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-                Text(
-                    keyFacts(card).joinToString("  ·  "),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                if (card.managedBy != ManagedBy.SELF) {
-                    Text(
-                        text(
-                            R.string.shared_card_managed_by,
-                            "label" to LocalReference.current.option(Lists.MANAGED_BY, card.managedBy),
-                        ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                ReasonChips(card.reasons)
-                relationHint(card)?.let { RelationPill(it) }
-            }
+            BadgeRow(card.badges)
+        }
+        ReasonChips(card.reasons, Modifier.padding(top = Spacing.s12))
+        Spacer(Modifier.height(Spacing.s16))
+        MetaLine(listOfNotNull(facts.location, facts.work, facts.maritalStatus))
+        if (card.managedBy != ManagedBy.SELF && card.managedBy != ManagedBy.UNKNOWN) {
+            ManagedByLine(card.managedBy, Modifier.padding(top = Spacing.s4))
+        }
+        Spacer(Modifier.height(Spacing.s16))
+        AdaptiveRow(
+            // Merging and hidden, so the two buttons go with it: the card's custom actions stand in.
+            modifier = Modifier.semantics(mergeDescendants = true) { hideFromAccessibility() },
+        ) {
+            // Shortlist grows; when the two do not fit, each takes a line of its own.
+            ShortlistButton(
+                shortlisted = shortlisted,
+                onToggle = onToggleShortlist,
+                enabled = online,
+                size = KrButtonSize.COMPACT,
+                modifier = Modifier.grow(SHORTLIST_GROWS),
+            )
+            if (onPass != null) CardMenu(onPass = onPass, enabled = online, modifier = Modifier.grow(MORE_GROWS))
         }
     }
 }
 
-/** The narrower card of the horizontal rows on `APP-HOME`. */
 @Composable
-fun ProfileCardCompactTile(
-    card: ProfileCard,
-    onOpen: () -> Unit,
-    onToggleShortlist: () -> Unit,
+private fun ManagedByLine(
+    managedBy: ManagedBy,
     modifier: Modifier = Modifier,
-    onPass: (() -> Unit)? = null,
 ) {
-    Surface(
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shadowElevation = 2.dp,
-        modifier = modifier.width(212.dp),
-    ) {
-        Box(
-            Modifier
-                .aspectRatio(0.72f)
-                .clickable(role = Role.Button, onClick = onOpen),
-        ) {
-            MemberPhoto(
-                photo = card.photo,
-                gender = card.gender,
-                size = PhotoSize.MEDIUM,
-                contentDescription =
-                    if (card.photo?.isBlurred == true) {
-                        stringResource(R.string.a11y_private_photo)
-                    } else {
-                        text(R.string.shared_photo_alt, "name" to card.displayName)
-                    },
-                modifier = Modifier.fillMaxSize(),
-                showLock = card.photo?.isBlurred == true,
-            )
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(KrTheme.colors.photoScrim),
-            )
-            card.compat?.let {
-                CompatBadge(
-                    it,
-                    Modifier
-                        .align(Alignment.TopStart)
-                        .padding(10.dp),
-                )
-            }
-            Row(Modifier.align(Alignment.TopEnd)) {
-                if (onPass != null) CardMenu(onPass = onPass, onPhoto = true)
-            }
-            Column(
-                Modifier
-                    .align(Alignment.BottomStart)
-                    .fillMaxWidth()
-                    .padding(start = 12.dp, end = 4.dp, bottom = 8.dp),
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                nameAndAge(card),
-                                style = MaterialTheme.typography.titleMedium,
-                                color = Color.White,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.weight(1f, fill = false),
-                            )
-                            Spacer(Modifier.width(4.dp))
-                            BadgeIcons(card.badges.filter { it != Badge.NEW }, onPhoto = true)
-                        }
-                        Text(
-                            locationLine(card.cityName, card.countryCode),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.White.copy(alpha = 0.9f),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        Text(
-                            educationAndWork(card),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.White.copy(alpha = 0.85f),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                    ShortlistHeart(
-                        shortlisted = card.relation.isShortlisted,
-                        name = card.displayName,
-                        onToggle = onToggleShortlist,
-                        onPhoto = true,
-                    )
-                }
-            }
-        }
-    }
+    val label = LocalReference.current.option(Lists.MANAGED_BY, managedBy)
+    IconText(
+        icon = Icons.Outlined.Groups,
+        text = text(R.string.shared_card_managed_by, "label" to label),
+        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
+        color = KrTheme.colors.textSecondary,
+        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        iconSize = Sizes.iconMedium,
+        modifier = modifier,
+    )
 }
 
 /**
- * The compact card of specs/16 section 1.5 for interests, shortlist, visitors and requests: a round
- * photo, name and age, badges, place, one line of education and work, the match percentage and
- * the relation hint. [extra] adds lines under it; [actions] adds buttons.
+ * The labelled Shortlist toggle of specs/16 section 1.5: "Shortlist", or pressed with a filled
+ * heart and "Shortlisted". The heart means this and nothing else.
  */
 @Composable
-fun ProfileRow(
-    card: ProfileCard,
-    onOpen: () -> Unit,
+fun ShortlistButton(
+    shortlisted: Boolean,
+    onToggle: () -> Unit,
     modifier: Modifier = Modifier,
-    showRelation: Boolean = true,
-    unseen: Boolean = false,
-    extra: (@Composable () -> Unit)? = null,
-    actions: (@Composable () -> Unit)? = null,
+    variant: KrButtonVariant = KrButtonVariant.SECONDARY,
+    size: KrButtonSize = KrButtonSize.DEFAULT,
+    enabled: Boolean = true,
 ) {
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shape = MaterialTheme.shapes.large,
-        shadowElevation = 1.dp,
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Column(
-            Modifier
-                .clickable(role = Role.Button, onClick = onOpen)
-                .padding(12.dp),
-        ) {
-            Row(verticalAlignment = Alignment.Top) {
-                Box {
-                    MemberPhoto(
-                        photo = card.photo,
-                        gender = card.gender,
-                        size = PhotoSize.THUMB,
-                        contentDescription =
-                            if (card.photo?.isBlurred == true) {
-                                stringResource(R.string.a11y_private_photo)
-                            } else {
-                                text(R.string.shared_photo_alt, "name" to card.displayName)
-                            },
-                        modifier = Modifier.size(72.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        lockSize = 12.dp,
-                    )
-                    if (unseen) {
-                        Box(
-                            Modifier
-                                .align(Alignment.TopEnd)
-                                .size(12.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.tertiary),
-                        )
-                    }
-                }
-                Spacer(Modifier.width(12.dp))
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            nameAndAge(card),
-                            style = MaterialTheme.typography.titleMedium,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f, fill = false),
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        BadgeIcons(card.badges)
-                    }
-                    Text(
-                        locationLine(card.cityName, card.countryCode),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                    )
-                    Text(
-                        educationAndWork(card),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    ) {
-                        card.compat?.let {
-                            Text(
-                                text(R.string.shared_compat, "value" to it),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.tertiary,
-                            )
-                        }
-                        if (showRelation) relationHint(card)?.let { RelationPill(it) }
-                    }
-                }
-            }
-            if (extra != null) {
-                Spacer(Modifier.height(8.dp))
-                extra()
-            }
-            if (actions != null) {
-                Spacer(Modifier.height(10.dp))
-                actions()
-            }
-        }
-    }
+    KrButton(
+        text = stringResource(if (shortlisted) R.string.shared_card_shortlisted else R.string.shared_card_shortlist),
+        onClick = onToggle,
+        variant = variant,
+        size = size,
+        icon = if (shortlisted) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+        iconTint = if (shortlisted) MaterialTheme.colorScheme.primary else Color.Unspecified,
+        enabled = enabled,
+        modifier = modifier.semantics { selected = shortlisted },
+    )
 }
 
-/** A grey row for an item whose member is no longer available (11 section 3.1). */
+/** More, with "Not interested" (specs/16 section 1.5). */
 @Composable
-fun UnavailableRow(
-    text: String,
-    modifier: Modifier = Modifier,
-    action: (@Composable () -> Unit)? = null,
-) {
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        shape = MaterialTheme.shapes.large,
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                Icons.Outlined.VisibilityOff,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.width(12.dp))
-            Text(
-                text,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.weight(1f),
-            )
-            action?.invoke()
-        }
-    }
-}
-
-@Composable
-fun RelationPill(
-    text: String,
-    modifier: Modifier = Modifier,
-) {
-    Surface(
-        color = MaterialTheme.colorScheme.secondaryContainer,
-        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-        shape = CircleShape,
-        modifier = modifier,
-    ) {
-        Text(
-            text,
-            style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-        )
-    }
-}
-
-@Composable
-private fun PhotoChip(
-    text: String,
-    icon: ImageVector?,
-) {
-    Row(
-        Modifier
-            .clip(CircleShape)
-            .background(Color.Black.copy(alpha = 0.4f))
-            .padding(horizontal = 8.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        if (icon != null) {
-            Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
-            Spacer(Modifier.width(4.dp))
-        }
-        Text(text, style = MaterialTheme.typography.labelSmall, color = Color.White)
-    }
-}
-
-/** The card menu with "Not interested". */
-@Composable
-fun CardMenu(
+private fun CardMenu(
     onPass: () -> Unit,
+    enabled: Boolean,
     modifier: Modifier = Modifier,
-    onPhoto: Boolean = false,
 ) {
     var open by remember { mutableStateOf(false) }
-    Box(modifier) {
-        IconButton(
+    Box(modifier, propagateMinConstraints = true) {
+        KrButton(
+            text = stringResource(R.string.shared_card_more),
             onClick = { open = true },
-            modifier =
-                if (onPhoto) {
-                    Modifier
-                        .padding(start = 4.dp)
-                        .clip(CircleShape)
-                        .background(Color.Black.copy(alpha = 0.28f))
-                } else {
-                    Modifier
-                },
-        ) {
-            Icon(
-                Icons.Outlined.MoreVert,
-                contentDescription = stringResource(R.string.discovery_card_more),
-                tint = if (onPhoto) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.discovery_card_not_interested)) },
-                leadingIcon = { Icon(Icons.Outlined.VisibilityOff, contentDescription = null) },
+            variant = KrButtonVariant.QUIET,
+            size = KrButtonSize.COMPACT,
+            icon = Icons.Outlined.MoreHoriz,
+            enabled = enabled,
+        )
+        KrMenu(expanded = open, onDismissRequest = { open = false }) {
+            KrMenuItem(
+                text = stringResource(R.string.discovery_card_not_interested),
+                icon = Icons.Outlined.VisibilityOff,
                 onClick = {
                     open = false
                     onPass()
@@ -796,3 +335,213 @@ fun CardMenu(
         }
     }
 }
+
+/**
+ * What stays in the place of a passed card (specs/16 section 6.4): a sand panel at least as tall
+ * as the card was ([minHeight]), with Undo and no time limit.
+ */
+@Composable
+fun PassedCard(
+    name: String,
+    onUndo: () -> Unit,
+    modifier: Modifier = Modifier,
+    minHeight: Dp = 0.dp,
+) {
+    val hiddenFrom =
+        rememberCandidate().pick(
+            R.string.discovery_card_hidden_from,
+            R.string.discovery_card_hidden_from_male,
+            R.string.discovery_card_hidden_from_female,
+        )
+    TonalPanel(
+        modifier = modifier.semantics { liveRegion = LiveRegionMode.Polite },
+        padding = PassedPadding,
+    ) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = (minHeight - PassedInsets).coerceAtLeast(0.dp)),
+            verticalArrangement = Arrangement.spacedBy(Spacing.s16, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Diamond(size = PanelDiamond)
+            Text(
+                text = text(hiddenFrom, "name" to name),
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                text = stringResource(R.string.discovery_card_hidden_for),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+            KrButton(
+                text = stringResource(R.string.discovery_card_undo),
+                onClick = onUndo,
+                variant = KrButtonVariant.SECONDARY,
+                enabled = LocalOnline.current,
+            )
+        }
+    }
+}
+
+/**
+ * The compact card of interests, shortlist, visitors, requests and "Near you": the arch, then the
+ * name with the match and relation, one line of place and work, and the badges. All of it opens
+ * the profile, [details] too; [actions] are buttons under it.
+ */
+@Composable
+fun ProfileRow(
+    card: ProfileCard,
+    onOpen: () -> Unit,
+    modifier: Modifier = Modifier,
+    showRelation: Boolean = true,
+    unseenLabel: String? = null,
+    details: (@Composable ColumnScope.() -> Unit)? = null,
+    actions: (@Composable ColumnScope.() -> Unit)? = null,
+) {
+    val facts = rememberCardFacts(card)
+    val isNew = Badge.NEW in card.badges
+    val openLabel = stringResource(R.string.a11y_open_profile)
+    Column(modifier.fillMaxWidth()) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .tappable(shape = MaterialTheme.shapes.small, onClick = onOpen, onClickLabel = openLabel)
+                    .padding(vertical = Spacing.s12),
+            verticalArrangement = Arrangement.spacedBy(Spacing.s12),
+        ) {
+            Row(
+                modifier = Modifier.heightIn(min = Sizes.rowPhoto.height),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s16),
+            ) {
+                MemberPhoto(
+                    photo = card.photo,
+                    name = card.displayName,
+                    gender = card.gender,
+                    size = PhotoSize.THUMB,
+                    decorative = true,
+                    isNew = isNew,
+                    modifier = Modifier.size(rowPhotoSize(isNew)),
+                )
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.s4)) {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.s4),
+                        itemVerticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        if (unseenLabel != null) UnreadDot(unseenLabel)
+                        CardName(card, KrType.name, withCount = false)
+                        card.compat?.let { CompatBadge(it, compact = true) }
+                        if (showRelation) hintOf(card.relation)?.let { RelationHint(it) }
+                    }
+                    MetaLine(listOf(facts.location, facts.work), style = MaterialTheme.typography.bodySmall)
+                    BadgeRow(card.badges, Modifier.padding(top = Spacing.s4))
+                }
+            }
+            details?.invoke(this)
+        }
+        if (actions != null) {
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = Spacing.s12),
+                verticalArrangement = Arrangement.spacedBy(Spacing.s12),
+                content = actions,
+            )
+        }
+    }
+}
+
+/** With the "New" chip the arch grows with the text, just enough to hold the chip. */
+@Composable
+private fun rowPhotoSize(isNew: Boolean): DpSize {
+    if (!isNew) return Sizes.rowPhoto
+    val scale = LocalDensity.current.fontScale
+    return DpSize(
+        width = max(Sizes.rowPhoto.width.value, NEW_CHIP_WIDTH * scale).dp,
+        height = max(Sizes.rowPhoto.height.value, NEW_CHIP_HEIGHT * scale).dp,
+    )
+}
+
+/** The tile of "New members" on Home, and nothing else: the arch, name, match, place and work. */
+@Composable
+fun ProfileTile(
+    card: ProfileCard,
+    onOpen: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val facts = rememberCardFacts(card)
+    val width = max(Sizes.tilePhoto.width.value, TILE_WIDTH * LocalDensity.current.fontScale).dp
+    Column(
+        modifier =
+            modifier
+                .width(width)
+                .tappable(
+                    shape = RectangleShape,
+                    onClick = onOpen,
+                    onClickLabel = stringResource(R.string.a11y_open_profile),
+                ),
+        verticalArrangement = Arrangement.spacedBy(Spacing.s8),
+    ) {
+        MemberPhoto(
+            photo = card.photo,
+            name = card.displayName,
+            gender = card.gender,
+            size = PhotoSize.MEDIUM,
+            variant = PhotoVariant.TILE,
+            decorative = true,
+            isNew = Badge.NEW in card.badges,
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(ARCH_RATIO),
+        )
+        CardName(card, KrType.emphasis, withCount = false)
+        card.compat?.let { CompatBadge(it, compact = true) }
+        Column {
+            Text(facts.location, style = MaterialTheme.typography.bodySmall, color = KrTheme.colors.textSecondary)
+            if (facts.work.isNotBlank()) {
+                Text(facts.work, style = MaterialTheme.typography.bodySmall, color = KrTheme.colors.textSecondary)
+            }
+        }
+    }
+}
+
+/** The quiet row in place of a card whose member is no longer available (11 section 3.1). */
+@Composable
+fun UnavailableRow(
+    text: String,
+    modifier: Modifier = Modifier,
+    content: (@Composable ColumnScope.() -> Unit)? = null,
+) {
+    Row(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .heightIn(min = Sizes.rowPhoto.height)
+                .padding(vertical = Spacing.s12),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s16),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        ArchIcon(Icons.Outlined.PersonOff, size = Sizes.rowPhoto, tone = ArchTone.TONAL)
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.s8)) {
+            Text(text, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            content?.invoke(this)
+        }
+    }
+}
+
+private const val SHORTLIST_GROWS = 999f
+private const val MORE_GROWS = 1f
+private const val SPOKEN_STATES = 3
+private const val NEW_CHIP_WIDTH = 52f
+private const val NEW_CHIP_HEIGHT = 65.6f
+private const val TILE_WIDTH = 104f
+private val PanelDiamond = 10.dp
+private val PassedInsets = 48.dp
+private val PassedPadding = PaddingValues(Spacing.s24)

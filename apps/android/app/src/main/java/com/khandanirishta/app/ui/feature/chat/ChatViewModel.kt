@@ -1,6 +1,7 @@
 package com.khandanirishta.app.ui.feature.chat
 
 import android.os.Build
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.viewModelScope
 import com.khandanirishta.app.R
 import com.khandanirishta.app.core.data.ConnectionRepository
@@ -37,6 +38,7 @@ import java.time.Instant
 import java.util.UUID
 
 /** A message as the conversation holds it: [local] is set while the server has not confirmed it. */
+@Immutable
 data class ChatItem(
     val message: Message,
     val local: LocalState? = null,
@@ -47,12 +49,14 @@ data class ChatItem(
 }
 
 /** "Sending" or "Not sent"; [error] is the reason shown before "Not sent. Tap to retry". */
+@Immutable
 data class LocalState(
     val failed: Boolean,
     val error: UiText? = null,
 )
 
 /** The conversation itself (16 section 6.11 blocks 3 to 5). */
+@Immutable
 data class ChatContent(
     /** Oldest first; unconfirmed messages last, in the order they were written. */
     val items: List<ChatItem> = emptyList(),
@@ -75,6 +79,7 @@ data class ChatContent(
     val showTips: Boolean = false,
 )
 
+@Immutable
 data class ChatUiState(
     val core: ConnectionCore = ConnectionCore(),
     val chat: ChatContent = ChatContent(),

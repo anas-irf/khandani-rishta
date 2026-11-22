@@ -2,18 +2,16 @@ package com.khandanirishta.app.ui.feature.me
 
 import android.content.res.Resources
 import androidx.annotation.StringRes
+import androidx.compose.runtime.Immutable
 import com.khandanirishta.app.R
 import com.khandanirishta.app.core.network.generated.model.Badge
 import com.khandanirishta.app.core.network.generated.model.CompletenessItem
 import com.khandanirishta.app.core.network.generated.model.ContactsSection
 import com.khandanirishta.app.core.network.generated.model.DocumentType
 import com.khandanirishta.app.core.network.generated.model.FamilySection
-import com.khandanirishta.app.core.network.generated.model.Gender
 import com.khandanirishta.app.core.network.generated.model.Gesture
 import com.khandanirishta.app.core.network.generated.model.Importance
 import com.khandanirishta.app.core.network.generated.model.LifestyleSection
-import com.khandanirishta.app.core.network.generated.model.ManagedBy
-import com.khandanirishta.app.core.network.generated.model.Me
 import com.khandanirishta.app.core.network.generated.model.OwnPhoto
 import com.khandanirishta.app.core.network.generated.model.OwnProfile
 import com.khandanirishta.app.core.network.generated.model.OwnVerification
@@ -36,6 +34,9 @@ import com.khandanirishta.app.ui.navigation.Tab
 import com.khandanirishta.app.ui.navigation.Verification
 import com.khandanirishta.app.ui.navigation.VerifyIdentity
 import com.khandanirishta.app.ui.navigation.VerifySelfie
+import com.khandanirishta.app.ui.text.Candidate
+import com.khandanirishta.app.ui.text.Subject
+import com.khandanirishta.app.ui.text.pick
 import com.khandanirishta.app.ui.text.text
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -54,6 +55,7 @@ import kotlinx.serialization.json.jsonObject
 // ---------------------------------------------------------------------------
 
 /** One hint row of the completeness card: its text and the screen it opens (08 section 6.2). */
+@Immutable
 internal data class CompletenessHint(
     val item: CompletenessItem,
     @param:StringRes val label: Int,
@@ -273,27 +275,13 @@ internal fun moveId(
 // ---------------------------------------------------------------------------
 
 /**
- * Every check is about the candidate (12 section 1.3). `{name}` in the copy of 12 section 8 is the
- * candidate's first name; a profile managed by the candidate uses the "you" forms instead.
+ * The member-facing message for a verification `rejection_reason` (12 section 8.3). Every check is
+ * about the candidate (12 section 1.3): a profile the candidate runs uses the "you" forms.
  */
-internal data class VerifyCandidate(
-    val self: Boolean,
-    val name: String,
-)
-
-internal fun verifyCandidateOf(me: Me?): VerifyCandidate {
-    val managedBy = me?.profile?.managedBy
-    return VerifyCandidate(
-        self = managedBy == null || managedBy == ManagedBy.SELF,
-        name = me?.profile?.firstName.orEmpty(),
-    )
-}
-
-/** The member-facing message for a verification `rejection_reason` (12 section 8.3). */
 internal fun verificationRejectionText(
     res: Resources,
     reason: VerificationRejectionReason?,
-    candidate: VerifyCandidate,
+    candidate: Candidate,
     supportEmail: String,
 ): String {
     val id =
@@ -307,10 +295,10 @@ internal fun verificationRejectionText(
             }
 
             VerificationRejectionReason.FACE_MISMATCH -> {
-                if (candidate.self) {
-                    R.string.verification_reason_face_mismatch_self
-                } else {
+                if (candidate.managed) {
                     R.string.verification_reason_face_mismatch
+                } else {
+                    R.string.verification_reason_face_mismatch_self
                 }
             }
 
@@ -388,20 +376,6 @@ internal fun gestureInstruction(gesture: Gesture): Int? =
 // Identity number (specs/07 section 13, 12 section 3)
 // ---------------------------------------------------------------------------
 
-/** Who the wording talks about (07 section 3.2): the member, or the candidate by gender. */
-internal enum class IdSubject { SELF, MALE, FEMALE, UNKNOWN }
-
-internal fun idSubjectOf(
-    managedBy: ManagedBy?,
-    gender: Gender?,
-): IdSubject =
-    when {
-        managedBy == null || managedBy == ManagedBy.SELF -> IdSubject.SELF
-        gender == Gender.MALE -> IdSubject.MALE
-        gender == Gender.FEMALE -> IdSubject.FEMALE
-        else -> IdSubject.UNKNOWN
-    }
-
 /** CNIC, NICOP and POC use the 13-digit mask; a passport is letters and digits (12 section 3.7). */
 internal fun DocumentType.isCnicLike(): Boolean = this != DocumentType.PASSPORT
 
@@ -466,43 +440,43 @@ internal fun identityNumberProblem(
 @StringRes
 internal fun identityNumberLabel(
     type: DocumentType,
-    subject: IdSubject,
+    subject: Subject,
 ): Int =
     when (type) {
         DocumentType.NICOP -> {
-            when (subject) {
-                IdSubject.SELF -> R.string.identity_number_label_nicop
-                IdSubject.MALE -> R.string.identity_number_label_nicop_male
-                IdSubject.FEMALE -> R.string.identity_number_label_nicop_female
-                IdSubject.UNKNOWN -> R.string.identity_number_label_nicop_unknown
-            }
+            subject.pick(
+                base = R.string.identity_number_label_nicop,
+                male = R.string.identity_number_label_nicop_male,
+                female = R.string.identity_number_label_nicop_female,
+                unknown = R.string.identity_number_label_nicop_unknown,
+            )
         }
 
         DocumentType.POC -> {
-            when (subject) {
-                IdSubject.SELF -> R.string.identity_number_label_poc
-                IdSubject.MALE -> R.string.identity_number_label_poc_male
-                IdSubject.FEMALE -> R.string.identity_number_label_poc_female
-                IdSubject.UNKNOWN -> R.string.identity_number_label_poc_unknown
-            }
+            subject.pick(
+                base = R.string.identity_number_label_poc,
+                male = R.string.identity_number_label_poc_male,
+                female = R.string.identity_number_label_poc_female,
+                unknown = R.string.identity_number_label_poc_unknown,
+            )
         }
 
         DocumentType.PASSPORT -> {
-            when (subject) {
-                IdSubject.SELF -> R.string.identity_number_label_passport
-                IdSubject.MALE -> R.string.identity_number_label_passport_male
-                IdSubject.FEMALE -> R.string.identity_number_label_passport_female
-                IdSubject.UNKNOWN -> R.string.identity_number_label_passport_unknown
-            }
+            subject.pick(
+                base = R.string.identity_number_label_passport,
+                male = R.string.identity_number_label_passport_male,
+                female = R.string.identity_number_label_passport_female,
+                unknown = R.string.identity_number_label_passport_unknown,
+            )
         }
 
         DocumentType.CNIC, DocumentType.UNKNOWN -> {
-            when (subject) {
-                IdSubject.SELF -> R.string.identity_number_label_cnic
-                IdSubject.MALE -> R.string.identity_number_label_cnic_male
-                IdSubject.FEMALE -> R.string.identity_number_label_cnic_female
-                IdSubject.UNKNOWN -> R.string.identity_number_label_cnic_unknown
-            }
+            subject.pick(
+                base = R.string.identity_number_label_cnic,
+                male = R.string.identity_number_label_cnic_male,
+                female = R.string.identity_number_label_cnic_female,
+                unknown = R.string.identity_number_label_cnic_unknown,
+            )
         }
     }
 

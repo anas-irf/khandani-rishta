@@ -1,5 +1,6 @@
 package com.khandanirishta.app.ui.feature.notifications
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khandanirishta.app.core.data.DataKey
@@ -10,7 +11,6 @@ import com.khandanirishta.app.core.data.PagedState
 import com.khandanirishta.app.core.data.Paginator
 import com.khandanirishta.app.core.network.apiError
 import com.khandanirishta.app.core.network.generated.model.Notification
-import com.khandanirishta.app.core.realtime.ConnectivityObserver
 import com.khandanirishta.app.core.realtime.RealtimeClient
 import com.khandanirishta.app.core.realtime.RealtimeEvent
 import com.khandanirishta.app.ui.messages.MessageBus
@@ -23,11 +23,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@Immutable
 data class NotificationsUiState(
     /** "Mark all as read" is waiting for the server. */
     val markingAll: Boolean = false,
-    /** Buttons that need the network are disabled while offline (rule G14). */
-    val online: Boolean = true,
 )
 
 /**
@@ -42,7 +41,6 @@ class NotificationsViewModel
         private val me: MeRepository,
         private val bus: MessageBus,
         realtime: RealtimeClient,
-        connectivity: ConnectivityObserver,
         invalidation: Invalidation,
     ) : ViewModel() {
         private val mutableState = MutableStateFlow(NotificationsUiState())
@@ -63,9 +61,6 @@ class NotificationsViewModel
             // The same event, a socket reconnect and other changes invalidate the feed: refetch quietly.
             viewModelScope.launch {
                 invalidation.on(DataKey.Notifications).collect { paginator.refresh(showSpinner = false) }
-            }
-            viewModelScope.launch {
-                connectivity.online.collect { online -> mutableState.update { it.copy(online = online) } }
             }
         }
 

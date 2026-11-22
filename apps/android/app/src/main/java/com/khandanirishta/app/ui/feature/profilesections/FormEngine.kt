@@ -1,5 +1,6 @@
 package com.khandanirishta.app.ui.feature.profilesections
 
+import androidx.compose.runtime.Immutable
 import com.khandanirishta.app.core.network.ApiError
 import com.khandanirishta.app.core.network.ErrorCode
 import com.khandanirishta.app.core.network.generated.model.FieldCode
@@ -25,6 +26,7 @@ data class FieldIssue(
 )
 
 /** A request to scroll to [field]; [token] changes for every request. */
+@Immutable
 data class Reveal(
     val field: String,
     val token: Int,
@@ -49,6 +51,7 @@ interface FormRules<V> {
 }
 
 /** The values of a form, the values last saved, and its errors. */
+@Immutable
 data class FormState<V>(
     val values: V,
     val saved: V,

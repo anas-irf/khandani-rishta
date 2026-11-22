@@ -12,7 +12,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.unit.dp
 import com.khandanirishta.app.R
 import com.khandanirishta.app.core.data.Lists
 import com.khandanirishta.app.core.data.Option
@@ -29,7 +28,9 @@ import com.khandanirishta.app.ui.components.SelectField
 import com.khandanirishta.app.ui.rememberLinkOpener
 import com.khandanirishta.app.ui.text.LocalReference
 import com.khandanirishta.app.ui.text.linkedText
+import com.khandanirishta.app.ui.text.pick
 import com.khandanirishta.app.ui.text.text
+import com.khandanirishta.app.ui.theme.Spacing
 
 private val MANAGED_BY = listOf("self", "parent", "sibling", "relative", "friend")
 
@@ -83,7 +84,7 @@ internal fun ColumnScope.AccountForFields(scope: FieldsScope<AccountForInput>) {
     }
     val candidate = values.showsCandidateConsent(scope.context)
     if (scope.mode == FormMode.ONBOARDING || candidate) {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.s8)) {
             if (scope.mode == FormMode.ONBOARDING) {
                 val terms = stringResource(R.string.profile_sections_account_for_consent_terms)
                 ConsentCheckbox(
@@ -102,6 +103,7 @@ internal fun ColumnScope.AccountForFields(scope: FieldsScope<AccountForInput>) {
                             )
                         },
                     error = scope.error("consent_terms"),
+                    enabled = scope.enabled,
                     modifier = Modifier.locate("consent_terms", scope.locator),
                 )
                 val self = values.managedBy == null || values.managedBy == "self"
@@ -119,6 +121,7 @@ internal fun ColumnScope.AccountForFields(scope: FieldsScope<AccountForInput>) {
                             ),
                         ),
                     error = scope.error("consent_age"),
+                    enabled = scope.enabled,
                     modifier = Modifier.locate("consent_age", scope.locator),
                 )
             }
@@ -130,6 +133,7 @@ internal fun ColumnScope.AccountForFields(scope: FieldsScope<AccountForInput>) {
                     },
                     label = AnnotatedString(stringResource(R.string.profile_sections_account_for_consent_candidate)),
                     error = scope.error("consent_candidate"),
+                    enabled = scope.enabled,
                     modifier = Modifier.locate("consent_candidate", scope.locator),
                 )
             }
@@ -224,6 +228,7 @@ internal fun ColumnScope.BasicsFields(scope: FieldsScope<BasicsInput>) {
             label = dateLabel,
             helper = stringResource(R.string.profile_sections_basics_date_of_birth_help),
             error = scope.error("date_of_birth"),
+            enabled = scope.enabled,
             modifier = Modifier.locate("date_of_birth", scope.locator),
         )
     }
@@ -282,6 +287,7 @@ internal fun ColumnScope.BasicsFields(scope: FieldsScope<BasicsInput>) {
         onChange = { cm -> scope.edit("height_cm") { it.copy(heightCm = cm) } },
         label = stringResource(R.string.profile_sections_basics_height_label),
         error = scope.error("height_cm"),
+        enabled = scope.enabled,
         modifier = Modifier.locate("height_cm", scope.locator),
     )
     if (scope.mode == FormMode.ONBOARDING) {
@@ -439,6 +445,7 @@ internal fun ColumnScope.CommunityFields(scope: FieldsScope<CommunityInput>) {
         optional = true,
         max = LANGUAGES_MAX,
         chips = false,
+        enabled = scope.enabled,
         modifier = Modifier.locate("language_codes", scope.locator),
     )
 }

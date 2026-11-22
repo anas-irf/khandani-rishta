@@ -1,51 +1,37 @@
 package com.khandanirishta.app.ui.components
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.ErrorOutline
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.RangeSliderState
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,26 +40,37 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.khandanirishta.app.R
+import com.khandanirishta.app.core.data.Lists
 import com.khandanirishta.app.core.data.Option
+import com.khandanirishta.app.core.data.Reference
 import com.khandanirishta.app.core.network.generated.model.Importance
 import com.khandanirishta.app.core.util.Formatters
 import com.khandanirishta.app.ui.text.LocalReference
 import com.khandanirishta.app.ui.text.text
+import com.khandanirishta.app.ui.theme.KrTheme
+import com.khandanirishta.app.ui.theme.KrType
+import com.khandanirishta.app.ui.theme.Sizes
+import com.khandanirishta.app.ui.theme.Spacing
+import com.khandanirishta.app.ui.theme.Strokes
+import com.khandanirishta.app.ui.theme.TABULAR_FIGURES
 import java.time.LocalDate
+import java.time.Month
 import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
@@ -81,7 +78,8 @@ import kotlin.math.roundToInt
 
 /*
  * Form fields of specs/22 section 11 (the web's components/common/fields). Every field is
- * stateless: it shows a value and reports changes. Server validation errors arrive as [error].
+ * stateless: it shows a value and reports changes. Server validation errors arrive as [error]
+ * and always come with an icon and words.
  */
 
 /** The label above a field, with "(optional)" when the field is not required. */
@@ -91,54 +89,54 @@ fun FieldLabel(
     modifier: Modifier = Modifier,
     optional: Boolean = false,
 ) {
-    Row(modifier.padding(bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text(label, style = MaterialTheme.typography.labelLarge)
+    FlowRow(
+        modifier = modifier.padding(bottom = Spacing.s8),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
+    ) {
+        Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
         if (optional) {
-            Spacer(Modifier.width(4.dp))
             Text(
-                stringResource(R.string.common_optional),
-                style = MaterialTheme.typography.labelMedium,
+                text = stringResource(R.string.common_optional),
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Normal),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
 }
 
-/** Helper or error text under a field. */
+/** Helper text under a field, or what is wrong with it: danger with an icon, read out at once. */
 @Composable
 fun FieldSupport(
     helper: String?,
     error: String?,
     modifier: Modifier = Modifier,
 ) {
-    when {
-        error != null -> {
-            Text(
-                error,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error,
-                modifier = modifier.padding(top = 4.dp),
-            )
-        }
-
-        helper != null -> {
-            Text(
-                helper,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = modifier.padding(top = 4.dp),
-            )
-        }
+    if (!error.isNullOrBlank()) {
+        IconText(
+            icon = Icons.Outlined.ErrorOutline,
+            text = error,
+            style = KrType.caption.copy(fontWeight = FontWeight.SemiBold),
+            color = MaterialTheme.colorScheme.error,
+            iconSize = Sizes.iconTiny,
+            modifier =
+                modifier
+                    .semantics { liveRegion = LiveRegionMode.Polite }
+                    .padding(top = Spacing.s8),
+        )
+    } else if (!helper.isNullOrBlank() && error == null) {
+        CaptionText(helper, modifier.padding(top = Spacing.s8))
     }
 }
 
 /** A text field with label, helper, error and an optional counter (`TextField`). */
+@Suppress("DEPRECATION") // As KrTextInput.
 @Composable
 fun KrTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
     modifier: Modifier = Modifier,
+    inputModifier: Modifier = Modifier,
     helper: String? = null,
     error: String? = null,
     placeholder: String? = null,
@@ -148,45 +146,49 @@ fun KrTextField(
     minLines: Int = 1,
     enabled: Boolean = true,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     showCounter: Boolean = maxLength != null && !singleLine,
+    counter: String? = null,
+    showLabel: Boolean = true,
 ) {
     Column(modifier.fillMaxWidth()) {
-        FieldLabel(label, optional = optional)
-        OutlinedTextField(
+        if (showLabel) FieldLabel(label, optional = optional)
+        KrTextInput(
             value = value,
-            onValueChange = { next -> onValueChange(if (maxLength != null) next.take(maxLength) else next) },
-            placeholder = placeholder?.let { { Text(it) } },
+            onValueChange = { next -> onValueChange(withinLimit(value, next, maxLength)) },
+            placeholder = placeholder,
             isError = error != null,
+            errorMessage = error,
             singleLine = singleLine,
             minLines = minLines,
             enabled = enabled,
             keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
             visualTransformation = visualTransformation,
-            shape = MaterialTheme.shapes.small,
             modifier =
-                Modifier
+                inputModifier
                     .fillMaxWidth()
-                    .semantics {
-                        contentDescription = label
-                        if (error != null) error(error)
-                    },
+                    .semantics { contentDescription = label },
         )
-        Row {
-            Box(Modifier.weight(1f)) { FieldSupport(helper, error) }
-            if (showCounter && maxLength != null) {
-                Text(
-                    text(R.string.fields_text_area_counter, "length" to value.length, "max" to maxLength),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp, start = 8.dp),
-                )
-            }
+        FieldSupport(helper, error)
+        if (showCounter && maxLength != null) {
+            val spoken = text(R.string.fields_text_area_counter_label, "length" to value.length, "max" to maxLength)
+            Text(
+                text = counter ?: text(R.string.fields_text_area_counter, "length" to value.length, "max" to maxLength),
+                style = KrType.caption.copy(fontFeatureSettings = TABULAR_FIGURES),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier =
+                    Modifier
+                        .align(Alignment.End)
+                        .semantics { contentDescription = spoken }
+                        .padding(top = Spacing.s4),
+            )
         }
     }
 }
 
-/** A read-only box that opens a picker, styled like a text field. */
+/** A read-only box that opens a picker, styled like a text field. What is chosen wraps. */
 @Composable
 fun PickerBox(
     text: String?,
@@ -197,53 +199,66 @@ fun PickerBox(
     enabled: Boolean = true,
     contentDescription: String? = null,
 ) {
+    val colors = MaterialTheme.colorScheme
+    val extra = KrTheme.colors
+    val shape = MaterialTheme.shapes.medium
     Surface(
-        shape = MaterialTheme.shapes.small,
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
+        shape = shape,
+        color =
+            when {
+                !enabled -> extra.disabledContainer
+                isError -> colors.errorContainer
+                else -> extra.card
+            },
         border =
-            androidx.compose.foundation.BorderStroke(
-                1.dp,
+            BorderStroke(
+                Strokes.control,
                 when {
-                    isError -> MaterialTheme.colorScheme.error
-                    else -> MaterialTheme.colorScheme.outline
+                    !enabled -> extra.disabledContainer
+                    isError -> colors.error
+                    else -> colors.outline
                 },
             ),
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .heightIn(min = 56.dp)
-                .clickable(enabled = enabled, role = Role.DropdownList, onClick = onClick)
-                .semantics { if (contentDescription != null) this.contentDescription = contentDescription },
+        modifier = modifier.fillMaxWidth(),
     ) {
-        Row(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .semantics {
+                        if (contentDescription != null) this.contentDescription = contentDescription
+                    }.tappable(shape = shape, onClick = onClick, role = Role.DropdownList, enabled = enabled)
+                    .heightIn(min = Sizes.touchLarge)
+                    .padding(start = PickerInset, top = Spacing.s12, end = Spacing.s8, bottom = Spacing.s12),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s4),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Text(
-                text ?: placeholder,
-                style = MaterialTheme.typography.bodyLarge,
+                text = text ?: placeholder,
+                style = MaterialTheme.typography.bodyMedium,
                 color =
                     when {
-                        !enabled -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                        text == null -> MaterialTheme.colorScheme.onSurfaceVariant
-                        else -> MaterialTheme.colorScheme.onSurface
+                        !enabled -> extra.onDisabledContainer
+                        text == null -> colors.onSurfaceVariant
+                        else -> colors.onSurface
                     },
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
             Icon(
-                Icons.Filled.ArrowDropDown,
+                Icons.Outlined.ExpandMore,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = if (enabled) colors.onSurfaceVariant else extra.onDisabledContainer,
+                modifier = Modifier.size(Sizes.iconSmall),
             )
         }
     }
 }
 
 /**
- * A single choice from a list, in a modal bottom sheet (`SelectField`). Lists longer than 12
- * entries get a search box (`SearchSelectField`). [display] gives a shorter text for the closed
+ * A single choice from a list, in a modal bottom sheet (`SelectField`). Lists longer than 8
+ * entries (07 section 2.6) get a search box (`SearchSelectField`). [display] gives a shorter text for the closed
  * field (a narrow dial code box, for example); the sheet and screen readers use the full label.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectField(
     label: String,
@@ -262,13 +277,8 @@ fun SelectField(
     display: ((Option) -> String)? = null,
 ) {
     var open by rememberSaveable { mutableStateOf(false) }
-    val chosen = options.firstOrNull { it.code == selected }
-    val current =
-        chosen?.label
-            ?: selected?.let {
-                com.khandanirishta.app.core.data.Reference
-                    .fallback(it)
-            }
+    val chosen = remember(options, selected) { options.firstOrNull { it.code == selected } }
+    val current = chosen?.label ?: selected?.let(Reference::fallback)
     Column(modifier.fillMaxWidth()) {
         if (showLabel) FieldLabel(label, optional = optional)
         PickerBox(
@@ -278,6 +288,7 @@ fun SelectField(
             isError = error != null,
             enabled = enabled,
             contentDescription = "$label, ${current ?: placeholder}",
+            modifier = Modifier.semantics { if (!error.isNullOrBlank()) error(error) },
         )
         FieldSupport(helper, error)
     }
@@ -292,13 +303,12 @@ fun SelectField(
                 onSelect(it)
                 open = false
             },
-            clearLabel = if (clearable &&
-                selected != null
-            ) {
-                text(R.string.fields_search_select_clear, "label" to label)
-            } else {
-                null
-            },
+            clearLabel =
+                if (clearable && selected != null) {
+                    text(R.string.fields_search_select_clear, "label" to label)
+                } else {
+                    null
+                },
             onClear = {
                 onSelect(null)
                 open = false
@@ -307,8 +317,11 @@ fun SelectField(
     }
 }
 
-/** The sheet behind [SelectField] and [MultiSelectField]. */
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * The sheet behind [SelectField] and [MultiSelectField]. While the member types, "Done" moves
+ * beside the title, so the options keep the room that is left over the keyboard.
+ */
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 private fun OptionSheet(
     title: String,
@@ -322,83 +335,78 @@ private fun OptionSheet(
     onClear: () -> Unit = {},
     doneLabel: String? = null,
 ) {
-    val sheetState = rememberModalSheetState(skipPartiallyExpanded = searchable)
     var query by rememberSaveable { mutableStateOf("") }
     val filtered =
         remember(options, query) {
             val needle = query.trim()
             if (needle.isEmpty()) options else options.filter { it.label.contains(needle, ignoreCase = true) }
         }
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+    KrSheetFrame(onDismissRequest = onDismiss, skipPartiallyExpanded = searchable) {
+        val typing = WindowInsets.isImeVisible
+        val besideTitle = clearLabel ?: doneLabel?.takeIf { typing }
+        val onBesideTitle = if (clearLabel != null) onClear else onDismiss
         Column(
             Modifier
                 .fillMaxWidth()
-                .then(if (searchable) Modifier.fillMaxHeight(0.92f) else Modifier)
+                .then(if (searchable) Modifier.fillMaxHeight(SEARCH_SHEET_SHARE) else Modifier)
                 .imePadding(),
         ) {
-            Row(Modifier.padding(horizontal = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                if (clearLabel != null) TextButton(onClick = onClear) { Text(clearLabel) }
-                if (doneLabel != null) TextButton(onClick = onDismiss) { Text(doneLabel) }
-            }
+            SectionHeading(
+                title = title,
+                ornament = HeadingOrnament.NONE,
+                style = MaterialTheme.typography.titleLarge,
+                action = besideTitle?.let { { KrTextLink(it, onBesideTitle) } },
+                modifier = Modifier.padding(horizontal = Spacing.gutter),
+            )
             if (searchable) {
-                OutlinedTextField(
+                val searchLabel = text(R.string.fields_search_select_search_label, "label" to title)
+                KrTextInput(
                     value = query,
                     onValueChange = { query = it },
+                    placeholder = stringResource(R.string.fields_search_select_search),
                     leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
-                    placeholder = { Text(stringResource(R.string.fields_search_select_search)) },
-                    singleLine = true,
-                    shape = MaterialTheme.shapes.small,
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                            .padding(horizontal = Spacing.gutter, vertical = Spacing.s12)
+                            .semantics { contentDescription = searchLabel },
                 )
             }
             if (filtered.isEmpty()) {
                 Text(
-                    stringResource(R.string.fields_search_select_no_results),
+                    text = stringResource(R.string.fields_search_select_no_results),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(20.dp),
+                    modifier =
+                        Modifier
+                            .semantics { liveRegion = LiveRegionMode.Polite }
+                            .padding(horizontal = Spacing.gutter, vertical = Spacing.s16),
                 )
             }
             LazyColumn(
-                Modifier
-                    .fillMaxWidth()
-                    .then(if (multi) Modifier else Modifier.selectableGroup())
-                    .navigationBarsPadding(),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .weight(1f, fill = false)
+                        .then(if (multi) Modifier else Modifier.selectableGroup())
+                        .padding(horizontal = Spacing.gutter),
             ) {
-                items(filtered, key = { it.code }) { option ->
+                items(filtered, key = { it.code }, contentType = { OPTION_TYPE }) { option ->
                     val chosen = isSelected(option.code)
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 52.dp)
-                            .then(
-                                if (multi) {
-                                    Modifier.toggleable(value = chosen, role = Role.Checkbox) { onPick(option.code) }
-                                } else {
-                                    Modifier.selectable(
-                                        selected = chosen,
-                                        role = Role.RadioButton,
-                                    ) { onPick(option.code) }
-                                },
-                            ).padding(horizontal = 20.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        if (multi) {
-                            Checkbox(
-                                checked = chosen,
-                                onCheckedChange = null,
-                            )
-                        } else {
-                            RadioButton(selected = chosen, onClick = null)
-                        }
-                        Spacer(Modifier.width(14.dp))
-                        Text(option.label, style = MaterialTheme.typography.bodyLarge)
+                    if (multi) {
+                        CheckboxRow(checked = chosen, onCheckedChange = { onPick(option.code) }, label = option.label)
+                    } else {
+                        RadioRow(label = option.label, selected = chosen, onClick = { onPick(option.code) })
                     }
                 }
+            }
+            if (doneLabel != null && !typing) {
+                KrButton(
+                    text = doneLabel,
+                    onClick = onDismiss,
+                    fullWidth = true,
+                    modifier = Modifier.padding(horizontal = Spacing.gutter, vertical = Spacing.s12),
+                )
             }
         }
     }
@@ -408,7 +416,6 @@ private fun OptionSheet(
  * Several choices (`MultiSelectField`): chips for short lists; for long lists the chosen values
  * as removable chips and an "Add" button that opens a searchable sheet.
  */
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MultiSelectField(
     label: String,
@@ -422,6 +429,7 @@ fun MultiSelectField(
     max: Int? = null,
     chips: Boolean = options.size <= CHIP_THRESHOLD,
     showLabel: Boolean = true,
+    enabled: Boolean = true,
 ) {
     var open by rememberSaveable { mutableStateOf(false) }
     var maxReached by remember { mutableStateOf(false) }
@@ -438,66 +446,40 @@ fun MultiSelectField(
     }
     Column(modifier.fillMaxWidth()) {
         if (showLabel) FieldLabel(label, optional = optional)
-        if (chips) {
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
+            verticalArrangement = Arrangement.spacedBy(Spacing.s8),
+        ) {
+            if (chips) {
                 options.forEach { option ->
-                    val chosen = option.code in selected
-                    FilterChip(
-                        selected = chosen,
+                    KrChoiceChip(
+                        text = option.label,
+                        selected = option.code in selected,
                         onClick = { toggle(option.code) },
-                        label = { Text(option.label) },
-                        leadingIcon = if (chosen) {
-                            (
-                                {
-                                    Icon(
-                                        Icons.Filled.Check,
-                                        contentDescription = null,
-                                        Modifier.size(18.dp),
-                                    )
-                                }
-                            )
-                        } else {
-                            null
-                        },
-                        colors =
-                            FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                            ),
+                        enabled = enabled,
                     )
                 }
-            }
-        } else {
-            val chosen =
-                options.filter { it.code in selected } +
-                    (selected - options.map { it.code }.toSet()).map { Option(it, it) }
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
+            } else {
+                val chosen =
+                    remember(options, selected) {
+                        options.filter { it.code in selected } +
+                            (selected - options.map { it.code }.toSet()).map { Option(it, it) }
+                    }
                 chosen.forEach { option ->
-                    InputChip(
-                        selected = true,
-                        onClick = { toggle(option.code) },
-                        label = { Text(option.label) },
-                        trailingIcon = {
-                            Icon(
-                                Icons.Filled.Close,
-                                contentDescription = text(R.string.fields_multi_select_remove, "item" to option.label),
-                                modifier = Modifier.size(18.dp),
-                            )
-                        },
+                    KrRemovableChip(
+                        text = option.label,
+                        removeLabel = text(R.string.fields_multi_select_remove, "item" to option.label),
+                        onRemove = { toggle(option.code) },
+                        enabled = enabled,
                     )
                 }
-                FilterChip(
-                    selected = false,
+                KrButton(
+                    text = stringResource(R.string.fields_multi_select_add),
                     onClick = { open = true },
-                    label = { Text(stringResource(R.string.fields_multi_select_add)) },
-                    leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null, Modifier.size(18.dp)) },
-                    modifier = Modifier.semantics { contentDescription = "" },
+                    variant = KrButtonVariant.QUIET,
+                    icon = Icons.Outlined.Add,
+                    enabled = enabled,
+                    contentDescription = text(R.string.fields_multi_select_add_label, "label" to label),
                 )
             }
         }
@@ -522,32 +504,16 @@ fun MultiSelectField(
 }
 
 /** A single choice shown as chips, for short lists. */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ChoiceChips(
     options: List<Option>,
     selected: String?,
     onSelect: (String) -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
-    FlowRow(
-        modifier.selectableGroup(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        options.forEach { option ->
-            FilterChip(
-                selected = option.code == selected,
-                onClick = { onSelect(option.code) },
-                label = { Text(option.label) },
-                colors =
-                    FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.primary,
-                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                    ),
-            )
-        }
-    }
+    val choices = remember(options) { options.map { it.code to it.label } }
+    SingleChoiceChips(choices, selected, onSelect, modifier, enabled)
 }
 
 /** One choice of a [RadioCardsField]. */
@@ -570,47 +536,15 @@ fun RadioCardsField(
 ) {
     Column(modifier.fillMaxWidth()) {
         if (label != null) FieldLabel(label)
-        Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(Spacing.s8)) {
             cards.forEach { card ->
-                val chosen = card.code == selected
-                Surface(
-                    shape = MaterialTheme.shapes.medium,
-                    color = if (chosen) {
-                        MaterialTheme.colorScheme.primaryContainer.copy(
-                            alpha = 0.45f,
-                        )
-                    } else {
-                        MaterialTheme.colorScheme.surfaceContainerLowest
-                    },
-                    border =
-                        androidx.compose.foundation.BorderStroke(
-                            if (chosen) 2.dp else 1.dp,
-                            if (chosen) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
-                        ),
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .selectable(
-                                selected = chosen,
-                                enabled = enabled,
-                                role = Role.RadioButton,
-                            ) { onSelect(card.code) },
-                ) {
-                    Row(Modifier.padding(14.dp), verticalAlignment = Alignment.Top) {
-                        RadioButton(selected = chosen, onClick = null, enabled = enabled)
-                        Spacer(Modifier.width(12.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text(card.title, style = MaterialTheme.typography.titleSmall)
-                            if (card.helper != null) {
-                                Text(
-                                    card.helper,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                        }
-                    }
-                }
+                RadioCardRow(
+                    title = card.title,
+                    helper = card.helper,
+                    selected = card.code == selected,
+                    onClick = { onSelect(card.code) },
+                    enabled = enabled,
+                )
             }
         }
         FieldSupport(null, error)
@@ -619,7 +553,8 @@ fun RadioCardsField(
 
 /**
  * Date of birth as three pickers, day, month and year (07 section 4.1), not a calendar: scrolling
- * decades in a calendar is slow. An incomplete or impossible date gives `null`.
+ * decades in a calendar is slow. An incomplete or impossible date gives `null`. The three stack
+ * when the text is too large for one line.
  */
 @Composable
 fun DateOfBirthField(
@@ -631,6 +566,7 @@ fun DateOfBirthField(
     error: String? = null,
     minAge: Int = 18,
     maxAge: Int = 80,
+    enabled: Boolean = true,
 ) {
     var day by rememberSaveable { mutableStateOf(value?.dayOfMonth) }
     var month by rememberSaveable { mutableStateOf(value?.monthValue) }
@@ -655,66 +591,63 @@ fun DateOfBirthField(
         invalid = !valid
         onChange(if (valid) LocalDate.of(y, m, d) else null)
     }
-    val days = (1..31).map { Option(it.toString(), it.toString()) }
+    val days = remember { (1..31).map { Option(it.toString(), it.toString()) } }
     val months =
-        (1..12).map {
-            Option(
-                it.toString(),
-                java.time.Month
-                    .of(it)
-                    .getDisplayName(TextStyle.FULL, Locale.ENGLISH),
-            )
+        remember {
+            (1..12).map { Option(it.toString(), Month.of(it).getDisplayName(TextStyle.FULL, Locale.ENGLISH)) }
         }
-    val years = (currentYear - minAge downTo currentYear - maxAge).map { Option(it.toString(), it.toString()) }
+    val years =
+        remember(currentYear, minAge, maxAge) {
+            (currentYear - minAge downTo currentYear - maxAge).map { Option(it.toString(), it.toString()) }
+        }
+    val bad = error != null || invalid
     Column(modifier.fillMaxWidth()) {
         FieldLabel(label)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            SelectField(
+        AdaptiveRow(spacing = Spacing.s8, verticalAlignment = Alignment.Top) {
+            PartSelect(
                 label = stringResource(R.string.fields_date_of_birth_day),
                 options = days,
                 selected = day?.toString(),
                 onSelect = { emit(it?.toInt(), month, year) },
-                placeholder = stringResource(R.string.fields_date_of_birth_day),
-                showLabel = false,
-                isErrorOverride = error != null || invalid,
-                modifier = Modifier.weight(0.8f),
+                isError = bad,
+                enabled = enabled,
+                modifier = Modifier.grow(weight = DAY_GROWS, basis = DayBasis),
             )
-            SelectField(
+            PartSelect(
                 label = stringResource(R.string.fields_date_of_birth_month),
                 options = months,
                 selected = month?.toString(),
                 onSelect = { emit(day, it?.toInt(), year) },
-                placeholder = stringResource(R.string.fields_date_of_birth_month),
-                showLabel = false,
-                isErrorOverride = error != null || invalid,
-                modifier = Modifier.weight(1.3f),
+                isError = bad,
+                enabled = enabled,
+                modifier = Modifier.grow(weight = MONTH_GROWS, basis = MonthBasis),
             )
-            SelectField(
+            PartSelect(
                 label = stringResource(R.string.fields_date_of_birth_year),
                 options = years,
                 selected = year?.toString(),
                 onSelect = { emit(day, month, it?.toInt()) },
-                placeholder = stringResource(R.string.fields_date_of_birth_year),
-                showLabel = false,
-                isErrorOverride = error != null || invalid,
-                modifier = Modifier.weight(1f),
+                isError = bad,
+                enabled = enabled,
+                modifier = Modifier.grow(weight = YEAR_GROWS, basis = YearBasis),
             )
         }
-        FieldSupport(helper, error ?: if (invalid) stringResource(R.string.fields_date_of_birth_invalid) else null)
+        val notADate = stringResource(R.string.fields_date_of_birth_invalid)
+        FieldSupport(helper, error ?: notADate.takeIf { invalid })
     }
 }
 
-/** A [SelectField] variant without its own support line, for rows of pickers. */
+/** One part of a field made of several pickers: its label is the placeholder, its error the field's. */
 @Composable
-private fun SelectField(
+private fun PartSelect(
     label: String,
     options: List<Option>,
     selected: String?,
     onSelect: (String?) -> Unit,
-    placeholder: String,
-    showLabel: Boolean,
-    isErrorOverride: Boolean,
+    isError: Boolean,
     modifier: Modifier = Modifier,
+    placeholder: String = label,
+    enabled: Boolean = true,
     display: ((Option) -> String)? = null,
 ) {
     SelectField(
@@ -723,8 +656,9 @@ private fun SelectField(
         selected = selected,
         onSelect = onSelect,
         placeholder = placeholder,
-        showLabel = showLabel,
-        error = if (isErrorOverride) "" else null,
+        showLabel = false,
+        error = if (isError) "" else null,
+        enabled = enabled,
         modifier = modifier,
         clearable = false,
         display = display,
@@ -741,6 +675,7 @@ fun HeightField(
     helper: String? = null,
     error: String? = null,
     optional: Boolean = false,
+    enabled: Boolean = true,
 ) {
     val initial = valueCm
         ?.takeIf {
@@ -760,26 +695,20 @@ fun HeightField(
     }
     Column(modifier.fillMaxWidth()) {
         FieldLabel(label, optional = optional)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            SelectField(
+        AdaptiveRow(spacing = Spacing.s8, verticalAlignment = Alignment.Top) {
+            PartSelect(
                 label = stringResource(R.string.fields_height_feet),
-                options = (4..MAX_FEET).map {
-                    Option(
-                        it.toString(),
-                        text(
-                            R.string.fields_height_feet_option,
-                            "feet" to it,
-                        ),
-                    )
-                },
+                options =
+                    (MIN_FEET..MAX_FEET).map {
+                        Option(it.toString(), text(R.string.fields_height_feet_option, "feet" to it))
+                    },
                 selected = feet?.toString(),
                 onSelect = { emit(it?.toInt(), inches) },
-                placeholder = stringResource(R.string.fields_height_feet),
-                showLabel = false,
-                isErrorOverride = error != null,
-                modifier = Modifier.weight(1f),
+                isError = error != null,
+                enabled = enabled,
+                modifier = Modifier.grow(basis = HeightBasis),
             )
-            SelectField(
+            PartSelect(
                 label = stringResource(R.string.fields_height_inches),
                 options =
                     (if (feet == MAX_FEET) listOf(0) else (0..11).toList()).map {
@@ -787,13 +716,14 @@ fun HeightField(
                     },
                 selected = inches?.toString(),
                 onSelect = { emit(feet, it?.toInt()) },
-                placeholder = stringResource(R.string.fields_height_inches),
-                showLabel = false,
-                isErrorOverride = error != null,
-                modifier = Modifier.weight(1f),
+                isError = error != null,
+                enabled = enabled,
+                modifier = Modifier.grow(basis = HeightBasis),
             )
         }
-        val cm = if (feet != null && inches != null) Formatters.feetInchesToCm(feet!!, inches!!) else null
+        val f = feet
+        val i = inches
+        val cm = if (f != null && i != null) Formatters.feetInchesToCm(f, i) else null
         FieldSupport(helper ?: cm?.let { text(R.string.fields_height_centimetres, "cm" to it) }, error)
     }
 }
@@ -857,8 +787,8 @@ fun PhoneField(
     val dial = countries.firstOrNull { it.code == country }?.dialCode ?: "+92"
     Column(modifier.fillMaxWidth()) {
         FieldLabel(label, optional = optional)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
-            SelectField(
+        AdaptiveRow(spacing = Spacing.s8, verticalAlignment = Alignment.Top) {
+            PartSelect(
                 label = stringResource(R.string.fields_phone_dial_code),
                 options =
                     countries.map {
@@ -880,30 +810,28 @@ fun PhoneField(
                     }
                 },
                 placeholder = dial,
-                showLabel = false,
-                isErrorOverride = false,
-                modifier = Modifier.weight(0.34f),
+                isError = false,
+                modifier = Modifier.grow(weight = DIAL_GROWS, basis = DialBasis),
                 // The closed box is narrow: the flag and dial code, the sheet lists full names.
                 display = { option ->
                     val code = countries.firstOrNull { it.code == option.code }?.dialCode.orEmpty()
                     "${Phone.flag(option.code)} $code".trim()
                 },
             )
-            OutlinedTextField(
+            KrTextInput(
                 value = national,
                 onValueChange = { next ->
                     val cleaned = next.filter { it.isDigit() || it == ' ' || it == '-' }.take(MAX_PHONE)
                     national = cleaned
                     onChange(Phone.toE164(dial, cleaned))
                 },
-                placeholder = { Text(if (dial == "+92") stringResource(R.string.fields_phone_placeholder_pk) else "") },
-                singleLine = true,
+                placeholder = if (dial == "+92") stringResource(R.string.fields_phone_placeholder_pk) else null,
                 isError = error != null,
+                errorMessage = error,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                shape = MaterialTheme.shapes.small,
                 modifier =
                     Modifier
-                        .weight(0.66f)
+                        .grow(weight = NUMBER_GROWS, basis = NumberBasis)
                         .semantics { contentDescription = label },
             )
         }
@@ -915,6 +843,7 @@ fun PhoneField(
  * Masks a CNIC, NICOP or POC number as `12345-1234567-1` while typing; the stored value is the
  * 13 digits (12 section 3).
  */
+@Suppress("DEPRECATION") // As KrTextInput.
 object IdentityMask : VisualTransformation {
     override fun filter(text: AnnotatedString): TransformedText {
         val digits = text.text.take(13)
@@ -960,9 +889,17 @@ fun RangeField(
 ) {
     val shown = text(R.string.profile_looking_for_range, "min" to format(min), "max" to format(max))
     Column(modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(label, style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
-            Text(shown, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+        AdaptiveRow(
+            modifier = Modifier.fillMaxWidth(),
+            lineSpacing = Spacing.s4,
+            verticalAlignment = Alignment.Top,
+        ) {
+            Text(label, style = MaterialTheme.typography.labelLarge, modifier = Modifier.grow())
+            Text(
+                text = shown,
+                style = MaterialTheme.typography.labelLarge.copy(fontFeatureSettings = TABULAR_FIGURES),
+                color = MaterialTheme.colorScheme.primary,
+            )
         }
         IntRangeSlider(
             start = min,
@@ -1000,6 +937,17 @@ fun IntRangeSlider(
                 trackRange = bounds.first.toFloat()..bounds.last.toFloat(),
             )
         }
+    val scheme = MaterialTheme.colorScheme
+    val colors =
+        SliderDefaults.colors(
+            thumbColor = scheme.primary,
+            activeTrackColor = scheme.primary,
+            // A control's edge needs 3:1: the soft fill would vanish into the band.
+            inactiveTrackColor = scheme.outline,
+            disabledThumbColor = scheme.onSurfaceVariant,
+            disabledActiveTrackColor = scheme.onSurfaceVariant,
+            disabledInactiveTrackColor = scheme.outlineVariant,
+        )
     // The handles follow the values given, as the controlled overload does; a reset can move both.
     state.moveTo(start.toFloat(), end.toFloat())
     RangeSlider(
@@ -1008,10 +956,17 @@ fun IntRangeSlider(
             state.moveTo(range.start, range.endInclusive)
             onChange(range.start.roundToInt(), range.endInclusive.roundToInt())
         },
-        modifier = modifier,
+        modifier = modifier.heightIn(min = Sizes.touch),
         enabled = enabled,
+        colors = colors,
         track = { sliderState ->
-            SliderDefaults.Track(rangeSliderState = sliderState, enabled = enabled, drawTick = { _, _ -> })
+            SliderDefaults.Track(
+                rangeSliderState = sliderState,
+                enabled = enabled,
+                colors = colors,
+                drawStopIndicator = null,
+                drawTick = { _, _ -> },
+            )
         },
     )
 }
@@ -1033,53 +988,32 @@ private fun RangeSliderState.moveTo(
     }
 }
 
-/** How much a preference matters: must, high, medium, low (`ImportanceField`). */
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * How much a preference matters: must, high, medium, low (`ImportanceField`), as chips that wrap
+ * where four segments would cut their words.
+ */
 @Composable
 fun ImportanceField(
     value: Importance,
     onChange: (Importance) -> Unit,
     modifier: Modifier = Modifier,
     label: String? = null,
+    enabled: Boolean = true,
 ) {
     val reference = LocalReference.current
-    val options = reference.optionsOf(com.khandanirishta.app.core.data.Lists.IMPORTANCE, Importance.entries)
+    val options = remember(reference) { reference.optionsOf(Lists.IMPORTANCE, Importance.entries) }
     Column(modifier.fillMaxWidth()) {
         if (label != null) FieldLabel(label)
-        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-            options.forEachIndexed { index, (importance, text) ->
-                SegmentedButton(
-                    selected = importance == value,
-                    onClick = { onChange(importance) },
-                    shape = SegmentedButtonDefaults.itemShape(index, options.size),
-                    label = {
-                        Text(
-                            text,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            style = MaterialTheme.typography.labelMedium,
-                        )
-                    },
-                    colors =
-                        SegmentedButtonDefaults.colors(
-                            activeContainerColor =
-                                if (importance ==
-                                    Importance.MUST
-                                ) {
-                                    MaterialTheme.colorScheme.tertiaryContainer
-                                } else {
-                                    MaterialTheme.colorScheme.primaryContainer
-                                },
-                        ),
-                )
-            }
-        }
-        if (value == Importance.MUST) {
+        SingleChoiceChips(options = options, selected = value, onSelect = onChange, enabled = enabled)
+        if (value == Importance.MUST && enabled) {
             Text(
-                stringResource(R.string.fields_importance_must_note),
+                text = stringResource(R.string.fields_importance_must_note),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.tertiary,
-                modifier = Modifier.padding(top = 4.dp),
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier =
+                    Modifier
+                        .semantics { liveRegion = LiveRegionMode.Polite }
+                        .padding(top = Spacing.s8),
             )
         }
     }
@@ -1093,36 +1027,36 @@ fun ConsentCheckbox(
     label: AnnotatedString,
     modifier: Modifier = Modifier,
     error: String? = null,
+    enabled: Boolean = true,
 ) {
     Column(modifier.fillMaxWidth()) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .toggleable(value = checked, role = Role.Checkbox, onValueChange = onCheckedChange)
-                .padding(vertical = 4.dp),
-            verticalAlignment = Alignment.Top,
-        ) {
-            Checkbox(checked = checked, onCheckedChange = null, modifier = Modifier.padding(top = 2.dp))
-            Spacer(Modifier.width(12.dp))
-            Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 12.dp))
-        }
+        CheckboxRow(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            label = label,
+            enabled = enabled,
+            error = error != null,
+        )
         FieldSupport(null, error)
     }
 }
 
-/** A small tinted note box, for explanations inside forms. */
-@Composable
-fun NoteBox(
-    text: String,
-    modifier: Modifier = Modifier,
-    container: Color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
-) {
-    Surface(color = container, shape = MaterialTheme.shapes.medium, modifier = modifier.fillMaxWidth()) {
-        Text(text, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(12.dp))
-    }
-}
-
-private const val SEARCH_THRESHOLD = 12
+private const val SEARCH_THRESHOLD = 8
 private const val CHIP_THRESHOLD = 12
+private const val SEARCH_SHEET_SHARE = 0.92f
+private const val OPTION_TYPE = "option"
+private const val MIN_FEET = 4
 private const val MAX_FEET = 7
 private const val MAX_PHONE = 16
+private const val DAY_GROWS = 0.7f
+private const val MONTH_GROWS = 1.2f
+private const val YEAR_GROWS = 0.9f
+private const val DIAL_GROWS = 0.36f
+private const val NUMBER_GROWS = 0.64f
+private val PickerInset = Spacing.s12
+private val DayBasis = 70.dp
+private val MonthBasis = 122.dp
+private val YearBasis = 88.dp
+private val HeightBasis = 120.dp
+private val DialBasis = 112.dp
+private val NumberBasis = 150.dp

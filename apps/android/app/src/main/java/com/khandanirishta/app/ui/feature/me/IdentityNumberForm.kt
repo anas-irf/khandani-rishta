@@ -3,31 +3,25 @@ package com.khandanirishta.app.ui.feature.me
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Shield
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Icon
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -50,19 +44,36 @@ import com.khandanirishta.app.core.network.generated.model.FieldCode
 import com.khandanirishta.app.core.network.generated.model.IdentitySummary
 import com.khandanirishta.app.core.network.generated.model.OwnProfile
 import com.khandanirishta.app.core.network.generated.model.ProfileStatus
+import com.khandanirishta.app.ui.components.AdaptiveRow
+import com.khandanirishta.app.ui.components.DiamondTitle
 import com.khandanirishta.app.ui.components.ErrorState
+import com.khandanirishta.app.ui.components.FieldLabel
 import com.khandanirishta.app.ui.components.FormSkeleton
+import com.khandanirishta.app.ui.components.IconText
 import com.khandanirishta.app.ui.components.IdentityMask
+import com.khandanirishta.app.ui.components.KrButton
+import com.khandanirishta.app.ui.components.KrDialog
 import com.khandanirishta.app.ui.components.KrTextField
+import com.khandanirishta.app.ui.components.KrTextLink
+import com.khandanirishta.app.ui.components.LocalOnline
 import com.khandanirishta.app.ui.components.SelectField
+import com.khandanirishta.app.ui.components.StatusBanner
+import com.khandanirishta.app.ui.components.StatusTone
+import com.khandanirishta.app.ui.components.TonalPanel
 import com.khandanirishta.app.ui.messages.MessageBus
 import com.khandanirishta.app.ui.navigation.LocalNavigator
 import com.khandanirishta.app.ui.navigation.OnboardingStep
 import com.khandanirishta.app.ui.rememberLinkOpener
 import com.khandanirishta.app.ui.text.LocalMe
 import com.khandanirishta.app.ui.text.LocalReference
+import com.khandanirishta.app.ui.text.Subject
 import com.khandanirishta.app.ui.text.linkedText
+import com.khandanirishta.app.ui.text.subjectOf
 import com.khandanirishta.app.ui.text.text
+import com.khandanirishta.app.ui.theme.KrTheme
+import com.khandanirishta.app.ui.theme.KrType
+import com.khandanirishta.app.ui.theme.Sizes
+import com.khandanirishta.app.ui.theme.Spacing
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -83,6 +94,9 @@ import javax.inject.Inject
  *
  * When a number is already registered, the form first shows it read-only with "Change" (07
  * section 13.5); the button then hands the saved summary to [onSave] without saving again.
+ *
+ * Offline (rule G14) it cannot save, go on or load again; typing and "Change" still work. It has
+ * no gutters: the screen around it gives them.
  */
 @Composable
 fun IdentityNumberForm(
@@ -125,24 +139,71 @@ internal fun IdentityNumberFormContent(
             }
         }
     }
+    val actions =
+        remember(viewModel, navigator) {
+            IdentityFormActions(
+                retry = viewModel::load,
+                change = viewModel::change,
+                next = { currentOnSave(it) },
+                setType = viewModel::setType,
+                setNumber = viewModel::setNumber,
+                submit = viewModel::submit,
+                toBasics = { navigator.push(OnboardingStep(BASICS_STEP)) },
+            )
+        }
+    IdentityFormBody(
+        state = state,
+        submitLabel = submitLabel,
+        startEditing = startEditing,
+        showManagedNote = showManagedNote,
+        actions = actions,
+        modifier = modifier,
+    )
+    if (state.registered) {
+        RegisteredDialog(onDismiss = viewModel::dismissRegistered)
+    }
+}
+
+/** What the form can do. */
+@Immutable
+internal class IdentityFormActions(
+    val retry: () -> Unit,
+    val change: () -> Unit,
+    val next: (IdentitySummary) -> Unit,
+    val setType: (DocumentType) -> Unit,
+    val setNumber: (String) -> Unit,
+    val submit: () -> Unit,
+    val toBasics: () -> Unit,
+)
+
+/** The form in all its states, without its view model and navigation. */
+@Composable
+internal fun IdentityFormBody(
+    state: IdentityFormUiState,
+    submitLabel: String,
+    startEditing: Boolean,
+    showManagedNote: Boolean,
+    actions: IdentityFormActions,
+    modifier: Modifier = Modifier,
+) {
     val profile = state.profile
     val summary = state.summary
-    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(MeBlockSpacing)) {
+    Column(modifier.fillMaxWidth()) {
         when {
             state.loadError != null -> {
-                ErrorState(error = state.loadError, onRetry = viewModel::load)
+                ErrorState(error = state.loadError, onRetry = actions.retry)
             }
 
             state.loading || profile == null -> {
-                FormSkeleton(fields = 2)
+                FormSkeleton(fields = LOADING_FIELDS)
             }
 
             summary != null && !startEditing && !state.changing -> {
                 SavedIdentity(
                     summary = summary,
                     submitLabel = submitLabel,
-                    onChange = viewModel::change,
-                    onContinue = { currentOnSave(summary) },
+                    onChange = actions.change,
+                    onContinue = { actions.next(summary) },
                 )
             }
 
@@ -152,20 +213,14 @@ internal fun IdentityNumberFormContent(
                     profile = profile,
                     submitLabel = submitLabel,
                     showManagedNote = showManagedNote,
-                    onType = viewModel::setType,
-                    onNumber = viewModel::setNumber,
-                    onSubmit = viewModel::submit,
-                    onBasics = { navigator.push(OnboardingStep(BASICS_STEP)) },
+                    actions = actions,
                 )
             }
         }
     }
-    if (state.registered) {
-        RegisteredDialog(onDismiss = viewModel::dismissRegistered)
-    }
 }
 
-/** 07 section 13.5: the saved number, read-only, with "Change". */
+/** 07 section 13.5: the saved number, read-only, with "Change". Going on needs the network. */
 @Composable
 private fun SavedIdentity(
     summary: IdentitySummary,
@@ -175,85 +230,89 @@ private fun SavedIdentity(
     modifier: Modifier = Modifier,
 ) {
     val reference = LocalReference.current
-    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(stringResource(R.string.identity_saved_label), style = MaterialTheme.typography.labelLarge)
-        Surface(
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            shape = MaterialTheme.shapes.small,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Row(
-                Modifier
-                    .heightIn(min = 52.dp)
-                    .padding(start = 14.dp, end = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
+    val value =
+        text(
+            R.string.identity_saved_value,
+            "document" to reference.option(Lists.DOCUMENT_TYPE, summary.documentType),
+            "number" to summary.numberMasked,
+        )
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.s24)) {
+        Column(Modifier.fillMaxWidth()) {
+            FieldLabel(stringResource(R.string.identity_saved_label))
+            Surface(
+                color = KrTheme.tonal,
+                contentColor = MaterialTheme.colorScheme.onSurface,
+                shape = MaterialTheme.shapes.medium,
+                modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(
-                    text(
-                        R.string.identity_saved_value,
-                        "document" to reference.option(Lists.DOCUMENT_TYPE, summary.documentType),
-                        "number" to summary.numberMasked,
-                    ),
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.weight(1f),
-                )
-                TextButton(onClick = onChange) { Text(stringResource(R.string.identity_change)) }
+                AdaptiveRow(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = Sizes.touchLarge)
+                            .padding(horizontal = Spacing.s16, vertical = Spacing.s4),
+                    spacing = Spacing.s16,
+                    lineSpacing = Spacing.s4,
+                ) {
+                    Text(
+                        text = value,
+                        style = MaterialTheme.typography.bodyMedium.merge(KrType.numbers),
+                        modifier =
+                            Modifier
+                                .grow(basis = SavedValueBasis)
+                                .padding(vertical = Spacing.s8),
+                    )
+                    KrTextLink(stringResource(R.string.identity_change), onChange)
+                }
             }
         }
-        Spacer(Modifier.size(8.dp))
-        MePrimaryButton(text = submitLabel, onClick = onContinue)
+        KrButton(text = submitLabel, onClick = onContinue, enabled = LocalOnline.current, fullWidth = true)
     }
 }
 
+@Suppress("DEPRECATION") // As KrTextInput: the mask is a VisualTransformation.
 @Composable
 private fun NumberForm(
     state: IdentityFormUiState,
     profile: OwnProfile,
     submitLabel: String,
     showManagedNote: Boolean,
-    onType: (DocumentType) -> Unit,
-    onNumber: (String) -> Unit,
-    onSubmit: () -> Unit,
-    onBasics: () -> Unit,
+    actions: IdentityFormActions,
     modifier: Modifier = Modifier,
 ) {
     val reference = LocalReference.current
-    val subject = idSubjectOf(profile.accountFor.managedBy, profile.basics.gender)
+    val subject = subjectOf(profile.accountFor.managedBy, profile.basics.gender)
     val draft = profile.status == ProfileStatus.DRAFT
     val type = state.documentType
     val cnicLike = type.isCnicLike()
     val options = remember(reference) { documentOptions(reference) }
-    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(MeBlockSpacing)) {
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.gutter)) {
         if (state.stateError) {
-            MeNotice(text = stringResource(R.string.identity_invalid_state), tone = MeNoticeTone.DANGER)
+            StatusBanner(
+                text = stringResource(R.string.identity_invalid_state),
+                tone = StatusTone.DANGER,
+                announce = true,
+            )
         }
         SelectField(
             label = stringResource(R.string.identity_document_label),
             options = options,
             selected = type.wire,
             onSelect = { code ->
-                if (!code.isNullOrEmpty()) DocumentType.entries.firstOrNull { it.wire == code }?.let(onType)
+                if (!code.isNullOrEmpty()) {
+                    DocumentType.entries.firstOrNull { it.wire == code }?.let(actions.setType)
+                }
             },
+            enabled = !state.saving,
             clearable = false,
             searchable = false,
         )
-        ConsentCard()
-        if (showManagedNote && subject != IdSubject.SELF) {
-            val name = profile.basics.firstName
-            Text(
-                if (name.isNullOrBlank()) {
-                    stringResource(R.string.identity_managed_note_unnamed)
-                } else {
-                    text(R.string.identity_managed_note, "name" to name)
-                },
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
-            )
-        }
-        Column {
+        ConsentPanel()
+        if (showManagedNote && subject != Subject.SELF) ManagedNote(name = profile.basics.firstName)
+        Column(Modifier.fillMaxWidth()) {
             KrTextField(
                 value = state.number,
-                onValueChange = onNumber,
+                onValueChange = actions.setNumber,
                 label = stringResource(identityNumberLabel(type, subject)),
                 error = state.fieldError?.let { stringResource(it) } ?: state.fieldMessage,
                 placeholder =
@@ -274,54 +333,52 @@ private fun NumberForm(
                     ),
                 visualTransformation = if (cnicLike) IdentityMask else VisualTransformation.None,
             )
-            if (state.mismatch && draft) {
-                TextButton(onClick = onBasics) { Text(stringResource(R.string.identity_go_basics)) }
-            }
+            if (state.mismatch && draft) KrTextLink(stringResource(R.string.identity_go_basics), actions.toBasics)
         }
         if (state.failed) {
-            MeNotice(
+            StatusBanner(
                 text = stringResource(if (draft) R.string.identity_failed_onboarding else R.string.identity_failed),
-                tone = MeNoticeTone.DANGER,
+                tone = StatusTone.DANGER,
+                announce = true,
             )
         }
-        MePrimaryButton(
+        KrButton(
             text = submitLabel,
-            onClick = onSubmit,
-            enabled = identityNumberComplete(type, state.number),
-            busy = state.saving,
+            onClick = actions.submit,
+            enabled = LocalOnline.current && identityNumberComplete(type, state.number),
+            loading = state.saving,
+            fullWidth = true,
         )
     }
 }
 
+/** A profile someone manages: whose number it is (07 section 13.2). */
+@Composable
+private fun ManagedNote(name: String?) {
+    IconText(
+        icon = Icons.Outlined.Info,
+        text =
+            if (name.isNullOrBlank()) {
+                stringResource(R.string.identity_managed_note_unnamed)
+            } else {
+                text(R.string.identity_managed_note, "name" to name)
+            },
+        style = MaterialTheme.typography.titleSmall,
+        tint = MaterialTheme.colorScheme.primary,
+    )
+}
+
 /** The consent text of 12 section 2.2, directly above the number. */
 @Composable
-private fun ConsentCard(modifier: Modifier = Modifier) {
-    val points =
-        listOf(
-            R.string.identity_consent_point_hidden,
-            R.string.identity_consent_point_encrypted,
-            R.string.identity_consent_point_not_shared,
-            R.string.identity_consent_point_deleted,
+private fun ConsentPanel(modifier: Modifier = Modifier) {
+    TonalPanel(modifier = modifier, spacing = Spacing.s12) {
+        DiamondTitle(
+            title = stringResource(R.string.identity_consent_title),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.semantics(mergeDescendants = true) { heading() },
         )
-    MeSurfaceCard(modifier = modifier, spacing = 8.dp) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                Icons.Outlined.Shield,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(22.dp),
-            )
-            Spacer(Modifier.width(10.dp))
-            MeBlockTitle(stringResource(R.string.identity_consent_title))
-        }
         Text(stringResource(R.string.identity_consent_body), style = MaterialTheme.typography.bodyMedium)
-        points.forEach { point ->
-            Row(verticalAlignment = Alignment.Top) {
-                Text("•", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
-                Spacer(Modifier.width(10.dp))
-                Text(stringResource(point), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-            }
-        }
+        ConsentPoints.forEach { BulletLine(stringResource(it)) }
     }
 }
 
@@ -335,22 +392,20 @@ private fun RegisteredDialog(onDismiss: () -> Unit) {
     val links = rememberLinkOpener()
     val linkColor = MaterialTheme.colorScheme.primary
     val raw = text(R.string.identity_registered_support, "email" to supportEmail)
-    AlertDialog(
+    KrDialog(
+        title = stringResource(R.string.identity_registered_title),
+        text = stringResource(R.string.identity_registered_body),
+        confirmLabel = stringResource(R.string.identity_registered_ok),
+        onConfirm = onDismiss,
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.identity_registered_title)) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(stringResource(R.string.identity_registered_body), style = MaterialTheme.typography.bodyLarge)
-                if (supportEmail.isNotEmpty()) {
-                    Text(
-                        linkedText(raw, linkColor, mapOf("mail" to { links.email(supportEmail, subject = "") })),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                }
-            }
-        },
-        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.identity_registered_ok)) } },
-    )
+    ) {
+        if (supportEmail.isNotEmpty()) {
+            Text(
+                text = linkedText(raw, linkColor, mapOf("mail" to { links.email(supportEmail, subject = "") })),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+    }
 }
 
 private fun documentOptions(reference: Reference): List<Option> {
@@ -362,9 +417,19 @@ private fun documentOptions(reference: Reference): List<Option> {
         .map { Option(it.wire, Reference.fallback(it.wire)) }
 }
 
+private val ConsentPoints =
+    listOf(
+        R.string.identity_consent_point_hidden,
+        R.string.identity_consent_point_encrypted,
+        R.string.identity_consent_point_not_shared,
+        R.string.identity_consent_point_deleted,
+    )
+private val SavedValueBasis = 160.dp
+private const val LOADING_FIELDS = 2
 private const val BASICS_STEP = "basics"
 
 /** What the identity form shows. */
+@Immutable
 data class IdentityFormUiState(
     val loading: Boolean = true,
     val loadError: ApiError? = null,

@@ -1,5 +1,7 @@
 package com.khandanirishta.app.ui.feature.search
 
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khandanirishta.app.R
@@ -23,8 +25,9 @@ import com.khandanirishta.app.core.network.generated.model.RegionItem
 import com.khandanirishta.app.core.network.generated.model.SavedSearch
 import com.khandanirishta.app.core.network.generated.model.SearchFilters
 import com.khandanirishta.app.core.network.generated.model.SearchSort
-import com.khandanirishta.app.core.realtime.ConnectivityObserver
 import com.khandanirishta.app.ui.feature.home.CardActions
+import com.khandanirishta.app.ui.feature.home.PassedCards
+import com.khandanirishta.app.ui.feature.home.putBack
 import com.khandanirishta.app.ui.feature.home.withShortlist
 import com.khandanirishta.app.ui.messages.MessageBus
 import com.khandanirishta.app.ui.messages.UiText
@@ -51,12 +54,14 @@ import kotlinx.coroutines.launch
 enum class SearchPane { FORM, RESULTS }
 
 /** The search shown in the results view. */
+@Immutable
 data class AppliedSearch(
     val filters: SearchFilters,
     val sort: SearchSort,
 )
 
 /** "Save this search" or "Rename" while open; [target] is the saved search being renamed. */
+@Immutable
 data class NameDialog(
     val target: SavedSearch? = null,
     val busy: Boolean = false,
@@ -64,6 +69,7 @@ data class NameDialog(
 )
 
 /** The city search behind the "City" control (`GET /v1/reference/cities`). */
+@Immutable
 data class CitySearch(
     val query: String = "",
     val loading: Boolean = false,
@@ -72,6 +78,7 @@ data class CitySearch(
     val done: Boolean = false,
 )
 
+@Immutable
 data class SearchUiState(
     /** The form is filled: from the session, a preset, a saved search or the preferences. */
     val ready: Boolean = false,
@@ -114,6 +121,7 @@ sealed interface SearchEvent {
 }
 
 /** What the search screen asks of its view model. */
+@Stable
 interface SearchActions {
     fun updateDraft(transform: (SearchFilters) -> SearchFilters)
 
@@ -179,6 +187,8 @@ interface SearchActions {
     fun toggleShortlist(card: ProfileCard)
 
     fun pass(card: ProfileCard)
+
+    fun undoPass(id: String)
 }
 
 /**
@@ -198,7 +208,6 @@ class SearchViewModel
         private val me: MeRepository,
         private val cardActions: CardActions,
         private val bus: MessageBus,
-        connectivity: ConnectivityObserver,
         invalidation: Invalidation,
     ) : ViewModel(),
         SearchActions {
@@ -208,14 +217,17 @@ class SearchViewModel
         private val paginator = Paginator<ProfileCard>(viewModelScope, key = { it.id }) { cursor -> fetch(cursor) }
         val results: StateFlow<PagedState<ProfileCard>> = paginator.state
 
-        /** Search, "Find" and saving need the network (rule G14). */
-        val online: StateFlow<Boolean> = connectivity.online
+        private val mutablePassed = MutableStateFlow(PassedCards())
+
+        /** "Not interested" in these results since the member came to the screen. */
+        val passed: StateFlow<PassedCards> = mutablePassed.asStateFlow()
 
         private val eventChannel = Channel<SearchEvent>(Channel.BUFFERED)
         val events: Flow<SearchEvent> = eventChannel.receiveAsFlow()
 
         private var preferences: Preferences? = null
         private var cityJob: Job? = null
+        private var cityCountry: String? = null
         private val loadingRegions = mutableSetOf<String>()
 
         init {
@@ -261,7 +273,7 @@ class SearchViewModel
             }
             viewModelScope.launch {
                 cardActions.shortlistChanges.collect { change ->
-                    paginator.updateItem(change.profileId) { it.withShortlist(change.shortlisted) }
+                    setShortlisted(change.profileId, change.shortlisted)
                 }
             }
         }
@@ -357,6 +369,8 @@ class SearchViewModel
                 )
             }
             ensureRegions(clean.countryCodes)
+            // The panels belong to the results they were made in.
+            mutablePassed.value = PassedCards()
             paginator.reset()
             paginator.refresh()
         }
@@ -497,29 +511,51 @@ class SearchViewModel
 
         override fun toggleShortlist(card: ProfileCard) {
             viewModelScope.launch {
-                cardActions.toggleShortlist(card) { value -> paginator.updateItem(card.id) { it.withShortlist(value) } }
+                cardActions.toggleShortlist(card) { value -> setShortlisted(card.id, value) }
             }
         }
 
-        /** "Not interested": the card leaves at once; Undo puts it back where it was. */
+        private fun setShortlisted(
+            id: String,
+            value: Boolean,
+        ) {
+            paginator.updateItem(id) { it.withShortlist(value) }
+            mutablePassed.update { passed -> passed.update(id) { it.withShortlist(value) } }
+        }
+
+        /** "Not interested": the panel takes the card's place until the member leaves the screen. */
         override fun pass(card: ProfileCard) {
-            val index = results.value.items.indexOfFirst { it.id == card.id }
+            val shown = mutablePassed.value.arrange(results.value.items)
+            val place = shown.indexOfFirst { it.id == card.id }
+            val searched = state.value.applied
+            mutablePassed.update { it.pass(card, shown) }
             viewModelScope.launch {
-                cardActions.pass(
-                    card = card,
-                    remove = { paginator.remove(card.id) },
-                    restore = {
-                        paginator.update { items ->
-                            if (items.any { it.id == card.id }) {
-                                items
-                            } else {
-                                items.toMutableList().apply { add(index.coerceIn(0, size), card) }
-                            }
-                        }
-                    },
-                    launchUndo = { block -> viewModelScope.launch { block() } },
-                )
+                cardActions.pass(card.id) {
+                    mutablePassed.update { it.without(card.id) }
+                    // Only into the results it came from.
+                    if (state.value.applied == searched) paginator.update { it.putBack(card, place) }
+                }
             }
+        }
+
+        override fun undoPass(id: String) {
+            mutablePassed.update { it.restore(id) }
+            viewModelScope.launch {
+                cardActions.undoPass(id) { mutablePassed.update { it.passAgain(id) } }
+            }
+        }
+
+        /** The panels end with the visit. */
+        fun leaveScreen() {
+            mutablePassed.update { it.leave() }
+        }
+
+        /** Back from elsewhere: the cards passed in the last visit leave the results. */
+        fun returnToScreen() {
+            val passed = mutablePassed.value
+            if (!passed.left) return
+            paginator.update(passed::hide)
+            mutablePassed.value = PassedCards()
         }
 
         // -------------------------------------------------------------------
@@ -746,7 +782,12 @@ class SearchViewModel
                 mutableState.update { it.copy(citySearch = CitySearch(query = query)) }
                 return
             }
-            mutableState.update { it.copy(citySearch = it.citySearch.copy(query = query, loading = true)) }
+            val sameCountry = country == cityCountry
+            cityCountry = country
+            mutableState.update {
+                val kept = if (sameCountry) it.citySearch.results else emptyList()
+                it.copy(citySearch = it.citySearch.copy(query = query, loading = true, results = kept, done = false))
+            }
             cityJob =
                 viewModelScope.launch {
                     delay(CITY_DEBOUNCE_MS)

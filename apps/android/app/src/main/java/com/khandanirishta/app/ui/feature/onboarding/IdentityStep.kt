@@ -1,10 +1,10 @@
 package com.khandanirishta.app.ui.feature.onboarding
 
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -16,11 +16,11 @@ import com.khandanirishta.app.core.network.ErrorCode
 import com.khandanirishta.app.core.network.generated.model.FieldCode
 import com.khandanirishta.app.core.network.generated.model.FieldError
 import com.khandanirishta.app.core.network.generated.model.IdentitySummary
+import com.khandanirishta.app.ui.components.LoadingLine
+import com.khandanirishta.app.ui.components.LocalOnline
 import com.khandanirishta.app.ui.feature.me.IdentityNumberForm
 import com.khandanirishta.app.ui.feature.profilesections.FormSummaryBox
-import com.khandanirishta.app.ui.feature.profilesections.HelperText
 import com.khandanirishta.app.ui.feature.profilesections.isFormFailure
-import com.khandanirishta.app.ui.feature.profilesections.rememberOnline
 import com.khandanirishta.app.ui.messages.MessageBus
 import com.khandanirishta.app.ui.messages.UiText
 import com.khandanirishta.app.ui.text.LocalMe
@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+@Immutable
 data class IdentityStepUi(
     /** `continue` runs after the number was saved. */
     val busy: Boolean = false,
@@ -151,11 +152,14 @@ class IdentityStepViewModel
 
 /** ONB-10 (07 section 13): the number form, the verification note, and "Skip for now" unless required. */
 @Composable
-internal fun IdentityStep(edit: Boolean) {
-    val viewModel = hiltViewModel<IdentityStepViewModel, IdentityStepViewModel.Factory> { it.create(edit) }
+internal fun IdentityStep(
+    edit: Boolean,
+    viewModel: IdentityStepViewModel =
+        hiltViewModel<IdentityStepViewModel, IdentityStepViewModel.Factory> { it.create(edit) },
+) {
     val me = LocalMe.current ?: return
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val online = rememberOnline()
+    val online = LocalOnline.current
     val skippable = Steps.skippable("identity", me.config) && !edit
     val submitLabel =
         stringResource(if (edit) R.string.onboarding_actions_save else R.string.onboarding_actions_continue)
@@ -171,21 +175,33 @@ internal fun IdentityStep(edit: Boolean) {
         dirty = false,
         onSignOut = viewModel::signedOut,
         bottomBar = {
+            // The form has the button of this step, so the bar only carries a failure.
             StepBottomBar(
-                secondaryLabel = if (skippable) stringResource(R.string.onboarding_actions_skip) else null,
-                onSecondary = viewModel::skip,
-                secondaryBusy = state.skipping,
                 busy = state.busy,
                 enabled = online,
-                note = if (skippable) stringResource(R.string.onboarding_identity_skip_note) else null,
                 failure = state.failure,
                 onRetry = viewModel::advance,
             )
         },
     ) {
-        if (state.busy) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-        if (state.errors.isNotEmpty()) FormSummaryBox(state.errors)
-        IdentityNumberForm(submitLabel = submitLabel, onSave = viewModel::onSaved)
-        HelperText(stringResource(R.string.onboarding_identity_verification_note))
+        StepBody {
+            if (state.errors.isNotEmpty()) FormSummaryBox(state.errors)
+            IdentityNumberForm(submitLabel = submitLabel, onSave = viewModel::onSaved)
+            if (state.busy) LoadingLine()
+            if (skippable) {
+                StepSecondaryAction(
+                    label = stringResource(R.string.onboarding_actions_skip),
+                    onClick = viewModel::skip,
+                    enabled = online && !state.busy,
+                    loading = state.skipping,
+                    note = stringResource(R.string.onboarding_identity_skip_note),
+                )
+            }
+            Text(
+                text = stringResource(R.string.onboarding_identity_verification_note),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }

@@ -1,59 +1,40 @@
 package com.khandanirishta.app.ui.feature.chat
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
-import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Block
-import androidx.compose.material.icons.outlined.Call
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.ContactPhone
-import androidx.compose.material.icons.outlined.FamilyRestroom
 import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material.icons.outlined.HealthAndSafety
 import androidx.compose.material.icons.outlined.LinkOff
-import androidx.compose.material.icons.outlined.Mail
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -62,21 +43,35 @@ import com.khandanirishta.app.R
 import com.khandanirishta.app.core.data.Lists
 import com.khandanirishta.app.core.network.generated.model.Connection
 import com.khandanirishta.app.core.network.generated.model.ConnectionStatus
-import com.khandanirishta.app.core.network.generated.model.ContactShareStatus
 import com.khandanirishta.app.core.network.generated.model.EndedBy
-import com.khandanirishta.app.core.network.generated.model.OwnProfile
-import com.khandanirishta.app.core.network.generated.model.PreferredContact
 import com.khandanirishta.app.core.network.generated.model.ProfileStatus
-import com.khandanirishta.app.core.network.generated.model.SharedContact
 import com.khandanirishta.app.core.util.Formatters
-import com.khandanirishta.app.ui.components.Avatar
+import com.khandanirishta.app.ui.components.AdaptiveRow
+import com.khandanirishta.app.ui.components.Band
+import com.khandanirishta.app.ui.components.BandDefaults
+import com.khandanirishta.app.ui.components.BandTone
+import com.khandanirishta.app.ui.components.CaptionText
 import com.khandanirishta.app.ui.components.ConfirmDialog
 import com.khandanirishta.app.ui.components.DetailTopBar
 import com.khandanirishta.app.ui.components.ErrorState
+import com.khandanirishta.app.ui.components.IconTextLine
+import com.khandanirishta.app.ui.components.KrButton
+import com.khandanirishta.app.ui.components.KrButtonSize
+import com.khandanirishta.app.ui.components.KrButtonVariant
+import com.khandanirishta.app.ui.components.LoadingRegion
+import com.khandanirishta.app.ui.components.NavRow
 import com.khandanirishta.app.ui.components.NoLongerAvailable
 import com.khandanirishta.app.ui.components.ProfileRow
+import com.khandanirishta.app.ui.components.RowDivider
+import com.khandanirishta.app.ui.components.RowEnd
+import com.khandanirishta.app.ui.components.RowSkeleton
 import com.khandanirishta.app.ui.components.SectionCard
 import com.khandanirishta.app.ui.components.SkeletonBox
+import com.khandanirishta.app.ui.components.StateScreen
+import com.khandanirishta.app.ui.components.SwitchRow
+import com.khandanirishta.app.ui.components.TonalPanel
+import com.khandanirishta.app.ui.components.bandToneAt
+import com.khandanirishta.app.ui.components.exceptBottom
 import com.khandanirishta.app.ui.navigation.ContactDetails
 import com.khandanirishta.app.ui.navigation.LocalNavigator
 import com.khandanirishta.app.ui.navigation.Profile
@@ -84,22 +79,51 @@ import com.khandanirishta.app.ui.rememberLinkOpener
 import com.khandanirishta.app.ui.text.LocalMe
 import com.khandanirishta.app.ui.text.LocalReference
 import com.khandanirishta.app.ui.text.text
+import com.khandanirishta.app.ui.theme.KrTheme
+import com.khandanirishta.app.ui.theme.Sizes
+import com.khandanirishta.app.ui.theme.SmallArchShape
+import com.khandanirishta.app.ui.theme.Spacing
+
+/** What the parts of the connection details can do; built once per screen. */
+@Immutable
+internal class ConnectionDetailsActions(
+    val viewProfile: (id: String) -> Unit,
+    val stage: (StageAction) -> Unit,
+    val suggest: () -> Unit,
+    val share: () -> Unit,
+    val stopSharing: () -> Unit,
+    val dismissHint: () -> Unit,
+    val setMuted: (Boolean) -> Unit,
+    val setArchived: (Boolean) -> Unit,
+    val call: (phone: String) -> Unit,
+    val whatsApp: (phone: String) -> Unit,
+    val email: (address: String) -> Unit,
+    val safetyTips: () -> Unit,
+    val nikahGuide: () -> Unit,
+    val end: () -> Unit,
+    val report: () -> Unit,
+    val block: () -> Unit,
+)
 
 /**
  * APP-CONNECTION: everything about one connection that is not the conversation (specs/16 section
  * 6.12): the member, the stage tracker and suggestions, both sides' contact details, chat
  * settings, help links, and ending, reporting or blocking. An ended connection shows when and why
  * it ended and keeps "Report" and "Block".
+ *
+ * ConnectionHost is the stateful half of this screen. What is under it takes state and lambdas.
  */
+@Suppress("ktlint:compose:vm-forwarding-check")
 @Composable
 fun ConnectionScreen(
     connectionId: String,
     modifier: Modifier = Modifier,
+    viewModel: ConnectionViewModel =
+        hiltViewModel<ConnectionViewModel, ConnectionViewModel.Factory> { it.create(connectionId) },
 ) {
-    val viewModel = hiltViewModel<ConnectionViewModel, ConnectionViewModel.Factory> { it.create(connectionId) }
     val state by viewModel.state.collectAsStateWithLifecycle()
     val navigator = LocalNavigator.current
-    // Back from `SET-CONTACTS` with a share in progress: the dialog opens again (08 section 3.5).
+    // Back from `SET-CONTACTS` with a share in progress: the sheet opens again (08 section 3.5).
     LifecycleResumeEffect(viewModel) {
         viewModel.onResume()
         onPauseOrDispose { }
@@ -115,27 +139,37 @@ fun ConnectionScreen(
     val connection = core.connection
     Scaffold(
         modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             DetailTopBar(title = stringResource(R.string.chat_connection_title), onBack = { navigator.back() })
         },
     ) { padding ->
-        Box(
-            Modifier
-                .fillMaxSize()
-                .padding(padding),
-        ) {
+        val aboveAndBeside = padding.exceptBottom()
+        Box(Modifier.fillMaxSize().padding(aboveAndBeside).consumeWindowInsets(aboveAndBeside)) {
             when {
-                connection != null -> ConnectionContent(state = state, connection = connection, viewModel = viewModel)
-                core.notFound -> NoLongerAvailable(onBack = { navigator.back() })
-                core.error != null -> ErrorState(error = core.error, onRetry = { viewModel.retry() })
-                else -> DetailsSkeleton()
+                core.notFound -> {
+                    StateScreen { NoLongerAvailable(onBack = { navigator.back() }) }
+                }
+
+                connection != null -> {
+                    ConnectionHost(state = state, connection = connection, viewModel = viewModel)
+                }
+
+                core.error != null -> {
+                    StateScreen { ErrorState(error = core.error, onRetry = { viewModel.retry() }) }
+                }
+
+                else -> {
+                    DetailsSkeleton()
+                }
             }
         }
     }
 }
 
+/** The stateful half: navigation, the links out of the app and the sheets over the details. */
 @Composable
-private fun ConnectionContent(
+private fun ConnectionHost(
     state: ConnectionUiState,
     connection: Connection,
     viewModel: ConnectionViewModel,
@@ -148,14 +182,32 @@ private fun ConnectionContent(
     val status = me?.profile?.status
     // Sharing contact details and the stage controls need `engage`; the rest only `connected`.
     val canEngage = status == ProfileStatus.ACTIVE || status == ProfileStatus.PAUSED
-    val active = connection.status == ConnectionStatus.ACTIVE
-    val online = core.online
-    val other = connection.other
 
     // Only the screen on display claims a stage follow-up, so it never shows twice.
     LaunchedEffect(core.pendingFollowUp) {
         if (core.pendingFollowUp != null) viewModel.claimFollowUp()
     }
+    val actions =
+        remember(viewModel, navigator, links) {
+            ConnectionDetailsActions(
+                viewProfile = { id -> navigator.push(Profile(id)) },
+                stage = viewModel::stage,
+                suggest = { viewModel.openDialog(ConnectionDialog.SuggestStage) },
+                share = viewModel::openShare,
+                stopSharing = { viewModel.openDialog(ConnectionDialog.StopSharing) },
+                dismissHint = viewModel::dismissShareHint,
+                setMuted = viewModel::setMuted,
+                setArchived = viewModel::setArchived,
+                call = { phone -> links.call(phone) },
+                whatsApp = { phone -> links.whatsApp(phone) },
+                email = { address -> links.email(address, subject = "") },
+                safetyTips = { links.webPage("safety") },
+                nikahGuide = { links.webPage("nikah-guide") },
+                end = { viewModel.openDialog(ConnectionDialog.End) },
+                report = { viewModel.openReport() },
+                block = { viewModel.openBlock() },
+            )
+        }
     val dialogActions =
         remember(viewModel, links) {
             ConnectionDialogActions(
@@ -171,89 +223,18 @@ private fun ConnectionContent(
             )
         }
 
-    Column(
-        Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        MemberBlock(connection = connection, name = name, onViewProfile = { id -> navigator.push(Profile(id)) })
-        if (active) {
-            SectionCard(title = stringResource(R.string.chat_stage_title)) {
-                StageTracker(stage = connection.stage, modifier = Modifier.padding(top = 4.dp, bottom = 12.dp))
-                StageControls(
-                    connection = connection,
-                    name = name,
-                    canEngage = canEngage,
-                    busy = core.busy,
-                    online = online,
-                    onAction = viewModel::stage,
-                    onSuggest = { viewModel.openDialog(ConnectionDialog.SuggestStage) },
-                )
-            }
-            MyContactCard(
-                connection = connection,
-                name = name,
-                ownProfile = state.ownProfile,
-                canEngage = canEngage,
-                online = online,
-                hint = state.shareHint,
-                onShare = viewModel::openShare,
-                onStop = { viewModel.openDialog(ConnectionDialog.StopSharing) },
-                onDismissHint = viewModel::dismissShareHint,
-            )
-            TheirContactCard(connection = connection, name = name)
-            SectionCard(title = stringResource(R.string.chat_connection_settings_title)) {
-                SettingSwitch(
-                    title = stringResource(R.string.chat_connection_settings_mute),
-                    checked = connection.isMuted,
-                    enabled = online,
-                    onCheckedChange = viewModel::setMuted,
-                )
-                SettingSwitch(
-                    title = stringResource(R.string.chat_connection_settings_archive),
-                    checked = connection.isArchived,
-                    enabled = online,
-                    onCheckedChange = viewModel::setArchived,
-                )
-            }
-        } else {
-            EndedBlock(connection)
-        }
-        SectionCard(title = stringResource(R.string.chat_connection_help_title)) {
-            LinkRow(
-                icon = Icons.Outlined.HealthAndSafety,
-                label = stringResource(R.string.chat_connection_help_safety),
-                onClick = { links.webPage("safety") },
-            )
-            LinkRow(
-                icon = Icons.AutoMirrored.Outlined.MenuBook,
-                label = stringResource(R.string.chat_connection_help_nikah),
-                onClick = { links.webPage("nikah-guide") },
-            )
-        }
-        if (active || other != null) {
-            DangerZone(
-                active = active,
-                hasOther = other != null,
-                online = online,
-                onEnd = { viewModel.openDialog(ConnectionDialog.End) },
-                onReport = { viewModel.openReport() },
-                onBlock = { viewModel.openBlock() },
-            )
-        }
-    }
+    ConnectionDetailsContent(state = state, connection = connection, canEngage = canEngage, actions = actions)
 
     val share = state.share
     if (share.open) {
-        ContactShareDialog(
+        ContactShareSheet(
             name = name,
             profile = state.ownProfile,
+            profileError = share.profileError,
             selection = share.selection,
             missing = share.missing,
             busy = core.busy == ConnectionAction.SHARE,
-            online = online,
+            onRetry = viewModel::retryOwnProfile,
             onChange = viewModel::updateSelection,
             onAdd = { item, selection ->
                 viewModel.rememberSelection(selection)
@@ -271,16 +252,16 @@ private fun ConnectionContent(
                 confirmLabel = stringResource(R.string.chat_connection_my_contact_stop),
                 onConfirm = viewModel::stopSharing,
                 onDismiss = viewModel::closeDialog,
-                destructive = true,
+                // Negative, but it destroys nothing: ink (DESIGN.md section 6.1).
+                variant = KrButtonVariant.INK,
                 busy = core.busy == ConnectionAction.STOP_SHARING,
             )
         }
 
         ConnectionDialog.SuggestStage -> {
-            SuggestStageDialog(
+            SuggestStageSheet(
                 current = connection.stage,
                 busy = core.busy == ConnectionAction.PROPOSE,
-                online = online,
                 onSuggest = { stage -> viewModel.stage(StageAction.Propose(stage)) },
                 onDismiss = viewModel::closeDialog,
             )
@@ -288,7 +269,97 @@ private fun ConnectionContent(
 
         else -> {}
     }
-    ConnectionDialogs(core = core, name = name, canBlockOnEnd = other != null, actions = dialogActions)
+    ConnectionDialogs(core = core, name = name, canBlockOnEnd = connection.other != null, actions = dialogActions)
+}
+
+/** The seven blocks of 16 section 6.12, each in its band. */
+@Composable
+internal fun ConnectionDetailsContent(
+    state: ConnectionUiState,
+    connection: Connection,
+    canEngage: Boolean,
+    actions: ConnectionDetailsActions,
+    modifier: Modifier = Modifier,
+) {
+    val core = state.core
+    val name = otherName(connection)
+    val online = core.online
+    val active = connection.status == ConnectionStatus.ACTIVE
+    val hasOther = connection.other != null
+    // The bands take turns after the member: four blocks while active, one once it ended.
+    val helpIndex = if (active) ACTIVE_BLOCKS else ENDED_BLOCKS
+    val showActions = active || hasOther
+    val last = bandToneAt(if (showActions) helpIndex + 1 else helpIndex)
+    val colors = MaterialTheme.colorScheme
+    Column(
+        modifier
+            .fillMaxSize()
+            .background(if (last == BandTone.SAND) colors.surfaceContainer else colors.background)
+            .verticalScroll(rememberScrollState())
+            .navigationBarsPadding(),
+    ) {
+        Band(tone = BandTone.SAND, padding = BandDefaults.compactPadding) {
+            MemberBlock(connection = connection, name = name, onViewProfile = actions.viewProfile)
+        }
+        if (active) {
+            Band(tone = bandToneAt(STAGE_BLOCK)) {
+                SectionCard(title = stringResource(R.string.chat_stage_title)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.s20)) {
+                        StageTracker(stage = connection.stage)
+                        StageControls(
+                            connection = connection,
+                            name = name,
+                            canEngage = canEngage,
+                            busy = core.busy,
+                            online = online,
+                            onAction = actions.stage,
+                            onSuggest = actions.suggest,
+                        )
+                    }
+                }
+            }
+            Band(tone = bandToneAt(MY_CONTACT_BLOCK)) {
+                MyContactSection(
+                    connection = connection,
+                    name = name,
+                    ownProfile = state.ownProfile,
+                    canEngage = canEngage,
+                    online = online,
+                    hint = state.shareHint,
+                    onShare = actions.share,
+                    onStop = actions.stopSharing,
+                    onDismissHint = actions.dismissHint,
+                )
+            }
+            Band(tone = bandToneAt(THEIR_CONTACT_BLOCK)) {
+                TheirContactSection(
+                    connection = connection,
+                    name = name,
+                    onCall = actions.call,
+                    onWhatsApp = actions.whatsApp,
+                    onEmail = actions.email,
+                )
+            }
+            Band(tone = bandToneAt(SETTINGS_BLOCK)) {
+                ChatSettings(
+                    connection = connection,
+                    online = online,
+                    onMute = actions.setMuted,
+                    onArchive = actions.setArchived,
+                )
+            }
+        } else {
+            Band { EndedBlock(connection) }
+        }
+        Band(tone = bandToneAt(helpIndex)) {
+            HelpLinks(onSafetyTips = actions.safetyTips, onNikahGuide = actions.nikahGuide)
+        }
+        if (showActions) {
+            Band(tone = last) {
+                OtherActions(active = active, hasOther = hasOther, online = online, actions = actions)
+            }
+        }
+    }
 }
 
 /** Block 1: the compact card of the other member with "View profile", and "Connected since". */
@@ -297,397 +368,117 @@ private fun MemberBlock(
     connection: Connection,
     name: String,
     onViewProfile: (String) -> Unit,
-    modifier: Modifier = Modifier,
 ) {
-    val me = LocalMe.current
     val other = connection.other
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.s4)) {
         if (other != null) {
             ProfileRow(
                 card = other,
                 onOpen = { onViewProfile(other.id) },
                 showRelation = false,
                 actions = {
-                    OutlinedButton(
+                    KrButton(
+                        text = stringResource(R.string.chat_connection_view_profile),
                         onClick = { onViewProfile(other.id) },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Icon(Icons.Outlined.Person, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text(stringResource(R.string.chat_connection_view_profile))
-                    }
+                        variant = KrButtonVariant.QUIET,
+                        size = KrButtonSize.COMPACT,
+                        icon = Icons.Outlined.Person,
+                    )
                 },
             )
         } else {
-            Surface(
-                shape = MaterialTheme.shapes.large,
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                modifier = Modifier.fillMaxWidth(),
+            Row(
+                modifier = Modifier.padding(vertical = Spacing.s12),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s16),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Avatar(
-                        photo = null,
-                        gender = otherGender(me?.profile?.gender),
-                        contentDescription = null,
-                        size = 56.dp,
-                    )
-                    Spacer(Modifier.width(12.dp))
-                    Text(name, style = MaterialTheme.typography.titleMedium)
-                }
-            }
-        }
-        Text(
-            text(R.string.chat_connection_connected_since, "date" to Formatters.longDate(connection.createdAt)),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = 4.dp),
-        )
-    }
-}
-
-/** Block 3: the state of `my_contact_share`, and the "families_talking" suggestion once. */
-@Composable
-private fun MyContactCard(
-    connection: Connection,
-    name: String,
-    ownProfile: OwnProfile?,
-    canEngage: Boolean,
-    online: Boolean,
-    hint: Boolean,
-    onShare: () -> Unit,
-    onStop: () -> Unit,
-    onDismissHint: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val share = connection.myContactShare?.takeIf { it.status == ContactShareStatus.ACTIVE }
-    SectionCard(title = stringResource(R.string.chat_connection_my_contact_title), modifier = modifier) {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (hint && share == null && canEngage) {
-                ShareHint(online = online, onShare = onShare, onDismiss = onDismissHint)
-            }
-            if (share != null) {
+                OtherAvatar(null, size = Sizes.arch56)
                 Text(
-                    stringResource(R.string.chat_connection_my_contact_sharing),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                ShareItem.entries.filter { share.isOn(it) }.forEach { item ->
-                    val value = ownProfile?.contacts?.let { contactValue(it, item) }
-                    LabelValue(label = stringResource(item.label), value = value.orEmpty())
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (canEngage) {
-                        OutlinedButton(onClick = onShare, enabled = online) {
-                            Text(stringResource(R.string.chat_connection_my_contact_change))
-                        }
-                    }
-                    OutlinedButton(onClick = onStop, enabled = online) {
-                        Text(stringResource(R.string.chat_connection_my_contact_stop))
-                    }
-                }
-            } else {
-                Text(
-                    text(R.string.chat_connection_my_contact_none, "name" to name),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                if (canEngage) {
-                    Button(onClick = onShare, enabled = online) {
-                        Icon(Icons.Outlined.ContactPhone, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text(stringResource(R.string.chat_connection_my_contact_share))
-                    }
-                }
-            }
-        }
-    }
-}
-
-/** "Families usually exchange contact details at this point." with "Share contact details". */
-@Composable
-private fun ShareHint(
-    online: Boolean,
-    onShare: () -> Unit,
-    onDismiss: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Surface(
-        shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f),
-        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Box {
-            Column(
-                Modifier.padding(start = 14.dp, top = 12.dp, end = 48.dp, bottom = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                Row(verticalAlignment = Alignment.Top) {
-                    Icon(
-                        Icons.Outlined.FamilyRestroom,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp),
-                    )
-                    Spacer(Modifier.width(10.dp))
-                    Text(stringResource(R.string.chat_stage_share_hint), style = MaterialTheme.typography.bodyMedium)
-                }
-                Button(onClick = onShare, enabled = online) {
-                    Text(stringResource(R.string.chat_connection_my_contact_share))
-                }
-            }
-            IconButton(onClick = onDismiss, modifier = Modifier.align(Alignment.TopEnd)) {
-                Icon(
-                    Icons.Outlined.Close,
-                    contentDescription = stringResource(R.string.chat_connection_my_contact_dismiss_hint),
+                    text = name,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier =
+                        Modifier
+                            .weight(1f)
+                            .semantics { heading() },
                 )
             }
         }
+        CaptionText(text(R.string.chat_connection_connected_since, "date" to Formatters.longDate(connection.createdAt)))
     }
 }
 
-/** Block 4: what the other member shared, with tap to call, WhatsApp or email (16 section 6.12). */
+/** Block 5: two switches, saved at once. */
 @Composable
-private fun TheirContactCard(
+private fun ChatSettings(
     connection: Connection,
-    name: String,
-    modifier: Modifier = Modifier,
+    online: Boolean,
+    onMute: (Boolean) -> Unit,
+    onArchive: (Boolean) -> Unit,
 ) {
-    val contact = connection.theirContact
-    SectionCard(title = stringResource(R.string.chat_connection_their_contact_title), modifier = modifier) {
-        if (contact == null) {
-            Text(
-                text(R.string.chat_connection_their_contact_none, "name" to name),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+    SectionCard(title = stringResource(R.string.chat_connection_settings_title)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.s12)) {
+            SwitchRow(
+                title = stringResource(R.string.chat_connection_settings_mute),
+                checked = connection.isMuted,
+                enabled = online,
+                onCheckedChange = onMute,
             )
-        } else {
-            SharedContactRows(contact)
+            SwitchRow(
+                title = stringResource(R.string.chat_connection_settings_archive),
+                checked = connection.isArchived,
+                enabled = online,
+                onCheckedChange = onArchive,
+            )
         }
     }
 }
 
+/** Block 6: both open in the browser. */
 @Composable
-private fun SharedContactRows(
-    contact: SharedContact,
-    modifier: Modifier = Modifier,
+private fun HelpLinks(
+    onSafetyTips: () -> Unit,
+    onNikahGuide: () -> Unit,
 ) {
-    val links = rememberLinkOpener()
-    val reference = LocalReference.current
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        if (contact.preferredContact == PreferredContact.GUARDIAN) {
-            Text(
-                stringResource(R.string.chat_connection_their_contact_guardian_first),
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(bottom = 4.dp),
-            )
-        }
-        contact.phoneE164?.let { phone ->
-            val value = formatPhone(phone)
-            ContactRow(
-                icon = Icons.Outlined.Call,
-                title = stringResource(R.string.chat_connection_their_contact_mobile),
-                value = value,
-                actionLabel = text(R.string.chat_connection_their_contact_call, "value" to value),
-                onClick = { links.call(phone) },
-            )
-        }
-        contact.whatsappE164?.let { phone ->
-            val value = formatPhone(phone)
-            ContactRow(
-                icon = Icons.AutoMirrored.Outlined.Chat,
-                title = stringResource(R.string.chat_connection_their_contact_whatsapp),
-                value = value,
-                actionLabel = text(R.string.chat_connection_their_contact_open_whatsapp, "value" to value),
-                onClick = { links.whatsApp(phone) },
-            )
-        }
-        contact.contactEmail?.let { email ->
-            ContactRow(
-                icon = Icons.Outlined.Mail,
-                title = stringResource(R.string.chat_connection_their_contact_email),
-                value = email,
-                actionLabel = text(R.string.chat_connection_their_contact_send_email, "value" to email),
-                onClick = { links.email(email, subject = "") },
-            )
-        }
-        val guardian = contact.guardian
-        if (guardian != null && (guardian.name != null || guardian.phoneE164 != null)) {
-            val phone = guardian.phoneE164?.let(::formatPhone).orEmpty()
-            val relation =
-                guardian.relation
-                    ?.let { reference.option(Lists.GUARDIAN_RELATION, it) }
-                    ?.takeIf { it.isNotBlank() }
-            val value =
-                listOfNotNull(guardian.name, relation?.let { "($it)" }, phone.ifEmpty { null }).joinToString(" ")
-            val guardianPhone = guardian.phoneE164
-            ContactRow(
-                icon = Icons.Outlined.FamilyRestroom,
-                title = stringResource(R.string.chat_connection_their_contact_guardian),
-                value = value,
-                actionLabel = text(R.string.chat_connection_their_contact_call, "value" to phone),
-                onClick = guardianPhone?.let { number -> { links.call(number) } },
-            )
-        }
-        contact.bestTimeToCall?.takeIf { it.isNotBlank() }?.let { best ->
-            Text(
-                text(R.string.chat_connection_their_contact_best_time, "text" to best),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(top = 4.dp),
-            )
-        }
-        Text(
-            stringResource(R.string.chat_connection_their_contact_private),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 6.dp),
+    SectionCard(title = stringResource(R.string.chat_connection_help_title)) {
+        NavRow(
+            title = stringResource(R.string.chat_connection_help_safety),
+            icon = Icons.Outlined.HealthAndSafety,
+            end = RowEnd.EXTERNAL,
+            onClick = onSafetyTips,
         )
-    }
-}
-
-/** One shared detail; the whole row calls, opens WhatsApp or writes an email. */
-@Composable
-private fun ContactRow(
-    icon: ImageVector,
-    title: String,
-    value: String,
-    actionLabel: String,
-    onClick: (() -> Unit)?,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier
-            .fillMaxWidth()
-            .heightIn(min = 56.dp)
-            .clip(MaterialTheme.shapes.medium)
-            .then(if (onClick != null) Modifier.clickable(onClickLabel = actionLabel, onClick = onClick) else Modifier)
-            .padding(vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text(
-                title,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(value, style = MaterialTheme.typography.bodyLarge)
-        }
-        if (onClick != null) {
-            Box(
-                Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    icon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(20.dp),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun LabelValue(
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier,
-) {
-    Column(modifier.fillMaxWidth()) {
-        Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(value, style = MaterialTheme.typography.bodyLarge)
-    }
-}
-
-/** A switch and its title as one touch target. */
-@Composable
-private fun SettingSwitch(
-    title: String,
-    checked: Boolean,
-    enabled: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier
-            .fillMaxWidth()
-            .heightIn(min = 52.dp)
-            .toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onCheckedChange),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(title, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-        Spacer(Modifier.width(12.dp))
-        Switch(checked = checked, onCheckedChange = null, enabled = enabled)
-    }
-}
-
-@Composable
-private fun LinkRow(
-    icon: ImageVector,
-    label: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier
-            .fillMaxWidth()
-            .heightIn(min = 48.dp)
-            .clip(MaterialTheme.shapes.medium)
-            .clickable(role = Role.Button, onClick = onClick),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-        Spacer(Modifier.width(12.dp))
-        Text(
-            label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.weight(1f),
-        )
-        Icon(
-            Icons.AutoMirrored.Outlined.OpenInNew,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(18.dp),
+        RowDivider()
+        NavRow(
+            title = stringResource(R.string.chat_connection_help_nikah),
+            icon = Icons.AutoMirrored.Outlined.MenuBook,
+            end = RowEnd.EXTERNAL,
+            onClick = onNikahGuide,
         )
     }
 }
 
 /** "This conversation ended on {date}." and, for the member who ended it, the reason given. */
 @Composable
-private fun EndedBlock(
-    connection: Connection,
-    modifier: Modifier = Modifier,
-) {
+private fun EndedBlock(connection: Connection) {
     val reference = LocalReference.current
-    Surface(
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.Top) {
-            Icon(Icons.Outlined.LinkOff, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(Modifier.width(12.dp))
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    TonalPanel(shape = MaterialTheme.shapes.extraLarge) {
+        IconTextLine(icon = Icons.Outlined.LinkOff, tint = MaterialTheme.colorScheme.onSurfaceVariant) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.s4)) {
                 Text(
                     text(
                         R.string.chat_connection_ended_on,
                         "date" to Formatters.longDate(connection.endedAt ?: connection.createdAt),
                     ),
-                    style = MaterialTheme.typography.bodyLarge,
                 )
                 val reason = connection.endedReason
                 if (connection.endedBy == EndedBy.ME && reason != null) {
                     Text(
-                        text(
-                            R.string.chat_connection_ended_reason,
-                            "reason" to reference.option(Lists.CONNECTION_END_REASON, reason),
-                        ),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        text =
+                            text(
+                                R.string.chat_connection_ended_reason,
+                                "reason" to reference.option(Lists.CONNECTION_END_REASON, reason),
+                            ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = KrTheme.colors.textSecondary,
                     )
                 }
             }
@@ -695,72 +486,87 @@ private fun EndedBlock(
     }
 }
 
-/** Block 7: "End connection", "Report" and "Block". */
+/**
+ * Block 7: "End connection", "Report" and "Block". None is red here: danger waits for the
+ * confirmation (DESIGN.md section 2.2).
+ */
 @Composable
-private fun DangerZone(
+private fun OtherActions(
     active: Boolean,
     hasOther: Boolean,
     online: Boolean,
-    onEnd: () -> Unit,
-    onReport: () -> Unit,
-    onBlock: () -> Unit,
-    modifier: Modifier = Modifier,
+    actions: ConnectionDetailsActions,
 ) {
-    val danger = MaterialTheme.colorScheme.error
-    SectionCard(title = stringResource(R.string.chat_connection_actions_label), modifier = modifier) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    SectionCard(title = stringResource(R.string.chat_connection_actions_label)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.s12)) {
             if (active) {
-                OutlinedButton(
-                    onClick = onEnd,
+                KrButton(
+                    text = stringResource(R.string.chat_chat_end),
+                    onClick = actions.end,
+                    variant = KrButtonVariant.SECONDARY,
+                    size = KrButtonSize.LARGE,
+                    icon = Icons.Outlined.LinkOff,
                     enabled = online,
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = danger),
-                    border = BorderStroke(1.dp, danger.copy(alpha = 0.5f)),
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 48.dp),
-                ) {
-                    Icon(Icons.Outlined.LinkOff, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.chat_chat_end))
-                }
+                    fullWidth = true,
+                )
             }
             if (hasOther) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(onClick = onReport, enabled = online, modifier = Modifier.weight(1f)) {
-                        Icon(Icons.Outlined.Flag, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text(stringResource(R.string.chat_chat_report))
-                    }
-                    OutlinedButton(onClick = onBlock, enabled = online, modifier = Modifier.weight(1f)) {
-                        Icon(Icons.Outlined.Block, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text(stringResource(R.string.chat_chat_block))
-                    }
+                AdaptiveRow(Modifier.fillMaxWidth()) {
+                    KrButton(
+                        text = stringResource(R.string.chat_chat_report),
+                        onClick = actions.report,
+                        variant = KrButtonVariant.QUIET,
+                        icon = Icons.Outlined.Flag,
+                        enabled = online,
+                        modifier = Modifier.grow(),
+                    )
+                    KrButton(
+                        text = stringResource(R.string.chat_chat_block),
+                        onClick = actions.block,
+                        variant = KrButtonVariant.QUIET,
+                        icon = Icons.Outlined.Block,
+                        enabled = online,
+                        modifier = Modifier.grow(),
+                    )
                 }
             }
         }
     }
 }
 
-/** Skeleton blocks in the layout of the screen (rule G1). */
+/** The member, the tracker and the first blocks in their final shape (rule G1). */
 @Composable
-private fun DetailsSkeleton(modifier: Modifier = Modifier) {
-    Column(
-        modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        SKELETON_BLOCKS.forEach { blockHeight ->
+private fun DetailsSkeleton() {
+    LoadingRegion(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), spacing = 0.dp) {
+        Band(tone = BandTone.SAND, padding = BandDefaults.compactPadding) {
+            RowSkeleton()
             SkeletonBox(
                 Modifier
-                    .fillMaxWidth()
-                    .height(blockHeight.dp),
-                corner = 18.dp,
+                    .padding(top = Spacing.s12)
+                    .fillMaxWidth(SKELETON_LINE)
+                    .height(Spacing.s20),
             )
+        }
+        Band(padding = SkeletonPadding, spacing = Spacing.s20) {
+            SkeletonBox(Modifier.fillMaxWidth(SKELETON_TITLE).height(Spacing.s32))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
+                repeat(TRACKER_STAGES.size) {
+                    SkeletonBox(Modifier.size(Sizes.archIconSmall), shape = SmallArchShape)
+                }
+            }
+            SkeletonBox(Modifier.fillMaxWidth().height(Sizes.touchLarge))
+            SkeletonBox(Modifier.fillMaxWidth(SKELETON_TITLE).height(Spacing.s32))
+            SkeletonBox(Modifier.fillMaxWidth().height(Sizes.switchRow))
         }
     }
 }
 
-private val SKELETON_BLOCKS = listOf(112, 168, 128, 96, 120)
+private const val STAGE_BLOCK = 0
+private const val MY_CONTACT_BLOCK = 1
+private const val THEIR_CONTACT_BLOCK = 2
+private const val SETTINGS_BLOCK = 3
+private const val ACTIVE_BLOCKS = 4
+private const val ENDED_BLOCKS = 1
+private const val SKELETON_LINE = 0.5f
+private const val SKELETON_TITLE = 0.6f
+private val SkeletonPadding = PaddingValues(horizontal = Spacing.gutter, vertical = Spacing.s12)

@@ -5,104 +5,101 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Bookmark
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.NotificationsActive
-import androidx.compose.material.icons.outlined.NotificationsNone
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import com.khandanirishta.app.R
 import com.khandanirishta.app.core.network.generated.model.SavedSearch
 import com.khandanirishta.app.core.util.Formatters
+import com.khandanirishta.app.ui.components.CheckboxRow
+import com.khandanirishta.app.ui.components.FirstLineMark
+import com.khandanirishta.app.ui.components.IconTextLine
+import com.khandanirishta.app.ui.components.KrIconButton
+import com.khandanirishta.app.ui.components.KrMenu
+import com.khandanirishta.app.ui.components.KrMenuDivider
+import com.khandanirishta.app.ui.components.KrMenuItem
+import com.khandanirishta.app.ui.components.KrSheet
+import com.khandanirishta.app.ui.components.KrTextField
+import com.khandanirishta.app.ui.components.LocalOnline
+import com.khandanirishta.app.ui.components.MemberText
+import com.khandanirishta.app.ui.components.SheetAnswers
+import com.khandanirishta.app.ui.components.SwitchRow
 import com.khandanirishta.app.ui.text.text
+import com.khandanirishta.app.ui.theme.Sizes
+import com.khandanirishta.app.ui.theme.Spacing
+import com.khandanirishta.app.ui.theme.Strokes
 import java.time.Instant
 
 /**
- * The saved searches above the form, newest first (specs/16 section 6.6). Tapping a chip loads
- * its filters and runs the search; its menu (or a long press) renames it, switches its
- * notification and removes it.
+ * The saved searches above the form, newest first (specs/16 section 6.6), in chips that wrap.
+ * Tapping one loads its filters and runs the search; its menu (or a long press) renames it,
+ * switches its notification and removes it.
  */
 @Composable
-internal fun SavedSearchRow(
+internal fun SavedSearchList(
     items: List<SavedSearch>,
-    online: Boolean,
     onRun: (SavedSearch) -> Unit,
     onRename: (SavedSearch) -> Unit,
     onToggleNotify: (SavedSearch) -> Unit,
     onRemove: (SavedSearch) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.s8)) {
         Text(
-            stringResource(R.string.discovery_saved_label),
+            text = stringResource(R.string.discovery_saved_label),
             style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier =
-                Modifier
-                    .padding(horizontal = 16.dp)
-                    .semantics { heading() },
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.semantics { heading() },
         )
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
+            verticalArrangement = Arrangement.spacedBy(Spacing.s8),
         ) {
-            items(items, key = { it.id }) { saved ->
-                SavedSearchChip(
-                    saved = saved,
-                    online = online,
-                    onRun = { onRun(saved) },
-                    onRename = { onRename(saved) },
-                    onToggleNotify = { onToggleNotify(saved) },
-                    onRemove = { onRemove(saved) },
-                )
+            items.forEach { saved ->
+                key(saved.id) {
+                    SavedSearchChip(
+                        saved = saved,
+                        onRun = { onRun(saved) },
+                        onRename = { onRename(saved) },
+                        onToggleNotify = { onToggleNotify(saved) },
+                        onRemove = { onRemove(saved) },
+                    )
+                }
             }
         }
     }
@@ -111,7 +108,6 @@ internal fun SavedSearchRow(
 @Composable
 private fun SavedSearchChip(
     saved: SavedSearch,
-    online: Boolean,
     onRun: () -> Unit,
     onRename: () -> Unit,
     onToggleNotify: () -> Unit,
@@ -119,105 +115,85 @@ private fun SavedSearchChip(
     modifier: Modifier = Modifier,
 ) {
     var menu by remember { mutableStateOf(false) }
+    val online = LocalOnline.current
+    val colors = MaterialTheme.colorScheme
+    val shape = MaterialTheme.shapes.large
+    val style = MaterialTheme.typography.labelMedium
     val menuLabel = text(R.string.discovery_saved_menu, "name" to saved.name)
     val runLabel = stringResource(R.string.discovery_search_actions_search)
     Surface(
-        shape = CircleShape,
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        color = Color.Transparent,
+        contentColor = if (online) colors.onSurface else colors.onSurfaceVariant,
+        shape = shape,
+        border = BorderStroke(Strokes.control, colors.outline),
         modifier = modifier,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Row(
-                Modifier
-                    .heightIn(min = 48.dp)
-                    .combinedClickable(
-                        onClickLabel = runLabel,
-                        role = Role.Button,
-                        onLongClickLabel = menuLabel,
-                        onLongClick = { menu = true },
-                        onClick = onRun,
-                    ).padding(start = 14.dp, end = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s8), verticalAlignment = Alignment.CenterVertically) {
+            IconTextLine(
+                icon = Icons.Outlined.Bookmark,
+                style = style,
+                tint = colors.primary,
+                iconSize = Sizes.iconMedium,
+                modifier =
+                    Modifier
+                        .weight(1f, fill = false)
+                        .clip(shape)
+                        .combinedClickable(
+                            interactionSource = null,
+                            indication = ripple(focusRingShape = shape),
+                            // Running it needs the network, and so does everything in its menu (rule G14).
+                            enabled = online,
+                            onClickLabel = runLabel,
+                            role = Role.Button,
+                            onLongClickLabel = menuLabel,
+                            onLongClick = { menu = true },
+                            onClick = onRun,
+                        ).heightIn(min = Sizes.touch)
+                        .padding(start = Spacing.s16, top = Spacing.s12, bottom = Spacing.s12),
             ) {
-                Icon(
-                    Icons.Outlined.Bookmark,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(18.dp),
-                )
-                Spacer(Modifier.width(6.dp))
-                Text(
-                    saved.name,
-                    style = MaterialTheme.typography.labelLarge,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.widthIn(max = 200.dp),
-                )
+                MemberText(saved.name, style = style, modifier = Modifier.weight(1f, fill = false))
                 if (saved.notifyNew) {
-                    Spacer(Modifier.width(4.dp))
-                    Icon(
-                        Icons.Outlined.NotificationsActive,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(16.dp),
-                    )
+                    FirstLineMark(style) {
+                        Icon(
+                            Icons.Outlined.NotificationsActive,
+                            contentDescription = stringResource(R.string.discovery_saved_notify),
+                            tint = colors.onSurfaceVariant,
+                            modifier = Modifier.size(Sizes.iconTiny),
+                        )
+                    }
                 }
             }
             Box {
-                IconButton(onClick = { menu = true }) {
-                    Icon(Icons.Filled.MoreVert, contentDescription = menuLabel, modifier = Modifier.size(20.dp))
-                }
-                DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.discovery_saved_rename)) },
+                KrIconButton(icon = Icons.Outlined.MoreVert, contentDescription = menuLabel, onClick = { menu = true })
+                KrMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                    KrMenuItem(
+                        text = stringResource(R.string.discovery_saved_rename),
+                        icon = Icons.Outlined.Edit,
+                        enabled = online,
                         onClick = {
                             menu = false
                             onRename()
                         },
-                        leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
-                        enabled = online,
                     )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.discovery_saved_notify)) },
-                        onClick = {
+                    CheckboxRow(
+                        checked = saved.notifyNew,
+                        onCheckedChange = {
                             menu = false
                             onToggleNotify()
                         },
-                        modifier = Modifier.semantics { selected = saved.notifyNew },
-                        leadingIcon = {
-                            Icon(
-                                if (saved.notifyNew) {
-                                    Icons.Outlined.NotificationsActive
-                                } else {
-                                    Icons.Outlined.NotificationsNone
-                                },
-                                contentDescription = null,
-                            )
-                        },
-                        trailingIcon = { Checkbox(checked = saved.notifyNew, onCheckedChange = null) },
+                        label = stringResource(R.string.discovery_saved_notify),
                         enabled = online,
+                        modifier = Modifier.padding(horizontal = Spacing.s20),
                     )
-                    HorizontalDivider()
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                stringResource(R.string.discovery_saved_remove),
-                                color = MaterialTheme.colorScheme.error,
-                            )
-                        },
+                    KrMenuDivider()
+                    KrMenuItem(
+                        text = stringResource(R.string.discovery_saved_remove),
+                        icon = Icons.Outlined.DeleteOutline,
+                        enabled = online,
                         onClick = {
                             menu = false
                             onRemove()
                         },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Outlined.DeleteOutline,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error,
-                            )
-                        },
-                        enabled = online,
                     )
                 }
             }
@@ -236,10 +212,11 @@ internal fun SaveSearchDialog(
     onEdit: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val initial = text(R.string.discovery_saved_name_default, "date" to Formatters.date(Instant.now()))
+    val today = remember { Formatters.date(Instant.now()) }
+    val initial = text(R.string.discovery_saved_name_default, "date" to today)
     var name by rememberSaveable { mutableStateOf(initial) }
     var notify by rememberSaveable { mutableStateOf(false) }
-    NameDialogFrame(
+    NameSheet(
         title = stringResource(R.string.discovery_saved_dialog_title),
         confirmLabel = stringResource(R.string.discovery_saved_save),
         name = name,
@@ -251,26 +228,12 @@ internal fun SaveSearchDialog(
         onConfirm = { onSave(name, notify) },
         onDismiss = onDismiss,
     ) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .heightIn(min = 48.dp)
-                .toggleable(
-                    value = notify,
-                    enabled = !dialog.busy,
-                    role = Role.Switch,
-                    onValueChange = { notify = it },
-                ),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                stringResource(R.string.discovery_saved_notify_label),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.weight(1f),
-            )
-            Spacer(Modifier.width(12.dp))
-            Switch(checked = notify, onCheckedChange = null, enabled = !dialog.busy)
-        }
+        SwitchRow(
+            title = stringResource(R.string.discovery_saved_notify_label),
+            checked = notify,
+            onCheckedChange = { notify = it },
+            enabled = !dialog.busy,
+        )
     }
 }
 
@@ -283,7 +246,7 @@ internal fun RenameSearchDialog(
     onDismiss: () -> Unit,
 ) {
     var name by rememberSaveable(dialog.target?.id) { mutableStateOf(dialog.target?.name.orEmpty()) }
-    NameDialogFrame(
+    NameSheet(
         title = stringResource(R.string.discovery_saved_rename_title),
         confirmLabel = stringResource(R.string.common_actions_save),
         name = name,
@@ -297,9 +260,9 @@ internal fun RenameSearchDialog(
     )
 }
 
-/** The name field with its "{count} of {max} characters" line, the confirm and cancel buttons. */
+/** A sheet with the name, its "{count} of {max} characters" line, then Cancel and the confirming button. */
 @Composable
-private fun NameDialogFrame(
+private fun NameSheet(
     title: String,
     confirmLabel: String,
     name: String,
@@ -307,46 +270,31 @@ private fun NameDialogFrame(
     dialog: NameDialog,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
-    content: @Composable () -> Unit = {},
+    content: @Composable ColumnScope.() -> Unit = {},
 ) {
     val error = dialog.error?.resolve(LocalResources.current)
-    AlertDialog(
-        onDismissRequest = { if (!dialog.busy) onDismiss() },
-        title = { Text(title) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { onNameChange(it.take(NAME_MAX)) },
-                    label = { Text(stringResource(R.string.discovery_saved_name_label)) },
-                    supportingText = {
-                        val count = text(R.string.discovery_saved_name_count, "count" to name.length, "max" to NAME_MAX)
-                        Text(error ?: count)
-                    },
-                    isError = error != null,
-                    enabled = !dialog.busy,
-                    singleLine = true,
-                    keyboardOptions =
-                        KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { onConfirm() }),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                content()
-            }
+    val online = LocalOnline.current
+    KrSheet(
+        title = title,
+        onDismissRequest = onDismiss,
+        dismissible = !dialog.busy,
+        actions = {
+            SheetAnswers(confirmLabel = confirmLabel, onConfirm = onConfirm, onCancel = onDismiss, busy = dialog.busy)
         },
-        confirmButton = {
-            TextButton(onClick = onConfirm, enabled = !dialog.busy) {
-                if (dialog.busy) {
-                    CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-                } else {
-                    Text(confirmLabel)
-                }
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !dialog.busy) {
-                Text(stringResource(R.string.common_actions_cancel))
-            }
-        },
-    )
+    ) {
+        KrTextField(
+            value = name,
+            onValueChange = onNameChange,
+            label = stringResource(R.string.discovery_saved_name_label),
+            error = error,
+            maxLength = NAME_MAX,
+            showCounter = true,
+            counter = text(R.string.discovery_saved_name_count, "count" to name.length, "max" to NAME_MAX),
+            enabled = !dialog.busy,
+            keyboardOptions =
+                KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { if (online && !dialog.busy) onConfirm() }),
+        )
+        content()
+    }
 }

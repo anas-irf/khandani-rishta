@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | Implemented (`apps/android`, 2026-11-21) |
+| Status | Implemented (`apps/android`, 2026-11-21); Mehfil Heritage design applied 2026-11-22 |
 | Applies to | `apps/android` (Kotlin, Jetpack Compose, Material 3, Hilt, Navigation 3, Retrofit, OkHttp) |
 | Related | [16-screens-and-flows.md](16-screens-and-flows.md) for what each screen contains, [17-web-app.md](17-web-app.md) for the web counterpart, [15-api-contract.md](15-api-contract.md), [06-auth-and-accounts.md](06-auth-and-accounts.md), [14-notifications.md](14-notifications.md), `docs/tech-stack.md` section 9 |
 
@@ -16,6 +16,7 @@ Document 16 says what every screen shows and does, by screen ID. This document s
 4. **Nothing sensitive at rest.** No member data is written to disk except the image cache and reference data. Tokens are held by the Clerk SDK.
 5. **Privacy on the device.** Screenshots are blocked on profile, photo, chat and verification screens.
 6. **Right-to-left ready.** `start` and `end` everywhere, never `left` and `right`.
+7. **One design, native parts.** [DESIGN.md](../DESIGN.md) decides how the app looks. Screens use its tokens through the Compose theme and the shared composables of section 11, and Material 3 widgets wherever Android has one.
 
 ## 2. Package layout
 
@@ -33,8 +34,13 @@ apps/android/app/src/main/java/com/khandanirishta/app/
 │   └── util/                     formatters (age, height, relative time)
 └── ui/
     ├── KhandaniApp.kt            root composable: start-up, gate routing, navigation host
-    ├── navigation/               NavKeys.kt, GateRouter.kt, TopLevelBackStacks.kt
-    ├── theme/                    colours, typography, shapes
+    ├── Screens.kt                every key and its screen
+    ├── AppBottomBar.kt           the five destinations
+    ├── LinkOpener.kt             Custom Tabs, in the app's colours
+    ├── navigation/               Keys.kt, GateRouter.kt, AppNavigator.kt, DeepLinkResolver.kt
+    ├── theme/                    Color, Type, Shape, Dimens, Motion, Theme, AuthTheme (section 12)
+    ├── text/                     labels, the wording of 07 section 3.2, placeholders
+    ├── messages/                 toasts and limit dialogs sent from view models
     ├── components/               shared composables (section 11)
     └── feature/
         ├── auth/                 AUTH-SIGNIN
@@ -51,7 +57,7 @@ apps/android/app/src/main/java/com/khandanirishta/app/
         └── settings/             SET-*
 ```
 
-Each feature folder holds, per screen: `XxxScreen.kt` (stateless composable taking state and callbacks), `XxxViewModel.kt` (Hilt, exposes one `StateFlow<XxxUiState>`), and `XxxUiState.kt`.
+Each feature folder holds, per screen: `XxxScreen.kt` (collects the state and hands it to stateless content that takes state and callbacks), and `XxxViewModel.kt` with its immutable `XxxUiState`. A large screen keeps its parts in files named after them (`HomeTop.kt`, `ProfileHero.kt`). Previews and their sample data live in `src/debug`, so they never ship.
 
 ## 3. Navigation
 
@@ -137,7 +143,7 @@ Rules:
 
 ### 3.3 Tabs and back behaviour
 
-- Five top-level destinations in a `NavigationBar`: `Home`, `Search`, `Interests`, `Chats`, `MyProfile`. Badges on Interests and Chats from `Me.counters`, and the dot on Me, as defined in 16 section 2.1.
+- Five top-level destinations in Material 3's `ShortNavigationBar` (`DESIGN.md` 6.17): `Home`, `Search`, `Interests`, `Chats`, `MyProfile`. Interests is the envelope. Badges on Interests and Chats from `Me.counters`, and the gold diamond on Me, as defined in 16 section 2.1; each is said in words to TalkBack. At larger text the labels take a second row and none is cut. The bar steps aside while the keyboard is open.
 - `TopLevelBackStacks` keeps one back stack per tab so that switching tabs preserves where the user was. Selecting the current tab again pops that tab to its root.
 - The bar is shown only on the screens 16 section 2.1 names: the five destinations and the list screens reached from them (`Matches`, `Shortlist`, `Visitors`, `Notifications`, `PhotoRequests`, `Settings`). Every other screen (the detail screens, `OnboardingStep`, the gate screens) shows a back arrow and its title instead.
 - System Back pops the current tab's stack. At a tab root that is not `Home`, Back goes to `Home`. At `Home`, Back leaves the app.
@@ -208,6 +214,9 @@ Google sign-in on Android needs the OAuth clients and fingerprints described in 
 | Lists | `Paginator` (`core/data/Paginator.kt`) per cursor endpoint: the items stay in memory so screens can apply the optimistic changes of rule G7 directly, and `PagedList` draws the standard states. Pull to refresh on every list. |
 | Refresh rules | Mirror the web invalidation table (17 section 6.3): after a mutation, refresh the same data the web app invalidates. |
 | Optimistic updates | Only for the cases of 16 section 1.2 rule G7: the "sending" state of a chat message, shortlist on and off, pass and its undo, marking notifications or messages read, mute and archive |
+| Recomposition | State classes are `@Immutable`. The generated models, `Option`, `Instant` and `LocalDate` are declared stable in `app/compose-stability.conf`. Lazy lists and rows give a `key` and a `contentType`. What is said relative to now reads `rememberNow()`, as an unchanged row is skipped. A composable value is read on every pass, never only behind a nested `&&` or `||`: that gives what follows another place in the composition, and a field there loses focus. |
+| "Not interested" on lists | The view model keeps the passed cards of the visit (`PassedCards`), so the panel with Undo stays in the card's place across refetches and ends when the member leaves the screen (16 section 6.4). The cards are taken out on return, once the list has found its saved place again. The profile keeps its toast. |
+| Offline | `LocalOnline` is provided at the root: the banner of rule G14 shows, and every control that needs the network is disabled. |
 | Persistence | No Room database. Nothing from the member APIs is written to disk. |
 | Reference data | `ReferenceRepository` stores the bootstrap JSON and its `version` in a file in the app's private storage and revalidates with `If-None-Match` at start. Label lookup falls back to the code with underscores replaced by spaces. |
 | Process death | Screen arguments survive through the serializable keys. Form input in onboarding survives through `rememberSaveable` and, more importantly, through the server: each step is saved when the user continues. |
@@ -261,6 +270,8 @@ Payload shapes, notification types and channels are defined in 14 section 4. Thi
 | Selfie for verification | CameraX with the front camera, an on-screen frame and the day's gesture illustrated. Capture only: no gallery option. Needs the `CAMERA` permission, requested on `ME-VERIFY-SELFIE` with an explanation. |
 | Identity document photos | CameraX with the back camera and a card-shaped guide, or the Photo Picker |
 | Displaying member photos | Coil. Use the URL without its query string as the memory and disk cache key, because the signature in the query string changes every hour while the object path (which contains the photo id and the variant name) does not (08 section 5.4). |
+| Privacy of member photos | The image is drawn as received. The veil, inner arch, monogram and lock are layers over the image the API already blurred; the device never blurs or unblurs (16 rule G10). |
+| Size | Coil decodes at the size of the arch it is drawn in. The arch has its size before the image loads, so nothing moves. |
 | Image cache | Coil's disk cache in the app's private cache directory, capped at 100 MB, cleared on sign-out |
 
 ## 10. Privacy protections on the device
@@ -275,25 +286,46 @@ Payload shapes, notification types and channels are defined in 14 section 4. Thi
 
 ## 11. Shared composables (`ui/components/`)
 
-The Android equivalents of the web components in 17 section 10, with the same names where possible: `ProfileCard`, `MemberPhoto` (blur overlay with a lock and "Photo is private"; silhouette when there is no photo), `CompatBadge`, `BadgeRow`, `ReasonChips`, `LockedValue`, `SectionCard`, `StatusBanner`, `EmptyState`, `ErrorState`, list and card skeletons, `ConfirmDialog`, `LimitDialog`, `ReportDialog`, `BlockDialog`, `RelativeTime`.
+The Android equivalents of the web components in 17 section 10, with the same names where possible. Their anatomy is `DESIGN.md` section 6. A screen does not draw its own copy of one.
 
-Form fields mirror 17 section 8.2: `TextField`, `SelectField` (a modal bottom sheet list), `SearchSelectField` (full-screen search list), `MultiSelectField` (chips), `CityPickerField`, `DateOfBirthField` (three pickers, not the Material calendar, because scrolling decades in a calendar is slow), `HeightField`, `PhoneField`, `IdentityNumberField` (with a visual transformation for the mask), `RangeField`, `ImportanceField`, `RadioCardsField`, `ConsentCheckbox`.
+| Group | Composables |
+|---|---|
+| Layout | `Band` (page, sand, success, primary, inverse), `TonalPanel`, `AdaptiveRow` (stacks when its children do not fit), `SectionHeading`, `SectionCard`, `Disclosure`, `RowDivider` |
+| Members | `ProfileCardView` (the full size), `ProfileRow` (compact), `ProfileTile` (New members only), `PassedCard`, `MemberPhoto` and `MemberAvatar` (always a 4:5 arch), `CompatBadge`, `BadgeRow`, `ReasonChips`, `RelationHint`, `ShortlistButton` |
+| Facts | `InfoRow`, `LockedRow`, `LockedValue`, `MetaLine`, `MemberText` (a member's own words, in their own direction), `QuoteBlock`, `ExpiryNote`, `ProgressRing`, `KrMeter` |
+| Controls | `KrButton` (primary, secondary, quiet, inverse, ink, danger), `KrTextLink`, `KrIconButton`, `KrChoiceChip`, `KrTabs` (chips that wrap where a label would break inside a word), `NavRow`, `NudgeCard`, `SwitchRow`, `CheckboxRow`, `RadioRow`, `RadioCardRow`, `KrMenu` |
+| Bars | `HomeTopBar`, `TabTopBar`, `DetailTopBar` (the title wraps), `ProfileTopBar` (the one place a name is cut), `KrActionBar` with `AnswerRow` |
+| States | `EmptyState`, `ErrorState`, `NoLongerAvailable`, `StatusPanel`, `StatusBanner`, `DismissibleBanner`, `OfflineBanner`, `StatusPill`, `PagedList`, skeletons for cards, rows and forms |
+| Layers | `KrSheet`, `KrDialog`, `ConfirmDialog`, `LimitDialog`, `DeclineDialog`, `ReportDialog`, `BlockDialog`, `NoteDialog`, `KrSnackbarHost` (4 seconds, 5 with Undo; an open sheet repeats the toasts that come while it covers them) |
+| Effects | `SecureScreen` (section 10), `LightSystemBarIcons` (the inverse screens: photo viewer and camera) |
+
+Where Android has a better affordance than the web, it is used: sheets for decline, report, notes and sending an interest, dialogs for short decisions, pull to refresh, the system Back, and Material pickers.
+
+Form fields mirror 17 section 8.2: `KrTextField`, `SelectField` (a modal bottom sheet list), a search sheet for long lists and cities, `MultiSelectField`, `ChoiceChips` (chips wrap where segmented buttons would be cut), `DateOfBirthField` (three pickers, not the Material calendar, because scrolling decades in a calendar is slow), `HeightField`, `PhoneField`, the identity number field (with a visual transformation for the mask), `RangeField`, `ImportanceField`, `RadioCardsField`, `ConsentCheckbox`.
 
 Server validation errors map onto fields exactly as on the web (17 section 8.3).
 
 ## 12. Theme, language, accessibility
 
+[DESIGN.md](../DESIGN.md) (Mehfil Heritage) is the source of every design token. `ui/theme` holds them once and everything else reads the theme.
+
 | Topic | Rule |
 |---|---|
-| Colours | Material 3 colour scheme built from the tokens in 17 section 9.3 (primary `#0F766E`, tertiary `#B45309`, error `#B91C1C`, background `#FAFAF9`). Dynamic colour is off so the brand is consistent. Light theme only at launch. |
-| Typography | Material 3 type scale; body text at least 16 sp. Honour the system font scale up to 200% without clipping. |
-| Shapes | 12 dp cards, 8 dp inputs |
-| Touch targets | At least 48 dp |
+| Colours | `LightColors` and `ExtendedColors` in `ui/theme/Color.kt` (`DESIGN.md` 2.5). It is the only file that writes a colour. `KrTheme.tonal` is the fill that stands out on the band behind it. Dynamic colour is off so the brand is consistent. Light theme only, whatever the phone is set to. |
+| Outside Compose | The window, splash screen, launcher and notification colours are in `res/values/colors.xml`, with the same values. The system bars are transparent with dark icons, light on the inverse screens. Force dark is off. Custom Tabs and Clerk's screens (`rememberClerkTheme`) take the same colours and type. |
+| Typography | `AppTypography` and `KrType` (`DESIGN.md` 3.4): Source Sans 3 for the interface, Instrument Serif for display, wordmark and monograms. Body 17, nothing that carries meaning under 15 (14 for legal lines). The font files and their licences are bundled in `res/font` and `assets/licenses`; downloadable fonts from Google Play services are not used. |
+| Shapes and space | `AppShapes`, the pill and the arches (`DESIGN.md` 4.1), `Spacing` and `Sizes` (section 5). |
+| Elevation | Content is flat: tonal bands and hairlines. Only menus, sheets and action bars cast a shadow. No gradients and no scrims on photos. |
+| Motion | `Motion.fast` (150 ms) and `Motion.base` (200 ms). When the animator duration scale is off, transitions end at once and skeletons stay still. |
+| Text scaling | Honour the system font scale up to 200% without clipping: rows stack, buttons go full width and then wrap, names and titles wrap. Heights are minimums. Over the keyboard in little room, a sheet's answers scroll with its body and the Done of an option sheet moves beside its title. |
+| Edge to edge | Top bars own the status bar inset, action bars the navigation bar and keyboard. Bands run from edge to edge; the column inside stops growing on wide windows. Content scrolls on behind the navigation bar or the action bar and adds its height at the end (`exceptBottom`). A form stops above its bar and the keyboard. |
+| Touch targets | At least 48 dp, 8 dp apart. Primary actions are 56 dp tall. |
+| Meaning | Never colour alone: every status has an icon and words. The tick means verified, the envelope an interest, the heart Shortlist only. |
 | Language | Per-app language with `AppCompatDelegate.setApplicationLocales`. The choice on `SET-ACCOUNT` calls `PATCH /v1/me` and switches the app. `android:supportsRtl="true"` stays on. Urdu strings (`values-ur`) are added in the Urdu phase. |
-| Strings | The copy shared with the web app is generated from `apps/web/src/locales/en` into `res/values/copy.xml` (`pnpm generate:android-strings`): resource name = namespace and key path, for example `chat_composer_placeholder`; i18next placeholders become named placeholders such as `{name}`, filled by name with `ui/text/Text.kt`. Android-only text lives in `strings.xml`. Enumeration labels come from the reference data, not from resources. |
-| Content descriptions | Every icon button and every member photo ("Photo of <display name>" or "Private photo") |
-| TalkBack | Profile cards are one focusable item with a combined description; actions are custom accessibility actions |
-| Numbers and dates | Western digits; dates with `java.time` and the active locale |
+| Strings | The copy shared with the web app is generated from `apps/web/src/locales/en` into `res/values/copy.xml` (`pnpm generate:android-strings`): resource name = namespace and key path, for example `chat_composer_placeholder`; i18next placeholders become named placeholders such as `{name}`, filled by name with `ui/text/Text.kt`. A managed profile picks the `_male`, `_female` and `_named` variants with `rememberCandidate()`. Android-only text lives in `strings.xml` and `strings_<area>.xml`. Enumeration labels come from the reference data, not from resources. |
+| Content descriptions | Every icon button and every member photo that stands alone ("Photo of <display name>", "Private photo" or "No photo added yet"). Inside a card the photo is decoration, and its state and count are read after the name. |
+| TalkBack | Profile cards are one focusable item with a combined description; Shortlist and "Not interested" are custom accessibility actions. A row that is one control is one node with its role and state. Headings are marked. Errors and results are live regions. |
+| Numbers and dates | Western digits, tabular where they are compared; dates with `java.time` and the active locale |
 
 ## 13. Updates
 
@@ -324,7 +356,9 @@ The app is distributed as an APK outside the Play Store (tech stack section 9).
 
 | Level | What |
 |---|---|
+| Design (JUnit) | Contrast of every colour pairing, the 15 sp floor, `colors.xml` against the theme, and a scan of `ui/` for colours, gradients, blurs, shadows, font sizes or left and right written outside the theme; the six `FLAG_SECURE` screens; monograms, wording variants, reasons and the pass-in-place list |
 | Unit (JUnit) | `GateRouter` for every gate, `DeepLinkResolver` for every row of 3.4, `ErrorMapper`, formatters (age, height in feet and inches, relative time), the identity number visual transformation, message deduplication in `ConnectionRepository` |
 | ViewModel | Each onboarding step ViewModel: valid save, validation error mapping, continue. Chat ViewModel: send, fail, retry, incoming event. |
-| Compose UI | `ProfileCard` with blurred and missing photos and locked values; the interest action bar for each `Relation` state; onboarding step forms |
-| Manual release checklist | Sign-in with Google and with email; onboarding end to end; photo upload; push received in background and tap opens the right screen; screenshot blocked on profile and chat; forced update screen; language switch |
+| Compose UI | `ProfileCard` with long names, blurred and missing photos, its custom actions and offline; locked values and the photo access states; the interest action bar for each `Relation` state; shared components right to left and at 200% font on 320 and 360 dp, with no text cut; onboarding step forms |
+| Previews | `src/debug/.../ui/preview`: shared components and key states as a phone, a small phone at 200% font, and right to left |
+| Manual release checklist | Sign-in with Google and with email; onboarding end to end; photo upload; push received in background and tap opens the right screen; screenshot blocked on profile and chat; key screens at 200% font scale on a 360 dp phone and with TalkBack; forced update screen; language switch |

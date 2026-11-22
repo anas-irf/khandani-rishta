@@ -1,14 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Window theme only. Colors and typography come from the Compose theme (ui/theme/Theme.kt). -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- The window only. Colours and type come from the Compose theme (ui/theme). Light only:
+         the system must not darken it either. The bars are drawn edge to edge by MainActivity. -->
     <style name="Theme.KhandaniRishta" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/brand_background</item>
+        <item name="android:colorPrimary">@color/brand_primary</item>
+        <item name="android:colorAccent">@color/brand_primary</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="29">false</item>
     </style>
 
     <!-- Shown while the app starts (core-splashscreen), then replaced by Theme.KhandaniRishta. -->
     <style name="Theme.KhandaniRishta.Starting" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/brand_primary</item>
+        <item name="windowSplashScreenBackground">@color/brand_background</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
         <item name="postSplashScreenTheme">@style/Theme.KhandaniRishta</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
     </style>
 </resources>

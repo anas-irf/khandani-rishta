@@ -2,6 +2,7 @@ package com.khandanirishta.app.ui.feature.me
 
 import android.net.Uri
 import androidx.annotation.StringRes
+import androidx.compose.runtime.Immutable
 import com.khandanirishta.app.R
 import com.khandanirishta.app.core.data.MeRepository
 import com.khandanirishta.app.core.data.ProfileRepository
@@ -48,6 +49,7 @@ enum class PhotoUploadState {
 }
 
 /** One picked photo on its way to the server, shown in the grid with its local image. */
+@Immutable
 data class PhotoUploadSlot(
     val id: Long,
     val uri: Uri,

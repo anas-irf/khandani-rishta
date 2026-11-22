@@ -1,34 +1,13 @@
 package com.khandanirishta.app.ui.feature.chat
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.MenuBook
-import androidx.compose.material.icons.outlined.Celebration
 import androidx.compose.material.icons.outlined.HealthAndSafety
-import androidx.compose.material.icons.outlined.VerifiedUser
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -38,17 +17,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.khandanirishta.app.R
 import com.khandanirishta.app.core.data.Lists
 import com.khandanirishta.app.core.data.Option
@@ -58,12 +31,23 @@ import com.khandanirishta.app.core.network.generated.model.ReportReason
 import com.khandanirishta.app.ui.components.BlockDialog
 import com.khandanirishta.app.ui.components.CheckboxRow
 import com.khandanirishta.app.ui.components.ConfirmDialog
+import com.khandanirishta.app.ui.components.Diamond
+import com.khandanirishta.app.ui.components.FieldLabel
+import com.khandanirishta.app.ui.components.FieldSupport
+import com.khandanirishta.app.ui.components.FirstLineMark
+import com.khandanirishta.app.ui.components.IconText
+import com.khandanirishta.app.ui.components.KrButton
+import com.khandanirishta.app.ui.components.KrButtonSize
+import com.khandanirishta.app.ui.components.KrButtonVariant
+import com.khandanirishta.app.ui.components.KrDialog
+import com.khandanirishta.app.ui.components.KrSheet
 import com.khandanirishta.app.ui.components.RadioList
 import com.khandanirishta.app.ui.components.ReportDialog
+import com.khandanirishta.app.ui.components.SheetAnswers
 import com.khandanirishta.app.ui.text.LocalReference
 import com.khandanirishta.app.ui.text.stageLabel
 import com.khandanirishta.app.ui.text.text
-import com.khandanirishta.app.ui.theme.KrTheme
+import com.khandanirishta.app.ui.theme.Spacing
 
 /** What the shared connection dialogs can do; built once per screen. */
 @Stable
@@ -82,7 +66,8 @@ internal class ConnectionDialogActions(
 /**
  * The dialogs `APP-CHAT` and `APP-CONNECTION` share: report (with the tip of 13 section 11.3),
  * block, end connection and its report offer, the safety tips, and the follow-ups after a stage is
- * reached (16 section 6.12). Screen-specific dialogs are drawn by the screens.
+ * reached (16 section 6.12). What needs a choice is a sheet and a short answer is a dialog
+ * (DESIGN.md section 6.13). Screen-specific ones are drawn by the screens.
  */
 @Composable
 internal fun ConnectionDialogs(
@@ -118,11 +103,10 @@ internal fun ConnectionDialogs(
         }
 
         ConnectionDialog.End -> {
-            EndConnectionDialog(
+            EndConnectionSheet(
                 name = name,
                 canBlock = canBlockOnEnd,
                 busy = busy == ConnectionAction.END,
-                online = core.online,
                 onConfirm = actions.end,
                 onDismiss = actions.close,
             )
@@ -136,11 +120,13 @@ internal fun ConnectionDialogs(
                 onConfirm = actions.acceptReportOffer,
                 onDismiss = actions.close,
                 dismissLabel = stringResource(R.string.chat_end_no),
+                // It only opens the report; sending that waits for the network.
+                needsNetwork = false,
             )
         }
 
         ConnectionDialog.SafetyTips -> {
-            SafetyTipsDialog(onDismiss = actions.close)
+            SafetyTipsSheet(onDismiss = actions.close)
         }
 
         else -> {}
@@ -164,10 +150,12 @@ private fun reportReasons(): List<Option> {
 private fun endReasonOptions(): List<Option> {
     val reference = LocalReference.current
     val ordered =
-        reference
-            .options(Lists.CONNECTION_END_REASON)
-            .mapNotNull { option -> MEMBER_END_REASONS.firstOrNull { it.wire == option.code } }
-            .ifEmpty { MEMBER_END_REASONS }
+        remember(reference) {
+            reference
+                .options(Lists.CONNECTION_END_REASON)
+                .mapNotNull { option -> MEMBER_END_REASONS.firstOrNull { it.wire == option.code } }
+                .ifEmpty { MEMBER_END_REASONS }
+        }
     return ordered.map { reason ->
         val label =
             endReasonLabel(reason)?.let { stringResource(it) }
@@ -178,114 +166,116 @@ private fun endReasonOptions(): List<Option> {
 
 /**
  * "End this connection?" (16 section 6.12): the consequences, a required reason, and "Also block
- * {name}", ticked automatically for inappropriate behaviour.
+ * {name}", ticked automatically for inappropriate behaviour. Danger is only on the button that
+ * confirms it.
  */
 @Composable
-private fun EndConnectionDialog(
+internal fun EndConnectionSheet(
     name: String,
     canBlock: Boolean,
     busy: Boolean,
-    online: Boolean,
     onConfirm: (MemberEndReason, Boolean) -> Unit,
     onDismiss: () -> Unit,
 ) {
     var reason by rememberSaveable { mutableStateOf<String?>(null) }
     var alsoBlock by rememberSaveable { mutableStateOf(false) }
     var showRequired by rememberSaveable { mutableStateOf(false) }
-    AlertDialog(
-        onDismissRequest = { if (!busy) onDismiss() },
-        title = { Text(stringResource(R.string.chat_end_title)) },
-        text = {
-            Column(
-                Modifier.verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text(text(R.string.chat_end_text, "name" to name), style = MaterialTheme.typography.bodyMedium)
-                Text(stringResource(R.string.chat_end_reason_label), style = MaterialTheme.typography.labelLarge)
-                RadioList(
-                    options = endReasonOptions(),
-                    selected = reason,
-                    onSelect = { code ->
-                        reason = code
-                        showRequired = false
-                        if (code == MemberEndReason.INAPPROPRIATE_BEHAVIOUR.wire) alsoBlock = true
-                    },
+    KrSheet(
+        title = stringResource(R.string.chat_end_title),
+        description = text(R.string.chat_end_text, "name" to name),
+        onDismissRequest = onDismiss,
+        dismissible = !busy,
+        actions = {
+            // With the buttons, so it is on screen however far the reasons have scrolled.
+            if (showRequired) {
+                FieldSupport(
+                    helper = null,
+                    error = stringResource(R.string.chat_end_reason_required),
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Assertive },
                 )
-                if (showRequired) {
-                    Text(
-                        stringResource(R.string.chat_end_reason_required),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-                if (canBlock) {
-                    CheckboxRow(
-                        checked = alsoBlock,
-                        onCheckedChange = { alsoBlock = it },
-                        label = text(R.string.chat_end_also_block, "name" to name),
-                    )
-                }
             }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
+            SheetAnswers(
+                confirmLabel = stringResource(R.string.chat_end_confirm),
+                onConfirm = {
                     val chosen = MEMBER_END_REASONS.firstOrNull { it.wire == reason }
                     if (chosen == null) showRequired = true else onConfirm(chosen, canBlock && alsoBlock)
                 },
-                enabled = !busy && online,
-            ) {
-                if (busy) {
-                    ProgressLabel(label = "", busy = true)
-                } else {
-                    Text(stringResource(R.string.chat_end_confirm), color = MaterialTheme.colorScheme.error)
-                }
-            }
+                onCancel = onDismiss,
+                variant = KrButtonVariant.DANGER,
+                busy = busy,
+            )
         },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !busy) { Text(stringResource(R.string.common_actions_cancel)) }
-        },
-    )
+    ) {
+        FieldLabel(stringResource(R.string.chat_end_reason_label))
+        RadioList(
+            options = endReasonOptions(),
+            selected = reason,
+            enabled = !busy,
+            onSelect = { code ->
+                reason = code
+                showRequired = false
+                if (code == MemberEndReason.INAPPROPRIATE_BEHAVIOUR.wire) alsoBlock = true
+            },
+        )
+        if (canBlock) {
+            CheckboxRow(
+                checked = alsoBlock,
+                onCheckedChange = { alsoBlock = it },
+                label = text(R.string.chat_end_also_block, "name" to name),
+                enabled = !busy,
+            )
+        }
+    }
 }
 
 /** The report confirmation of 13 section 6.4 with safety tip 12, for harassment and money reports. */
 @Composable
 private fun ReportTipDialog(onClose: () -> Unit) {
-    AlertDialog(
+    KrDialog(
+        confirmLabel = stringResource(R.string.common_actions_close),
+        onConfirm = onClose,
         onDismissRequest = onClose,
-        icon = { Icon(Icons.Outlined.HealthAndSafety, contentDescription = null) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(stringResource(R.string.shared_report_success), style = MaterialTheme.typography.bodyLarge)
-                Text(stringResource(R.string.shared_report_safety_tip), style = MaterialTheme.typography.bodyMedium)
-            }
-        },
-        confirmButton = { TextButton(onClick = onClose) { Text(stringResource(R.string.common_actions_close)) } },
-    )
+    ) {
+        IconText(
+            icon = Icons.Outlined.HealthAndSafety,
+            text = stringResource(R.string.shared_report_success),
+            style = MaterialTheme.typography.titleSmall,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+        )
+        Text(stringResource(R.string.shared_report_safety_tip), style = MaterialTheme.typography.bodyMedium)
+    }
 }
 
 /** The "Before you start" tips, opened from the conversation menu ("Safety tips"). */
 @Composable
-private fun SafetyTipsDialog(onDismiss: () -> Unit) {
-    AlertDialog(
+private fun SafetyTipsSheet(onDismiss: () -> Unit) {
+    KrSheet(
+        title = stringResource(R.string.chat_tips_title),
         onDismissRequest = onDismiss,
-        icon = {
-            Icon(Icons.Outlined.VerifiedUser, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+        actions = {
+            KrButton(
+                text = stringResource(R.string.common_actions_close),
+                onClick = onDismiss,
+                variant = KrButtonVariant.SECONDARY,
+                size = KrButtonSize.LARGE,
+                fullWidth = true,
+            )
         },
-        title = { Text(stringResource(R.string.chat_tips_title)) },
-        text = { TipsList() },
-        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_actions_close)) } },
-    )
+    ) {
+        TipsList()
+    }
 }
 
-/** The four first-chat tips of 13 section 11.2. */
+/** The four first-chat tips of 13 section 11.2, each after its diamond. */
 @Composable
 internal fun TipsList(modifier: Modifier = Modifier) {
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    val style = MaterialTheme.typography.bodySmall
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.s8)) {
         TIPS.forEach { id ->
-            Row {
-                Text("•", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(end = 8.dp))
-                Text(stringResource(id), style = MaterialTheme.typography.bodyMedium)
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s12)) {
+                FirstLineMark(style) { Diamond() }
+                Text(stringResource(id), style = style, modifier = Modifier.weight(1f))
             }
         }
     }
@@ -327,87 +317,5 @@ private fun StageFollowUp(
         }
 
         else -> {}
-    }
-}
-
-/** "Mubarak! May Allah bless this marriage." on the brand gradient, with the nikah guide. */
-@Composable
-private fun NikahMessage(
-    muslim: Boolean,
-    onGuide: () -> Unit,
-    onClose: () -> Unit,
-) {
-    Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        Box(
-            Modifier
-                .fillMaxSize()
-                .background(KrTheme.colors.heroGradient)
-                .padding(horizontal = 28.dp, vertical = 32.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                Box(
-                    Modifier
-                        .size(104.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.16f)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        Icons.Outlined.Celebration,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(56.dp),
-                    )
-                }
-                val title = if (muslim) R.string.chat_stage_nikah_title else R.string.chat_stage_nikah_title_other
-                Text(
-                    stringResource(title),
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = Color.White,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.semantics { heading() },
-                )
-                Text(
-                    stringResource(R.string.chat_stage_nikah_text),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.White.copy(alpha = 0.92f),
-                    textAlign = TextAlign.Center,
-                )
-                Spacer(Modifier.size(8.dp))
-                Button(
-                    onClick = onClose,
-                    colors =
-                        ButtonDefaults.buttonColors(
-                            containerColor = Color.White,
-                            contentColor = MaterialTheme.colorScheme.primary,
-                        ),
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 52.dp),
-                ) { Text(stringResource(R.string.chat_stage_nikah_close)) }
-                OutlinedButton(
-                    onClick = onGuide,
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.7f)),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 52.dp),
-                ) {
-                    Icon(
-                        Icons.AutoMirrored.Outlined.MenuBook,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.chat_stage_nikah_guide))
-                }
-            }
-        }
     }
 }

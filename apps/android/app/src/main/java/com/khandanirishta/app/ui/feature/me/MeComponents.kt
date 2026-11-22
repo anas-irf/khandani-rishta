@@ -1,320 +1,276 @@
 package com.khandanirishta.app.ui.feature.me
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.ErrorOutline
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.WarningAmber
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.outlined.BrokenImage
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.MeasurePolicy
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.Hyphens
+import androidx.compose.ui.text.style.LineBreak
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import com.khandanirishta.app.ui.components.ButtonSpinner
+import com.khandanirishta.app.ui.components.DetailTopBar
+import com.khandanirishta.app.ui.components.FirstLineMark
+import com.khandanirishta.app.ui.components.StatusTone
+import com.khandanirishta.app.ui.components.TonalPanel
+import com.khandanirishta.app.ui.components.exceptBottom
+import com.khandanirishta.app.ui.components.rememberStableImageRequest
+import com.khandanirishta.app.ui.components.stableKey
+import com.khandanirishta.app.ui.components.toneColors
+import com.khandanirishta.app.ui.text.text
 import com.khandanirishta.app.ui.theme.KrTheme
+import com.khandanirishta.app.ui.theme.KrType
+import com.khandanirishta.app.ui.theme.PillShape
+import com.khandanirishta.app.ui.theme.Sizes
+import com.khandanirishta.app.ui.theme.Spacing
+import kotlin.math.max
 
 /*
- * Small building blocks shared by the own-profile, photo and verification screens: cards,
- * notices, full-width buttons with a busy state, a progress ring and a dashed border.
+ * What the own-profile, photo and verification screens share on top of ui/components: their
+ * scrolling frame, the own photo in an arch, the grid of arches and the status under an arch.
  */
 
-/** Screen padding and the space between blocks (the design language of the app). */
-internal val MeScreenPadding = 16.dp
-internal val MeBlockSpacing = 16.dp
-
-/** A white rounded card with a soft shadow. */
+/**
+ * A screen of bands under a detail bar. [bottomBar] is the step's action bar, when it has one;
+ * without one the bands scroll on behind the navigation bar.
+ */
 @Composable
-internal fun MeSurfaceCard(
+internal fun MeScaffold(
+    title: String,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(16.dp),
-    spacing: Dp = 8.dp,
+    scrollState: ScrollState = rememberScrollState(),
+    bottomBar: (@Composable () -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shape = MaterialTheme.shapes.large,
-        shadowElevation = 1.dp,
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Column(Modifier.padding(contentPadding), verticalArrangement = Arrangement.spacedBy(spacing), content = content)
+    Scaffold(
+        modifier = modifier,
+        topBar = { DetailTopBar(title = title, onBack = onBack) },
+        bottomBar = bottomBar ?: {},
+        containerColor = MaterialTheme.colorScheme.background,
+    ) { padding ->
+        val outside = if (bottomBar == null) padding.exceptBottom() else padding
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(outside)
+                    .consumeWindowInsets(outside)
+                    .imePadding()
+                    .verticalScroll(scrollState)
+                    .navigationBarsPadding(),
+            content = content,
+        )
     }
 }
 
-/** A block title inside a screen or a card. */
+/** A centred block for one step or state of a flow (the web's `StepPanel`). */
 @Composable
-internal fun MeBlockTitle(
-    text: String,
+internal fun StepPanel(
     modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit,
 ) {
-    Text(
-        text,
-        style = MaterialTheme.typography.titleMedium,
-        modifier = modifier.semantics { heading() },
+    TonalPanel(
+        modifier = modifier,
+        shape = MaterialTheme.shapes.extraLarge,
+        padding = StepPadding,
+        spacing = Spacing.s16,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        content = content,
     )
 }
 
-/** The tone of a [MeNotice]: colours and icon. */
-internal enum class MeNoticeTone { INFO, WARNING, DANGER, SUCCESS }
-
-/** A tinted notice with an icon, an optional title, its text and optional actions under it. */
+/** One line of a plain list: a muted dot on the first line. A tick would say "verified". */
 @Composable
-internal fun MeNotice(
-    text: String?,
+internal fun BulletLine(
+    text: String,
     modifier: Modifier = Modifier,
-    tone: MeNoticeTone = MeNoticeTone.INFO,
-    title: String? = null,
-    icon: ImageVector? = null,
-    actions: (@Composable ColumnScope.() -> Unit)? = null,
+    style: TextStyle = MaterialTheme.typography.bodyMedium,
 ) {
-    val (container, accent) =
-        when (tone) {
-            MeNoticeTone.INFO -> {
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) to MaterialTheme.colorScheme.primary
-            }
+    val dot = MaterialTheme.colorScheme.onSurfaceVariant
+    Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.s12)) {
+        FirstLineMark(style) {
+            Box(
+                Modifier
+                    .size(BulletSize)
+                    .background(dot, PillShape),
+            )
+        }
+        Text(text, style = style, modifier = Modifier.weight(1f))
+    }
+}
 
-            MeNoticeTone.WARNING -> {
-                KrTheme.colors.warningContainer to KrTheme.colors.warning
-            }
-
-            MeNoticeTone.DANGER -> {
-                MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.error
-            }
-
-            MeNoticeTone.SUCCESS -> {
-                KrTheme.colors.successContainer to KrTheme.colors.success
+/**
+ * One of the member's own photos. It takes its size from [modifier], so nothing moves while it
+ * loads, and shows [placeholder] while there is no file to show or it did not load. Without a
+ * [description] it is decoration for the control around it.
+ */
+@Composable
+internal fun OwnPhotoImage(
+    url: String?,
+    description: String?,
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Crop,
+    placeholder: @Composable BoxScope.() -> Unit = { UnreadablePhoto() },
+) {
+    val key = url?.let(::stableKey)
+    var loaded by remember(key) { mutableStateOf(false) }
+    var failed by remember(url) { mutableStateOf(false) }
+    val showImage = url != null && !failed
+    val ground = if (showImage && !loaded) KrTheme.colors.skeleton else KrTheme.tonal
+    val described =
+        if (description == null) {
+            Modifier
+        } else {
+            Modifier.semantics {
+                contentDescription = description
+                role = Role.Image
             }
         }
-    val shownIcon =
-        icon ?: when (tone) {
-            MeNoticeTone.INFO -> Icons.Outlined.Info
-            MeNoticeTone.WARNING -> Icons.Outlined.WarningAmber
-            MeNoticeTone.DANGER -> Icons.Outlined.ErrorOutline
-            MeNoticeTone.SUCCESS -> Icons.Outlined.CheckCircle
-        }
-    Surface(color = container, shape = MaterialTheme.shapes.medium, modifier = modifier.fillMaxWidth()) {
-        Row(Modifier.padding(14.dp), verticalAlignment = Alignment.Top) {
-            Icon(shownIcon, contentDescription = null, tint = accent, modifier = Modifier.size(22.dp))
-            Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                if (title != null) {
-                    Text(
-                        title,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                }
-                if (text != null) {
-                    Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
-                }
-                actions?.invoke(this)
-            }
+    Box(modifier.then(described).background(ground), contentAlignment = Alignment.Center) {
+        if (showImage) {
+            AsyncImage(
+                model = rememberStableImageRequest(url),
+                contentDescription = null,
+                contentScale = contentScale,
+                onSuccess = { loaded = true },
+                onError = { failed = true },
+                modifier = Modifier.matchParentSize(),
+            )
+        } else {
+            placeholder()
         }
     }
 }
 
-/** The main action of a step or form: full width, at least 52 dp, a spinner while [busy]. */
 @Composable
-internal fun MePrimaryButton(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    busy: Boolean = false,
-    icon: ImageVector? = null,
-) {
-    Button(
-        onClick = onClick,
-        enabled = enabled && !busy,
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .heightIn(min = 52.dp),
-    ) {
-        ButtonContent(text, icon, busy, MaterialTheme.colorScheme.onPrimary)
-    }
-}
-
-/** A secondary action of a step: full width and outlined. */
-@Composable
-internal fun MeSecondaryButton(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    busy: Boolean = false,
-    icon: ImageVector? = null,
-) {
-    OutlinedButton(
-        onClick = onClick,
-        enabled = enabled && !busy,
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .heightIn(min = 52.dp),
-    ) {
-        ButtonContent(text, icon, busy, MaterialTheme.colorScheme.primary)
-    }
-}
-
-@Composable
-private fun RowScope.ButtonContent(
-    text: String,
-    icon: ImageVector?,
-    busy: Boolean,
-    spinnerColor: Color,
-) {
-    if (busy) {
-        CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = spinnerColor)
-        Spacer(Modifier.width(10.dp))
-    } else if (icon != null) {
-        Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp))
-        Spacer(Modifier.width(8.dp))
-    }
-    Text(text)
-}
-
-/** A round progress ring from 0 to 1 that animates to its value. */
-@Composable
-internal fun MeProgressRing(
-    progress: Float,
-    modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.primary,
-    trackColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
-    strokeWidth: Dp = 6.dp,
-) {
-    val animated by animateFloatAsState(
-        targetValue = progress.coerceIn(0f, 1f),
-        animationSpec = tween(durationMillis = 900),
-        label = "progress-ring",
+private fun UnreadablePhoto() {
+    Icon(
+        Icons.Outlined.BrokenImage,
+        contentDescription = null,
+        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.size(Sizes.icon),
     )
-    Canvas(modifier) {
-        val stroke = strokeWidth.toPx()
-        val inset = stroke / 2
-        val arcSize = Size(size.width - stroke, size.height - stroke)
-        drawArc(
-            color = trackColor,
-            startAngle = 0f,
-            sweepAngle = 360f,
-            useCenter = false,
-            topLeft = Offset(inset, inset),
-            size = arcSize,
-            style = Stroke(width = stroke),
-        )
-        drawArc(
-            color = color,
-            startAngle = -90f,
-            sweepAngle = 360f * animated,
-            useCenter = false,
-            topLeft = Offset(inset, inset),
-            size = arcSize,
-            style = Stroke(width = stroke, cap = StrokeCap.Round),
-        )
-    }
 }
 
-/** A dashed rounded outline, for "Add a photo" tiles. */
-internal fun Modifier.meDashedBorder(
-    color: Color,
-    cornerRadius: Dp,
-    strokeWidth: Dp = 1.5.dp,
-    dash: Dp = 6.dp,
-    gap: Dp = 5.dp,
-): Modifier =
-    drawBehind {
-        val width = strokeWidth.toPx()
-        val inset = width / 2
-        drawRoundRect(
-            color = color,
-            topLeft = Offset(inset, inset),
-            size = Size(size.width - width, size.height - width),
-            cornerRadius = CornerRadius(cornerRadius.toPx()),
-            style =
-                Stroke(
-                    width = width,
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(dash.toPx(), gap.toPx()), 0f),
-                ),
-        )
-    }
-
-/** An icon in a tinted circle, for card headers and step illustrations. */
+/**
+ * The grid of arches of `ME-PHOTOS` and the photos step (the web's `arch-grid`): three across,
+ * or two where a third would be too narrow for a status at the reader's text size. The children
+ * share one parent, so a photo that moves keeps its focus.
+ */
 @Composable
-internal fun MeIconBubble(
-    icon: ImageVector,
+internal fun ArchGrid(
     modifier: Modifier = Modifier,
-    size: Dp = 40.dp,
-    tint: Color = MaterialTheme.colorScheme.primary,
-    container: Color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+    content: @Composable () -> Unit,
 ) {
-    Box(
-        modifier
-            .size(size)
-            .clip(CircleShape)
-            .background(container),
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(size * 0.5f))
-    }
+    Layout(content = content, modifier = modifier.fillMaxWidth(), measurePolicy = ArchGridPolicy)
 }
 
-/** A small rounded status label, for photo tiles and verification rows. */
+private val ArchGridPolicy =
+    MeasurePolicy { measurables, constraints ->
+        val gap = GridGap.roundToPx()
+        val width = constraints.maxWidth
+        val third = (width - gap * (MOST_COLUMNS - 1)) / MOST_COLUMNS
+        val columns = if (third >= CellMin.toPx() * max(1f, fontScale)) MOST_COLUMNS else FEWEST_COLUMNS
+        val cell = ((width - gap * (columns - 1)) / columns).coerceAtLeast(0)
+        val rows =
+            measurables
+                .map { it.measure(Constraints(minWidth = cell, maxWidth = cell)) }
+                .chunked(columns)
+        val heights = rows.map { row -> row.maxOf { it.height } }
+        val total = heights.sum() + gap * (rows.size - 1).coerceAtLeast(0)
+        layout(width, total.coerceIn(constraints.minHeight, constraints.maxHeight)) {
+            var y = 0
+            rows.forEachIndexed { index, row ->
+                row.forEachIndexed { column, placeable -> placeable.placeRelative(column * (cell + gap), y) }
+                y += heights[index] + gap
+            }
+        }
+    }
+
+/**
+ * The status under an arch, never on the photo. A grid cell is narrower than a `StatusPill`
+ * needs, so here the words may go under their icon instead of breaking inside a word.
+ */
 @Composable
-internal fun MeStatusPill(
+internal fun ArchStatus(
     text: String,
-    container: Color,
-    content: Color,
+    tone: StatusTone,
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
     spinning: Boolean = false,
 ) {
-    Surface(color = container, contentColor = content, shape = CircleShape, modifier = modifier) {
-        Row(
-            Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+    val look = toneColors(tone)
+    Surface(
+        color = look.container,
+        contentColor = look.accent,
+        shape = MaterialTheme.shapes.medium,
+        modifier = modifier,
+    ) {
+        FlowRow(
+            modifier = Modifier.padding(horizontal = Spacing.s4, vertical = Spacing.s4),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s4, Alignment.CenterHorizontally),
+            itemVerticalAlignment = Alignment.CenterVertically,
         ) {
             if (spinning) {
-                CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 1.5.dp, color = content)
-            } else if (icon != null) {
-                Icon(icon, contentDescription = null, modifier = Modifier.size(14.dp))
+                ButtonSpinner(Modifier.size(Sizes.iconBadge))
+            } else {
+                Icon(icon ?: look.icon, contentDescription = null, modifier = Modifier.size(Sizes.iconBadge))
             }
-            Text(text, style = MaterialTheme.typography.labelMedium, maxLines = 1)
+            Text(text, style = CellStatusStyle, textAlign = TextAlign.Center)
         }
     }
 }
+
+private val BulletSize = 6.dp
+
+// "Processing..." is wider than a cell at 200% text: it breaks at a syllable, not at a letter.
+private val CellStatusStyle = KrType.badge.copy(hyphens = Hyphens.Auto, lineBreak = LineBreak.Paragraph)
+
+private val GridGap = Spacing.s12
+
+// The narrowest cell of the web's grid, 5.75rem: it grows with the text.
+private val CellMin = 92.dp
+private val StepPadding = PaddingValues(horizontal = Spacing.gutter, vertical = Spacing.s32)
+private const val MOST_COLUMNS = 3
+private const val FEWEST_COLUMNS = 2

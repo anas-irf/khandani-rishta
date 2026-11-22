@@ -1,32 +1,18 @@
 package com.khandanirishta.app.ui.feature.profilesections
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandIn
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkOut
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,7 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -45,15 +30,22 @@ import com.khandanirishta.app.R
 import com.khandanirishta.app.core.data.Lists
 import com.khandanirishta.app.core.data.Option
 import com.khandanirishta.app.core.util.Formatters
+import com.khandanirishta.app.ui.components.AdaptiveRow
+import com.khandanirishta.app.ui.components.ChoiceRow
 import com.khandanirishta.app.ui.components.ConfirmDialog
 import com.khandanirishta.app.ui.components.FieldLabel
+import com.khandanirishta.app.ui.components.KrButton
+import com.khandanirishta.app.ui.components.KrButtonVariant
 import com.khandanirishta.app.ui.components.KrTextField
+import com.khandanirishta.app.ui.components.KrTextLink
 import com.khandanirishta.app.ui.components.RadioCard
 import com.khandanirishta.app.ui.components.RadioCardsField
 import com.khandanirishta.app.ui.components.SelectField
 import com.khandanirishta.app.ui.components.SwitchRow
 import com.khandanirishta.app.ui.text.LocalReference
+import com.khandanirishta.app.ui.text.pick
 import com.khandanirishta.app.ui.text.text
+import com.khandanirishta.app.ui.theme.Spacing
 
 private val textKeyboard =
     KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Next)
@@ -171,21 +163,26 @@ private fun IncomeField(
     var choosing by rememberSaveable { mutableStateOf(false) }
     val shownCurrency = currency ?: IncomeCurrency.forCountry(scope.profile.location.countryCode)
     val none = stringResource(R.string.profile_sections_education_career_income_none)
-    val bands =
-        reference.incomeBandOptions(shownCurrency).map { band ->
-            Option(
-                band.code,
-                text(
-                    R.string.profile_sections_education_career_income_option,
-                    "label" to band.label,
-                    "currency" to shownCurrency,
-                ),
-            )
+    val res = LocalResources.current
+    val options =
+        remember(reference, res, shownCurrency, none) {
+            val bands =
+                reference.incomeBandOptions(shownCurrency).map { band ->
+                    Option(
+                        band.code,
+                        res.text(
+                            R.string.profile_sections_education_career_income_option,
+                            "label" to band.label,
+                            "currency" to shownCurrency,
+                        ),
+                    )
+                }
+            withNone(none, bands)
         }
     Column(Modifier.locate("income_band_code", scope.locator)) {
         SelectField(
             label = stringResource(R.string.profile_sections_education_career_income_label),
-            options = withNone(none, bands),
+            options = options,
             selected = scope.values.incomeBandCode,
             onSelect = { code ->
                 val band = code?.takeIf { it != NOT_SPECIFIED }
@@ -199,7 +196,6 @@ private fun IncomeField(
             enabled = scope.enabled,
         )
         if (choosing) {
-            Spacer(Modifier.size(12.dp))
             SelectField(
                 label = stringResource(R.string.profile_sections_education_career_currency_label),
                 options = IncomeCurrency.currencies(reference.data.incomeBands).map { Option(it, it) },
@@ -207,11 +203,15 @@ private fun IncomeField(
                 onSelect = { code -> if (code != null && code != shownCurrency) onCurrency(code) },
                 clearable = false,
                 enabled = scope.enabled,
+                modifier = Modifier.padding(top = Spacing.s16),
             )
         } else {
-            TextButton(onClick = { choosing = true }, enabled = scope.enabled) {
-                Text(stringResource(R.string.profile_sections_education_career_change_currency))
-            }
+            KrTextLink(
+                text = stringResource(R.string.profile_sections_education_career_change_currency),
+                onClick = { choosing = true },
+                enabled = scope.enabled,
+                modifier = Modifier.padding(top = Spacing.s8),
+            )
         }
     }
 }
@@ -269,7 +269,7 @@ internal fun ColumnScope.FamilyFields(scope: FieldsScope<FamilyInput>) {
         modifier = Modifier.locate("mother_occupation", scope.locator),
     )
 
-    GroupTitle(stringResource(R.string.profile_sections_family_group_siblings), Modifier.padding(top = 8.dp))
+    GroupTitle(stringResource(R.string.profile_sections_family_group_siblings), Modifier.padding(top = GroupSpace))
     // A count of 0 or "Not set" hides the married count, which is then sent as null (07 section 8.1).
     StepperField(
         label = stringResource(R.string.profile_sections_family_brothers_count_label),
@@ -340,7 +340,7 @@ internal fun ColumnScope.FamilyFields(scope: FieldsScope<FamilyInput>) {
         )
     }
 
-    GroupTitle(stringResource(R.string.profile_sections_family_group_background), Modifier.padding(top = 8.dp))
+    GroupTitle(stringResource(R.string.profile_sections_family_group_background), Modifier.padding(top = GroupSpace))
     SegmentedField(
         label = stringResource(R.string.profile_sections_family_family_type_label),
         options = reference.options(Lists.FAMILY_TYPE),
@@ -371,35 +371,24 @@ internal fun ColumnScope.FamilyFields(scope: FieldsScope<FamilyInput>) {
         enabled = scope.enabled,
         modifier = Modifier.locate("family_values", scope.locator),
     )
-    Surface(
-        shape = MaterialTheme.shapes.small,
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-        modifier = Modifier.locate("family_elsewhere", scope.locator),
-    ) {
-        SwitchRow(
-            title =
-                stringResource(
-                    scope.subject.pick(
-                        R.string.profile_sections_family_elsewhere_label,
-                        R.string.profile_sections_family_elsewhere_label_male,
-                        R.string.profile_sections_family_elsewhere_label_female,
-                        R.string.profile_sections_family_elsewhere_label_unknown,
-                    ),
+    SwitchRow(
+        title =
+            stringResource(
+                scope.subject.pick(
+                    R.string.profile_sections_family_elsewhere_label,
+                    R.string.profile_sections_family_elsewhere_label_male,
+                    R.string.profile_sections_family_elsewhere_label_female,
+                    R.string.profile_sections_family_elsewhere_label_unknown,
                 ),
-            checked = values.familyElsewhere,
-            onCheckedChange = { on ->
-                scope.edit("family_elsewhere", "family_place") { it.copy(familyElsewhere = on) }
-            },
-            enabled = scope.enabled,
-        )
-    }
-    // Fade and expand, as outside a column: the ColumnScope overload would default to a vertical expand.
-    AnimatedVisibility(
-        visible = values.familyElsewhere,
-        enter = fadeIn() + expandIn(),
-        exit = shrinkOut() + fadeOut(),
-    ) {
+            ),
+        checked = values.familyElsewhere,
+        onCheckedChange = { on ->
+            scope.edit("family_elsewhere", "family_place") { it.copy(familyElsewhere = on) }
+        },
+        enabled = scope.enabled,
+        modifier = Modifier.locate("family_elsewhere", scope.locator),
+    )
+    CollapsibleContent(visible = values.familyElsewhere, instant = scope.error("family_place") != null) {
         CityPickerField(
             value = values.familyPlace,
             onChange = { place -> scope.edit("family_place") { it.copy(familyPlace = place) } },
@@ -415,7 +404,7 @@ internal fun ColumnScope.FamilyFields(scope: FieldsScope<FamilyInput>) {
         )
     }
 
-    GroupTitle(stringResource(R.string.profile_sections_family_group_home), Modifier.padding(top = 8.dp))
+    GroupTitle(stringResource(R.string.profile_sections_family_group_home), Modifier.padding(top = GroupSpace))
     SelectField(
         label = stringResource(R.string.profile_sections_family_home_ownership_label),
         options = reference.options(Lists.HOME_OWNERSHIP),
@@ -436,7 +425,11 @@ internal fun ColumnScope.FamilyFields(scope: FieldsScope<FamilyInput>) {
         enabled = scope.enabled,
         modifier = Modifier.locate("home_type", scope.locator),
     )
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
+    AdaptiveRow(
+        modifier = Modifier.fillMaxWidth(),
+        lineSpacing = FieldSpacing,
+        verticalAlignment = Alignment.Top,
+    ) {
         KrTextField(
             value = values.homeSizeValue,
             onValueChange = { typed ->
@@ -461,7 +454,7 @@ internal fun ColumnScope.FamilyFields(scope: FieldsScope<FamilyInput>) {
             modifier =
                 Modifier
                     .locate("home_size_value", scope.locator)
-                    .weight(1f),
+                    .grow(basis = HomeSizeBasis),
         )
         SelectField(
             label = stringResource(R.string.profile_sections_family_home_size_unit_label),
@@ -474,12 +467,12 @@ internal fun ColumnScope.FamilyFields(scope: FieldsScope<FamilyInput>) {
             modifier =
                 Modifier
                     .locate("home_size_unit", scope.locator)
-                    .weight(1f),
+                    .grow(basis = HomeSizeBasis),
         )
     }
     HelperText(stringResource(R.string.profile_sections_family_home_help))
 
-    Column(Modifier.locate("about_family", scope.locator), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.locate("about_family", scope.locator), verticalArrangement = Arrangement.spacedBy(Spacing.s8)) {
         KrTextField(
             value = values.aboutFamily,
             onValueChange = { text -> scope.edit("about_family") { it.copy(aboutFamily = text) } },
@@ -627,7 +620,7 @@ internal fun ColumnScope.LifestyleFields(
         values.smoking,
     ) { input, code -> input.copy(smoking = code) }
 
-    GroupTitle(stringResource(R.string.profile_sections_lifestyle_group_plans), Modifier.padding(top = 8.dp))
+    GroupTitle(stringResource(R.string.profile_sections_lifestyle_group_plans), Modifier.padding(top = GroupSpace))
     LifestyleCards(
         "living_arrangement",
         stringResource(
@@ -687,7 +680,7 @@ internal fun ColumnScope.LifestyleFields(
 
     AppearanceGroup(scope)
 
-    GroupTitle(stringResource(R.string.profile_sections_lifestyle_group_hobbies), Modifier.padding(top = 8.dp))
+    GroupTitle(stringResource(R.string.profile_sections_lifestyle_group_hobbies), Modifier.padding(top = GroupSpace))
     val hobbyGroups =
         remember(reference) {
             val byCategory = reference.hobbyOptions().toMap()
@@ -713,82 +706,82 @@ internal fun ColumnScope.LifestyleFields(
 
 /** "Appearance and health", collapsed by default; it opens when one of its fields has an error. */
 @Composable
-private fun AppearanceGroup(scope: FieldsScope<LifestyleInput>) {
+private fun ColumnScope.AppearanceGroup(scope: FieldsScope<LifestyleInput>) {
     val values = scope.values
     val reference = LocalReference.current
     var open by rememberSaveable { mutableStateOf(false) }
     val hasError = APPEARANCE_FIELDS.any { scope.error(it) != null }
     val shown = open || hasError
+    // It stays open once the error is put right, so it cannot close on the field being typed in.
+    LaunchedEffect(hasError) { if (hasError) open = true }
     CollapsibleHeader(
         title = stringResource(R.string.profile_sections_lifestyle_group_appearance),
         expanded = shown,
-        onToggle = { open = !shown },
+        onToggle = { open = hasError || !shown },
         optional = true,
-        modifier = Modifier.padding(top = 8.dp),
+        modifier = Modifier.padding(top = GroupSpace),
     )
-    AnimatedVisibility(visible = shown) {
-        Column(verticalArrangement = Arrangement.spacedBy(FieldSpacing)) {
-            KrTextField(
-                value = values.weightKg,
-                onValueChange = { typed ->
-                    val digits = typed.filter { it.isDigit() }
-                    scope.edit("weight_kg") { it.copy(weightKg = digits) }
-                },
-                label = stringResource(R.string.profile_sections_lifestyle_weight_kg_label),
-                error = scope.error("weight_kg"),
-                optional = true,
-                maxLength = WEIGHT_LENGTH,
-                enabled = scope.enabled,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
-                modifier = Modifier.locate("weight_kg", scope.locator),
-            )
-            listOf(
-                Triple("complexion", R.string.profile_sections_lifestyle_complexion_label, Lists.COMPLEXION),
-                Triple("body_type", R.string.profile_sections_lifestyle_body_type_label, Lists.BODY_TYPE),
-                Triple("blood_group", R.string.profile_sections_lifestyle_blood_group_label, Lists.BLOOD_GROUP),
-                Triple("disability", R.string.profile_sections_lifestyle_disability_label, Lists.DISABILITY),
-            ).forEach { (field, label, list) ->
-                SelectField(
-                    label = stringResource(label),
-                    options = reference.options(list),
-                    selected =
-                        when (field) {
-                            "complexion" -> values.complexion
-                            "body_type" -> values.bodyType
-                            "blood_group" -> values.bloodGroup
-                            else -> values.disability
-                        },
-                    onSelect = { code ->
-                        scope.edit(field) {
-                            when (field) {
-                                "complexion" -> it.copy(complexion = code)
-                                "body_type" -> it.copy(bodyType = code)
-                                "blood_group" -> it.copy(bloodGroup = code)
-                                else -> it.copy(disability = code)
-                            }
-                        }
+    CollapsibleContent(visible = shown, instant = hasError) {
+        KrTextField(
+            value = values.weightKg,
+            onValueChange = { typed ->
+                val digits = typed.filter { it.isDigit() }
+                scope.edit("weight_kg") { it.copy(weightKg = digits) }
+            },
+            label = stringResource(R.string.profile_sections_lifestyle_weight_kg_label),
+            error = scope.error("weight_kg"),
+            optional = true,
+            maxLength = WEIGHT_LENGTH,
+            enabled = scope.enabled,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
+            modifier = Modifier.locate("weight_kg", scope.locator),
+        )
+        listOf(
+            Triple("complexion", R.string.profile_sections_lifestyle_complexion_label, Lists.COMPLEXION),
+            Triple("body_type", R.string.profile_sections_lifestyle_body_type_label, Lists.BODY_TYPE),
+            Triple("blood_group", R.string.profile_sections_lifestyle_blood_group_label, Lists.BLOOD_GROUP),
+            Triple("disability", R.string.profile_sections_lifestyle_disability_label, Lists.DISABILITY),
+        ).forEach { (field, label, list) ->
+            SelectField(
+                label = stringResource(label),
+                options = reference.options(list),
+                selected =
+                    when (field) {
+                        "complexion" -> values.complexion
+                        "body_type" -> values.bodyType
+                        "blood_group" -> values.bloodGroup
+                        else -> values.disability
                     },
-                    error = scope.error(field),
-                    optional = true,
-                    enabled = scope.enabled,
-                    modifier = Modifier.locate(field, scope.locator),
-                )
-            }
-            if (values.disability != null && values.disability != "none") {
-                KrTextField(
-                    value = values.disabilityDetails,
-                    onValueChange = { text -> scope.edit("disability_details") { it.copy(disabilityDetails = text) } },
-                    label = stringResource(R.string.profile_sections_lifestyle_disability_details_label),
-                    error = scope.error("disability_details"),
-                    optional = true,
-                    maxLength = DETAILS_MAX,
-                    enabled = scope.enabled,
-                    keyboardOptions = textKeyboard,
-                    modifier = Modifier.locate("disability_details", scope.locator),
-                )
-            }
-            HelperText(stringResource(R.string.profile_sections_lifestyle_health_help))
+                onSelect = { code ->
+                    scope.edit(field) {
+                        when (field) {
+                            "complexion" -> it.copy(complexion = code)
+                            "body_type" -> it.copy(bodyType = code)
+                            "blood_group" -> it.copy(bloodGroup = code)
+                            else -> it.copy(disability = code)
+                        }
+                    }
+                },
+                error = scope.error(field),
+                optional = true,
+                enabled = scope.enabled,
+                modifier = Modifier.locate(field, scope.locator),
+            )
         }
+        if (values.disability != null && values.disability != "none") {
+            KrTextField(
+                value = values.disabilityDetails,
+                onValueChange = { text -> scope.edit("disability_details") { it.copy(disabilityDetails = text) } },
+                label = stringResource(R.string.profile_sections_lifestyle_disability_details_label),
+                error = scope.error("disability_details"),
+                optional = true,
+                maxLength = DETAILS_MAX,
+                enabled = scope.enabled,
+                keyboardOptions = textKeyboard,
+                modifier = Modifier.locate("disability_details", scope.locator),
+            )
+        }
+        HelperText(stringResource(R.string.profile_sections_lifestyle_health_help))
     }
 }
 
@@ -841,7 +834,7 @@ private fun ColumnScope.AboutMeGroup(
                 R.string.profile_sections_lifestyle_group_about_unknown,
             ),
         ),
-        Modifier.padding(top = 8.dp),
+        Modifier.padding(top = GroupSpace),
     )
     val prompts =
         listOf(
@@ -859,7 +852,7 @@ private fun ColumnScope.AboutMeGroup(
             ),
             R.string.profile_sections_lifestyle_prompt_3,
         )
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(Spacing.s8)) {
         Text(
             stringResource(R.string.profile_sections_lifestyle_prompts_label),
             style = MaterialTheme.typography.labelLarge,
@@ -867,36 +860,14 @@ private fun ColumnScope.AboutMeGroup(
         prompts.forEachIndexed { index, prompt ->
             val active = activePrompt == index
             // A prompt only stays highlighted as a guide; it never inserts text (07 section 9.2).
-            Surface(
-                shape = MaterialTheme.shapes.medium,
-                color =
-                    if (active) {
-                        MaterialTheme.colorScheme.primaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.surfaceContainerLowest
-                    },
-                border =
-                    BorderStroke(
-                        1.dp,
-                        if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
-                    ),
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 48.dp)
-                        .selectable(selected = active, role = Role.Button) {
-                            activePrompt = if (active) null else index
-                        },
-            ) {
-                Text(
-                    stringResource(prompt),
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
-                )
-            }
+            ChoiceRow(
+                text = stringResource(prompt),
+                selected = active,
+                onClick = { activePrompt = if (active) null else index },
+            )
         }
     }
-    Column(Modifier.locate("about_me", scope.locator), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.locate("about_me", scope.locator), verticalArrangement = Arrangement.spacedBy(Spacing.s8)) {
         KrTextField(
             value = values.aboutMe,
             onValueChange = { text -> scope.edit("about_me") { it.copy(aboutMe = text) } },
@@ -918,11 +889,13 @@ private fun ColumnScope.AboutMeGroup(
             enabled = scope.enabled,
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
         )
-        OutlinedButton(onClick = ::helpMeWrite, enabled = scope.enabled) {
-            Icon(Icons.Outlined.AutoAwesome, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(8.dp))
-            Text(stringResource(R.string.profile_sections_lifestyle_help_me_write))
-        }
+        KrButton(
+            text = stringResource(R.string.profile_sections_lifestyle_help_me_write),
+            onClick = ::helpMeWrite,
+            variant = KrButtonVariant.SECONDARY,
+            icon = Icons.Outlined.AutoAwesome,
+            enabled = scope.enabled,
+        )
         TextStatusNote(scope.profile.textStatus.aboutMe)
         if (scope.mode == FormMode.EDIT) HelperText(stringResource(R.string.profile_sections_form_review_note))
     }
@@ -934,6 +907,7 @@ private fun ColumnScope.AboutMeGroup(
             text = null,
             confirmLabel = stringResource(R.string.profile_sections_lifestyle_replace_dialog_confirm),
             dismissLabel = stringResource(R.string.profile_sections_lifestyle_replace_dialog_cancel),
+            needsNetwork = false,
             onConfirm = {
                 replacement = null
                 insert(draft)
@@ -947,3 +921,4 @@ private const val HOME_SIZE_LENGTH = 8
 private const val WEIGHT_LENGTH = 3
 private const val ABOUT_FAMILY_LINES = 5
 private const val ABOUT_ME_LINES = 7
+private val HomeSizeBasis = 144.dp

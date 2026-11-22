@@ -2,6 +2,7 @@ package com.khandanirishta.app.ui.feature.me
 
 import android.os.Build
 import android.os.SystemClock
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khandanirishta.app.R
@@ -26,6 +27,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /** What `ME-PROFILE` shows (specs/08 section 1). */
+@Immutable
 data class MyProfileUiState(
     val profile: OwnProfile? = null,
     val loading: Boolean = true,

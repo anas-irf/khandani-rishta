@@ -1,5 +1,6 @@
 package com.khandanirishta.app.ui.feature.profilesections
 
+import androidx.compose.runtime.Immutable
 import com.khandanirishta.app.core.data.ProfileRepository
 import com.khandanirishta.app.core.data.ReferenceRepository
 import com.khandanirishta.app.core.network.ApiError
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /** What a section form shows: a skeleton, an error with "Try again", or the form. */
+@Immutable
 data class SectionFormUi(
     val section: String,
     val mode: FormMode,

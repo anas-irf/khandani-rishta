@@ -62,11 +62,11 @@
     <string name="camera_permission_settings">Open settings</string>
 
     <!-- Copy from specs/16 that the web app does not use -->
-    <string name="discovery_shortlist_failed">Could not update the shortlist.</string>
 
     <!-- Accessibility -->
     <string name="a11y_back">Back</string>
     <string name="a11y_more_options">More options</string>
     <string name="a11y_close">Close</string>
     <string name="a11y_private_photo">Private photo</string>
+    <string name="a11y_open_profile">Open profile</string>
 </resources>

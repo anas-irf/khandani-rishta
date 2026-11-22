@@ -3,44 +3,25 @@ package com.khandanirishta.app.ui.feature.lists
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -48,9 +29,17 @@ import com.khandanirishta.app.R
 import com.khandanirishta.app.core.data.PagedState
 import com.khandanirishta.app.core.network.generated.model.ProfileCard
 import com.khandanirishta.app.core.network.generated.model.ShortlistItem
-import com.khandanirishta.app.core.util.Formatters
+import com.khandanirishta.app.ui.components.AdaptiveRow
+import com.khandanirishta.app.ui.components.CaptionText
 import com.khandanirishta.app.ui.components.DetailTopBar
 import com.khandanirishta.app.ui.components.EmptyState
+import com.khandanirishta.app.ui.components.IconText
+import com.khandanirishta.app.ui.components.KrButton
+import com.khandanirishta.app.ui.components.KrButtonSize
+import com.khandanirishta.app.ui.components.KrButtonVariant
+import com.khandanirishta.app.ui.components.LocalOnline
+import com.khandanirishta.app.ui.components.MemberText
+import com.khandanirishta.app.ui.components.NoteDialog
 import com.khandanirishta.app.ui.components.PagedList
 import com.khandanirishta.app.ui.components.ProfileRow
 import com.khandanirishta.app.ui.components.UnavailableRow
@@ -60,7 +49,24 @@ import com.khandanirishta.app.ui.navigation.LocalNavigator
 import com.khandanirishta.app.ui.navigation.Matches
 import com.khandanirishta.app.ui.navigation.Profile
 import com.khandanirishta.app.ui.navigation.Tab
+import com.khandanirishta.app.ui.text.rememberCandidate
 import com.khandanirishta.app.ui.text.text
+import com.khandanirishta.app.ui.theme.KrType
+import com.khandanirishta.app.ui.theme.Sizes
+import com.khandanirishta.app.ui.theme.Spacing
+
+/** What the parts of APP-SHORTLIST can do. */
+@Immutable
+internal class ShortlistActions(
+    val refresh: () -> Unit,
+    val loadMore: () -> Unit,
+    val open: (profileId: String) -> Unit,
+    val editNote: (entry: ShortlistItem, name: String) -> Unit,
+    val remove: (ShortlistItem) -> Unit,
+    val saveNote: (String) -> Unit,
+    val dismissNote: () -> Unit,
+    val seeMatches: () -> Unit,
+)
 
 /**
  * APP-SHORTLIST: the member's private list of saved profiles, with notes (specs/16 section 6.13,
@@ -72,6 +78,19 @@ fun ShortlistScreen(
     viewModel: ShortlistViewModel = hiltViewModel(),
 ) {
     val navigator = LocalNavigator.current
+    val actions =
+        remember(viewModel, navigator) {
+            ShortlistActions(
+                refresh = viewModel::refresh,
+                loadMore = viewModel::loadMore,
+                open = { navigator.push(Profile(it)) },
+                editNote = viewModel::editNote,
+                remove = viewModel::remove,
+                saveNote = viewModel::saveNote,
+                dismissNote = viewModel::dismissNote,
+                seeMatches = { navigator.openOnTab(Tab.HOME, listOf(Matches)) },
+            )
+        }
     LifecycleResumeEffect(Unit) {
         viewModel.onResume()
         onPauseOrDispose { }
@@ -82,19 +101,59 @@ fun ShortlistScreen(
             DetailTopBar(title = stringResource(R.string.discovery_shortlist_title), onBack = { navigator.back() })
         },
     ) { padding ->
-        Box(Modifier.padding(padding)) {
+        Box(Modifier.padding(padding).consumeWindowInsets(padding)) {
             StatusGate(GateRouter.Level.BROWSE) {
                 val state by viewModel.state.collectAsStateWithLifecycle()
                 val list by viewModel.list.collectAsStateWithLifecycle()
-                ShortlistContent(
-                    state = state,
-                    list = list,
-                    onRefresh = viewModel::refresh,
-                    onLoadMore = viewModel::loadMore,
-                    onEditNote = viewModel::editNote,
-                    onRemove = viewModel::remove,
-                    onSaveNote = viewModel::saveNote,
-                    onDismissNote = viewModel::dismissNote,
+                ShortlistContent(state = state, list = list, actions = actions)
+            }
+        }
+    }
+}
+
+/** "Only you can see this list.", then a compact card per saved profile. */
+@Composable
+internal fun ShortlistContent(
+    state: ShortlistUiState,
+    list: PagedState<ShortlistItem>,
+    actions: ShortlistActions,
+    modifier: Modifier = Modifier,
+) {
+    Box(modifier.fillMaxSize()) {
+        PagedList(
+            state = list,
+            key = { it.profileId },
+            onRefresh = actions.refresh,
+            onLoadMore = actions.loadMore,
+            header = {
+                item(key = INTRO_KEY, contentType = INTRO_KEY) {
+                    IconText(
+                        icon = Icons.Outlined.Lock,
+                        text = stringResource(R.string.discovery_shortlist_intro),
+                        style = KrType.caption,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        iconSize = Sizes.iconTiny,
+                        modifier = Modifier.padding(bottom = Spacing.s8),
+                    )
+                }
+            },
+            empty = { ShortlistEmpty(onSeeMatches = actions.seeMatches) },
+        ) { entry ->
+            val profile = entry.profile
+            if (profile == null) {
+                UnavailableEntry(onRemove = { actions.remove(entry) })
+            } else {
+                SavedProfile(entry = entry, profile = profile, actions = actions)
+            }
+        }
+        state.editor?.let { editor ->
+            key(editor.profileId) {
+                NoteDialog(
+                    name = editor.name,
+                    onSave = actions.saveNote,
+                    onDismiss = actions.dismissNote,
+                    initial = editor.note.orEmpty(),
+                    busy = state.savingNote,
                 )
             }
         }
@@ -102,228 +161,93 @@ fun ShortlistScreen(
 }
 
 @Composable
-private fun ShortlistContent(
-    state: ShortlistUiState,
-    list: PagedState<ShortlistItem>,
-    onRefresh: () -> Unit,
-    onLoadMore: () -> Unit,
-    onEditNote: (entry: ShortlistItem, name: String) -> Unit,
-    onRemove: (ShortlistItem) -> Unit,
-    onSaveNote: (String) -> Unit,
-    onDismissNote: () -> Unit,
-) {
-    val navigator = LocalNavigator.current
+private fun ShortlistEmpty(onSeeMatches: () -> Unit) {
+    val action =
+        rememberCandidate().pick(
+            R.string.discovery_shortlist_see_matches,
+            R.string.discovery_shortlist_see_matches_male,
+            R.string.discovery_shortlist_see_matches_female,
+        )
+    EmptyState(
+        title = stringResource(R.string.discovery_shortlist_empty_title),
+        text = stringResource(R.string.discovery_shortlist_empty_text),
+        icon = Icons.Outlined.FavoriteBorder,
+        actionLabel = stringResource(action),
+        onAction = onSeeMatches,
+    )
+}
 
-    Column(Modifier.fillMaxSize()) {
-        // "Only you can see this list." under the title.
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, top = 2.dp, bottom = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                Icons.Outlined.Lock,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(16.dp),
-            )
-            Spacer(Modifier.width(6.dp))
-            Text(
-                stringResource(R.string.discovery_shortlist_intro),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        PagedList(
-            state = list,
-            key = { it.profileId },
-            onRefresh = onRefresh,
-            onLoadMore = onLoadMore,
-            modifier = Modifier.weight(1f),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
-            empty = {
-                EmptyState(
-                    title = stringResource(R.string.discovery_shortlist_empty_title),
-                    text = stringResource(R.string.discovery_shortlist_empty_text),
-                    icon = Icons.Outlined.FavoriteBorder,
-                    actionLabel = stringResource(R.string.discovery_shortlist_see_matches),
-                    onAction = { navigator.openOnTab(Tab.HOME, listOf(Matches)) },
-                )
-            },
-        ) { entry ->
-            ShortlistRow(
-                entry = entry,
-                online = state.online,
-                onOpen = { profileId -> navigator.push(Profile(profileId)) },
-                onEditNote = { name -> onEditNote(entry, name) },
-                onRemove = { onRemove(entry) },
-            )
-        }
-        state.editor?.let { editor ->
-            NoteDialog(
-                editor = editor,
-                saving = state.savingNote,
-                online = state.online,
-                onSave = onSaveNote,
-                onDismiss = onDismissNote,
-            )
-        }
+/** "No longer available" with "Remove", which needs only the profile id (16 section 6.13). */
+@Composable
+private fun UnavailableEntry(onRemove: () -> Unit) {
+    UnavailableRow(text = stringResource(R.string.discovery_shortlist_unavailable)) {
+        KrButton(
+            text = stringResource(R.string.discovery_shortlist_remove),
+            onClick = onRemove,
+            variant = KrButtonVariant.QUIET,
+            size = KrButtonSize.COMPACT,
+            icon = Icons.Outlined.DeleteOutline,
+            enabled = LocalOnline.current,
+            contentDescription = stringResource(R.string.discovery_shortlist_remove_unavailable),
+        )
     }
 }
 
 /** One saved profile: the compact card, the note in italics, "Saved {relative}", and its controls. */
 @Composable
-private fun ShortlistRow(
-    entry: ShortlistItem,
-    online: Boolean,
-    onOpen: (String) -> Unit,
-    onEditNote: (name: String) -> Unit,
-    onRemove: () -> Unit,
-) {
-    val profile = entry.profile
-    if (profile == null) {
-        UnavailableEntry(online = online, onRemove = onRemove)
-    } else {
-        SavedProfile(
-            entry = entry,
-            profile = profile,
-            online = online,
-            onOpen = onOpen,
-            onEditNote = onEditNote,
-            onRemove = onRemove,
-        )
-    }
-}
-
-/** "No longer available" with "Remove", which needs only the profile id (16 section 6.13). */
-@Composable
-private fun UnavailableEntry(
-    online: Boolean,
-    onRemove: () -> Unit,
-) {
-    val removeLabel = stringResource(R.string.discovery_shortlist_remove_unavailable)
-    UnavailableRow(
-        text = stringResource(R.string.discovery_shortlist_unavailable),
-        action = {
-            TextButton(
-                onClick = onRemove,
-                enabled = online,
-                modifier =
-                    Modifier
-                        .heightIn(min = 48.dp)
-                        .semantics { contentDescription = removeLabel },
-            ) {
-                Icon(Icons.Outlined.DeleteOutline, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(6.dp))
-                Text(stringResource(R.string.discovery_shortlist_remove))
-            }
-        },
-    )
-}
-
-@Composable
 private fun SavedProfile(
     entry: ShortlistItem,
     profile: ProfileCard,
-    online: Boolean,
-    onOpen: (String) -> Unit,
-    onEditNote: (name: String) -> Unit,
-    onRemove: () -> Unit,
+    actions: ShortlistActions,
 ) {
-    val res = LocalResources.current
+    val online = LocalOnline.current
+    val editLabel = stringResource(R.string.discovery_shortlist_edit_note)
     val removeLabel = text(R.string.shared_card_shortlist_remove, "name" to profile.displayName)
-    val saved = text(R.string.discovery_shortlist_saved_at, "time" to Formatters.relative(res, entry.createdAt))
+    val saved = text(R.string.discovery_shortlist_saved_at, "time" to rememberRelativeTime(entry.createdAt))
     ProfileRow(
         card = profile,
-        onOpen = { onOpen(profile.id) },
-        extra = {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        onOpen = { actions.open(profile.id) },
+        details = {
+            Column(
+                modifier =
+                    Modifier.rowActions(
+                        enabled = online,
+                        editLabel to { actions.editNote(entry, profile.displayName) },
+                        removeLabel to { actions.remove(entry) },
+                    ),
+                verticalArrangement = Arrangement.spacedBy(Spacing.s4),
+            ) {
                 val note = entry.note
                 if (!note.isNullOrBlank()) {
-                    Text(note, style = MaterialTheme.typography.bodyMedium, fontStyle = FontStyle.Italic)
+                    MemberText(note, style = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic))
                 }
-                MetaLine(saved)
+                CaptionText(saved)
             }
         },
         actions = {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                OutlinedButton(
-                    onClick = { onEditNote(profile.displayName) },
+            AdaptiveRow(Modifier.fillMaxWidth()) {
+                KrButton(
+                    text = editLabel,
+                    onClick = { actions.editNote(entry, profile.displayName) },
+                    variant = KrButtonVariant.SECONDARY,
+                    size = KrButtonSize.COMPACT,
+                    icon = Icons.Outlined.Edit,
                     enabled = online,
-                    modifier = Modifier.heightIn(min = 48.dp),
-                ) {
-                    Icon(Icons.Outlined.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text(stringResource(R.string.discovery_shortlist_edit_note))
-                }
-                TextButton(
-                    onClick = onRemove,
+                    modifier = Modifier.grow(),
+                )
+                KrButton(
+                    text = stringResource(R.string.discovery_shortlist_remove),
+                    onClick = { actions.remove(entry) },
+                    variant = KrButtonVariant.QUIET,
+                    size = KrButtonSize.COMPACT,
+                    icon = Icons.Outlined.DeleteOutline,
                     enabled = online,
-                    modifier =
-                        Modifier
-                            .heightIn(min = 48.dp)
-                            .semantics { contentDescription = removeLabel },
-                ) {
-                    Icon(Icons.Outlined.DeleteOutline, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text(stringResource(R.string.discovery_shortlist_remove))
-                }
+                    contentDescription = removeLabel,
+                    modifier = Modifier.grow(),
+                )
             }
         },
     )
 }
 
-/** "Edit note": a text of at most 300 characters that only the member sees (16 section 6.13). */
-@Composable
-private fun NoteDialog(
-    editor: NoteEditor,
-    saving: Boolean,
-    online: Boolean,
-    onSave: (String) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    var value by rememberSaveable(editor.profileId) { mutableStateOf(editor.note.orEmpty()) }
-    AlertDialog(
-        onDismissRequest = { if (!saving) onDismiss() },
-        title = { Text(text(R.string.discovery_shortlist_note_title, "name" to editor.name)) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    stringResource(R.string.discovery_shortlist_note_help),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                OutlinedTextField(
-                    value = value,
-                    onValueChange = { value = it.take(ShortlistViewModel.NOTE_MAX) },
-                    label = { Text(stringResource(R.string.discovery_shortlist_note_label)) },
-                    supportingText = {
-                        Text(
-                            text(
-                                R.string.discovery_shortlist_note_count,
-                                "count" to value.length,
-                                "max" to ShortlistViewModel.NOTE_MAX,
-                            ),
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.End,
-                        )
-                    },
-                    enabled = !saving,
-                    minLines = 3,
-                    maxLines = 6,
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = { onSave(value) }, enabled = online && !saving) {
-                if (saving) ButtonSpinner() else Text(stringResource(R.string.common_actions_save))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !saving) { Text(stringResource(R.string.common_actions_cancel)) }
-        },
-    )
-}
+private const val INTRO_KEY = "shortlist:intro"

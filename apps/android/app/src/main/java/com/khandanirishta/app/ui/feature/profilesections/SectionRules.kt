@@ -3,6 +3,7 @@ package com.khandanirishta.app.ui.feature.profilesections
 import com.khandanirishta.app.R
 import com.khandanirishta.app.core.util.Formatters
 import com.khandanirishta.app.ui.messages.UiText
+import com.khandanirishta.app.ui.text.Subject
 import java.time.LocalDate
 
 /**

@@ -1,6 +1,7 @@
 package com.khandanirishta.app.ui.feature.notifications
 
 import android.content.res.Resources
+import androidx.compose.runtime.Immutable
 import com.khandanirishta.app.R
 import com.khandanirishta.app.core.data.Lists
 import com.khandanirishta.app.core.data.Reference
@@ -35,6 +36,7 @@ internal sealed interface NotificationTarget {
 }
 
 /** The text of a row, the moderator's note of `text_rejected`, and what a tap opens (`null`: nothing). */
+@Immutable
 internal data class NotificationView(
     val text: String,
     val note: String?,

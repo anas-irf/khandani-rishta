@@ -9,15 +9,19 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.isImeVisible
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
@@ -29,8 +33,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalAccessibilityManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -43,8 +50,12 @@ import com.khandanirishta.app.core.data.ProfileRepository
 import com.khandanirishta.app.core.network.generated.model.Gate
 import com.khandanirishta.app.core.network.generated.model.Me
 import com.khandanirishta.app.core.realtime.ConnectivityObserver
+import com.khandanirishta.app.ui.components.KrSnackbarHost
 import com.khandanirishta.app.ui.components.LimitDialog
+import com.khandanirishta.app.ui.components.LocalOnline
+import com.khandanirishta.app.ui.components.LocalToasts
 import com.khandanirishta.app.ui.components.OfflineBanner
+import com.khandanirishta.app.ui.components.showToast
 import com.khandanirishta.app.ui.feature.auth.SignInScreen
 import com.khandanirishta.app.ui.feature.gates.ClerkFailedScreen
 import com.khandanirishta.app.ui.feature.gates.NotConfiguredScreen
@@ -66,6 +77,7 @@ import com.khandanirishta.app.ui.navigation.showsBottomBar
 import com.khandanirishta.app.ui.text.LocalMe
 import com.khandanirishta.app.ui.text.LocalReference
 import com.khandanirishta.app.ui.text.LocalViewerCountry
+import com.khandanirishta.app.ui.theme.Motion
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -93,12 +105,17 @@ fun KhandaniApp(viewModel: AppViewModel = hiltViewModel()) {
         remember { EntryPointAccessors.fromApplication(context.applicationContext, RootEntryPoint::class.java) }
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
+    val online by entryPoint.connectivity().online.collectAsStateWithLifecycle()
 
-    CompositionLocalProvider(LocalAppViewModel provides viewModel) {
+    CompositionLocalProvider(
+        LocalAppViewModel provides viewModel,
+        LocalOnline provides online,
+        LocalToasts provides snackbar,
+    ) {
         MessageHost(entryPoint.messageBus(), snackbar)
         AnimatedContent(
             targetState = state.rootKind(),
-            transitionSpec = { fadeIn() togetherWith fadeOut() },
+            transitionSpec = { fadeIn(Motion.base()) togetherWith fadeOut(Motion.fast()) },
             label = "root",
         ) { kind ->
             when (kind) {
@@ -134,7 +151,7 @@ fun KhandaniApp(viewModel: AppViewModel = hiltViewModel()) {
                             LocalMe provides ready.me,
                             LocalViewerCountry provides (ownProfile?.location?.countryCode ?: "PK"),
                         ) {
-                            GateHost(ready.me, snackbar, entryPoint.connectivity())
+                            GateHost(ready.me, snackbar)
                         }
                     }
                 }
@@ -163,6 +180,7 @@ private fun MessageHost(
     snackbar: SnackbarHostState,
 ) {
     val res = LocalResources.current
+    val accessibility = LocalAccessibilityManager.current
     val scope = rememberCoroutineScope()
     var limit by remember { mutableStateOf<UiText?>(null) }
     var showLimit by remember { mutableStateOf(false) }
@@ -173,10 +191,10 @@ private fun MessageHost(
                     scope.launch {
                         snackbar.currentSnackbarData?.dismiss()
                         val result =
-                            snackbar.showSnackbar(
+                            snackbar.showToast(
                                 message = message.text.resolve(res),
                                 actionLabel = message.actionLabel?.resolve(res),
-                                duration = SnackbarDuration.Short,
+                                accessibility = accessibility,
                             )
                         if (result == SnackbarResult.ActionPerformed) message.onAction?.invoke()
                     }
@@ -195,11 +213,11 @@ private fun MessageHost(
 }
 
 /** The stacks for one gate. A change of gate replaces the whole stack (specs/22 section 3.2). */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun GateHost(
     me: Me,
     snackbar: SnackbarHostState,
-    connectivity: ConnectivityObserver,
 ) {
     val activity = LocalActivity.current
     val appViewModel = LocalAppViewModel.current
@@ -268,7 +286,7 @@ private fun GateHost(
         }
     }
 
-    val online by connectivity.online.collectAsStateWithLifecycle()
+    val online = LocalOnline.current
     val decorators =
         listOf(
             rememberSaveableStateHolderNavEntryDecorator<Route>(),
@@ -294,12 +312,20 @@ private fun GateHost(
                     else -> meEntries
                 }
         }
-    val showBar = navigator.tabbed && navigator.top.key.showsBottomBar()
+    // Two lines of destinations over a keyboard would leave no room for what is being typed.
+    val showBar = navigator.tabbed && navigator.top.key.showsBottomBar() && !WindowInsets.isImeVisible
+    // A screen comes from the end edge, so from the other side in right-to-left layouts.
+    val slide = if (LocalLayoutDirection.current == LayoutDirection.Ltr) SLIDE_SHARE else -SLIDE_SHARE
 
     CompositionLocalProvider(LocalNavigator provides navigator) {
         Scaffold(
-            snackbarHost = { SnackbarHost(snackbar) },
+            snackbarHost = {
+                // Without the destinations below it, a toast keeps clear of the system's bar and the keyboard.
+                val below = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom)
+                KrSnackbarHost(snackbar, if (showBar) Modifier else Modifier.windowInsetsPadding(below))
+            },
             bottomBar = { if (showBar) AppBottomBar(navigator = navigator, me = me) },
+            containerColor = MaterialTheme.colorScheme.background,
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
         ) { padding ->
             Column(
@@ -317,20 +343,19 @@ private fun GateHost(
                     NavDisplay(
                         entries = visible,
                         onBack = { navigator.back() },
-                        transitionSpec = {
-                            (fadeIn() + slideInHorizontally { it / 8 }) togetherWith fadeOut()
-                        },
-                        popTransitionSpec = {
-                            (fadeIn() + slideInHorizontally { -it / 8 }) togetherWith
-                                (fadeOut() + slideOutHorizontally { it / 8 })
-                        },
-                        predictivePopTransitionSpec = { _ ->
-                            (fadeIn() + slideInHorizontally { -it / 8 }) togetherWith
-                                (fadeOut() + slideOutHorizontally { it / 8 })
-                        },
+                        transitionSpec = { screenIn(slide) togetherWith fadeOut(Motion.fast()) },
+                        popTransitionSpec = { screenIn(-slide) togetherWith screenOut(slide) },
+                        predictivePopTransitionSpec = { _ -> screenIn(-slide) togetherWith screenOut(slide) },
                     )
                 }
             }
         }
     }
 }
+
+/** A short shared-axis move (DESIGN.md section 5.4). With animations off it ends at once. */
+private fun screenIn(share: Int) = fadeIn(Motion.base()) + slideInHorizontally(Motion.base()) { it / share }
+
+private fun screenOut(share: Int) = fadeOut(Motion.fast()) + slideOutHorizontally(Motion.base()) { it / share }
+
+private const val SLIDE_SHARE = 8

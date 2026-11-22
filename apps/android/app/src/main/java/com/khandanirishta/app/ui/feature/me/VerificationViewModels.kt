@@ -3,6 +3,7 @@ package com.khandanirishta.app.ui.feature.me
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.annotation.StringRes
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khandanirishta.app.R
@@ -48,6 +49,7 @@ import javax.inject.Inject
 // ME-VERIFY (specs/16 section 6.21)
 // ---------------------------------------------------------------------------
 
+@Immutable
 data class VerificationUiState(
     val overview: VerificationOverview? = null,
     val loading: Boolean = true,
@@ -145,6 +147,7 @@ private fun preparationProblem(failure: Throwable): Int =
 
 enum class SelfieStep { EXPLAIN, GESTURE, CAMERA, REVIEW, SUBMIT, DONE }
 
+@Immutable
 data class SelfieUiState(
     val step: SelfieStep = SelfieStep.EXPLAIN,
     val gesture: Gesture? = null,
@@ -340,6 +343,7 @@ enum class IdStep { NUMBER, FRONT, BACK, GESTURE, CAMERA, REVIEW, SUBMIT, DONE }
 /** Why the identity flow cannot start: already verified, or a request is under review. */
 enum class IdBlock { VERIFIED, PENDING }
 
+@Immutable
 data class IdentityUiState(
     val loading: Boolean = true,
     val error: ApiError? = null,

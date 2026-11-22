@@ -1,8 +1,10 @@
 package com.khandanirishta.app.ui.feature.chat
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.viewModelScope
 import com.khandanirishta.app.R
 import com.khandanirishta.app.core.data.ConnectionRepository
+import com.khandanirishta.app.core.network.ApiError
 import com.khandanirishta.app.core.network.ErrorCode
 import com.khandanirishta.app.core.network.apiError
 import com.khandanirishta.app.core.network.generated.model.ContactShareBody
@@ -21,14 +23,18 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /** The share dialog of 16 section 6.12, kept here so it survives the trip to `SET-CONTACTS`. */
+@Immutable
 data class ShareDialogState(
     val open: Boolean = false,
     /** The ticks; `null` until the own profile is known, then the defaults apply. */
     val selection: ContactShareBody? = null,
     /** `validation_failed` with `required`: "Add your {item} first." */
     val missing: ShareItem? = null,
+    /** The own profile could not be loaded, so there are no values to show (rule G3). */
+    val profileError: ApiError? = null,
 )
 
+@Immutable
 data class ConnectionUiState(
     val core: ConnectionCore = ConnectionCore(),
     /** The member's own profile, for the contact values (`GET /v1/me/profile`, cached). */
@@ -82,9 +88,10 @@ class ConnectionViewModel
 
         /** Back on screen: reopen the share dialog when the member went to add a missing detail. */
         fun onResume() {
+            if (tools.profiles.ownProfile.value == null) viewModelScope.launch { tools.profiles.cachedOrLoad() }
             val saved = tools.sync.takeSelection(connectionId) ?: return
             shareDialog.value = ShareDialogState(open = true, selection = saved)
-            if (tools.profiles.ownProfile.value == null) viewModelScope.launch { tools.profiles.load() }
+            loadForShare()
         }
 
         // -----------------------------------------------------------------------------------------
@@ -94,7 +101,20 @@ class ConnectionViewModel
         /** "Share contact details" (defaults) or "Change" (the current share). */
         fun openShare() {
             shareDialog.value = ShareDialogState(open = true)
-            if (tools.profiles.ownProfile.value == null) viewModelScope.launch { tools.profiles.load() }
+            loadForShare()
+        }
+
+        /** "Try again" in the share sheet. */
+        fun retryOwnProfile() = loadForShare()
+
+        private fun loadForShare() {
+            if (tools.profiles.ownProfile.value != null) return
+            shareDialog.update { it.copy(profileError = null) }
+            viewModelScope.launch {
+                tools.profiles.load().onFailure { failure ->
+                    shareDialog.update { it.copy(profileError = failure.apiError) }
+                }
+            }
         }
 
         fun updateSelection(selection: ContactShareBody) =

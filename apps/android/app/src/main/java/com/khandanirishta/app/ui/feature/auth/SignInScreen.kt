@@ -5,29 +5,29 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FamilyRestroom
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.VerifiedUser
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,22 +36,35 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import com.clerk.api.ui.ClerkColors
-import com.clerk.api.ui.ClerkDesign
-import com.clerk.api.ui.ClerkTheme
 import com.clerk.ui.auth.AuthView
 import com.khandanirishta.app.R
-import com.khandanirishta.app.ui.feature.gates.BrandMark
+import com.khandanirishta.app.ui.components.ArchIcon
+import com.khandanirishta.app.ui.components.ArchTone
+import com.khandanirishta.app.ui.components.BrandMark
+import com.khandanirishta.app.ui.components.Diamond
+import com.khandanirishta.app.ui.components.KrActionBar
+import com.khandanirishta.app.ui.components.KrButton
+import com.khandanirishta.app.ui.components.OrnamentRule
+import com.khandanirishta.app.ui.components.Wordmark
+import com.khandanirishta.app.ui.components.contentWidth
+import com.khandanirishta.app.ui.components.dashedBorder
 import com.khandanirishta.app.ui.rememberLinkOpener
 import com.khandanirishta.app.ui.text.linkedText
-import com.khandanirishta.app.ui.theme.Brand
+import com.khandanirishta.app.ui.theme.ArchShape
+import com.khandanirishta.app.ui.theme.InnerArchShape
 import com.khandanirishta.app.ui.theme.KrTheme
+import com.khandanirishta.app.ui.theme.KrType
+import com.khandanirishta.app.ui.theme.Motion
+import com.khandanirishta.app.ui.theme.Sizes
+import com.khandanirishta.app.ui.theme.Spacing
+import com.khandanirishta.app.ui.theme.Strokes
+import com.khandanirishta.app.ui.theme.rememberClerkTheme
 
 /**
  * AUTH-SIGNIN (specs/16 section 6.1): a short welcome, then Clerk's `AuthView`, which decides
@@ -61,84 +74,96 @@ import com.khandanirishta.app.ui.theme.KrTheme
 fun SignInScreen(onSignedIn: () -> Unit) {
     var started by rememberSaveable { mutableStateOf(false) }
     AnimatedContent(targetState = started, transitionSpec = {
-        fadeIn() togetherWith fadeOut()
+        fadeIn(Motion.base()) togetherWith fadeOut(Motion.fast())
     }, label = "sign-in") { showAuth ->
         if (showAuth) AuthStep(onSignedIn) else Welcome(onStart = { started = true })
     }
 }
 
+/** The welcome: the wordmark, the line in serif, and what the product promises. */
 @Composable
-private fun Welcome(onStart: () -> Unit) {
-    Column(
-        Modifier
-            .fillMaxSize()
-            .background(KrTheme.colors.heroGradient)
-            .statusBarsPadding()
-            .navigationBarsPadding()
-            .padding(horizontal = 28.dp, vertical = 24.dp),
+internal fun Welcome(
+    onStart: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        Column {
+            Column(
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .windowInsetsPadding(
+                            WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
+                        ).contentWidth(Sizes.formWidth)
+                        .padding(horizontal = Spacing.gutter, vertical = Spacing.s24),
+                verticalArrangement = Arrangement.spacedBy(Spacing.s24, Alignment.CenterVertically),
+            ) {
+                Wordmark()
+                WelcomeArches()
+                OrnamentRule()
+                Text(
+                    text = stringResource(R.string.auth_tagline),
+                    style = MaterialTheme.typography.displayLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.semantics { heading() },
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.s16)) {
+                    Feature(
+                        Icons.Outlined.VerifiedUser,
+                        ArchTone.SUCCESS,
+                        stringResource(R.string.auth_feature_verified),
+                    )
+                    Feature(Icons.Outlined.Lock, ArchTone.PRIMARY, stringResource(R.string.auth_feature_privacy))
+                    Feature(Icons.Outlined.FamilyRestroom, ArchTone.TONAL, stringResource(R.string.auth_feature_family))
+                }
+            }
+            KrActionBar(maxWidth = Sizes.formWidth) {
+                KrButton(text = stringResource(R.string.auth_get_started), onClick = onStart, fullWidth = true)
+                LegalLine()
+            }
+        }
+    }
+}
+
+/** Three arches, the middle one whole: two families and the meeting between them. Decoration. */
+@Composable
+private fun WelcomeArches() {
+    val gold = KrTheme.colors.ornament
+    Row(
+        modifier = Modifier.clearAndSetSemantics {},
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
+        verticalAlignment = Alignment.Bottom,
     ) {
-        Spacer(Modifier.weight(1f))
-        BrandMark(size = 72)
-        Spacer(Modifier.height(20.dp))
-        Text(stringResource(R.string.app_name), style = MaterialTheme.typography.displaySmall, color = Color.White)
-        Spacer(Modifier.height(8.dp))
-        Text(
-            stringResource(R.string.auth_tagline),
-            style = MaterialTheme.typography.titleMedium,
-            color = Color.White.copy(alpha = 0.9f),
-        )
-        Spacer(Modifier.height(28.dp))
-        Feature(Icons.Outlined.VerifiedUser, stringResource(R.string.auth_feature_verified))
-        Feature(Icons.Outlined.Lock, stringResource(R.string.auth_feature_privacy))
-        Feature(Icons.Outlined.FamilyRestroom, stringResource(R.string.auth_feature_family))
-        Spacer(Modifier.weight(1f))
-        Button(
-            onClick = onStart,
-            colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Brand.PrimaryDeep),
+        val side = Modifier.size(Sizes.arch64).dashedBorder(InnerArchShape, gold)
+        Box(side)
+        Box(
             modifier =
                 Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 56.dp),
-        ) { Text(stringResource(R.string.auth_get_started), style = MaterialTheme.typography.titleMedium) }
-        Spacer(Modifier.height(12.dp))
-        LegalLine(color = Color.White.copy(alpha = 0.85f), link = Color.White)
+                    .size(Sizes.arch96)
+                    .background(MaterialTheme.colorScheme.primary, ArchShape)
+                    .padding(Spacing.s8)
+                    .border(Strokes.hairline, gold, InnerArchShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Diamond(size = Spacing.s12)
+        }
+        Box(side)
     }
 }
 
 @Composable
 private fun Feature(
     icon: ImageVector,
+    tone: ArchTone,
     text: String,
 ) {
-    Row(Modifier.padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(
-            Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(Color.White.copy(alpha = 0.16f)),
-            contentAlignment = Alignment.Center,
-        ) { Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(22.dp)) }
-        Spacer(Modifier.width(14.dp))
-        Text(text, style = MaterialTheme.typography.bodyLarge, color = Color.White)
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s16), verticalAlignment = Alignment.CenterVertically) {
+        ArchIcon(icon, tone = tone)
+        Text(text, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
     }
 }
-
-private val clerkTheme =
-    ClerkTheme(
-        colors =
-            ClerkColors(
-                primary = Brand.Primary,
-                background = Brand.Background,
-                danger = Brand.Danger,
-                success = Brand.Success,
-                warning = Brand.Warning,
-                foreground = Brand.Text,
-                mutedForeground = Brand.MutedText,
-                primaryForeground = Color.White,
-                border = Brand.Border,
-            ),
-        design = ClerkDesign(borderRadius = 12.dp),
-    )
 
 @Composable
 private fun AuthStep(onSignedIn: () -> Unit) {
@@ -149,40 +174,33 @@ private fun AuthStep(onSignedIn: () -> Unit) {
     ) {
         AuthView(
             modifier = Modifier.weight(1f),
-            clerkTheme = clerkTheme,
-            logo = { BrandMark(size = 48) },
+            clerkTheme = rememberClerkTheme(),
+            logo = { BrandMark(height = Sizes.touchLarge) },
             isDismissible = false,
             onAuthComplete = onSignedIn,
         )
         LegalLine(
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            link = MaterialTheme.colorScheme.primary,
             modifier =
                 Modifier
                     .navigationBarsPadding()
-                    .padding(horizontal = 24.dp, vertical = 12.dp),
+                    .padding(horizontal = Spacing.gutter, vertical = Spacing.s12),
         )
     }
 }
 
 /** "By continuing you agree to the Terms of Use and Privacy Policy." with links. */
 @Composable
-private fun ColumnScope.LegalLine(
-    color: Color,
-    link: Color,
-    modifier: Modifier = Modifier,
-) {
+private fun LegalLine(modifier: Modifier = Modifier) {
     val links = rememberLinkOpener()
     Text(
         linkedText(
             stringResource(R.string.auth_legal),
-            linkColor = link,
+            linkColor = MaterialTheme.colorScheme.primary,
             links = mapOf("terms" to { links.webPage("terms") }, "privacy" to { links.webPage("privacy") }),
         ),
-        style = MaterialTheme.typography.bodySmall,
-        color = color,
+        style = KrType.caption,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         textAlign = TextAlign.Center,
         modifier = modifier.fillMaxWidth(),
     )
-    Spacer(Modifier.height(4.dp))
 }

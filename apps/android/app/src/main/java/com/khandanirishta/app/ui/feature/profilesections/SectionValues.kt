@@ -1,5 +1,6 @@
 package com.khandanirishta.app.ui.feature.profilesections
 
+import androidx.compose.runtime.Immutable
 import com.khandanirishta.app.core.data.Reference
 import com.khandanirishta.app.core.data.SectionPayload
 import com.khandanirishta.app.core.network.generated.model.AccountForBody
@@ -40,6 +41,8 @@ import com.khandanirishta.app.core.network.generated.model.ResidencyStatus
 import com.khandanirishta.app.core.network.generated.model.Smoking
 import com.khandanirishta.app.core.network.generated.model.WorkAfterMarriage
 import com.khandanirishta.app.ui.navigation.GateRouter
+import com.khandanirishta.app.ui.text.Subject
+import com.khandanirishta.app.ui.text.subjectOf
 import java.math.BigDecimal
 import java.time.LocalDate
 
@@ -64,6 +67,7 @@ val NOT_WORKING = setOf("student", "homemaker", "not_working")
 
 fun isWorking(employmentType: String?): Boolean = employmentType !in NOT_WORKING
 
+@Immutable
 sealed interface SectionInput
 
 data class AccountForInput(

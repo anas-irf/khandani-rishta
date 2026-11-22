@@ -13,13 +13,13 @@ import com.khandanirishta.app.core.data.ProfileRepository
 import com.khandanirishta.app.core.data.ReferenceRepository
 import com.khandanirishta.app.ui.components.ErrorState
 import com.khandanirishta.app.ui.components.FormSkeleton
+import com.khandanirishta.app.ui.components.LocalOnline
 import com.khandanirishta.app.ui.feature.preferences.PreferencesFields
 import com.khandanirishta.app.ui.feature.preferences.PreferencesFormController
 import com.khandanirishta.app.ui.feature.profilesections.AfterSave
 import com.khandanirishta.app.ui.feature.profilesections.FormMode
 import com.khandanirishta.app.ui.feature.profilesections.RevealEffect
 import com.khandanirishta.app.ui.feature.profilesections.rememberFieldLocator
-import com.khandanirishta.app.ui.feature.profilesections.rememberOnline
 import com.khandanirishta.app.ui.messages.MessageBus
 import com.khandanirishta.app.ui.text.plural
 import dagger.assisted.Assisted
@@ -96,11 +96,14 @@ class PreferencesStepViewModel
 
 /** ONB-09 (07 section 11), with the "{n} must-haves" line above the button (11.3 rule 4). */
 @Composable
-internal fun PreferencesStep(edit: Boolean) {
-    val viewModel = hiltViewModel<PreferencesStepViewModel, PreferencesStepViewModel.Factory> { it.create(edit) }
+internal fun PreferencesStep(
+    edit: Boolean,
+    viewModel: PreferencesStepViewModel =
+        hiltViewModel<PreferencesStepViewModel, PreferencesStepViewModel.Factory> { it.create(edit) },
+) {
     val ui by viewModel.form.state.collectAsStateWithLifecycle()
     val outcome by viewModel.outcome.collectAsStateWithLifecycle()
-    val online = rememberOnline()
+    val online = LocalOnline.current
     val locator = rememberFieldLocator()
     val form = ui.form
 
@@ -132,10 +135,14 @@ internal fun PreferencesStep(edit: Boolean) {
             }
         },
     ) {
-        when {
-            ui.loadError != null && form == null -> ErrorState(ui.loadError, onRetry = viewModel.form::load)
-            form == null -> FormSkeleton(fields = 6)
-            else -> PreferencesFields(ui = ui, locator = locator, onEdit = viewModel.form::edit)
+        StepBody {
+            when {
+                ui.loadError != null && form == null -> ErrorState(ui.loadError, onRetry = viewModel.form::load)
+                form == null -> FormSkeleton(fields = SKELETON_FIELDS)
+                else -> PreferencesFields(ui = ui, locator = locator, onEdit = viewModel.form::edit)
+            }
         }
     }
 }
+
+private const val SKELETON_FIELDS = 6

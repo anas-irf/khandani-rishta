@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Brand colours for places Compose does not draw: launcher icon, splash screen, notifications.
-     The Compose theme (ui/theme/Theme.kt) holds the same values. -->
+<!-- Mehfil Heritage for the places Compose does not draw: the window, the splash screen, the
+     launcher icon, the brand mark and notifications. The same values as ui/theme/Color.kt
+     (DESIGN.md section 2.1). -->
 <resources>
-    <color name="brand_primary">#0F766E</color>
-    <color name="brand_primary_deep">#073F3B</color>
-    <color name="brand_ring_light">#FEF3C7</color>
-    <color name="brand_background">#FAFAF9</color>
+    <color name="brand_background">#FAF6F0</color>
+    <color name="brand_primary">#6E1D34</color>
+    <color name="brand_ornament">#B68B40</color>
 </resources>

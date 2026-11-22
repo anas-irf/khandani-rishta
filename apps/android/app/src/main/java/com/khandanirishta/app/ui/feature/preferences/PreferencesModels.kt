@@ -1,5 +1,6 @@
 package com.khandanirishta.app.ui.feature.preferences
 
+import androidx.compose.runtime.Immutable
 import com.khandanirishta.app.R
 import com.khandanirishta.app.core.data.Reference
 import com.khandanirishta.app.core.network.generated.model.Beard
@@ -58,6 +59,7 @@ const val AGE_MIN = 18
 const val AGE_MAX = 80
 
 /** The partner preferences form (07 section 11). Closed lists are wire codes. */
+@Immutable
 data class PreferencesInput(
     val ageMin: Int = AGE_MIN,
     val ageMax: Int = AGE_MAX,

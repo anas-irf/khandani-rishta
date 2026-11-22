@@ -1,62 +1,36 @@
 package com.khandanirishta.app.ui.feature.search
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.outlined.PersonSearch
 import androidx.compose.material.icons.outlined.RestartAlt
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Tune
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -78,92 +52,119 @@ import com.khandanirishta.app.core.network.generated.model.Smoking
 import com.khandanirishta.app.core.network.generated.model.WorkAfterMarriage
 import com.khandanirishta.app.core.network.serialization.WireEnum
 import com.khandanirishta.app.core.util.Formatters
+import com.khandanirishta.app.ui.components.AdaptiveRow
+import com.khandanirishta.app.ui.components.Band
+import com.khandanirishta.app.ui.components.BandDefaults
+import com.khandanirishta.app.ui.components.BandTone
 import com.khandanirishta.app.ui.components.ChoiceChips
+import com.khandanirishta.app.ui.components.Disclosure
 import com.khandanirishta.app.ui.components.FieldLabel
 import com.khandanirishta.app.ui.components.FieldSupport
+import com.khandanirishta.app.ui.components.IconText
+import com.khandanirishta.app.ui.components.KrActionBar
+import com.khandanirishta.app.ui.components.KrButton
+import com.khandanirishta.app.ui.components.KrButtonSize
+import com.khandanirishta.app.ui.components.KrButtonVariant
+import com.khandanirishta.app.ui.components.KrTextInput
+import com.khandanirishta.app.ui.components.KrTextLink
+import com.khandanirishta.app.ui.components.LocalOnline
 import com.khandanirishta.app.ui.components.MultiSelectField
 import com.khandanirishta.app.ui.components.RangeField
+import com.khandanirishta.app.ui.components.RowDivider
+import com.khandanirishta.app.ui.components.SectionHeading
 import com.khandanirishta.app.ui.components.SelectField
+import com.khandanirishta.app.ui.components.SwitchRow
 import com.khandanirishta.app.ui.text.LocalMe
 import com.khandanirishta.app.ui.text.LocalViewerCountry
 import com.khandanirishta.app.ui.text.plural
+import com.khandanirishta.app.ui.theme.Sizes
+import com.khandanirishta.app.ui.theme.Spacing
 
 /**
- * The filter form of APP-SEARCH (specs/16 section 6.6): the saved searches, the profile code, the
- * filter groups as expandable cards and a bar with "Reset" and "Search" that stays at the bottom.
+ * The filter form of APP-SEARCH (specs/16 section 6.6): the saved searches and the profile code on
+ * sand, the filter groups as flat disclosures on the page, and one "Search" that stays at the
+ * bottom.
  */
 @Composable
 internal fun FilterFormView(
     state: SearchUiState,
     options: FilterOptions,
-    online: Boolean,
     actions: SearchActions,
     modifier: Modifier = Modifier,
 ) {
     val res = LocalResources.current
     val gender = LocalMe.current?.profile?.gender
     val viewerCountry = LocalViewerCountry.current
-    Column(
-        modifier
-            .fillMaxSize()
-            .imePadding(),
-    ) {
+    Column(modifier.fillMaxSize()) {
         LazyColumn(
             modifier =
                 Modifier
                     .weight(1f)
                     .fillMaxWidth(),
-            contentPadding = PaddingValues(top = 4.dp, bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = Spacing.s24),
         ) {
-            if (state.savedSearches.isNotEmpty()) {
-                item(key = "saved") {
-                    SavedSearchRow(
-                        items = state.savedSearches,
-                        online = online,
-                        onRun = actions::runSaved,
-                        onRename = actions::openRename,
-                        onToggleNotify = actions::toggleNotify,
-                        onRemove = actions::askRemove,
+            item(key = "find", contentType = "find") {
+                Band(
+                    tone = BandTone.SAND,
+                    padding = BandDefaults.compactPadding,
+                    maxWidth = Sizes.formWidth,
+                    spacing = Spacing.s20,
+                ) {
+                    if (state.savedSearches.isNotEmpty()) {
+                        SavedSearchList(
+                            items = state.savedSearches,
+                            onRun = actions::runSaved,
+                            onRename = actions::openRename,
+                            onToggleNotify = actions::toggleNotify,
+                            onRemove = actions::askRemove,
+                        )
+                    }
+                    CodeFinder(
+                        error = state.codeError?.resolve(res),
+                        busy = state.findingCode,
+                        onFind = actions::findCode,
+                        onEdit = actions::clearCodeError,
                     )
                 }
             }
-            item(key = "code") {
-                CodeFinder(
-                    error = state.codeError?.resolve(res),
-                    busy = state.findingCode,
-                    online = online,
-                    onFind = actions::findCode,
-                    onEdit = actions::clearCodeError,
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                )
-            }
-            item(key = "filters") {
-                FiltersHeader(
-                    canUsePreferences = state.preferencesLoaded,
-                    onUsePreferences = actions::usePreferences,
-                    modifier = Modifier.padding(start = 16.dp, end = 4.dp),
-                )
-            }
-            items(FilterGroup.entries, key = { it.name }) { group ->
-                FilterGroupCard(
-                    group = group,
-                    count = state.draft.activeCount(group),
-                    hasError = FilterControl.entries.any { it.group == group && state.errorFor(it) != null },
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                ) {
-                    GroupControls(
-                        group = group,
-                        state = state,
-                        options = options,
-                        viewerGender = gender,
-                        viewerCountry = viewerCountry,
-                        actions = actions,
+            item(key = "filters", contentType = "filters") {
+                Band(padding = HeadingPadding, maxWidth = Sizes.formWidth) {
+                    FiltersHeader(
+                        canUsePreferences = state.preferencesLoaded,
+                        onUsePreferences = actions::usePreferences,
+                        onReset = actions::reset,
                     )
+                }
+            }
+            items(FilterGroup.entries, key = { it.name }, contentType = { "group" }) { group ->
+                val count = remember(state.draft, group) { state.draft.activeCount(group) }
+                val hasError =
+                    remember(state.fieldErrors, group) {
+                        FilterControl.entries.any { it.group == group && state.errorFor(it) != null }
+                    }
+                Band(padding = GroupPadding, maxWidth = Sizes.formWidth) {
+                    FilterGroupSection(group = group, count = count, hasError = hasError) {
+                        GroupControls(
+                            group = group,
+                            state = state,
+                            options = options,
+                            viewerGender = gender,
+                            viewerCountry = viewerCountry,
+                            actions = actions,
+                        )
+                    }
                 }
             }
         }
-        FormActionBar(online = online, onReset = actions::reset, onSearch = actions::search)
+        KrActionBar(maxWidth = Sizes.formWidth) {
+            KrButton(
+                text = stringResource(R.string.discovery_search_actions_search),
+                onClick = actions::search,
+                icon = Icons.Outlined.Search,
+                enabled = LocalOnline.current,
+                fullWidth = true,
+            )
+        }
     }
 }
 
@@ -172,149 +173,98 @@ internal fun FilterFormView(
 private fun CodeFinder(
     error: String?,
     busy: Boolean,
-    online: Boolean,
     onFind: (String) -> Unit,
     onEdit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var code by rememberSaveable { mutableStateOf("") }
     val label = stringResource(R.string.discovery_search_code_label)
+    val online = LocalOnline.current
     val focus = LocalFocusManager.current
     val find = {
         focus.clearFocus()
         onFind(code)
     }
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shape = MaterialTheme.shapes.large,
-        shadowElevation = 1.dp,
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Outlined.PersonSearch,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp),
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(label, style = MaterialTheme.typography.labelLarge)
-            }
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
-                    value = code,
-                    onValueChange = { value ->
-                        code = value.take(CODE_INPUT_MAX)
-                        onEdit()
-                    },
-                    placeholder = { Text(stringResource(R.string.discovery_search_code_placeholder)) },
-                    isError = error != null,
-                    singleLine = true,
-                    keyboardOptions =
-                        KeyboardOptions(
-                            capitalization = KeyboardCapitalization.Characters,
-                            autoCorrectEnabled = false,
-                            keyboardType = KeyboardType.Ascii,
-                            imeAction = ImeAction.Search,
-                        ),
-                    keyboardActions = KeyboardActions(onSearch = { find() }),
-                    shape = MaterialTheme.shapes.small,
-                    modifier =
-                        Modifier
-                            .weight(1f)
-                            .semantics { contentDescription = label },
-                )
-                Button(
-                    onClick = find,
-                    enabled = online && !busy,
-                    modifier = Modifier.heightIn(min = 56.dp),
-                ) {
-                    if (busy) {
-                        CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-                    } else {
-                        Text(stringResource(R.string.discovery_search_find))
-                    }
-                }
-            }
-            FieldSupport(
-                helper = null,
-                error = error,
-                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+    Column(modifier.fillMaxWidth()) {
+        IconText(
+            icon = Icons.Outlined.PersonSearch,
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(bottom = Spacing.s8),
+        )
+        AdaptiveRow(Modifier.fillMaxWidth()) {
+            KrTextInput(
+                value = code,
+                onValueChange = { value ->
+                    code = value.take(CODE_INPUT_MAX)
+                    onEdit()
+                },
+                placeholder = stringResource(R.string.discovery_search_code_placeholder),
+                isError = error != null,
+                errorMessage = error,
+                keyboardOptions =
+                    KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Characters,
+                        autoCorrectEnabled = false,
+                        keyboardType = KeyboardType.Ascii,
+                        imeAction = ImeAction.Search,
+                    ),
+                keyboardActions = KeyboardActions(onSearch = { if (online && !busy) find() }),
+                modifier =
+                    Modifier
+                        .grow(INPUT_GROWS, CodeBasis)
+                        .semantics { contentDescription = label },
+            )
+            KrButton(
+                text = stringResource(R.string.discovery_search_find),
+                onClick = find,
+                variant = KrButtonVariant.SECONDARY,
+                size = KrButtonSize.LARGE,
+                enabled = online,
+                loading = busy,
+                modifier = Modifier.grow(FIND_GROWS),
+            )
+        }
+        FieldSupport(helper = null, error = error)
+    }
+}
+
+/** "Search filters", then "Use my preferences" and "Reset" (16 section 6.6, form actions). */
+@Composable
+private fun FiltersHeader(
+    canUsePreferences: Boolean,
+    onUsePreferences: () -> Unit,
+    onReset: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.s4)) {
+        SectionHeading(title = stringResource(R.string.discovery_search_form_label))
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s20),
+            verticalArrangement = Arrangement.spacedBy(Spacing.s8),
+        ) {
+            KrTextLink(
+                text = stringResource(R.string.discovery_search_actions_use_preferences),
+                onClick = onUsePreferences,
+                icon = Icons.Outlined.Tune,
+                enabled = canUsePreferences,
+            )
+            KrTextLink(
+                text = stringResource(R.string.discovery_search_actions_reset),
+                onClick = onReset,
+                icon = Icons.Outlined.RestartAlt,
             )
         }
     }
 }
 
-/** "Search filters" with "Use my preferences" (16 section 6.6, form actions). */
-@Composable
-private fun FiltersHeader(
-    canUsePreferences: Boolean,
-    onUsePreferences: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            stringResource(R.string.discovery_search_form_label),
-            style = MaterialTheme.typography.titleMedium,
-            modifier =
-                Modifier
-                    .weight(1f)
-                    .semantics { heading() },
-        )
-        TextButton(onClick = onUsePreferences, enabled = canUsePreferences) {
-            Icon(Icons.Outlined.Tune, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(6.dp))
-            Text(stringResource(R.string.discovery_search_actions_use_preferences))
-        }
-    }
-}
-
-/** "Reset" clears every control without searching; "Search" runs the form. */
-@Composable
-private fun FormActionBar(
-    online: Boolean,
-    onReset: () -> Unit,
-    onSearch: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shadowElevation = 8.dp,
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Row(
-            Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            OutlinedButton(onClick = onReset, modifier = Modifier.heightIn(min = 52.dp)) {
-                Icon(Icons.Outlined.RestartAlt, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(6.dp))
-                Text(stringResource(R.string.discovery_search_actions_reset))
-            }
-            Button(
-                onClick = onSearch,
-                enabled = online,
-                modifier =
-                    Modifier
-                        .weight(1f)
-                        .heightIn(min = 52.dp),
-            ) {
-                Icon(Icons.Outlined.Search, contentDescription = null, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.discovery_search_actions_search))
-            }
-        }
-    }
-}
-
 /**
- * One group of the form as an expandable card, with its count of active filters in the heading.
+ * One group of the form as a flat disclosure, with its count of active filters in the heading.
  * A group opens by itself when the API named one of its fields.
  */
 @Composable
-private fun FilterGroupCard(
+private fun FilterGroupSection(
     group: FilterGroup,
     count: Int,
     hasError: Boolean,
@@ -325,58 +275,15 @@ private fun FilterGroupCard(
     LaunchedEffect(hasError) {
         if (hasError) expanded = true
     }
-    val rotation by animateFloatAsState(if (expanded) 180f else 0f, label = "chevron")
-    val stateText =
-        stringResource(if (expanded) R.string.search_android_expanded else R.string.search_android_collapsed)
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shape = MaterialTheme.shapes.large,
-        shadowElevation = 1.dp,
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Column {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 56.dp)
-                    .clickable(role = Role.Button) { expanded = !expanded }
-                    .semantics {
-                        heading()
-                        stateDescription = stateText
-                    }.padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    stringResource(group.title),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f),
-                )
-                if (count > 0) {
-                    Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer) {
-                        Text(
-                            plural(R.plurals.discovery_search_group_count, count),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp),
-                        )
-                    }
-                    Spacer(Modifier.width(8.dp))
-                }
-                Icon(
-                    Icons.Filled.ExpandMore,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.rotate(rotation),
-                )
-            }
-            AnimatedVisibility(visible = expanded) {
-                Column(
-                    Modifier.padding(start = 16.dp, end = 16.dp, bottom = 20.dp),
-                    verticalArrangement = Arrangement.spacedBy(20.dp),
-                    content = content,
-                )
-            }
-        }
+    Column(modifier.fillMaxWidth()) {
+        Disclosure(
+            title = stringResource(group.title),
+            expanded = expanded,
+            onExpandedChange = { expanded = it },
+            note = if (count > 0) plural(R.plurals.discovery_search_group_count, count) else null,
+            content = content,
+        )
+        RowDivider()
     }
 }
 
@@ -650,15 +557,17 @@ private fun ColumnScope.GroupControls(
                 onChange = { values -> actions.updateDraft { it.copy(managedBy = values) } },
                 error = error(FilterControl.MANAGED_BY),
             )
-            FilterSwitch(
-                label = stringResource(R.string.discovery_search_fields_has_photo),
+            SwitchRow(
+                title = stringResource(R.string.discovery_search_fields_has_photo),
                 checked = draft.hasPhoto == true,
-                onChange = { on -> actions.updateDraft { it.copy(hasPhoto = on.takeIf { value -> value }) } },
+                onCheckedChange = { on -> actions.updateDraft { it.copy(hasPhoto = on.takeIf { value -> value }) } },
             )
-            FilterSwitch(
-                label = stringResource(R.string.discovery_search_fields_verified_only),
+            SwitchRow(
+                title = stringResource(R.string.discovery_search_fields_verified_only),
                 checked = draft.verifiedOnly == true,
-                onChange = { on -> actions.updateDraft { it.copy(verifiedOnly = on.takeIf { value -> value }) } },
+                onCheckedChange = { on ->
+                    actions.updateDraft { it.copy(verifiedOnly = on.takeIf { value -> value }) }
+                },
             )
             ChoiceField(
                 label = stringResource(R.string.discovery_search_fields_active),
@@ -736,25 +645,12 @@ private fun ChoiceField(
     }
 }
 
-/** A switch with its label as one touch target. */
-@Composable
-private fun FilterSwitch(
-    label: String,
-    checked: Boolean,
-    onChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier
-            .fillMaxWidth()
-            .heightIn(min = 48.dp)
-            .toggleable(value = checked, role = Role.Switch, onValueChange = onChange),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-        Spacer(Modifier.width(12.dp))
-        Switch(checked = checked, onCheckedChange = null)
-    }
-}
-
 private const val CODE_INPUT_MAX = 20
+
+/** The field takes the room that Find leaves; when they stack, each takes the line. */
+private const val INPUT_GROWS = 999f
+private const val FIND_GROWS = 1f
+private val CodeBasis = 144.dp
+private val HeadingPadding =
+    PaddingValues(start = Spacing.gutter, top = Spacing.s24, end = Spacing.gutter, bottom = Spacing.s8)
+private val GroupPadding = PaddingValues(horizontal = Spacing.gutter)

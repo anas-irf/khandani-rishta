@@ -43,6 +43,8 @@ class SentryErrorReporter
                     options.dsn = config.sentryDsn
                     options.environment = if (config.isDebug) "development" else "production"
                     options.release = "com.khandanirishta.app@${config.versionName}+${config.versionCode}"
+                    // Deprecated, but still what keeps personal data out of every event.
+                    @Suppress("DEPRECATION")
                     options.isSendDefaultPii = false
                     options.tracesSampleRate = if (config.isDebug) 1.0 else 0.1
                     // Screenshots and view hierarchies could show member data.

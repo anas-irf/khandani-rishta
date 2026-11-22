@@ -1,8 +1,11 @@
 package com.khandanirishta.app.ui.feature.profilesections
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khandanirishta.app.core.data.ReferenceRepository
+import com.khandanirishta.app.core.network.ApiError
+import com.khandanirishta.app.core.network.apiError
 import com.khandanirishta.app.core.network.generated.model.CityRef
 import com.khandanirishta.app.core.network.generated.model.RegionItem
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,6 +26,7 @@ import javax.inject.Singleton
  * (possibly empty) once "My city is not listed" was chosen, so the rules can tell "nothing
  * chosen" from "name missing".
  */
+@Immutable
 data class PlaceValue(
     val countryCode: String? = null,
     val regionId: Int? = null,
@@ -107,11 +111,14 @@ class CitySearchViewModel
     constructor(
         private val places: PlaceLookup,
     ) : ViewModel() {
+        @Immutable
         data class Search(
             val query: String = "",
             val results: List<CityRef> = emptyList(),
             val loading: Boolean = false,
             val searched: Boolean = false,
+            /** The last search failed: it found nothing out, so it never reads "No city found". */
+            val error: ApiError? = null,
         )
 
         private val state = MutableStateFlow(Search())
@@ -144,17 +151,31 @@ class CitySearchViewModel
             query: String,
             immediate: Boolean = false,
         ) {
-            state.update { it.copy(query = query) }
             job?.cancel()
             val text = query.trim()
-            if (text.length in 1 until MIN_QUERY) return
+            val tooShort = text.length in 1 until MIN_QUERY
+            // Busy from the keystroke, not from the request, so "No city found" cannot flash in between.
+            // A sheet that opens starts empty: what another country found must not be offered for this one.
+            state.update {
+                it.copy(
+                    query = query,
+                    results = if (immediate) emptyList() else it.results,
+                    loading = !tooShort,
+                    error = null,
+                )
+            }
+            if (tooShort) return
             job =
                 viewModelScope.launch {
                     if (!immediate) delay(DEBOUNCE_MS)
-                    state.update { it.copy(loading = true) }
                     val result = places.search(countryCode, regionId, text.ifEmpty { null })
                     state.update {
-                        it.copy(results = result.getOrNull().orEmpty(), loading = false, searched = true)
+                        it.copy(
+                            results = result.getOrNull().orEmpty(),
+                            loading = false,
+                            searched = true,
+                            error = result.exceptionOrNull()?.apiError,
+                        )
                     }
                 }
         }

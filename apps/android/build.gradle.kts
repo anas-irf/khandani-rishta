@@ -19,7 +19,8 @@ val ktlintSettings =
         "ktlint_standard_multiline-expression-wrapping" to "disabled",
         // App-wide values provided once by the root composable (ui/KhandaniApp.kt) and the theme.
         "compose_allowed_composition_locals" to
-            "LocalNavigator,LocalReference,LocalMe,LocalViewerCountry,LocalAppViewModel,LocalExtendedColors",
+            "LocalNavigator,LocalReference,LocalMe,LocalViewerCountry,LocalAppViewModel,LocalExtendedColors," +
+            "LocalTonalColor,LocalOnline,LocalToasts",
     )
 
 // Formatting and style for all Kotlin and Gradle Kotlin DSL files, with ktlint and the

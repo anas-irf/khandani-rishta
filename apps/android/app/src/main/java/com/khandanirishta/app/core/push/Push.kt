@@ -136,6 +136,7 @@ class NotificationFactory
                 NotificationCompat
                     .Builder(context, spec.channel)
                     .setSmallIcon(R.drawable.ic_notification)
+                    .setColor(ContextCompat.getColor(context, R.color.brand_primary))
                     .setContentTitle(title)
                     .setContentText(context.getString(R.string.push_public_text))
                     .build()
@@ -296,6 +297,8 @@ class PushRegistrar
             notifications.removeDevice(token)
         }
 
+        // The API registers devices by FCM token (specs/15), so the app stays on the token calls.
+        @Suppress("DEPRECATION")
         private suspend fun currentToken(): String? {
             if (!isAvailable) return null
             return suspendCancellableCoroutine { continuation ->
@@ -327,6 +330,7 @@ class KhandaniMessagingService : FirebaseMessagingService() {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+    @Suppress("OVERRIDE_DEPRECATION")
     override fun onNewToken(token: String) {
         if (!auth.isSignedIn) return
         scope.launch { registrar.register(token) }

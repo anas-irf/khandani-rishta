@@ -4,53 +4,34 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.PhotoLibrary
-import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,30 +39,46 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.khandanirishta.app.R
 import com.khandanirishta.app.core.data.Lists
-import com.khandanirishta.app.core.network.generated.model.CannotSendDetail
-import com.khandanirishta.app.core.network.generated.model.CannotSendReason
-import com.khandanirishta.app.core.network.generated.model.ManagedBy
 import com.khandanirishta.app.core.network.generated.model.PhotoVisibility
 import com.khandanirishta.app.core.network.generated.model.ProfileDetail
 import com.khandanirishta.app.core.network.generated.model.Tier
-import com.khandanirishta.app.core.util.Formatters
+import com.khandanirishta.app.ui.components.Band
+import com.khandanirishta.app.ui.components.BandTone
+import com.khandanirishta.app.ui.components.BarAction
 import com.khandanirishta.app.ui.components.BlockDialog
-import com.khandanirishta.app.ui.components.CheckboxRow
 import com.khandanirishta.app.ui.components.ConfirmDialog
+import com.khandanirishta.app.ui.components.DeclineDialog
 import com.khandanirishta.app.ui.components.ErrorState
+import com.khandanirishta.app.ui.components.IconText
+import com.khandanirishta.app.ui.components.KrButton
+import com.khandanirishta.app.ui.components.KrButtonVariant
+import com.khandanirishta.app.ui.components.KrDialog
+import com.khandanirishta.app.ui.components.KrMenu
+import com.khandanirishta.app.ui.components.KrMenuDivider
+import com.khandanirishta.app.ui.components.KrMenuItem
+import com.khandanirishta.app.ui.components.LoadingRegion
+import com.khandanirishta.app.ui.components.LocalOnline
 import com.khandanirishta.app.ui.components.NoLongerAvailable
+import com.khandanirishta.app.ui.components.NoteDialog
+import com.khandanirishta.app.ui.components.ProfileTopBar
 import com.khandanirishta.app.ui.components.ReportDialog
-import com.khandanirishta.app.ui.components.ShortlistHeart
 import com.khandanirishta.app.ui.components.SkeletonBox
+import com.khandanirishta.app.ui.components.StateScreen
+import com.khandanirishta.app.ui.components.StatusBanner
+import com.khandanirishta.app.ui.components.StatusTone
+import com.khandanirishta.app.ui.components.bandToneAt
+import com.khandanirishta.app.ui.components.contentWidth
+import com.khandanirishta.app.ui.components.exceptBottom
 import com.khandanirishta.app.ui.feature.home.StatusGate
 import com.khandanirishta.app.ui.navigation.Chat
 import com.khandanirishta.app.ui.navigation.ConnectionDetails
@@ -93,861 +90,536 @@ import com.khandanirishta.app.ui.navigation.Tab
 import com.khandanirishta.app.ui.navigation.Verification
 import com.khandanirishta.app.ui.text.LocalMe
 import com.khandanirishta.app.ui.text.LocalReference
+import com.khandanirishta.app.ui.text.rememberCandidate
 import com.khandanirishta.app.ui.text.text
+import com.khandanirishta.app.ui.theme.ARCH_RATIO
+import com.khandanirishta.app.ui.theme.KrTheme
+import com.khandanirishta.app.ui.theme.LargeArchShape
+import com.khandanirishta.app.ui.theme.Sizes
+import com.khandanirishta.app.ui.theme.Spacing
 
 /** APP-PROFILE: another member's full profile and the place where interest is expressed (16 section 6.7). */
 @Composable
 fun ProfileScreen(
     profileId: String,
     modifier: Modifier = Modifier,
+    viewModel: ProfileViewModel = hiltViewModel<ProfileViewModel, ProfileViewModel.Factory> { it.create(profileId) },
 ) {
-    val viewModel = hiltViewModel<ProfileViewModel, ProfileViewModel.Factory> { it.create(profileId) }
     val state by viewModel.state.collectAsStateWithLifecycle()
     val navigator = LocalNavigator.current
-    val me = LocalMe.current
-    viewModel.supportEmail = me?.config?.supportEmail.orEmpty()
-    var showSend by rememberSaveable { mutableStateOf(false) }
+    val supportEmail =
+        LocalMe.current
+            ?.config
+            ?.supportEmail
+            .orEmpty()
+    SideEffect { viewModel.supportEmail = supportEmail }
+    var sheet by rememberSaveable { mutableStateOf<ProfileSheet?>(null) }
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
                 ProfileEvent.Back -> navigator.back()
                 is ProfileEvent.OpenChat -> navigator.push(Chat(event.connectionId))
-                ProfileEvent.CloseSendDialog -> showSend = false
+                ProfileEvent.CloseSendDialog -> if (sheet == ProfileSheet.SEND) sheet = null
             }
         }
     }
 
-    Box(
-        modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-    ) {
-        when {
-            state.notFound -> {
-                Column(Modifier.statusBarsPadding()) {
-                    FloatingBack(onBack = { navigator.back() }, onPhoto = false)
-                    NoLongerAvailable(
-                        onBack = { navigator.back() },
-                        title = stringResource(R.string.profile_load_not_found),
-                    )
-                }
-            }
-
-            state.statusPanel -> {
-                Column(Modifier.statusBarsPadding()) {
-                    FloatingBack(onBack = { navigator.back() }, onPhoto = false)
-                    StatusGate(GateRouter.Level.BROWSE) { }
-                }
-            }
-
-            state.detail != null -> {
-                ProfileContent(state.detail!!, state, viewModel, onSend = { showSend = true })
-            }
-
-            state.error != null -> {
-                Column(Modifier.statusBarsPadding()) {
-                    FloatingBack(onBack = { navigator.back() }, onPhoto = false)
-                    ErrorState(error = state.error, onRetry = { viewModel.load() })
-                }
-            }
-
-            else -> {
-                ProfileSkeleton(onBack = { navigator.back() })
-            }
+    val detail = state.detail.takeUnless { state.notFound || state.statusPanel }
+    val actions =
+        remember(viewModel, navigator, detail) {
+            ProfileActions(
+                back = { navigator.back() },
+                retry = { viewModel.load() },
+                open = { sheet = it },
+                openPhoto = { navigator.push(PhotoViewer(profileId, it)) },
+                requestPhotos = viewModel::requestPhotos,
+                toggleShortlist = viewModel::toggleShortlist,
+                giveAccess = viewModel::giveAccess,
+                openConnection = {
+                    detail?.relation?.connectionId?.let { navigator.push(ConnectionDetails(it)) }
+                },
+                pass = {
+                    // A pass does not withdraw an open interest, so ask first.
+                    if (detail?.relation?.interest != null) {
+                        sheet = ProfileSheet.PASS_INTEREST
+                    } else {
+                        viewModel.pass(withdrawFirst = false)
+                    }
+                },
+                bar =
+                    ProfileBarActions(
+                        openChat = { detail?.relation?.connectionId?.let { navigator.push(Chat(it)) } },
+                        send = { sheet = ProfileSheet.SEND },
+                        accept = viewModel::accept,
+                        decline = { sheet = ProfileSheet.DECLINE },
+                        withdraw = { sheet = ProfileSheet.WITHDRAW },
+                        verify = { navigator.push(Verification) },
+                        viewSentInterests = { navigator.openOnTab(Tab.INTERESTS, listOf(Interests("sent"))) },
+                    ),
+            )
         }
-    }
 
-    if (state.viewLimit) {
-        AlertDialog(
-            onDismissRequest = { navigator.back() },
-            title = { Text(stringResource(R.string.profile_load_view_limit_title)) },
-            text = { Text(stringResource(R.string.profile_load_view_limit)) },
-            confirmButton = {
-                TextButton(
-                    onClick = { navigator.back() },
-                ) { Text(stringResource(R.string.profile_load_ok)) }
-            },
-        )
-    }
-    val detail = state.detail
-    if (showSend && detail != null) {
-        SendInterestDialog(
-            name = detail.card.displayName,
-            busy = state.busy,
-            error = state.messageError?.resolve(LocalResources.current),
-            onSend = viewModel::sendInterest,
-            onDismiss = { showSend = false },
-        )
-    }
-    state.mutualConnectionId?.let { connectionId ->
-        AlertDialog(
-            onDismissRequest = viewModel::dismissMutual,
-            title = { Text(stringResource(R.string.profile_send_mutual_title)) },
-            text = { Text(stringResource(R.string.profile_send_mutual_text)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.dismissMutual()
-                    navigator.push(Chat(connectionId))
-                }) { Text(stringResource(R.string.profile_send_start_chatting)) }
-            },
-            dismissButton = {
-                TextButton(onClick = viewModel::dismissMutual) { Text(stringResource(R.string.profile_send_later)) }
-            },
-        )
-    }
-    if (state.verifiedOnlyDialog) {
-        AlertDialog(
-            onDismissRequest = viewModel::dismissVerifiedOnly,
-            text = { Text(stringResource(R.string.profile_cannot_send_verified_only)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.dismissVerifiedOnly()
-                    navigator.push(Verification)
-                }) { Text(stringResource(R.string.profile_send_verify_now)) }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = viewModel::dismissVerifiedOnly,
-                ) { Text(stringResource(R.string.common_actions_cancel)) }
-            },
-        )
-    }
-    if (state.noteDialog && detail != null) {
-        NoteDialog(
-            name = detail.card.displayName,
-            busy = state.busy,
-            onSave = viewModel::saveNote,
-            onDismiss = viewModel::closeNoteDialog,
-        )
-    }
-    if (state.reportDone) {
-        AlertDialog(
-            onDismissRequest = viewModel::closeReportDone,
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(stringResource(R.string.shared_report_success))
-                    if (state.reportTip) {
-                        Text(
-                            stringResource(R.string.shared_report_safety_tip),
-                            style = MaterialTheme.typography.bodySmall,
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            ProfileTopBar(
+                name = detail?.card?.displayName,
+                onBack = actions.back,
+                actions =
+                    if (detail == null) {
+                        null
+                    } else {
+                        { TopBarActions(detail, state.ownPhotoVisibility, state.busy, actions) }
+                    },
+            )
+        },
+        bottomBar = {
+            if (detail != null) {
+                ProfileActionBar(detail, busy = state.busy, accepting = state.accepting, actions = actions.bar)
+            }
+        },
+    ) { padding ->
+        val aboveAndBeside = padding.exceptBottom()
+        Box(Modifier.padding(aboveAndBeside).consumeWindowInsets(aboveAndBeside)) {
+            val below = PaddingValues(bottom = padding.calculateBottomPadding())
+            when {
+                state.notFound -> {
+                    StateScreen {
+                        NoLongerAvailable(
+                            onBack = actions.back,
+                            title = stringResource(R.string.profile_load_not_found),
                         )
                     }
                 }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = viewModel::closeReportDone,
-                ) { Text(stringResource(R.string.errors_limit_ok)) }
-            },
+
+                state.statusPanel -> {
+                    StatusGate(GateRouter.Level.BROWSE) {
+                        // The own status allows it again (resumed, or Me was refetched): load once more.
+                        LaunchedEffect(Unit) { viewModel.load() }
+                        if (state.loading) {
+                            ProfileSkeleton()
+                        } else {
+                            StateScreen { ErrorState(error = state.error, onRetry = actions.retry) }
+                        }
+                    }
+                }
+
+                detail != null -> {
+                    ProfileContent(detail = detail, busy = state.busy, actions = actions, contentPadding = below)
+                }
+
+                state.error != null -> {
+                    StateScreen { ErrorState(error = state.error, onRetry = actions.retry) }
+                }
+
+                // Behind the limit dialog the page stays quiet.
+                !state.viewLimit -> {
+                    ProfileSkeleton()
+                }
+            }
+        }
+    }
+
+    val decisions = remember(viewModel) { decisionsOf(viewModel) }
+    if (detail != null) {
+        ProfileSheets(sheet = sheet, detail = detail, state = state, decisions = decisions, onClose = { sheet = null })
+    }
+    ProfileOutcomes(state = state, decisions = decisions, name = detail?.card?.displayName)
+}
+
+/** What the sheets and dialogs of the profile can decide. */
+@Immutable
+private class ProfileDecisions(
+    val send: (message: String) -> Unit,
+    val decline: (alsoBlock: Boolean) -> Unit,
+    val withdraw: () -> Unit,
+    val block: () -> Unit,
+    val report: (reason: String, details: String, alsoBlock: Boolean) -> Unit,
+    val pass: (withdrawFirst: Boolean) -> Unit,
+    val saveNote: (note: String) -> Unit,
+    val closeNote: () -> Unit,
+    val closeReportDone: () -> Unit,
+    val dismissMutual: () -> Unit,
+    val dismissVerifiedOnly: () -> Unit,
+)
+
+private fun decisionsOf(viewModel: ProfileViewModel): ProfileDecisions =
+    ProfileDecisions(
+        send = viewModel::sendInterest,
+        decline = viewModel::decline,
+        withdraw = viewModel::withdraw,
+        block = viewModel::block,
+        report = viewModel::report,
+        pass = viewModel::pass,
+        saveNote = viewModel::saveNote,
+        closeNote = viewModel::closeNoteDialog,
+        closeReportDone = viewModel::closeReportDone,
+        dismissMutual = viewModel::dismissMutual,
+        dismissVerifiedOnly = viewModel::dismissVerifiedOnly,
+    )
+
+internal enum class ProfileSheet { SEND, DECLINE, WITHDRAW, BLOCK, REPORT, PASS_INTEREST }
+
+/** What the parts of the profile can do; they get these instead of the view model. */
+@Immutable
+internal class ProfileActions(
+    val back: () -> Unit,
+    val retry: () -> Unit,
+    val open: (ProfileSheet) -> Unit,
+    val openPhoto: (index: Int) -> Unit,
+    val requestPhotos: () -> Unit,
+    val toggleShortlist: () -> Unit,
+    val giveAccess: () -> Unit,
+    val openConnection: () -> Unit,
+    val pass: () -> Unit,
+    val bar: ProfileBarActions,
+)
+
+/** The bands of a profile as one list: the hero, the parts, then the safety footer. */
+@Composable
+internal fun ProfileContent(
+    detail: ProfileDetail,
+    busy: Boolean,
+    actions: ProfileActions,
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(),
+) {
+    val bands = rememberProfileBands(detail)
+    val footerTone = bandToneAt(bands.size)
+    val colors = MaterialTheme.colorScheme
+    LazyColumn(
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(if (footerTone == BandTone.SAND) colors.surfaceContainer else colors.background),
+        // The bands run on behind the action bar, under its rounded corners.
+        contentPadding = contentPadding,
+    ) {
+        item(key = "hero", contentType = "hero") {
+            ProfileHero(
+                detail = detail,
+                onOpenPhoto = actions.openPhoto,
+                onRequestPhotos = actions.requestPhotos,
+                requesting = busy,
+            )
+        }
+        profileBandItems(detail, bands)
+        item(key = "safety", contentType = "safety") { SafetyFooter(footerTone, actions.open) }
+    }
+}
+
+/** Shortlist and More as icon-and-label buttons (DESIGN.md section 6.16). */
+@Composable
+private fun RowScope.TopBarActions(
+    detail: ProfileDetail,
+    ownVisibility: PhotoVisibility?,
+    busy: Boolean,
+    actions: ProfileActions,
+) {
+    val relation = detail.relation
+    val connected = relation.tier == Tier.CONNECTION
+    val ready = LocalOnline.current && !busy
+    if (!connected) {
+        val shortlisted = relation.isShortlisted
+        val label = if (shortlisted) R.string.shared_card_shortlisted else R.string.shared_card_shortlist
+        BarAction(
+            icon = if (shortlisted) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+            label = stringResource(label),
+            onClick = actions.toggleShortlist,
+            enabled = LocalOnline.current,
+            tint = if (shortlisted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.semantics { selected = shortlisted },
+        )
+    }
+    val name = detail.card.displayName
+    val menuLabel = text(R.string.profile_actions_menu, "name" to name)
+    var open by remember { mutableStateOf(false) }
+
+    fun choose(action: () -> Unit) {
+        open = false
+        action()
+    }
+    Box {
+        BarAction(
+            icon = Icons.Outlined.MoreHoriz,
+            label = stringResource(R.string.shared_card_more),
+            onClick = { open = true },
+            modifier = Modifier.semantics { contentDescription = menuLabel },
+        )
+        KrMenu(expanded = open, onDismissRequest = { open = false }) {
+            val interested = relation.tier == Tier.INTEREST_FROM_OWNER || relation.tier == Tier.INTEREST_TO_OWNER
+            val related = connected || interested
+            val canGrant = related && ownVisibility != null && ownVisibility != PhotoVisibility.MEMBERS
+            val canPass = relation.tier == Tier.MEMBER
+            if (connected && relation.connectionId != null) {
+                KrMenuItem(
+                    text = stringResource(R.string.profile_actions_connection_details),
+                    icon = Icons.Outlined.Info,
+                    onClick = { choose(actions.openConnection) },
+                )
+            }
+            if (canGrant) {
+                val grant =
+                    rememberCandidate().pick(
+                        R.string.profile_actions_let_see_photos,
+                        R.string.profile_actions_let_see_photos_male,
+                        R.string.profile_actions_let_see_photos_female,
+                    )
+                KrMenuItem(
+                    text = text(grant, "name" to name),
+                    icon = Icons.Outlined.PhotoLibrary,
+                    enabled = ready,
+                    onClick = { choose(actions.giveAccess) },
+                )
+            }
+            if (canPass) {
+                KrMenuItem(
+                    text = stringResource(R.string.profile_actions_not_interested),
+                    icon = Icons.Outlined.VisibilityOff,
+                    enabled = ready,
+                    onClick = { choose(actions.pass) },
+                )
+            }
+            if (connected || canGrant || canPass) KrMenuDivider()
+            KrMenuItem(
+                text = stringResource(R.string.profile_actions_report),
+                icon = Icons.Outlined.Flag,
+                onClick = { choose { actions.open(ProfileSheet.REPORT) } },
+            )
+            KrMenuItem(
+                text = stringResource(R.string.profile_actions_block),
+                icon = Icons.Outlined.Block,
+                onClick = { choose { actions.open(ProfileSheet.BLOCK) } },
+            )
+        }
+    }
+}
+
+/** Block 12: report and block, and the money warning. */
+@Composable
+private fun SafetyFooter(
+    tone: BandTone,
+    onOpen: (ProfileSheet) -> Unit,
+) {
+    Band(tone = tone, maxWidth = Sizes.contentWidth, spacing = Spacing.s16) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s12),
+            verticalArrangement = Arrangement.spacedBy(Spacing.s12),
+        ) {
+            KrButton(
+                text = stringResource(R.string.profile_safety_report),
+                onClick = { onOpen(ProfileSheet.REPORT) },
+                variant = KrButtonVariant.SECONDARY,
+                icon = Icons.Outlined.Flag,
+            )
+            KrButton(
+                text = stringResource(R.string.profile_safety_block),
+                onClick = { onOpen(ProfileSheet.BLOCK) },
+                variant = KrButtonVariant.SECONDARY,
+                icon = Icons.Outlined.Block,
+            )
+        }
+        IconText(
+            icon = Icons.Outlined.WarningAmber,
+            text = stringResource(R.string.profile_safety_money),
+            color = KrTheme.colors.textSecondary,
+            tint = MaterialTheme.colorScheme.primary,
+            gap = Spacing.s12,
         )
     }
 }
 
+/** The sheet or dialog the member opened (rule G8). */
 @Composable
-private fun ProfileContent(
+private fun ProfileSheets(
+    sheet: ProfileSheet?,
     detail: ProfileDetail,
     state: ProfileUiState,
-    viewModel: ProfileViewModel,
-    onSend: () -> Unit,
+    decisions: ProfileDecisions,
+    onClose: () -> Unit,
 ) {
-    val navigator = LocalNavigator.current
-    val listState = rememberLazyListState()
-    val solidBar by remember {
-        derivedStateOf {
-            listState.firstVisibleItemIndex > 0 ||
-                listState.firstVisibleItemScrollOffset > 600
-        }
-    }
-    var dialog by rememberSaveable { mutableStateOf<String?>(null) }
     val name = detail.card.displayName
-    val reference = LocalReference.current
-
-    Box(Modifier.fillMaxSize()) {
-        Column(Modifier.fillMaxSize()) {
-            LazyColumn(state = listState, modifier = Modifier.weight(1f)) {
-                item(key = "body") {
-                    ProfileDetailBody(
-                        detail = detail,
-                        onPhotoClick = { index -> navigator.push(PhotoViewer(detail.card.id, index)) },
-                        onRequestPhotos = viewModel::requestPhotos,
-                    )
-                }
-                item(key = "safety") {
-                    SafetyFooter(onReport = { dialog = DIALOG_REPORT }, onBlock = { dialog = DIALOG_BLOCK })
-                }
-            }
-            ActionBar(
-                detail = detail,
+    when (sheet) {
+        ProfileSheet.SEND -> {
+            SendInterestSheet(
+                name = name,
                 busy = state.busy,
-                onSend = onSend,
-                onAccept = viewModel::accept,
-                onDecline = { dialog = DIALOG_DECLINE },
-                onWithdraw = { dialog = DIALOG_WITHDRAW },
-                onToggleShortlist = viewModel::toggleShortlist,
-                onPass = {
-                    dialog =
-                        if (detail.relation.tier == Tier.INTEREST_TO_OWNER) DIALOG_PASS_INTEREST else DIALOG_PASS
-                },
+                error = state.messageError?.resolve(LocalResources.current),
+                onSend = decisions.send,
+                onDismiss = onClose,
             )
         }
-        TopOverlay(
-            solid = solidBar,
-            title = name,
-            onBack = { navigator.back() },
-            menu = { close ->
-                if (detail.relation.tier == Tier.CONNECTION) {
-                    MenuItem(stringResource(R.string.profile_actions_connection_details), Icons.Outlined.Info) {
-                        close()
-                        detail.relation.connectionId?.let { navigator.push(ConnectionDetails(it)) }
-                    }
-                }
-                val related =
-                    detail.relation.tier in setOf(Tier.CONNECTION, Tier.INTEREST_FROM_OWNER, Tier.INTEREST_TO_OWNER)
-                if (related && state.ownPhotoVisibility != null &&
-                    state.ownPhotoVisibility != PhotoVisibility.MEMBERS
-                ) {
-                    MenuItem(
-                        text(R.string.profile_actions_let_see_photos, "name" to name),
-                        Icons.Outlined.PhotoLibrary,
-                    ) {
-                        close()
-                        viewModel.giveAccess()
-                    }
-                }
-                if (detail.relation.tier == Tier.MEMBER) {
-                    MenuItem(stringResource(R.string.profile_actions_not_interested), Icons.Outlined.VisibilityOff) {
-                        close()
-                        dialog = DIALOG_PASS
-                    }
-                }
-                MenuItem(stringResource(R.string.profile_actions_report), Icons.Outlined.Flag) {
-                    close()
-                    dialog = DIALOG_REPORT
-                }
-                MenuItem(stringResource(R.string.profile_actions_block), Icons.Outlined.Block, destructive = true) {
-                    close()
-                    dialog = DIALOG_BLOCK
-                }
-            },
-        )
-    }
 
-    when (dialog) {
-        DIALOG_DECLINE -> {
-            DeclineDialog(name = name, busy = state.busy, onConfirm = { block ->
-                dialog = null
-                viewModel.decline(block)
-            }, onDismiss = { dialog = null })
+        ProfileSheet.DECLINE -> {
+            DeclineDialog(
+                name = name,
+                busy = state.busy,
+                onConfirm = { alsoBlock ->
+                    onClose()
+                    decisions.decline(alsoBlock)
+                },
+                onDismiss = onClose,
+            )
         }
 
-        DIALOG_WITHDRAW -> {
+        ProfileSheet.WITHDRAW -> {
             ConfirmDialog(
                 title = stringResource(R.string.profile_withdraw_title),
                 text = stringResource(R.string.profile_withdraw_text),
                 confirmLabel = stringResource(R.string.profile_withdraw_confirm),
+                variant = KrButtonVariant.INK,
+                busy = state.busy,
                 onConfirm = {
-                    dialog = null
-                    viewModel.withdraw()
+                    onClose()
+                    decisions.withdraw()
                 },
-                onDismiss = { dialog = null },
-                destructive = true,
+                onDismiss = onClose,
             )
         }
 
-        DIALOG_BLOCK -> {
-            BlockDialog(name = name, onConfirm = {
-                dialog = null
-                viewModel.block()
-            }, onDismiss = { dialog = null })
+        ProfileSheet.BLOCK -> {
+            BlockDialog(
+                name = name,
+                busy = state.busy,
+                onConfirm = {
+                    onClose()
+                    decisions.block()
+                },
+                onDismiss = onClose,
+            )
         }
 
-        DIALOG_REPORT -> {
+        ProfileSheet.REPORT -> {
             ReportDialog(
                 name = name,
-                reasons = reference.options(Lists.REPORT_REASON),
+                reasons = LocalReference.current.options(Lists.REPORT_REASON),
                 busy = state.busy,
                 onSubmit = { reason, details, alsoBlock ->
-                    dialog = null
-                    viewModel.report(reason, details, alsoBlock)
+                    onClose()
+                    decisions.report(reason, details, alsoBlock)
                 },
-                onDismiss = { dialog = null },
+                onDismiss = onClose,
             )
         }
 
-        DIALOG_PASS -> {
-            dialog = null
-            viewModel.pass(withdrawFirst = false)
-        }
-
-        DIALOG_PASS_INTEREST -> {
-            AlertDialog(
-                onDismissRequest = { dialog = null },
-                text = { Text(text(R.string.profile_pass_open_interest, "name" to name)) },
-                confirmButton = {
-                    TextButton(onClick = {
-                        dialog = null
-                        viewModel.pass(withdrawFirst = true)
-                    }) { Text(stringResource(R.string.profile_pass_withdraw)) }
+        ProfileSheet.PASS_INTEREST -> {
+            KrDialog(
+                text = text(R.string.profile_pass_open_interest, "name" to name),
+                confirmLabel = stringResource(R.string.profile_pass_withdraw),
+                confirmEnabled = LocalOnline.current,
+                onConfirm = {
+                    onClose()
+                    decisions.pass(true)
                 },
-                dismissButton = {
-                    TextButton(onClick = {
-                        dialog = null
-                        viewModel.pass(withdrawFirst = false)
-                    }) { Text(stringResource(R.string.profile_pass_keep)) }
+                dismissLabel = stringResource(R.string.profile_pass_keep),
+                onDismiss = {
+                    onClose()
+                    decisions.pass(false)
                 },
+                onDismissRequest = onClose,
             )
         }
+
+        null -> {}
     }
 }
 
-/** The action bar of 16 section 6.7, decided by `relation` from top to bottom. */
+/** The dialogs that follow from what the server answered. */
 @Composable
-private fun ActionBar(
-    detail: ProfileDetail,
-    busy: Boolean,
-    onSend: () -> Unit,
-    onAccept: () -> Unit,
-    onDecline: () -> Unit,
-    onWithdraw: () -> Unit,
-    onToggleShortlist: () -> Unit,
-    onPass: () -> Unit,
+private fun ProfileOutcomes(
+    state: ProfileUiState,
+    decisions: ProfileDecisions,
+    name: String?,
 ) {
     val navigator = LocalNavigator.current
-    val relation = detail.relation
-    val name = detail.card.displayName
-    val me = LocalMe.current
-    Surface(shadowElevation = 12.dp, color = MaterialTheme.colorScheme.surfaceContainerLowest) {
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .navigationBarsPadding()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+    if (state.viewLimit && state.detail == null) {
+        KrDialog(
+            title = stringResource(R.string.profile_load_view_limit_title),
+            text = stringResource(R.string.profile_load_view_limit),
+            confirmLabel = stringResource(R.string.profile_load_ok),
+            onConfirm = { navigator.back() },
+            onDismissRequest = { navigator.back() },
+        )
+    }
+    state.mutualConnectionId?.let { connectionId ->
+        KrDialog(
+            title = stringResource(R.string.profile_send_mutual_title),
+            text = stringResource(R.string.profile_send_mutual_text),
+            confirmLabel = stringResource(R.string.profile_send_start_chatting),
+            onConfirm = {
+                decisions.dismissMutual()
+                navigator.push(Chat(connectionId))
+            },
+            dismissLabel = stringResource(R.string.profile_send_later),
+            onDismissRequest = decisions.dismissMutual,
+        )
+    }
+    if (state.verifiedOnlyDialog) {
+        KrDialog(
+            text = stringResource(R.string.profile_cannot_send_verified_only),
+            confirmLabel = stringResource(R.string.profile_send_verify_now),
+            onConfirm = {
+                decisions.dismissVerifiedOnly()
+                navigator.push(Verification)
+            },
+            dismissLabel = stringResource(R.string.common_actions_cancel),
+            onDismissRequest = decisions.dismissVerifiedOnly,
+        )
+    }
+    if (state.noteDialog && name != null) {
+        NoteDialog(name = name, busy = state.busy, onSave = decisions.saveNote, onDismiss = decisions.closeNote)
+    }
+    if (state.reportDone) {
+        KrDialog(
+            text = stringResource(R.string.shared_report_success),
+            confirmLabel = stringResource(R.string.errors_limit_ok),
+            onConfirm = decisions.closeReportDone,
+            onDismissRequest = decisions.closeReportDone,
         ) {
-            if (relation.tier == Tier.INTEREST_FROM_OWNER) {
-                Text(text(R.string.profile_received_text, "name" to name), style = MaterialTheme.typography.titleSmall)
-                relation.interest?.message?.let {
-                    Text(
-                        "“$it”",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                relation.interest?.expiresAt?.let {
-                    Text(
-                        text(R.string.profile_received_expires, "date" to Formatters.date(it)),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.tertiary,
-                    )
-                }
-            }
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                when {
-                    relation.tier == Tier.CONNECTION -> {
-                        PrimaryAction(
-                            label = stringResource(R.string.profile_actions_open_chat),
-                            onClick = { relation.connectionId?.let { navigator.push(Chat(it)) } },
-                            modifier = Modifier.weight(1f),
-                            icon = { Icon(Icons.AutoMirrored.Outlined.Chat, contentDescription = null) },
-                        )
-                    }
-
-                    relation.tier == Tier.INTEREST_FROM_OWNER -> {
-                        OutlinedButton(
-                            onClick = onDecline,
-                            enabled = !busy,
-                            modifier = Modifier.heightIn(min = 52.dp),
-                        ) {
-                            Text(stringResource(R.string.profile_actions_decline))
-                        }
-                        PrimaryAction(
-                            stringResource(R.string.profile_actions_accept),
-                            onAccept,
-                            Modifier.weight(1f),
-                            busy = busy,
-                        )
-                    }
-
-                    relation.tier == Tier.INTEREST_TO_OWNER -> {
-                        PrimaryAction(
-                            stringResource(R.string.profile_actions_interest_sent),
-                            {},
-                            Modifier.weight(1f),
-                            enabled = false,
-                        )
-                        OutlinedButton(
-                            onClick = onWithdraw,
-                            enabled = !busy,
-                            modifier = Modifier.heightIn(min = 52.dp),
-                        ) {
-                            Text(stringResource(R.string.profile_actions_withdraw))
-                        }
-                    }
-
-                    relation.canSendInterest -> {
-                        PrimaryAction(
-                            label = stringResource(R.string.profile_actions_send_interest),
-                            onClick = onSend,
-                            modifier = Modifier.weight(1f),
-                            busy = busy,
-                            icon = { Icon(Icons.Filled.Favorite, contentDescription = null) },
-                        )
-                    }
-
-                    else -> {
-                        val label =
-                            when (relation.cannotSendReason) {
-                                CannotSendReason.ALREADY_PENDING -> R.string.profile_actions_interest_sent
-                                CannotSendReason.ALREADY_CONNECTED -> R.string.profile_actions_connected
-                                else -> R.string.profile_actions_send_interest
-                            }
-                        PrimaryAction(stringResource(label), {}, Modifier.weight(1f), enabled = false)
-                    }
-                }
-                if (relation.tier != Tier.CONNECTION) {
-                    ShortlistHeart(shortlisted = relation.isShortlisted, name = name, onToggle = onToggleShortlist)
-                }
-                if (relation.tier == Tier.MEMBER) {
-                    IconButton(onClick = onPass, enabled = !busy) {
-                        Icon(
-                            Icons.Outlined.VisibilityOff,
-                            contentDescription = stringResource(R.string.profile_actions_not_interested),
-                        )
-                    }
-                }
-            }
-            if (relation.tier == Tier.MEMBER && !relation.canSendInterest) {
-                CannotSendLine(detail, verified = me?.profile?.badges?.isNotEmpty() == true, onVerify = {
-                    navigator.push(Verification)
-                }, onViewSentInterests = {
-                    navigator.openOnTab(Tab.INTERESTS, listOf(Interests("sent")))
-                })
+            if (state.reportTip) {
+                StatusBanner(text = stringResource(R.string.shared_report_safety_tip), tone = StatusTone.WARNING)
             }
         }
     }
 }
 
+/** Loading: the gallery, the header and three blocks, in the shape of the profile. */
 @Composable
-private fun CannotSendLine(
-    detail: ProfileDetail,
-    verified: Boolean,
-    onVerify: () -> Unit,
-    onViewSentInterests: () -> Unit,
-) {
-    val relation = detail.relation
-    val (line, link) =
-        when (relation.cannotSendReason) {
-            CannotSendReason.COOLDOWN -> {
-                text(
-                    R.string.profile_cannot_send_cooldown,
-                    "date" to (relation.canSendInterestAfter?.let { Formatters.date(it) } ?: ""),
-                ) to null
-            }
-
-            CannotSendReason.DAILY_LIMIT -> {
-                stringResource(R.string.profile_cannot_send_daily_limit) to
-                    if (!verified) stringResource(R.string.profile_cannot_send_verify_more) to onVerify else null
-            }
-
-            CannotSendReason.PENDING_LIMIT -> {
-                stringResource(R.string.profile_cannot_send_pending_limit) to
-                    (stringResource(R.string.profile_cannot_send_view_sent) to onViewSentInterests)
-            }
-
-            CannotSendReason.CONNECTION_LIMIT -> {
-                stringResource(R.string.profile_cannot_send_connection_limit) to null
-            }
-
-            CannotSendReason.NOT_PERMITTED_BY_MEMBER -> {
-                if (relation.cannotSendDetail == CannotSendDetail.VERIFIED_ONLY) {
-                    stringResource(R.string.profile_cannot_send_verified_only) to
-                        (stringResource(R.string.profile_cannot_send_get_verified) to onVerify)
-                } else {
-                    stringResource(R.string.profile_cannot_send_preference_match) to null
-                }
-            }
-
-            CannotSendReason.OWN_PROFILE_NOT_ACTIVE -> {
-                stringResource(R.string.profile_cannot_send_own_profile_not_active) to
-                    null
-            }
-
-            else -> {
-                null to null
-            }
-        }
-    if (line == null) return
-    Column {
-        Text(line, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        if (link != null) {
-            TextButton(
-                onClick = link.second,
-                contentPadding = androidx.compose.foundation.layout
-                    .PaddingValues(horizontal = 0.dp),
-            ) {
-                Text(link.first)
-            }
-        }
-    }
-}
-
-@Composable
-private fun PrimaryAction(
-    label: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    busy: Boolean = false,
-    icon: (@Composable () -> Unit)? = null,
-) {
-    Button(onClick = onClick, enabled = enabled && !busy, modifier = modifier.heightIn(min = 52.dp)) {
-        if (busy) {
-            CircularProgressIndicator(
-                Modifier.size(20.dp),
-                strokeWidth = 2.dp,
-                color = MaterialTheme.colorScheme.onPrimary,
-            )
-        } else {
-            if (icon != null) {
-                icon()
-                Spacer(Modifier.width(8.dp))
-            }
-            Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        }
-    }
-}
-
-/** The back arrow and menu over the gallery; solid once the gallery has scrolled away. */
-@Composable
-private fun TopOverlay(
-    solid: Boolean,
-    title: String,
-    onBack: () -> Unit,
-    menu: @Composable (close: () -> Unit) -> Unit,
-) {
-    var open by remember { mutableStateOf(false) }
-    Surface(
-        color = if (solid) MaterialTheme.colorScheme.surfaceContainerLowest else Color.Transparent,
-        shadowElevation = if (solid) 3.dp else 0.dp,
-    ) {
-        Row(
+private fun ProfileSkeleton() {
+    LoadingRegion(
+        modifier =
             Modifier
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .padding(horizontal = 8.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            FloatingBack(onBack = onBack, onPhoto = !solid)
-            Text(
-                if (solid) title else "",
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f),
-            )
-            Box {
-                IconButton(
-                    onClick = { open = true },
-                    colors =
-                        IconButtonDefaults.iconButtonColors(
-                            containerColor = if (solid) Color.Transparent else Color.Black.copy(alpha = 0.35f),
-                            contentColor = if (solid) MaterialTheme.colorScheme.onSurface else Color.White,
-                        ),
-                ) {
-                    Icon(
-                        Icons.Outlined.MoreVert,
-                        contentDescription = text(
-                            R.string.profile_actions_menu,
-                            "name" to title,
-                        ),
-                    )
-                }
-                DropdownMenu(expanded = open, onDismissRequest = { open = false }) { menu { open = false } }
-            }
-        }
-    }
-}
-
-@Composable
-private fun FloatingBack(
-    onBack: () -> Unit,
-    onPhoto: Boolean,
-) {
-    IconButton(
-        onClick = onBack,
-        colors =
-            IconButtonDefaults.iconButtonColors(
-                containerColor = if (onPhoto) Color.Black.copy(alpha = 0.35f) else Color.Transparent,
-                contentColor = if (onPhoto) Color.White else MaterialTheme.colorScheme.onSurface,
-            ),
-    ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.a11y_back)) }
-}
-
-@Composable
-private fun MenuItem(
-    label: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    destructive: Boolean = false,
-    onClick: () -> Unit,
-) {
-    DropdownMenuItem(
-        text = {
-            Text(
-                label,
-                color = if (destructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
-            )
-        },
-        leadingIcon = {
-            Icon(
-                icon,
-                contentDescription = null,
-                tint = if (destructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        },
-        onClick = onClick,
-    )
-}
-
-/** Block 12: report and block links, and the money warning. */
-@Composable
-private fun SafetyFooter(
-    onReport: () -> Unit,
-    onBlock: () -> Unit,
-) {
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
+        spacing = 0.dp,
     ) {
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TextButton(onClick = onReport) {
-                Text(stringResource(R.string.profile_safety_report), color = MaterialTheme.colorScheme.error)
-            }
-            TextButton(onClick = onBlock) {
-                Text(stringResource(R.string.profile_safety_block), color = MaterialTheme.colorScheme.error)
-            }
-        }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                Icons.Outlined.Shield,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(16.dp),
-            )
-            Spacer(Modifier.width(6.dp))
-            Text(
-                stringResource(R.string.profile_safety_money),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        Spacer(Modifier.height(16.dp))
-    }
-}
-
-/** "Send an interest to {name}" (16 section 6.7 send dialog). */
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun SendInterestDialog(
-    name: String,
-    busy: Boolean,
-    error: String?,
-    onSend: (String) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    val me = LocalMe.current
-    var message by rememberSaveable { mutableStateOf("") }
-    val templates =
-        buildList {
-            add(R.string.profile_send_template_1)
-            add(R.string.profile_send_template_2)
-            if (me?.profile?.managedBy != null &&
-                me.profile.managedBy != ManagedBy.SELF
-            ) {
-                add(R.string.profile_send_template_3)
-            }
-        }
-    val templateTexts = templates.map { stringResource(it) }
-    AlertDialog(
-        onDismissRequest = { if (!busy) onDismiss() },
-        title = { Text(text(R.string.profile_send_title, "name" to name)) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                me?.usage?.let { usage ->
-                    Text(
-                        text(
-                            R.string.profile_send_left,
-                            "left" to (usage.interestsPerDay - usage.interestsSentToday).coerceAtLeast(0),
-                            "total" to usage.interestsPerDay,
-                        ),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.tertiary,
-                    )
-                }
-                Text(
-                    stringResource(R.string.profile_send_templates_label),
-                    style = MaterialTheme.typography.labelMedium,
-                )
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    FilterChip(selected = message.isEmpty(), onClick = {
-                        message = ""
-                    }, label = { Text(stringResource(R.string.profile_send_template_none)) })
-                    templateTexts.forEach { template ->
-                        FilterChip(
-                            selected = message == template,
-                            onClick = { message = template },
-                            label = {
-                                Text(
-                                    template,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.width(180.dp),
-                                )
-                            },
-                        )
-                    }
-                }
-                OutlinedTextField(
-                    value = message,
-                    onValueChange = { message = it.take(MESSAGE_MAX) },
-                    label = { Text(stringResource(R.string.profile_send_message_label)) },
-                    isError = error != null,
-                    supportingText = {
-                        Text(
-                            error
-                                ?: (
-                                    stringResource(R.string.profile_send_helper) + "  " +
-                                        text(
-                                            R.string.profile_send_count,
-                                            "count" to message.length,
-                                            "max" to MESSAGE_MAX,
-                                        )
-                                ),
-                        )
-                    },
-                    minLines = 3,
-                    modifier = Modifier.fillMaxWidth(),
+        Band(tone = BandTone.SAND, spacing = Spacing.s16) {
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                SkeletonBox(
+                    modifier =
+                        Modifier
+                            .contentWidth(Sizes.galleryMax)
+                            .padding(horizontal = Spacing.s24)
+                            .aspectRatio(ARCH_RATIO),
+                    shape = LargeArchShape,
                 )
             }
-        },
-        confirmButton = {
-            Button(onClick = { onSend(message) }, enabled = !busy) {
-                if (busy) {
-                    CircularProgressIndicator(
-                        Modifier.size(18.dp),
-                        strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                    )
-                } else {
-                    Text(stringResource(R.string.profile_send_submit))
+            SkeletonBox(Modifier.fillMaxWidth(NAME_SHARE).height(Spacing.s40))
+            SkeletonBox(Modifier.fillMaxWidth(LINE_SHARE).height(Spacing.s20))
+        }
+        repeat(SKELETON_BLOCKS) { index ->
+            Band(tone = bandToneAt(index)) {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.s12)) {
+                    SkeletonBox(Modifier.fillMaxWidth(NAME_SHARE).height(Spacing.s24))
+                    SkeletonBox(Modifier.fillMaxWidth().height(Spacing.s16))
+                    SkeletonBox(Modifier.fillMaxWidth(LINE_SHARE).height(Spacing.s16))
                 }
             }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !busy) { Text(stringResource(R.string.common_actions_cancel)) }
-        },
-    )
-}
-
-@Composable
-private fun DeclineDialog(
-    name: String,
-    busy: Boolean,
-    onConfirm: (Boolean) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    var block by rememberSaveable { mutableStateOf(false) }
-    ConfirmDialog(
-        title = stringResource(R.string.profile_decline_title),
-        text = text(R.string.profile_decline_text, "name" to name),
-        confirmLabel = stringResource(R.string.profile_decline_confirm),
-        onConfirm = { onConfirm(block) },
-        onDismiss = onDismiss,
-        destructive = true,
-        busy = busy,
-        extra = {
-            CheckboxRow(
-                checked = block,
-                onCheckedChange = { block = it },
-                label = text(
-                    R.string.profile_decline_also_block,
-                    "name" to name,
-                ),
-            )
-        },
-    )
-}
-
-@Composable
-private fun NoteDialog(
-    name: String,
-    busy: Boolean,
-    onSave: (String) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    var note by rememberSaveable { mutableStateOf("") }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(text(R.string.discovery_shortlist_note_title, "name" to name)) },
-        text = {
-            OutlinedTextField(
-                value = note,
-                onValueChange = { note = it.take(NOTE_MAX) },
-                label = { Text(stringResource(R.string.discovery_shortlist_note_label)) },
-                supportingText = {
-                    Text(
-                        text(
-                            R.string.discovery_shortlist_note_count,
-                            "count" to note.length,
-                            "max" to NOTE_MAX,
-                        ),
-                    )
-                },
-                minLines = 2,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { onSave(note) },
-                enabled = !busy,
-            ) { Text(stringResource(R.string.common_actions_save)) }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_actions_cancel)) } },
-    )
-}
-
-@Composable
-private fun ProfileSkeleton(onBack: () -> Unit) {
-    Column(Modifier.fillMaxSize()) {
-        Box {
-            SkeletonBox(
-                Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(0.82f),
-                corner = 0.dp,
-            )
-            Box(Modifier.statusBarsPadding().padding(8.dp)) { FloatingBack(onBack = onBack, onPhoto = true) }
-        }
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            SkeletonBox(Modifier.fillMaxWidth(0.6f).height(28.dp))
-            SkeletonBox(Modifier.fillMaxWidth(0.4f).height(16.dp))
-            repeat(3) { SkeletonBox(Modifier.fillMaxWidth().height(120.dp), corner = 18.dp) }
         }
     }
 }
 
-private const val DIALOG_DECLINE = "decline"
-private const val DIALOG_WITHDRAW = "withdraw"
-private const val DIALOG_BLOCK = "block"
-private const val DIALOG_REPORT = "report"
-private const val DIALOG_PASS = "pass"
-private const val DIALOG_PASS_INTEREST = "pass_interest"
-private const val MESSAGE_MAX = 300
-private const val NOTE_MAX = 300
+private const val SKELETON_BLOCKS = 3
+private const val NAME_SHARE = 0.6f
+private const val LINE_SHARE = 0.8f

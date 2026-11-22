@@ -1,5 +1,6 @@
 package com.khandanirishta.app.ui.feature.settings
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khandanirishta.app.core.data.ProfileRepository
@@ -46,6 +47,7 @@ enum class PrivacyControl {
     SEND_READ_RECEIPTS,
 }
 
+@Immutable
 data class PrivacyUiState(
     /** The saved settings; `null` until the first load. */
     val privacy: Privacy? = null,

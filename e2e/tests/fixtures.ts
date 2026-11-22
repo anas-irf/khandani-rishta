@@ -4,17 +4,34 @@ import { test as base, expect } from '@playwright/test'
 /** WCAG 2.2 level A and AA rules, the usual accessibility target for public sites. */
 const wcagTags = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']
 
-interface Fixtures {
+/** Options that a project sets in playwright.config.ts. */
+export interface Options {
+  /** When set, the page's clock starts at this time and runs on from there. */
+  startTime: string | undefined
+}
+
+interface Fixtures extends Options {
   /** Page errors matching one of these patterns don't fail the test. */
   allowedPageErrors: RegExp[]
   /** Builds an axe accessibility scan of the current page. */
   makeAxeBuilder: () => AxeBuilder
   /** Fails the test when the page throws an uncaught exception or logs a console error. */
   failOnPageErrors: undefined
+  /** Applies `startTime` before the first page loads. */
+  startClock: undefined
 }
 
 export const test = base.extend<Fixtures>({
   allowedPageErrors: [[], { option: true }],
+  startTime: [undefined, { option: true }],
+
+  startClock: [
+    async ({ page, startTime }, provide) => {
+      if (startTime) await page.clock.install({ time: startTime })
+      await provide(undefined)
+    },
+    { auto: true },
+  ],
 
   makeAxeBuilder: async ({ page }, provide) => {
     await provide(() => new AxeBuilder({ page }).withTags(wcagTags))

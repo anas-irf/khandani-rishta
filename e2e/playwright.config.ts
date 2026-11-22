@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test'
+import type { Options } from './tests/fixtures'
 
 const isCI = Boolean(process.env.CI)
 
@@ -18,8 +19,14 @@ const baseURL = deployedUrl ?? `http://localhost:${port}`
 const mockPort = Number(process.env.E2E_MOCK_PORT ?? 3100)
 const mockURL = `http://localhost:${mockPort}`
 const runJourneys = !deployedUrl
+/**
+ * When the journeys take place. The mock API's dates are fixed (apps/web/src/mocks), so the real
+ * date would change the screens day by day, and empty the interests once they expire. At this
+ * time they show their longest forms: quiet chats, and interests in their last days.
+ */
+const journeysStartTime = '2026-12-07T12:00:00Z'
 
-export default defineConfig({
+export default defineConfig<Options>({
   testDir: './tests',
   outputDir: './test-results',
   fullyParallel: true,
@@ -57,17 +64,32 @@ export default defineConfig({
     ...(runJourneys
       ? [
           {
-            name: 'journeys-desktop',
-            testMatch: /journeys\/.*\.spec\.ts/,
-            // The dev server compiles each screen on its first visit.
-            timeout: 60_000,
+            name: 'journeys-warm-up',
+            // A glob and not an expression, so that Knip follows it to the file.
+            testMatch: '**/journeys/warm-up.setup.ts',
+            timeout: 180_000,
             use: { ...devices['Desktop Chrome'], baseURL: mockURL },
           },
           {
-            name: 'journeys-mobile',
+            name: 'journeys-desktop',
+            dependencies: ['journeys-warm-up'],
             testMatch: /journeys\/.*\.spec\.ts/,
+            // Phone windows run on journeys-mobile (journeys/responsive.spec.ts).
+            grepInvert: /@phone-only/,
+            // The dev server compiles each screen on its first visit.
             timeout: 60_000,
-            use: { ...devices['Pixel 7'], baseURL: mockURL },
+            expect: { timeout: 15_000 },
+            use: { ...devices['Desktop Chrome'], baseURL: mockURL, startTime: journeysStartTime },
+          },
+          {
+            name: 'journeys-mobile',
+            dependencies: ['journeys-warm-up'],
+            testMatch: /journeys\/.*\.spec\.ts/,
+            // Windows of 768 and wider run on journeys-desktop (journeys/responsive.spec.ts).
+            grepInvert: /@desktop-only/,
+            timeout: 60_000,
+            expect: { timeout: 15_000 },
+            use: { ...devices['Pixel 7'], baseURL: mockURL, startTime: journeysStartTime },
           },
         ]
       : []),

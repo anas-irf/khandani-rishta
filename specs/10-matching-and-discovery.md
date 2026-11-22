@@ -15,7 +15,7 @@ This document defines how the product decides which profiles a member sees, in w
 | 2 | **Must-haves really exclude** | A preference marked `must` is a hard filter. A profile that fails it is never recommended, however good the rest is. |
 | 3 | **Honest when empty** | When few or no profiles pass the must-haves, the product says so and shows which must-have to loosen. It never pads the list with profiles that break a must-have. |
 | 4 | **Fair attention** | Ranking spreads attention: popular profiles are dampened so they are not flooded, new members get a short boost, and profiles a viewer keeps skipping sink. |
-| 5 | **Explainable** | Every card shows up to three plain reasons, and the profile page shows a line-by-line comparison in both directions. |
+| 5 | **Explainable** | Every full-size card shows up to three plain reasons, the smaller cards show the percentage (16 section 1.5), and the profile page shows a line-by-line comparison in both directions. |
 | 6 | **Private by construction** | Values a member hides from other members take no part in matching or search (09 section 5.4). |
 | 7 | **One implementation** | All scoring is a set of pure Rust functions in `apps/api/src/matching/`. Recommendations, search, the home lists and the profile page call the same functions. |
 | 8 | **Free-tier sized** | One SQL query per refresh, scoring in memory, results cached in `match_recommendations`. No search engine, no vector store. |
@@ -270,11 +270,11 @@ Reasons explain a card in plain words. They are computed from V's point of view 
 | 11 | `same_region` | Both `region_id` set and equal, and `same_city` does not apply | Lives in your province |
 | 12 | `shared_hobbies` | At least 2 hobbies in common | Shared interests |
 | 13 | `meets_your_must_haves` | V has at least one set `must` dimension and `passes_must_haves(V.prefs, C)` | Meets all your must-haves |
-| 14 | `verified` | C `is_id_verified` or `is_photo_verified` | Verified profile |
-| 15 | `new_member` | C's `first_activated_at` within 7 days | New member |
-| 16 | `recently_active` | C's `last_active_at` within 24 hours, and both C and V have `show_last_active = true` | Active recently |
+| 14 | `recently_active` | C's `last_active_at` within 24 hours, and both C and V have `show_last_active = true` | Active recently |
 
 Selection: walk the table in priority order and take the first 3 codes whose condition holds. A card may have fewer than 3, or none.
+
+Verification and newness are not reasons: cards and the profile already show them as badges (12 section 1.2), and a reason that repeats a badge would push out one about fit.
 
 The list is closed. Clients map each code to an i18n string and must ignore an unknown code.
 
@@ -497,7 +497,7 @@ The product never fills the list with profiles that fail a must-have in either d
 | Situation | Behaviour |
 |---|---|
 | New profile, first visit to `APP-HOME` | The refresh enqueued at onboarding completion has usually finished. If not, the 2-second inline path runs. |
-| New profile as a candidate | Appears in other members' lists at their next refresh, with `newness = 1.10` for 7 days and the `new_member` reason. It also appears at once in `new_members` on home and in search. |
+| New profile as a candidate | Appears in other members' lists at their next refresh, with `newness = 1.10` and the "New" badge for 7 days. It also appears at once in `new_members` on home and in search. |
 | Very few members | `pool_exhausted` with hints. Search remains available with any filters. |
 | Member with no must-haves and few preferences | `fit` falls back towards 0.75, so similarity and ranking factors decide the order. |
 

@@ -437,7 +437,7 @@ After `nikah_done`, both members may be invited to share a short story and an op
 | Can still open by code | Yes | Yes |
 | Requires | Caller `active`, target openable | Caller `active`, target openable |
 | Limits | 200 entries per profile (fixed) | None |
-| Undo | Remove | "Undo" snackbar for 5 seconds on the client; later through a profile code lookup and `DELETE` |
+| Undo | Remove | On a list, an "Undo" button in place of the card until the member leaves the screen (16 section 6.4); on the profile screen, an "Undo" toast for 5 seconds; later through a profile code lookup and `DELETE` |
 | When the target becomes unavailable | Entry stays with `profile = null`, shown as "No longer available" with a remove button | Nothing to show |
 
 Shortlisting does not notify, does not count as a view, and does not affect ranking. Passing a profile to which the member has a pending sent interest is allowed and does not withdraw the interest; the client suggests withdrawing.

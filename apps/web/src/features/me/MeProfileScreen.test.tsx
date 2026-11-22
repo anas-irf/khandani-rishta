@@ -7,6 +7,7 @@ import { db } from '~/mocks/db'
 import { makeMe, makeOwnPhoto } from '~/mocks/factories'
 import { apiError, apiUrl } from '~/mocks/http'
 import { server } from '~/mocks/server'
+import { pinSeededClock } from '~/test/clock'
 import { renderWithProviders } from '~/test/render'
 import { MeProfileScreen } from './MeProfileScreen'
 import { completenessHints, excerpt, mustHaveCount, sectionIsEmpty } from './summaries'
@@ -21,6 +22,8 @@ function setStatus(status: Me['profile']['status'], reason: string | null = null
   db.ownProfile.status = status
   db.ownProfile.status_reason = reason
 }
+
+pinSeededClock()
 
 describe('ME-PROFILE helpers', () => {
   it('turns the first three missing items into hint rows (08 section 6.4 example A)', () => {
@@ -134,7 +137,12 @@ describe('MeProfileScreen', () => {
   it('copies the profile link', async () => {
     const user = userEvent.setup()
     renderProfile()
-    await user.click(await screen.findByRole('button', { name: 'Copy the link to profile KR7Q2M' }))
+    await user.click(
+      await screen.findByRole('button', {
+        name: 'Copy link',
+        description: 'Copy the link to profile KR7Q2M',
+      }),
+    )
     expect(await screen.findByText('Profile link copied.')).toBeInTheDocument()
     expect(await navigator.clipboard.readText()).toBe('http://localhost:3000/p/KR7Q2M')
   })

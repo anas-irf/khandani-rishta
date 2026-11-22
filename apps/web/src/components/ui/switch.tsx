@@ -3,29 +3,51 @@ import type * as React from 'react'
 import { cn } from '~/lib/utils'
 
 /*
- * Touch target note: the visible track is 44px by 24px; the `after:` pseudo-element extends the
- * clickable height to 44px. Wrap the switch and its text in one `<label>` with `min-h-11` so
- * tapping the text toggles it too.
+ * DESIGN.md 6.11: a 56 x 32 track with a 26 thumb, primary when on. State is shown by the thumb
+ * position as well as by colour, and the thumb moves the other way in right-to-left layouts.
  *
- * State is shown by the thumb position and by track and thumb colour, so it never relies on
- * colour alone. The thumb moves the other way in right-to-left layouts.
+ * A labelled setting is a whole row that is the switch: use `SwitchRow` (components/common).
  */
-function Switch({ className, ...props }: React.ComponentProps<typeof SwitchPrimitive.Root>) {
+
+/** The track and thumb. Place it inside a `SwitchRoot`, which gives it its state. */
+function SwitchTrack({ className }: { className?: string }) {
   return (
-    <SwitchPrimitive.Root
-      data-slot="switch"
+    <span
+      data-slot="switch-track"
       className={cn(
-        "peer relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 border-muted-foreground bg-surface transition-colors after:absolute after:-inset-y-2.5 after:inset-x-0 after:content-[''] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-primary data-[state=checked]:bg-primary",
+        'inline-flex h-[32px] w-[56px] shrink-0 items-center rounded-pill bg-input p-[3px] transition-colors group-disabled/switch:opacity-70 group-data-[state=checked]/switch:bg-primary',
         className,
       )}
-      {...props}
     >
       <SwitchPrimitive.Thumb
         data-slot="switch-thumb"
-        className="pointer-events-none ms-0.5 block size-4 rounded-full bg-muted-foreground transition-[translate,background-color] data-[state=checked]:translate-x-5 data-[state=checked]:bg-primary-foreground rtl:data-[state=checked]:-translate-x-5"
+        className="pointer-events-none block size-[26px] rounded-pill bg-background transition-[translate] data-[state=checked]:translate-x-[24px] rtl:data-[state=checked]:-translate-x-[24px]"
       />
-    </SwitchPrimitive.Root>
+    </span>
   )
 }
 
-export { Switch }
+/** The switch button itself, with no look of its own. */
+function SwitchRoot({ className, ...props }: React.ComponentProps<typeof SwitchPrimitive.Root>) {
+  return (
+    <SwitchPrimitive.Root
+      data-slot="switch"
+      className={cn('group/switch disabled:cursor-not-allowed', className)}
+      {...props}
+    />
+  )
+}
+
+/** A switch on its own, with a 48 tall hit area. Pair it with a `<Label htmlFor>`. */
+function Switch({ className, ...props }: React.ComponentProps<typeof SwitchPrimitive.Root>) {
+  return (
+    <SwitchRoot
+      className={cn('tap-target inline-flex shrink-0 rounded-pill', className)}
+      {...props}
+    >
+      <SwitchTrack />
+    </SwitchRoot>
+  )
+}
+
+export { Switch, SwitchRoot, SwitchTrack }

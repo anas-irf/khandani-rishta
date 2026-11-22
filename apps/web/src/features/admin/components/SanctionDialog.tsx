@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button } from '~/components/ui/button'
+import { RadioCard } from '~/components/common/RadioCard'
 import { Input } from '~/components/ui/input'
+import { RadioGroup } from '~/components/ui/radio-group'
+import { Toggle } from '~/components/ui/toggle'
 import { validate } from '../forms'
 import { useBanUser, useSuspendUser, useWarnUser } from '../queries'
 import { banSchema, suspendSchema, warnSchema } from '../schemas'
@@ -88,23 +90,24 @@ export function SanctionDialog({
       error={<ErrorSummary messages={form.rest} />}
     >
       {kinds.length > 1 ? (
-        <fieldset className="grid gap-1.5">
-          <legend className="text-sm font-medium">{t('sanctions.kind')}</legend>
-          <div className="flex flex-wrap gap-4">
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-2 text-label-lg">{t('sanctions.kind')}</legend>
+          <RadioGroup
+            name="sanction-kind"
+            aria-label={t('sanctions.kind')}
+            value={kind}
+            onValueChange={(value) => setKind(value as SanctionKind)}
+            className="grid-cols-[repeat(auto-fit,minmax(9rem,1fr))]"
+          >
             {kinds.map((option) => (
-              <label key={option} className="flex min-h-11 items-center gap-2 text-sm">
-                <input
-                  type="radio"
-                  name="sanction-kind"
-                  value={option}
-                  checked={kind === option}
-                  onChange={() => setKind(option)}
-                  className="size-4 accent-primary"
-                />
-                {t(`sanctions.kind_label.${option}`)}
-              </label>
+              <RadioCard
+                key={option}
+                id={`sanction-kind-${option}`}
+                value={option}
+                label={t(`sanctions.kind_label.${option}`)}
+              />
             ))}
-          </div>
+          </RadioGroup>
         </fieldset>
       ) : null}
       <PresetButtons label={t('sanctions.examples_label')} presets={examples} onPick={setReason} />
@@ -135,17 +138,19 @@ export function SanctionDialog({
               />
             )}
           </FormField>
-          <div className="flex gap-2" role="toolbar" aria-label={t('sanctions.days_presets')}>
+          <div
+            className="flex flex-wrap gap-2"
+            role="toolbar"
+            aria-label={t('sanctions.days_presets')}
+          >
             {DAY_PRESETS.map((preset) => (
-              <Button
+              <Toggle
                 key={preset}
-                size="sm"
-                variant={days === preset ? 'default' : 'secondary'}
-                aria-pressed={days === preset}
-                onClick={() => setDays(preset)}
+                pressed={days === preset}
+                onPressedChange={() => setDays(preset)}
               >
                 {t('sanctions.days_preset', { count: preset })}
-              </Button>
+              </Toggle>
             ))}
           </div>
         </div>

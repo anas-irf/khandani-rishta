@@ -25,7 +25,8 @@ function PopoverClose(props: React.ComponentProps<typeof PopoverPrimitive.Close>
 function PopoverContent({
   className,
   align = 'center',
-  sideOffset = 4,
+  sideOffset = 8,
+  collisionPadding = 8,
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Content>) {
   return (
@@ -34,8 +35,9 @@ function PopoverContent({
         data-slot="popover-content"
         align={align}
         sideOffset={sideOffset}
+        collisionPadding={collisionPadding}
         className={cn(
-          'z-50 w-72 max-w-[calc(100vw-2rem)] origin-(--radix-popover-content-transform-origin) rounded-[var(--radius-card)] border border-border bg-surface p-4 text-foreground shadow-md outline-hidden motion-safe:transition-[opacity,scale] motion-safe:duration-100 motion-safe:starting:scale-95 motion-safe:starting:opacity-0',
+          'z-50 w-[320px] max-w-[calc(100vw-16px)] origin-(--radix-popover-content-transform-origin) rounded-lg border border-border bg-surface p-4 text-foreground shadow-menu [--tonal:var(--color-muted)] motion-safe:transition-[opacity,scale] motion-safe:starting:scale-95 motion-safe:starting:opacity-0',
           className,
         )}
         {...props}

@@ -62,7 +62,7 @@ export function ImportanceField({
         required
       />
       {showNote ? (
-        <p id={noteId} className="text-sm text-foreground">
+        <p id={noteId} className="text-body-sm text-foreground">
           {t('fields:importance.must_note')}
         </p>
       ) : null}

@@ -88,7 +88,7 @@ describe('AppShell (17 section 9.2)', () => {
       path: '/home',
       me: makeMe({ user: { role: 'moderator' }, counters: { pending_photo_requests: 2 } }),
     })
-    await user.click(await screen.findByRole('button', { name: 'Account menu' }))
+    await user.click(await screen.findByRole('button', { name: /^Account menu\b/ }))
     for (const item of ['My profile', 'Shortlist', 'Who viewed me', 'Settings', 'Staff console']) {
       expect(await screen.findByRole('menuitem', { name: new RegExp(item) })).toBeInTheDocument()
     }
@@ -99,7 +99,7 @@ describe('AppShell (17 section 9.2)', () => {
   it('asks before signing out (16 rule G8)', async () => {
     const user = userEvent.setup()
     renderWithProviders(() => <Shell />, { path: '/home', me: makeMe() })
-    await user.click(await screen.findByRole('button', { name: 'Account menu' }))
+    await user.click(await screen.findByRole('button', { name: /^Account menu\b/ }))
     await user.click(await screen.findByRole('menuitem', { name: 'Sign out' }))
     expect(
       await screen.findByRole('alertdialog', { name: 'Sign out of Khandani Rishta?' }),

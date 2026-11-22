@@ -124,7 +124,7 @@ function OnboardingStepScreen({ step, edit }: { step: OnboardingStep; edit: bool
               initialErrors={initialErrors}
               onDirtyChange={onDirtyChange}
             />
-            <p className="text-sm text-muted-foreground">
+            <p className="text-body-sm text-muted-foreground">
               {t('onboarding:identity.verification_note')}
             </p>
           </div>
@@ -139,9 +139,9 @@ function OnboardingStepScreen({ step, edit }: { step: OnboardingStep; edit: bool
   return (
     <StepFlowContext.Provider value={flow}>
       <div className="flex flex-col gap-6" data-screen={SCREEN_IDS[step]}>
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold">{title}</h1>
-          <p className="text-muted-foreground">{subtitle}</p>
+        <div className="flex flex-col gap-2">
+          <h1 className="text-headline-md">{title}</h1>
+          <p className="text-foreground-secondary">{subtitle}</p>
         </div>
         {body}
       </div>
@@ -154,7 +154,7 @@ function OnboardingStepScreen({ step, edit }: { step: OnboardingStep; edit: bool
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('onboarding:discard.title')}</AlertDialogTitle>
-            <AlertDialogDescription className="text-base text-foreground">
+            <AlertDialogDescription className="text-foreground">
               {t('onboarding:discard.body')}
             </AlertDialogDescription>
           </AlertDialogHeader>

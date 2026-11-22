@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { FieldError } from '~/components/common/fields/field-shell'
 import { Checkbox } from '~/components/ui/checkbox'
 import { Input } from '~/components/ui/input'
+import { Label } from '~/components/ui/label'
 import { NativeSelect, NativeSelectOption } from '~/components/ui/native-select'
 import { Textarea } from '~/components/ui/textarea'
 import { isApiError } from '~/lib/api'
@@ -9,7 +11,7 @@ import { validate } from '../forms'
 import { useCreateCaste, usePromoteSuggestion, useUpdateCaste } from '../queries'
 import { createCasteSchema, editCasteSchema, promoteSuggestionSchema } from '../schemas'
 import type { AdminCaste, CasteSuggestionItem } from '../types'
-import { ActionDialog } from './ActionDialog'
+import { ActionDialog, DialogNote } from './ActionDialog'
 import { FormField } from './FormField'
 import { ErrorSummary, useDialogErrors } from './useDialogErrors'
 
@@ -127,11 +129,11 @@ export function PromoteDialog({
       error={<ErrorSummary messages={form.rest} />}
     >
       {suggestion.similar.length > 0 ? (
-        <p role="note" className="rounded-md bg-warning-soft p-2 text-sm">
+        <DialogNote>
           {t('castes.similar_warning', {
             names: suggestion.similar.map((item) => item.name).join(', '),
           })}
-        </p>
+        </DialogNote>
       ) : null}
       <ParentSelect
         value={values.parent_code}
@@ -411,19 +413,19 @@ export function EditCasteDialog({ caste, onClose }: { caste: AdminCaste; onClose
           />
         )}
       </FormField>
-      <div className="grid gap-1.5">
-        <label htmlFor="caste-active" className="flex min-h-11 items-center gap-3 text-sm">
+      <div className="grid gap-2">
+        <Label htmlFor="caste-active" variant="option">
           <Checkbox
             id="caste-active"
             checked={values.is_active}
             onCheckedChange={(checked) => setValues({ ...values, is_active: checked === true })}
           />
           {t('castes.active')}
-        </label>
+        </Label>
         {form.errors.is_active ? (
-          <p role="alert" className="text-sm text-danger">
-            {form.errors.is_active}
-          </p>
+          <div role="alert">
+            <FieldError id="caste-active-error" message={form.errors.is_active} />
+          </div>
         ) : null}
       </div>
     </ActionDialog>

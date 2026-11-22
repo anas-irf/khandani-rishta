@@ -30,11 +30,29 @@ import { ToggleGroup, ToggleGroupItem } from '~/components/ui/toggle-group'
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip'
 
 describe('Button', () => {
-  it('defaults to type button and has a 44px height class', () => {
+  it('defaults to type button and is at least 48px tall', () => {
     render(<Button>Save</Button>)
     const button = screen.getByRole('button', { name: 'Save' })
     expect(button).toHaveAttribute('type', 'button')
-    expect(button).toHaveClass('h-11')
+    expect(button).toHaveClass('min-h-touch')
+  })
+
+  it('makes a main action 56px tall on phones, and only a main action', () => {
+    render(
+      <>
+        <Button>Accept</Button>
+        <Button variant="inverse">View</Button>
+        <Button size="icon" aria-label="Send" />
+        <Button variant="secondary">Decline</Button>
+      </>,
+    )
+    for (const name of ['Accept', 'View']) {
+      expect(screen.getByRole('button', { name })).toHaveClass('max-wide:min-h-touch-lg')
+    }
+    expect(screen.getByRole('button', { name: 'Send' })).toHaveClass('max-wide:size-touch-lg')
+    expect(screen.getByRole('button', { name: 'Decline' })).not.toHaveClass(
+      'max-wide:min-h-touch-lg',
+    )
   })
 
   it('shows a spinner and is disabled and busy while loading', () => {
@@ -203,7 +221,7 @@ describe('ToggleGroup', () => {
     expect(onValueChange).toHaveBeenCalledWith('important')
     expect(important).toBeChecked()
     expect(essential).not.toBeChecked()
-    expect(important).toHaveClass('h-11')
+    expect(important).toHaveClass('min-h-touch')
   })
 })
 
@@ -223,7 +241,7 @@ describe('NativeSelect', () => {
     )
 
     const select = screen.getByRole('combobox', { name: 'Country' })
-    expect(select).toHaveClass('h-11')
+    expect(select).toHaveClass('min-h-touch')
     await user.selectOptions(select, 'gb')
     expect(onChange).toHaveBeenCalledOnce()
     expect(onChange).toHaveReturnedWith('gb')

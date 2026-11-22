@@ -7,10 +7,11 @@ import { toast } from 'sonner'
 import { EmptyState } from '~/components/common/EmptyState'
 import { InfiniteList } from '~/components/common/InfiniteList'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
 import { PlainText } from '~/components/common/PlainText'
 import { ProfileCard } from '~/components/common/ProfileCard'
 import { ScreenAccess } from '~/components/common/ScreenAccess'
+import { UnavailableRow } from '~/components/common/UnavailableRow'
 import { Button } from '~/components/ui/button'
 import type { ShortlistEntry } from '~/lib/api-types'
 import { formatRelative } from '~/lib/format'
@@ -19,11 +20,9 @@ import { usePutShortlistNote, useRemoveFromShortlist, useShortlist } from './que
 
 export function ShortlistScreen() {
   return (
-    <div className="container-app">
-      <ScreenAccess screen="APP-SHORTLIST">
-        <ShortlistContent />
-      </ScreenAccess>
-    </div>
+    <ScreenAccess screen="APP-SHORTLIST">
+      <ShortlistContent />
+    </ScreenAccess>
   )
 }
 
@@ -33,8 +32,7 @@ function ShortlistContent() {
   const [editing, setEditing] = useState<NoteTarget | null>(null)
 
   return (
-    <div className="flex flex-col gap-4">
-      <PageHeader title={t('shortlist.title')} description={t('shortlist.intro')} />
+    <Page title={t('shortlist.title')} description={t('shortlist.intro')} width="column">
       <InfiniteList
         query={shortlist}
         getKey={(entry) => entry.profile_id}
@@ -65,7 +63,7 @@ function ShortlistContent() {
         }
       />
       <NoteDialog entry={editing} onClose={() => setEditing(null)} />
-    </div>
+    </Page>
   )
 }
 
@@ -93,13 +91,10 @@ function ShortlistRow({ entry, onEditNote }: { entry: ShortlistEntry; onEditNote
 
   if (!entry.profile) {
     return (
-      <div
-        data-unavailable=""
-        className="flex items-center justify-between gap-3 rounded-[var(--radius-card)] border border-border bg-muted p-4 text-muted-foreground"
-      >
-        <span>{t('shortlist.unavailable')}</span>
+      <UnavailableRow data-unavailable="" text={t('shortlist.unavailable')}>
         <Button
-          variant="secondary"
+          variant="quiet"
+          size="compact"
           disabled={!online}
           aria-label={t('shortlist.remove_unavailable')}
           onClick={() => removeWithUndo(entry)}
@@ -107,7 +102,7 @@ function ShortlistRow({ entry, onEditNote }: { entry: ShortlistEntry; onEditNote
           <Trash2 aria-hidden="true" />
           {t('shortlist.remove')}
         </Button>
-      </div>
+      </UnavailableRow>
     )
   }
 
@@ -118,15 +113,20 @@ function ShortlistRow({ entry, onEditNote }: { entry: ShortlistEntry; onEditNote
       actions={
         <div className="flex w-full flex-col gap-2">
           {entry.note ? <PlainText text={entry.note} className="italic" /> : null}
-          <p className="text-sm text-muted-foreground">
+          <p className="text-caption text-muted-foreground">
             {t('shortlist.saved_at', { time: formatRelative(entry.created_at) })}
           </p>
           <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" disabled={!online} onClick={onEditNote}>
+            <Button variant="secondary" size="compact" disabled={!online} onClick={onEditNote}>
               <Pencil aria-hidden="true" />
               {t('shortlist.edit_note')}
             </Button>
-            <Button variant="ghost" disabled={!online} onClick={() => removeWithUndo(entry)}>
+            <Button
+              variant="quiet"
+              size="compact"
+              disabled={!online}
+              onClick={() => removeWithUndo(entry)}
+            >
               <Trash2 aria-hidden="true" />
               {t('shortlist.remove')}
             </Button>

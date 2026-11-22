@@ -6,21 +6,26 @@ function Tabs({ className, ...props }: React.ComponentProps<typeof TabsPrimitive
   return (
     <TabsPrimitive.Root
       data-slot="tabs"
-      className={cn('flex flex-col gap-3', className)}
+      className={cn('flex flex-col gap-4', className)}
       {...props}
     />
   )
 }
 
-/** Give the list an `aria-label` when the tabs are not introduced by a visible heading. */
-function TabsList({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.List>) {
+/**
+ * Pills that wrap onto another line at larger text and are never clipped. `chip` is the second
+ * level, under a row of pills. Give the list an `aria-label` when no visible heading introduces it.
+ */
+function TabsList({
+  className,
+  variant = 'pill',
+  ...props
+}: React.ComponentProps<typeof TabsPrimitive.List> & { variant?: 'pill' | 'chip' }) {
   return (
     <TabsPrimitive.List
       data-slot="tabs-list"
-      className={cn(
-        'inline-flex w-fit items-center justify-center gap-1 rounded-[var(--radius-input)] bg-muted p-1 text-muted-foreground',
-        className,
-      )}
+      data-variant={variant}
+      className={cn('group/tabs flex max-w-full flex-wrap items-center gap-2', className)}
       {...props}
     />
   )
@@ -31,7 +36,7 @@ function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabsPr
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        'inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-3 text-sm font-medium transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-surface data-[state=active]:text-foreground data-[state=active]:shadow-sm [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*="size-"])]:size-4',
+        'inline-flex min-h-touch min-w-touch max-w-full items-center justify-center gap-2 rounded-lg border-[1.5px] border-transparent px-[16px] py-[8px] text-center text-label-lg text-foreground transition-colors hover:tonal disabled:cursor-not-allowed disabled:text-muted-foreground group-data-[variant=chip]/tabs:border-input group-data-[variant=chip]/tabs:px-4 group-data-[variant=chip]/tabs:text-label-md data-[state=active]:border-primary data-[state=active]:bg-primary-soft data-[state=active]:font-bold data-[state=active]:text-primary group-data-[variant=chip]/tabs:data-[state=active]:border-primary [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*="size-"])]:size-5',
         className,
       )}
       {...props}
@@ -43,10 +48,7 @@ function TabsContent({ className, ...props }: React.ComponentProps<typeof TabsPr
   return (
     <TabsPrimitive.Content
       data-slot="tabs-content"
-      className={cn(
-        'flex-1 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-        className,
-      )}
+      className={cn('flex-1 rounded-sm', className)}
       {...props}
     />
   )

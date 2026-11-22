@@ -1,10 +1,10 @@
 // SET-ACCOUNT (16 section 6.27, 06 sections 9, 10.1 and 12, 08 section 7)
-import { BadgeCheck } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
-import { PageHeader } from '~/components/common/PageHeader'
-import { SectionCard } from '~/components/common/SectionCard'
+import { Page } from '~/components/common/Page'
+import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { useAuthSession } from '~/features/auth/session'
 import type { Locale } from '~/lib/api-types'
@@ -12,7 +12,7 @@ import { formatPhone } from '~/lib/format'
 import { SUPPORTED_LANGUAGES } from '~/lib/i18n'
 import { useCurrentMe } from '~/lib/me'
 import { type AccountDialog, AccountDialogs, canClose, canPause } from './AccountDialogs'
-import { SettingSelect, SettingsPage } from './controls'
+import { SettingSelect, SettingsGroup } from './controls'
 import { DataExportCard } from './DataExportCard'
 import { ProfileStatusCard } from './ProfileStatusCard'
 import { useChangeLocale } from './queries'
@@ -29,13 +29,12 @@ export function AccountScreen() {
   const hasGentlerOptions = canPause(me.profile.status) || canClose(me.profile.status)
 
   return (
-    <SettingsPage>
-      <PageHeader title={t('account.title')} backTo="/settings" />
+    <Page title={t('account.title')} backTo="/settings" width="column" layout="bands">
       <SignInSecurityCard />
       <LanguageCard />
       <ProfileStatusCard onOpen={setDialog} />
       <DataExportCard />
-      <SectionCard title={t('account.delete.title')}>
+      <SettingsGroup title={t('account.delete.title')}>
         <div>
           <Button
             variant="destructive"
@@ -45,14 +44,14 @@ export function AccountScreen() {
             {t('account.delete.action')}
           </Button>
         </div>
-      </SectionCard>
-      <SectionCard title={t('account.sign_out.title')}>
+      </SettingsGroup>
+      <SettingsGroup title={t('account.sign_out.title')}>
         <div>
           <SignOutButton />
         </div>
-      </SectionCard>
+      </SettingsGroup>
       <AccountDialogs dialog={dialog} onDialogChange={setDialog} />
-    </SettingsPage>
+    </Page>
   )
 }
 
@@ -68,17 +67,17 @@ function SignInSecurityCard() {
   const { email, email_verified: verified, phone_e164: phone } = me.user
 
   return (
-    <SectionCard title={t('account.sign_in.title')}>
-      <p className="flex items-center gap-2">
-        <span dir="auto">
+    <SettingsGroup title={t('account.sign_in.title')}>
+      <p className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <span dir="auto" className="max-w-full min-w-0">
           {email ? t('account.sign_in.email', { email }) : t('account.sign_in.email_none')}
         </span>
+        {/* Words with the tick, never the tick alone (DESIGN.md 6.3). */}
         {email && verified ? (
-          <BadgeCheck
-            role="img"
-            aria-label={t('account.sign_in.email_verified')}
-            className="size-5 shrink-0 text-success"
-          />
+          <Badge variant="success">
+            <Check aria-hidden="true" strokeWidth={2.8} />
+            {t('account.sign_in.email_verified')}
+          </Badge>
         ) : null}
       </p>
       {phone ? <p>{t('account.sign_in.phone', { phone: formatPhone(phone) })}</p> : null}
@@ -89,9 +88,9 @@ function SignInSecurityCard() {
           </Button>
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">{t('account.sign_in.unavailable')}</p>
+        <p className="text-caption text-muted-foreground">{t('account.sign_in.unavailable')}</p>
       )}
-    </SectionCard>
+    </SettingsGroup>
   )
 }
 
@@ -106,7 +105,7 @@ function LanguageCard() {
   const urduReady = SUPPORTED_LANGUAGES.includes('ur')
 
   return (
-    <SectionCard title={t('account.language.title')}>
+    <SettingsGroup title={t('account.language.title')}>
       <SettingSelect
         label={t('account.language.label')}
         value={me.user.locale}
@@ -123,6 +122,6 @@ function LanguageCard() {
           })
         }}
       />
-    </SectionCard>
+    </SettingsGroup>
   )
 }

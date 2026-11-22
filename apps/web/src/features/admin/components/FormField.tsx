@@ -1,5 +1,6 @@
 import { type ReactNode, useId } from 'react'
 import { useTranslation } from 'react-i18next'
+import { CharCount, FieldError } from '~/components/common/fields/field-shell'
 import { Button } from '~/components/ui/button'
 import { Label } from '~/components/ui/label'
 import { Textarea } from '~/components/ui/textarea'
@@ -28,20 +29,20 @@ export function FormField({
 }: FormFieldProps) {
   const id = useId()
   return (
-    <div className={cn('grid gap-1.5', className)}>
+    <div className={cn('grid content-start gap-2', className)}>
       <Label htmlFor={id} className={hideLabel ? 'sr-only' : undefined}>
         {label}
       </Label>
       {children(describeField(id, { hint: Boolean(hint), error }))}
       {hint ? (
-        <p id={`${id}-hint`} className="text-sm text-muted-foreground">
+        <p id={`${id}-hint`} className="text-caption text-muted-foreground">
           {hint}
         </p>
       ) : null}
       {error ? (
-        <p id={`${id}-error`} role="alert" className="text-sm text-danger">
-          {error}
-        </p>
+        <div role="alert">
+          <FieldError id={`${id}-error`} message={error} />
+        </div>
       ) : null}
     </div>
   )
@@ -79,9 +80,7 @@ export function CountedTextarea({
             value={value}
             onChange={(event) => onChange(event.target.value)}
           />
-          <p className="text-end text-sm text-muted-foreground">
-            {t('form.counter', { current: value.trim().length, max })}
-          </p>
+          <CharCount>{t('form.counter', { current: value.trim().length, max })}</CharCount>
         </>
       )}
     </FormField>
@@ -99,15 +98,14 @@ export function PresetButtons({
   onPick: (preset: string) => void
 }) {
   return (
-    <fieldset className="grid gap-1.5">
-      <legend className="text-sm font-medium">{label}</legend>
+    <fieldset className="grid gap-2">
+      <legend className="mb-2 text-label-lg">{label}</legend>
       <div className="flex flex-wrap gap-2">
         {presets.map((preset) => (
           <Button
             key={preset}
-            size="sm"
-            variant="secondary"
-            className="h-auto min-h-9 whitespace-normal py-1.5 text-start"
+            variant="quiet"
+            className="rounded-row px-4 text-start text-body-sm font-normal"
             onClick={() => onPick(preset)}
           >
             {preset}

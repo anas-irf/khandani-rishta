@@ -4,20 +4,21 @@ import { Check, MessageSquareWarning, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { ErrorState } from '~/components/common/ErrorState'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
 import { PlainText } from '~/components/common/PlainText'
 import { RelativeTime } from '~/components/common/RelativeTime'
 import { StatusBanner } from '~/components/common/StatusBanner'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
-import { Skeleton } from '~/components/ui/skeleton'
 import { formatDate, formatPhone } from '~/lib/format'
 import { useLabelOf } from '~/lib/reference'
 import { useIsAdmin } from './access'
+import { ActionToolbar } from './components/ActionToolbar'
 import { AdminPhoto } from './components/AdminPhoto'
-import { DataTable } from './components/DataTable'
+import { DataTable, tableLinkClass } from './components/DataTable'
+import { DetailState, detailGridClass } from './components/DetailState'
 import { Facts, Panel } from './components/Facts'
+import { Kbd } from './components/Kbd'
 import { ProfileSections } from './components/ProfileData'
 import {
   LockedFieldsDialog,
@@ -42,22 +43,10 @@ type Dialog =
   | null
 
 export function ProfileScreen() {
-  const { t } = useTranslation('admin')
   const profileId = useRouteId('profileId')
   const query = useAdminProfile(profileId)
 
-  if (query.isPending) {
-    return (
-      <div role="status" aria-busy="true" className="flex flex-col gap-3">
-        <span className="sr-only">{t('list.loading')}</span>
-        <Skeleton className="h-12 w-1/2" />
-        <Skeleton className="h-64 w-full" />
-      </div>
-    )
-  }
-  if (query.isError) {
-    return <ErrorState error={query.error} onRetry={() => void query.refetch()} />
-  }
+  if (query.isPending || query.isError) return <DetailState query={query} />
   return <ProfileView data={query.data} />
 }
 
@@ -127,15 +116,13 @@ function ProfileView({ data }: { data: AdminProfile }) {
   ]
 
   return (
-    <div className="flex flex-col gap-4">
-      <PageHeader
-        title={name}
-        description={t('profile.subtitle', { code: profile.public_code })}
-        backTo="/admin/profiles"
-        backLabel={t('profile.back')}
-        actions={<StatusBadge status={profile.status} />}
-      />
-
+    <Page
+      title={name}
+      description={t('profile.subtitle', { code: profile.public_code })}
+      backTo="/admin/profiles"
+      backLabel={t('profile.back')}
+      actions={<StatusBadge status={profile.status} />}
+    >
       {profile.status_reason ? (
         <StatusBanner variant="info" title={t('profile.status_reason')}>
           <PlainText text={profile.status_reason} />
@@ -147,11 +134,7 @@ function ProfileView({ data }: { data: AdminProfile }) {
         </StatusBanner>
       ) : null}
 
-      <div
-        role="toolbar"
-        aria-label={t('profile.actions')}
-        className="sticky top-0 z-10 flex flex-wrap items-center gap-2 border-b border-border bg-background py-2"
-      >
+      <ActionToolbar label={t('profile.actions')}>
         <Button
           loading={approve.isPending}
           disabled={!canDecide}
@@ -160,7 +143,7 @@ function ProfileView({ data }: { data: AdminProfile }) {
         >
           <Check aria-hidden="true" />
           {t('profile.approve')}
-          <kbd className="ms-1 text-xs opacity-80">A</kbd>
+          <Kbd>A</Kbd>
         </Button>
         <Button
           variant="secondary"
@@ -170,13 +153,13 @@ function ProfileView({ data }: { data: AdminProfile }) {
         >
           <MessageSquareWarning aria-hidden="true" />
           {t('profile.request_changes.open')}
-          <kbd className="ms-1 text-xs opacity-80">C</kbd>
+          <Kbd>C</Kbd>
         </Button>
         <Button variant="secondary" asChild aria-keyshortcuts="U">
           <Link to="/admin/users/$userId" params={{ userId: user.id }}>
             <UserRound aria-hidden="true" />
             {t('profile.open_account')}
-            <kbd className="ms-1 text-xs opacity-80">U</kbd>
+            <Kbd>U</Kbd>
           </Link>
         </Button>
         {isAdmin ? (
@@ -189,19 +172,19 @@ function ProfileView({ data }: { data: AdminProfile }) {
           </Button>
         ) : null}
         {!canDecide ? (
-          <p className="text-sm text-muted-foreground">{t('profile.not_pending')}</p>
+          <p className="text-body-sm text-muted-foreground">{t('profile.not_pending')}</p>
         ) : null}
-      </div>
+      </ActionToolbar>
 
-      <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-4">
+      <div className={detailGridClass}>
         <div className="flex min-w-0 flex-col gap-4">
           <Panel title={t('profile.photos')}>
             {profile.photos.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t('profile.no_photos')}</p>
+              <p className="text-body-sm text-muted-foreground">{t('profile.no_photos')}</p>
             ) : (
-              <ul className="grid grid-cols-4 gap-3">
+              <ul className="grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] gap-3">
                 {profile.photos.map((photo) => (
-                  <li key={photo.id} className="flex flex-col gap-1">
+                  <li key={photo.id} className="flex flex-col gap-2">
                     <AdminPhoto
                       photoId={photo.id}
                       url={photo.medium_url}
@@ -211,7 +194,8 @@ function ProfileView({ data }: { data: AdminProfile }) {
                       size="medium"
                       width={160}
                       height={200}
-                      className="aspect-[4/5] rounded-md"
+                      whole
+                      className="aspect-[4/5] w-full"
                     />
                     <div className="flex flex-wrap items-center gap-1">
                       <Badge variant="secondary">
@@ -223,8 +207,8 @@ function ProfileView({ data }: { data: AdminProfile }) {
                     </div>
                     {photo.status === 'pending_review' || photo.status === 'approved' ? (
                       <Button
-                        size="sm"
                         variant="secondary"
+                        size="compact"
                         onClick={() => setDialog({ kind: 'photo', photoId: photo.id })}
                       >
                         {t('photo.reject')}
@@ -243,13 +227,12 @@ function ProfileView({ data }: { data: AdminProfile }) {
                   key={item.field}
                   className="flex flex-col gap-1 border-b border-border pb-3 last:border-b-0 last:pb-0"
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-sm font-semibold">{t(`texts.field.${item.field}`)}</h3>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="text-title-sm">{t(`texts.field.${item.field}`)}</h3>
                     <div className="flex items-center gap-2">
                       <StatusBadge status={item.status} />
                       {item.text && item.status !== 'rejected' ? (
                         <Button
-                          size="sm"
                           variant="secondary"
                           onClick={() =>
                             setDialog({ kind: 'text', field: item.field, text: item.text ?? '' })
@@ -261,9 +244,9 @@ function ProfileView({ data }: { data: AdminProfile }) {
                     </div>
                   </div>
                   {item.text ? (
-                    <PlainText text={item.text} className="text-sm" />
+                    <PlainText text={item.text} className="text-body-sm" />
                   ) : (
-                    <p className="text-sm text-muted-foreground">{t('profile.no_text')}</p>
+                    <p className="text-body-sm text-muted-foreground">{t('profile.no_text')}</p>
                   )}
                 </li>
               ))}
@@ -351,7 +334,7 @@ function ProfileView({ data }: { data: AdminProfile }) {
             }))}
           />
           <Panel title={t('profile.checklist.title')}>
-            <ol className="list-decimal space-y-1 ps-5 text-sm">
+            <ol className="flex list-decimal flex-col gap-1 ps-5 text-body-sm">
               {(t('profile.checklist.items', { returnObjects: true }) as string[]).map((item) => (
                 <li key={item}>{item}</li>
               ))}
@@ -365,7 +348,9 @@ function ProfileView({ data }: { data: AdminProfile }) {
       </Panel>
       <Panel title={t('profile.verification_requests')}>
         {data.verification_requests.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t('verifications.none_for_profile')}</p>
+          <p className="text-body-sm text-muted-foreground">
+            {t('verifications.none_for_profile')}
+          </p>
         ) : (
           <DataTable
             caption={t('profile.verification_requests')}
@@ -379,7 +364,7 @@ function ProfileView({ data }: { data: AdminProfile }) {
                   <Link
                     to="/admin/verifications/$requestId"
                     params={{ requestId: request.id }}
-                    className="font-medium text-primary hover:underline"
+                    className={tableLinkClass}
                   >
                     {t(`verifications.kind.${request.kind}`, { defaultValue: request.kind })}
                   </Link>
@@ -409,7 +394,7 @@ function ProfileView({ data }: { data: AdminProfile }) {
       </Panel>
       <Panel title={t('profile.reports_against')}>
         <ReportsTable reports={data.reports_against} caption={t('profile.reports_against')} />
-        <p className="text-sm text-muted-foreground">
+        <p className="text-body-sm text-muted-foreground">
           {t('profile.reports_filed', data.reports_filed)}
         </p>
       </Panel>
@@ -441,6 +426,6 @@ function ProfileView({ data }: { data: AdminProfile }) {
           onClose={() => setDialog(null)}
         />
       ) : null}
-    </div>
+    </Page>
   )
 }

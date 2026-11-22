@@ -13,8 +13,9 @@ import {
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { z } from 'zod'
+import { DiamondTitle } from '~/components/common/Ornament'
 import { Alert, AlertDescription } from '~/components/ui/alert'
-import { Button } from '~/components/ui/button'
+import { Button, type ButtonProps } from '~/components/ui/button'
 import { ApiError, type ClientFieldError, isApiError } from '~/lib/api'
 import { focusFirstInvalid, useAppForm } from '~/lib/form'
 import { applyServerErrors } from '~/lib/form-context'
@@ -164,7 +165,12 @@ export function useManagedForm<V extends object>(options: ManagedFormOptions<V>)
 type ShellForm = {
   handleSubmit: () => Promise<void>
   AppForm: ComponentType<{ children?: ReactNode }>
-  SubmitButton: ComponentType<{ label: string; className?: string; disabled?: boolean }>
+  SubmitButton: ComponentType<{
+    label: string
+    size?: 'lg'
+    fill?: ButtonProps['fill']
+    disabled?: boolean
+  }>
   FormErrorSummary: ComponentType<{ serverErrors?: ClientFieldError[]; className?: string }>
 }
 
@@ -180,6 +186,7 @@ export function FormShell({
   children,
   label,
   submitDisabled,
+  inColumn = false,
 }: {
   form: ShellForm
   controls: FormControls
@@ -194,6 +201,12 @@ export function FormShell({
   label?: string
   /** Keeps the submit button disabled (for example until a number is complete). */
   submitDisabled?: boolean
+  /**
+   * For a form with a sticky line: its rows join the column around it, which has the same gap. A
+   * sticky line cannot rise above its box, and at large text a form starts too low to hold one
+   * inside the window. Put it only straight into a column with `flex flex-col gap-6`.
+   */
+  inColumn?: boolean
 }) {
   const onSubmit = (event: FormEvent) => {
     event.preventDefault()
@@ -202,7 +215,12 @@ export function FormShell({
   }
   return (
     <FormControlsContext.Provider value={controls}>
-      <form noValidate aria-label={label} onSubmit={onSubmit} className="flex flex-col gap-6">
+      <form
+        noValidate
+        aria-label={label}
+        onSubmit={onSubmit}
+        className={inColumn ? 'contents' : 'flex flex-col gap-6'}
+      >
         <form.AppForm>
           <form.FormErrorSummary serverErrors={unmatched} />
         </form.AppForm>
@@ -220,7 +238,8 @@ export function FormShell({
             <form.SubmitButton
               label={submitLabel}
               disabled={submitDisabled}
-              className="w-full md:w-auto md:self-start"
+              size="lg"
+              fill="phone"
             />
           </form.AppForm>
           {footer}
@@ -249,11 +268,11 @@ export function InlineFailure({
       <CircleAlert aria-hidden="true" />
       <AlertDescription className="flex flex-col items-start gap-2">
         <span>{text}</span>
-        <Button type="button" variant="outline" onClick={onRetry} loading={retrying}>
+        <Button type="button" variant="secondary" onClick={onRetry} loading={retrying}>
           {t('form.try_again')}
         </Button>
         {requestId ? (
-          <span className="text-sm text-muted-foreground">
+          <span className="text-caption text-muted-foreground">
             {t('form.reference', { id: requestId })}
           </span>
         ) : null}
@@ -273,10 +292,12 @@ export function FieldGroup({
   children: ReactNode
 }) {
   return (
-    <section className="flex flex-col gap-5">
-      <h3 className="text-base font-semibold">{title}</h3>
+    <section className="flex flex-col gap-5 pt-2">
+      <h3 className="text-title-md font-bold">
+        <DiamondTitle>{title}</DiamondTitle>
+      </h3>
       {children}
-      {help ? <p className="text-sm text-muted-foreground">{help}</p> : null}
+      {help ? <p className="text-caption text-muted-foreground">{help}</p> : null}
     </section>
   )
 }

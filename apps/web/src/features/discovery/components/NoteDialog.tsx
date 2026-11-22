@@ -1,6 +1,7 @@
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { CharCount } from '~/components/common/fields/field-shell'
 import { Button } from '~/components/ui/button'
 import {
   Dialog,
@@ -64,9 +65,9 @@ export function NoteDialog({ entry, onClose }: { entry: NoteTarget | null; onClo
             onChange={(event) => setNote(event.target.value)}
             aria-describedby={`${fieldId}-count`}
           />
-          <p id={`${fieldId}-count`} className="text-end text-sm text-muted-foreground">
+          <CharCount id={`${fieldId}-count`}>
             {t('discovery:shortlist.note_count', { count: note.length, max: NOTE_MAX })}
-          </p>
+          </CharCount>
         </div>
         <DialogFooter>
           <Button variant="secondary" onClick={onClose}>

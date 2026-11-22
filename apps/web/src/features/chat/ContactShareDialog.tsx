@@ -1,9 +1,9 @@
 import { useNavigate } from '@tanstack/react-router'
-import { AlertTriangle } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
+import { StatusBanner } from '~/components/common/StatusBanner'
 import { Button } from '~/components/ui/button'
 import { Checkbox } from '~/components/ui/checkbox'
 import {
@@ -213,7 +213,7 @@ function ShareForm({
   return (
     <>
       {guardianFirst(profile) ? (
-        <p className="text-sm text-muted-foreground">{t('chat:share.guardian_hint')}</p>
+        <p className="text-body-sm text-muted-foreground">{t('chat:share.guardian_hint')}</p>
       ) : null}
       <fieldset className="grid gap-1">
         <legend className="sr-only">{t('chat:share.items_label')}</legend>
@@ -221,19 +221,20 @@ function ShareForm({
           const value = contactValue(profile.contacts, item.key)
           const label = t(`chat:connection.item.${item.label}`)
           return (
-            <div key={item.key} className="flex items-center gap-2">
-              <Label className="min-h-11 flex-1 cursor-pointer items-start gap-3 py-2 font-normal">
+            <div key={item.key} className="flex flex-wrap items-center gap-x-2">
+              <Label variant="option" className="min-w-0 flex-1 items-start py-[11px]">
                 <Checkbox
-                  className="mt-0.5"
                   checked={selection[item.key]}
                   disabled={value === null}
                   onCheckedChange={(checked) =>
                     setSelection((previous) => ({ ...previous, [item.key]: checked === true }))
                   }
                 />
-                <span className="flex flex-col">
-                  <span className="text-base">{label}</span>
-                  {value ? <span className="text-sm text-muted-foreground">{value}</span> : null}
+                <span className="flex min-w-0 flex-col">
+                  <span className="text-body-md">{label}</span>
+                  {value ? (
+                    <span className="text-caption text-muted-foreground">{value}</span>
+                  ) : null}
                 </span>
               </Label>
               {value === null ? (
@@ -252,12 +253,12 @@ function ShareForm({
           )
         })}
       </fieldset>
-      <p className="flex items-start gap-2 rounded-[var(--radius-input)] bg-warning-soft p-3 text-sm">
-        <AlertTriangle aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-warning" />
-        {t('chat:share.warning')}
-      </p>
+      <StatusBanner variant="warning">{t('chat:share.warning')}</StatusBanner>
       {missing ? (
-        <div role="alert" className="flex flex-wrap items-center gap-2 text-sm text-danger">
+        <div
+          role="alert"
+          className="flex flex-wrap items-center gap-2 text-caption font-semibold text-danger"
+        >
           <span>{t('chat:share.add_first', { item: t(`chat:share.missing.${missing}`) })}</span>
           <Button variant="secondary" onClick={() => addDetail(missing)}>
             {t('chat:share.add_now')}
@@ -265,7 +266,7 @@ function ShareForm({
         </div>
       ) : null}
       <DialogFooter>
-        <Button variant="outline" onClick={onClose} disabled={share.isPending}>
+        <Button variant="secondary" onClick={onClose} disabled={share.isPending}>
           {t('common:actions.cancel')}
         </Button>
         <Button

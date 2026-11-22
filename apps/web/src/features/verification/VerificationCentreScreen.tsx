@@ -1,12 +1,16 @@
 // ME-VERIFY (16 section 6.21, 12 section 8.1)
 import { Link } from '@tanstack/react-router'
-import { BadgeCheck, ChevronDown, IdCard } from 'lucide-react'
+import { Check, CircleX, Clock, IdCard, type LucideIcon, ScanFace } from 'lucide-react'
 import { type ReactNode, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { ArchIcon, type ArchTone } from '~/components/common/Arch'
 import { ConfirmDialog } from '~/components/common/ConfirmDialog'
+import { Disclosure } from '~/components/common/Disclosure'
 import { ErrorState } from '~/components/common/ErrorState'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
+import { StatusBanner } from '~/components/common/StatusBanner'
+import { TextLink } from '~/components/common/TextLink'
 import { Button } from '~/components/ui/button'
 import { Skeleton } from '~/components/ui/skeleton'
 import type { VerificationKind, VerificationRequest, Verifications } from '~/lib/api-types'
@@ -56,9 +60,7 @@ export function VerificationCentreScreen() {
   const verifications = useVerifications()
 
   return (
-    <div className="container-app flex max-w-2xl flex-col gap-4">
-      <PageHeader title={t('centre.title')} showBack />
-      <p>{t('centre.intro')}</p>
+    <Page title={t('centre.title')} description={t('centre.intro')} showBack width="form">
       {verifications.isPending ? (
         <RowsSkeleton />
       ) : verifications.isError ? (
@@ -70,7 +72,7 @@ export function VerificationCentreScreen() {
       ) : (
         <Centre data={verifications.data} />
       )}
-    </div>
+    </Page>
   )
 }
 
@@ -132,11 +134,9 @@ function Centre({ data }: { data: Verifications }) {
       <>
         <LinkButton to="/me/verification/identity">{t('centre.identity.upload')}</LinkButton>
         {canChangeNumber ? (
-          <Button asChild variant="link" className="px-0">
-            <Link to="/me/verification/identity" search={{ change: true }}>
-              {t('centre.identity.change_number')}
-            </Link>
-          </Button>
+          <TextLink to="/me/verification/identity" search={{ change: true }}>
+            {t('centre.identity.change_number')}
+          </TextLink>
         ) : null}
       </>
     ),
@@ -158,14 +158,10 @@ function Centre({ data }: { data: Verifications }) {
 
   return (
     <>
-      {closed ? (
-        <p role="status" className="rounded-[var(--radius-input)] bg-muted p-3">
-          {t('centre.closed')}
-        </p>
-      ) : null}
+      {closed ? <StatusBanner variant="info">{t('centre.closed')}</StatusBanner> : null}
       <ul className="flex flex-col gap-3">
         <Row
-          icon={<IdCard aria-hidden="true" className="size-6" />}
+          icon={IdCard}
           title={t('centre.identity.title')}
           state={identityState}
           text={identityText[identityState]}
@@ -180,14 +176,14 @@ function Centre({ data }: { data: Verifications }) {
           control={identityControl}
         />
         <Row
-          icon={<BadgeCheck aria-hidden="true" className="size-6" />}
+          icon={ScanFace}
           title={t('centre.photo.title')}
           state={photoState}
           text={photoText[photoState]}
           control={photoControl}
         />
       </ul>
-      <p className="text-sm text-muted-foreground">{t('centre.footer')}</p>
+      <p className="text-caption text-muted-foreground">{t('centre.footer')}</p>
       <History requests={data.requests} rejected={rejectionText} />
 
       <ConfirmDialog
@@ -199,7 +195,7 @@ function Centre({ data }: { data: Verifications }) {
         description={t('centre.cancel.description')}
         confirmLabel={t('centre.cancel.confirm')}
         cancelLabel={t('centre.cancel.keep')}
-        destructive
+        tone="ink"
         onConfirm={async () => {
           if (!cancelTarget) return
           await cancel.mutateAsync(cancelTarget.id)
@@ -218,13 +214,14 @@ function LinkButton({ to, children }: { to: string; children: ReactNode }) {
   )
 }
 
-const STATE_TONE: Record<RowState, string> = {
-  verified: 'text-success',
-  pending: 'text-warning',
-  rejected: 'text-danger',
-  not_started: 'text-muted-foreground',
-  number_added: 'text-muted-foreground',
-  no_photo: 'text-muted-foreground',
+/** The arch and, where the state is more than "not yet", the icon beside its words. */
+const STATE_LOOK: Record<RowState, { tone: ArchTone; mark?: LucideIcon; color?: string }> = {
+  verified: { tone: 'solid', mark: Check, color: 'text-success' },
+  pending: { tone: 'warning', mark: Clock, color: 'text-warning' },
+  rejected: { tone: 'danger', mark: CircleX, color: 'text-danger' },
+  not_started: { tone: 'tonal' },
+  number_added: { tone: 'tonal' },
+  no_photo: { tone: 'tonal' },
 }
 
 function Row({
@@ -235,7 +232,7 @@ function Row({
   detail,
   control,
 }: {
-  icon: ReactNode
+  icon: LucideIcon
   title: string
   state: RowState
   text: string
@@ -243,23 +240,31 @@ function Row({
   control: ReactNode
 }) {
   const headingId = useId()
+  const { tone, mark: Mark, color } = STATE_LOOK[state]
   return (
-    <li
-      aria-labelledby={headingId}
-      data-row-state={state}
-      className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-4"
-    >
-      <div className="flex items-start gap-3">
-        <span className={cn('mt-0.5 shrink-0', STATE_TONE[state])}>{icon}</span>
-        <div className="flex min-w-0 flex-col gap-1">
-          <h2 id={headingId} className="font-semibold">
+    <li aria-labelledby={headingId} data-row-state={state} className="tonal panel">
+      <div className="flex items-start gap-[12px]">
+        <ArchIcon icon={icon} tone={tone} />
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <h2 id={headingId} className="text-title-md font-bold">
             {title}
           </h2>
-          <p>{text}</p>
-          {detail ? <p className="text-sm text-muted-foreground">{detail}</p> : null}
+          <p className="flex items-start gap-2">
+            {Mark ? (
+              <span aria-hidden="true" className={cn('flex h-[1lh] items-center', color)}>
+                <Mark className="size-4" />
+              </span>
+            ) : null}
+            <span className="min-w-0">{text}</span>
+          </p>
+          {detail ? (
+            <p className="text-body-sm text-muted-foreground tabular-nums">{detail}</p>
+          ) : null}
         </div>
       </div>
-      {control ? <div className="flex flex-wrap items-center gap-3 ps-9">{control}</div> : null}
+      {control ? (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">{control}</div>
+      ) : null}
     </li>
   )
 }
@@ -273,33 +278,15 @@ function History({
   rejected: (reason: string | null) => string
 }) {
   const { t } = useTranslation('verification')
-  const [open, setOpen] = useState(false)
-  const listId = useId()
   return (
-    <section className="flex flex-col gap-2">
-      <Button
-        variant="ghost"
-        className="-ms-3 self-start"
-        aria-expanded={open}
-        aria-controls={listId}
-        onClick={() => setOpen((value) => !value)}
-      >
-        <ChevronDown
-          aria-hidden="true"
-          className={cn('transition-transform', open && 'rotate-180')}
-        />
-        {t('centre.history.toggle')}
-      </Button>
-      <div id={listId} hidden={!open}>
+    <section>
+      <Disclosure as="h2" title={t('centre.history.toggle')}>
         {requests.length === 0 ? (
           <p className="text-muted-foreground">{t('centre.history.empty')}</p>
         ) : (
-          <ul className="flex flex-col gap-2">
+          <ul className="flex flex-col">
             {requests.map((request) => (
-              <li
-                key={request.id}
-                className="rounded-[var(--radius-input)] border border-border bg-surface p-3"
-              >
+              <li key={request.id} className="border-b border-border py-3">
                 <p>
                   {t('centre.history.line', {
                     kind: t(`centre.history.kind.${request.kind}`),
@@ -308,7 +295,7 @@ function History({
                   })}
                 </p>
                 {request.status === 'rejected' ? (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-body-sm text-muted-foreground">
                     {rejected(request.rejection_reason)}
                   </p>
                 ) : null}
@@ -316,7 +303,7 @@ function History({
             ))}
           </ul>
         )}
-      </div>
+      </Disclosure>
     </section>
   )
 }
@@ -327,14 +314,10 @@ function RowsSkeleton() {
     <div role="status" aria-busy="true" className="flex flex-col gap-3">
       <span className="sr-only">{t('centre.loading')}</span>
       {[0, 1].map((index) => (
-        <div
-          key={index}
-          aria-hidden="true"
-          className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-border bg-surface p-4"
-        >
-          <Skeleton className="h-5 w-40" />
+        <div key={index} aria-hidden="true" className="tonal panel gap-2">
+          <Skeleton className="h-5 w-[min(100%,10rem)]" />
           <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-11 w-32" />
+          <Skeleton className="min-h-touch w-32 rounded-pill" />
         </div>
       ))}
     </div>

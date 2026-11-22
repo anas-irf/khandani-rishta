@@ -4,13 +4,13 @@ import { Search } from 'lucide-react'
 import { type FormEvent, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { EmptyState } from '~/components/common/EmptyState'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
 import { RelativeTime } from '~/components/common/RelativeTime'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '~/components/ui/native-select'
 import { formatDate } from '~/lib/format'
-import { AdminList, type Column } from './components/DataTable'
+import { AdminList, type Column, tableLinkClass } from './components/DataTable'
 import { FormField } from './components/FormField'
 import { StatusBadge } from './components/StatusBadge'
 import { fullName } from './names'
@@ -52,7 +52,7 @@ export function UsersScreen() {
           to="/admin/users/$userId"
           params={{ userId: item.user_id }}
           data-queue-link=""
-          className="font-medium text-primary underline-offset-2 hover:underline"
+          className={tableLinkClass}
         >
           {item.email ?? fullName(item.first_name, item.last_name, item.public_code)}
         </Link>
@@ -88,89 +88,90 @@ export function UsersScreen() {
   ]
 
   return (
-    <div ref={container} className="flex flex-col gap-4">
-      <PageHeader title={t('users.title')} description={t('users.description')} />
-      <form
-        aria-label={t('users.filters')}
-        onSubmit={submit}
-        noValidate
-        className="flex flex-wrap items-start gap-3"
-      >
-        <FormField
-          label={t('users.search')}
-          hint={t('users.search_hint')}
-          error={error}
-          className="w-96"
+    <div ref={container} className="flex min-w-0 flex-1 flex-col">
+      <Page title={t('users.title')} description={t('users.description')}>
+        <form
+          aria-label={t('users.filters')}
+          onSubmit={submit}
+          noValidate
+          className="flex flex-wrap items-start gap-3"
         >
-          {(props) => (
-            <Input
-              {...props}
-              type="search"
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-            />
-          )}
-        </FormField>
-        <FormField label={t('users.status')} className="w-48">
-          {(props) => (
-            <NativeSelect
-              {...props}
-              value={filters.status ?? ''}
-              onChange={(event) =>
-                setFilters({
-                  status: (event.target.value || undefined) as
-                    | (typeof USER_STATUSES)[number]
-                    | undefined,
-                })
-              }
-            >
-              <NativeSelectOption value="">{t('users.any')}</NativeSelectOption>
-              {USER_STATUSES.map((status) => (
-                <NativeSelectOption key={status} value={status}>
-                  {t(`status.${status}`)}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
-          )}
-        </FormField>
-        <FormField label={t('users.role')} className="w-48">
-          {(props) => (
-            <NativeSelect
-              {...props}
-              value={filters.role ?? ''}
-              onChange={(event) =>
-                setFilters({
-                  role: (event.target.value || undefined) as
-                    | (typeof USER_ROLES)[number]
-                    | undefined,
-                })
-              }
-            >
-              <NativeSelectOption value="">{t('users.any')}</NativeSelectOption>
-              {USER_ROLES.map((role) => (
-                <NativeSelectOption key={role} value={role}>
-                  {t(`role.${role}`)}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
-          )}
-        </FormField>
-        <Button type="submit" className="mt-6">
-          <Search aria-hidden="true" />
-          {t('actions.search')}
-        </Button>
-      </form>
-      {searching ? (
-        <AdminList
-          caption={t('users.caption')}
-          query={query}
-          columns={columns}
-          getKey={(item) => item.user_id}
-          empty={<EmptyState title={t('users.empty')} />}
-        />
-      ) : (
-        <EmptyState icon={Search} title={t('users.prompt_title')} text={t('users.prompt_text')} />
-      )}
+          <FormField
+            label={t('users.search')}
+            hint={t('users.search_hint')}
+            error={error}
+            className="w-96"
+          >
+            {(props) => (
+              <Input
+                {...props}
+                type="search"
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+              />
+            )}
+          </FormField>
+          <FormField label={t('users.status')} className="w-48">
+            {(props) => (
+              <NativeSelect
+                {...props}
+                value={filters.status ?? ''}
+                onChange={(event) =>
+                  setFilters({
+                    status: (event.target.value || undefined) as
+                      | (typeof USER_STATUSES)[number]
+                      | undefined,
+                  })
+                }
+              >
+                <NativeSelectOption value="">{t('users.any')}</NativeSelectOption>
+                {USER_STATUSES.map((status) => (
+                  <NativeSelectOption key={status} value={status}>
+                    {t(`status.${status}`)}
+                  </NativeSelectOption>
+                ))}
+              </NativeSelect>
+            )}
+          </FormField>
+          <FormField label={t('users.role')} className="w-48">
+            {(props) => (
+              <NativeSelect
+                {...props}
+                value={filters.role ?? ''}
+                onChange={(event) =>
+                  setFilters({
+                    role: (event.target.value || undefined) as
+                      | (typeof USER_ROLES)[number]
+                      | undefined,
+                  })
+                }
+              >
+                <NativeSelectOption value="">{t('users.any')}</NativeSelectOption>
+                {USER_ROLES.map((role) => (
+                  <NativeSelectOption key={role} value={role}>
+                    {t(`role.${role}`)}
+                  </NativeSelectOption>
+                ))}
+              </NativeSelect>
+            )}
+          </FormField>
+          <Button type="submit" className="mt-[calc(1.375rem+8px)]">
+            <Search aria-hidden="true" />
+            {t('actions.search')}
+          </Button>
+        </form>
+        {searching ? (
+          <AdminList
+            caption={t('users.caption')}
+            query={query}
+            columns={columns}
+            getKey={(item) => item.user_id}
+            empty={<EmptyState title={t('users.empty')} />}
+          />
+        ) : (
+          <EmptyState icon={Search} title={t('users.prompt_title')} text={t('users.prompt_text')} />
+        )}
+      </Page>
     </div>
   )
 }

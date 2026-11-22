@@ -4,7 +4,7 @@ import { CircleCheck, Search } from 'lucide-react'
 import { type FormEvent, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { EmptyState } from '~/components/common/EmptyState'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
 import { RelativeTime } from '~/components/common/RelativeTime'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
@@ -12,7 +12,7 @@ import { Input } from '~/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '~/components/ui/native-select'
 import { useLabelOf } from '~/lib/reference'
 import { AdminPhoto } from './components/AdminPhoto'
-import { AdminList, type Column } from './components/DataTable'
+import { AdminList, type Column, tableLinkClass } from './components/DataTable'
 import { FormField } from './components/FormField'
 import { StatusBadge } from './components/StatusBadge'
 import { fullName } from './names'
@@ -50,8 +50,8 @@ export function ProfilesScreen() {
           gender={item.gender}
           size="thumb"
           width={40}
-          height={40}
-          className="size-10 rounded-md"
+          height={50}
+          className="h-[50px] w-[40px]"
         />
       ),
     },
@@ -63,7 +63,7 @@ export function ProfilesScreen() {
           to="/admin/profiles/$profileId"
           params={{ profileId: item.profile_id }}
           data-queue-link=""
-          className="font-medium text-primary underline-offset-2 hover:underline"
+          className={tableLinkClass}
         >
           {fullName(item.first_name, item.last_name, item.public_code)}
           <span className="ms-2 font-normal text-muted-foreground">{item.public_code}</span>
@@ -112,59 +112,60 @@ export function ProfilesScreen() {
   const isQueue = filters.status === 'pending_review' && !filters.q
 
   return (
-    <div ref={container} className="flex flex-col gap-4">
-      <PageHeader title={t('profiles.title')} description={t('profiles.description')} />
-      <form
-        aria-label={t('profiles.filters')}
-        onSubmit={submit}
-        className="flex flex-wrap items-end gap-3"
-      >
-        <FormField label={t('profiles.status')} className="w-56">
-          {(props) => (
-            <NativeSelect
-              {...props}
-              value={filters.status}
-              onChange={(event) =>
-                setFilters({ status: event.target.value as (typeof PROFILE_STATUSES)[number] })
-              }
-            >
-              {PROFILE_STATUSES.map((status) => (
-                <NativeSelectOption key={status} value={status}>
-                  {t(`status.${status}`)}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
-          )}
-        </FormField>
-        <FormField label={t('profiles.search')} className="w-80">
-          {(props) => (
-            <Input
-              {...props}
-              type="search"
-              value={draft}
-              placeholder={t('profiles.search_placeholder')}
-              onChange={(event) => setDraft(event.target.value)}
-            />
-          )}
-        </FormField>
-        <Button type="submit">
-          <Search aria-hidden="true" />
-          {t('actions.search')}
-        </Button>
-      </form>
-      <AdminList
-        caption={t('profiles.caption')}
-        query={query}
-        columns={columns}
-        getKey={(item) => item.profile_id}
-        empty={
-          isQueue ? (
-            <EmptyState icon={CircleCheck} title={t('list.queue_empty')} />
-          ) : (
-            <EmptyState title={t('profiles.empty')} />
-          )
-        }
-      />
+    <div ref={container} className="flex min-w-0 flex-1 flex-col">
+      <Page title={t('profiles.title')} description={t('profiles.description')}>
+        <form
+          aria-label={t('profiles.filters')}
+          onSubmit={submit}
+          className="flex flex-wrap items-end gap-3"
+        >
+          <FormField label={t('profiles.status')} className="w-56">
+            {(props) => (
+              <NativeSelect
+                {...props}
+                value={filters.status}
+                onChange={(event) =>
+                  setFilters({ status: event.target.value as (typeof PROFILE_STATUSES)[number] })
+                }
+              >
+                {PROFILE_STATUSES.map((status) => (
+                  <NativeSelectOption key={status} value={status}>
+                    {t(`status.${status}`)}
+                  </NativeSelectOption>
+                ))}
+              </NativeSelect>
+            )}
+          </FormField>
+          <FormField label={t('profiles.search')} className="w-80">
+            {(props) => (
+              <Input
+                {...props}
+                type="search"
+                value={draft}
+                placeholder={t('profiles.search_placeholder')}
+                onChange={(event) => setDraft(event.target.value)}
+              />
+            )}
+          </FormField>
+          <Button type="submit">
+            <Search aria-hidden="true" />
+            {t('actions.search')}
+          </Button>
+        </form>
+        <AdminList
+          caption={t('profiles.caption')}
+          query={query}
+          columns={columns}
+          getKey={(item) => item.profile_id}
+          empty={
+            isQueue ? (
+              <EmptyState icon={CircleCheck} title={t('list.queue_empty')} />
+            ) : (
+              <EmptyState title={t('profiles.empty')} />
+            )
+          }
+        />
+      </Page>
     </div>
   )
 }

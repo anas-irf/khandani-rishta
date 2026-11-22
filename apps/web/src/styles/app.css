@@ -1,65 +1,272 @@
 @import "tailwindcss" source('../');
-@import "@fontsource-variable/inter";
+@import "@fontsource-variable/source-sans-3";
+@import "@fontsource-variable/source-sans-3/wght-italic.css";
+@import "@fontsource/instrument-serif/400.css";
+@import "@fontsource/instrument-serif/400-italic.css";
 
 /*
- * Design tokens (specs/17-web-app.md section 9.3). The Android app uses the same values.
- * Components use the Tailwind names (bg-primary, text-muted-foreground, border-border, ...)
- * and never raw colours, so a token change applies everywhere.
+ * Mehfil Heritage design tokens. DESIGN.md is the source (specs/17-web-app.md section 9.3).
+ *
+ * Tailwind's own palette, type scale, radii, shadows and breakpoints are removed, so only the
+ * tokens below make a class: `bg-stone-100` or `text-sm` produce nothing. Components use the
+ * token names (bg-primary, text-body-md, rounded-pill, ...) and never raw colours.
+ *
+ * Text sizes are rem, so they follow the reader's font size. Radii, borders, touch targets and
+ * gutters are px, so larger text gets the room instead of the spacing around it.
+ *
+ * A new text, radius, shadow, spacing or container token must also be registered in `cn`
+ * (src/lib/utils.ts), or tailwind-merge takes it for a colour and drops it.
  */
-@theme {
-  --color-primary: #0f766e;
-  --color-primary-hover: #115e59;
-  --color-primary-soft: #ccfbf1;
-  --color-primary-foreground: #ffffff;
+@theme static {
+  --color-*: initial;
+  --text-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --breakpoint-*: initial;
 
-  --color-accent: #b45309;
-  --color-accent-soft: #fef3c7;
+  /* Colour (DESIGN.md 2.4) */
+  --color-primary: #6e1d34;
+  --color-primary-hover: #561528;
+  --color-primary-soft: #f3e4e6;
+  --color-primary-foreground: #faf6f0;
+
+  --color-accent: #9c7430;
+  --color-accent-soft: #f6ecd9;
   --color-accent-foreground: #ffffff;
+  --color-accent-decor: #b68b40;
+  --color-accent-on-inverse: #c9a25e;
 
-  --color-success: #15803d;
-  --color-success-soft: #dcfce7;
-  --color-warning: #b45309;
-  --color-warning-soft: #fef3c7;
-  --color-danger: #b91c1c;
-  --color-danger-hover: #991b1b;
-  --color-danger-soft: #fee2e2;
+  --color-success: #2d6350;
+  --color-success-soft: #e3ede6;
+  --color-success-foreground: #ffffff;
+  --color-warning: #8a5300;
+  --color-warning-soft: #fdf1dc;
+  --color-danger: #a4262c;
+  --color-danger-hover: #861c22;
+  --color-danger-soft: #fbe9e7;
   --color-danger-foreground: #ffffff;
 
-  --color-background: #fafaf9;
-  --color-surface: #ffffff;
-  --color-foreground: #1c1917;
-  --color-muted: #f5f5f4;
-  --color-muted-foreground: #57534e;
-  --color-border: #e7e5e4;
-  /* Input borders need 3:1 against white (WCAG 1.4.11). */
-  --color-input: #78716c;
-  --color-ring: #0f766e;
+  --color-background: #faf6f0;
+  --color-surface: #fffcf7;
+  --color-muted: #f2eae0;
+  --color-muted-strong: #eadfd2;
+  --color-foreground: #23191d;
+  --color-foreground-secondary: #3d3034;
+  --color-muted-foreground: #5a4b4f;
+  --color-border: #e3d7c6;
+  /* Control borders need 3:1 against the background (WCAG 1.4.11). */
+  --color-input: #8f7e77;
+  --color-ring: #6e1d34;
 
-  --radius-card: 12px;
-  --radius-input: 8px;
+  --color-inverse: #23191d;
+  --color-inverse-foreground: #f2eae0;
+  --color-inverse-muted: #cdbfb8;
 
-  --font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* Type (DESIGN.md 3.1 to 3.3). Serif is for display text, the wordmark and monograms only. */
+  --font-sans: "Source Sans 3 Variable", "Source Sans 3", "Noto Sans", ui-sans-serif, sans-serif;
+  --font-display: "Instrument Serif", Georgia, serif;
   --font-urdu: "Noto Nastaliq Urdu", serif;
 
+  --text-display-lg: clamp(2.875rem, 7.6vw, 7rem);
+  --text-display-lg--line-height: 1.02;
+  --text-display-lg--letter-spacing: -0.01em;
+  --text-display-md: clamp(2.25rem, 4.4vw, 4rem);
+  --text-display-md--line-height: 1.05;
+  --text-display-md--letter-spacing: -0.01em;
+  --text-display-sm: 2.125rem;
+  --text-display-sm--line-height: 2.5rem;
+  --text-display-sm--letter-spacing: -0.01em;
+
+  /* The profile name may grow to 40 / 46 on wide screens (DESIGN.md 3.2). */
+  --text-headline-lg-wide: 2.5rem;
+  --text-headline-lg-wide--line-height: 2.875rem;
+  --text-headline-lg-wide--font-weight: 700;
+  --text-headline-lg: 2rem;
+  --text-headline-lg--line-height: 2.375rem;
+  --text-headline-lg--font-weight: 700;
+  --text-headline-md: 1.75rem;
+  --text-headline-md--line-height: 2.125rem;
+  --text-headline-md--font-weight: 700;
+  --text-headline-sm: 1.5rem;
+  --text-headline-sm--line-height: 1.875rem;
+  --text-headline-sm--font-weight: 700;
+
+  --text-title-lg: 1.375rem;
+  --text-title-lg--line-height: 1.75rem;
+  --text-title-lg--font-weight: 700;
+  --text-title-md: 1.1875rem;
+  --text-title-md--line-height: 1.625rem;
+  --text-title-md--font-weight: 600;
+  --text-title-sm: 1.0625rem;
+  --text-title-sm--line-height: 1.5rem;
+  --text-title-sm--font-weight: 600;
+
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.875rem;
+  --text-body-md: 1.0625rem;
+  --text-body-md--line-height: 1.625rem;
+  --text-body-sm: 1rem;
+  --text-body-sm--line-height: 1.5rem;
+
+  --text-label-lg: 1.0625rem;
+  --text-label-lg--line-height: 1.375rem;
+  --text-label-lg--font-weight: 600;
+  --text-label-md: 1rem;
+  --text-label-md--line-height: 1.25rem;
+  --text-label-md--font-weight: 600;
+  --text-label-sm: 0.9375rem;
+  --text-label-sm--line-height: 1.25rem;
+  --text-label-sm--font-weight: 600;
+
+  /* 18 / 700: large buttons, switch labels, nudge titles, tile names (DESIGN.md 6). */
+  --text-emphasis: 1.125rem;
+  --text-emphasis--line-height: 1.5rem;
+  --text-emphasis--font-weight: 700;
+  /* The numbers people compare: the match pill (6.5) and the match ring. */
+  --text-figure: 1.25rem;
+  --text-figure--line-height: 1.5rem;
+  --text-figure--font-weight: 700;
+  --text-figure-lg: 2.625rem;
+  --text-figure-lg--line-height: 1;
+  --text-figure-lg--font-weight: 700;
+
+  --text-caption: 0.9375rem;
+  --text-caption--line-height: 1.375rem;
+  --text-legal: 0.875rem;
+  --text-legal--line-height: 1.25rem;
+
+  --text-wordmark: 1.5rem;
+  --text-wordmark--line-height: 1;
+  --text-wordmark-lg: 1.75rem;
+  --text-wordmark-lg--line-height: 1;
+
+  /* Shape (DESIGN.md 4.1). An arch is a half circle on a rectangle: use it on 4:5 boxes. */
+  --radius-check: 7px;
+  --radius-sm: 10px;
+  --radius-item: 14px;
+  --radius-md: 16px;
+  --radius-row: 20px;
+  --radius-lg: 24px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+  --radius-sheet: 24px 24px 0 0;
+  --radius-card: var(--radius-lg);
+  --radius-input: var(--radius-md);
+  --radius-arch: 50% 50% 16px 16px / 40% 40% 16px 16px;
+  --radius-arch-inner: 50% 50% 12px 12px / 40% 40% 12px 12px;
+  --radius-arch-sm: 50% 50% 8px 8px / 40% 40% 8px 8px;
+  --radius-arch-lg: 50% 50% 22px 22px / 40% 40% 22px 22px;
+  --radius-arch-step: 50% 50% 24px 24px / 120px 120px 24px 24px;
+
+  /* Space and size (DESIGN.md 5). The spacing step stays Tailwind's 4 px. */
+  --size-touch: 48px;
+  --size-touch-lg: 56px;
+  --spacing-touch: var(--size-touch);
+  --spacing-touch-lg: var(--size-touch-lg);
+  --spacing-gutter: clamp(20px, 4vw, 56px);
+
+  --container-content: 73rem;
+  --container-column: 48rem;
+  --container-form: 35rem;
+  --container-measure: 64ch;
+
+  /* All in px, so Tailwind can order them. `wide` is the one layout switch (17 section 9.1). */
+  --breakpoint-sm: 640px;
   --breakpoint-wide: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-roomy: 1100px;
+  --breakpoint-xl: 1280px;
+
+  /* Elevation: only floating layers cast a shadow (DESIGN.md 5.3). */
+  --shadow-menu: 0 24px 48px -24px rgb(35 25 29 / 0.45);
+  --shadow-panel: 0 30px 60px -40px rgb(35 25 29 / 0.55);
+  --shadow-bar: 0 -18px 36px -26px rgb(35 25 29 / 0.55);
+
+  /* Motion (DESIGN.md 5.4) */
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --default-transition-duration: var(--duration-fast);
+  --default-transition-timing-function: var(--ease-standard);
 }
+
+/* Short windows keep the cards at their narrowest (DESIGN.md 5.2). */
+@custom-variant short (@media (max-height: 820px));
 
 @layer base {
   html {
     color-scheme: light;
     -webkit-text-size-adjust: 100%;
+    background-color: var(--color-background);
   }
 
-  html,
+  /*
+   * What takes focus or is linked to keeps clear of the sticky bars, which publish their heights.
+   * A margin on the target and not padding on the page: with padding, each focus on a control
+   * inside a bar scrolls the page by the height of that bar.
+   */
+  :where(a[href], button, input, select, textarea, summary, [tabindex], main [id]) {
+    scroll-margin-block: calc(var(--app-bar, 0px) + var(--screen-bar, 0px) + 8px)
+      calc(var(--bottom-nav, 0px) + var(--action-bar, 0px) + 8px);
+  }
+
+  /* The bars themselves, and what scrolls inside itself. */
+  :where(
+    [data-sticky-bar],
+    [data-fills-window],
+    [role="dialog"],
+    [role="alertdialog"],
+    [role="menu"]
+  ),
+  :where(
+      [data-sticky-bar],
+      [data-fills-window],
+      [role="dialog"],
+      [role="alertdialog"],
+      [role="menu"]
+    )
+    * {
+    scroll-margin-block: 0;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
     font-family: var(--font-sans);
-    font-size: 16px;
-    line-height: 1.5;
+    /* 17 px at the default font size. `html` keeps the reader's own size, so rem follows it. */
+    font-size: var(--text-body-md);
+    line-height: var(--text-body-md--line-height);
+    overflow-wrap: break-word;
+  }
+
+  /* Nastaliq needs a line height of 1.9 or more (DESIGN.md 3.1). */
+  html[lang="ur"] {
+    --text-headline-lg-wide--line-height: 1.9;
+    --text-headline-lg--line-height: 1.9;
+    --text-headline-md--line-height: 1.9;
+    --text-headline-sm--line-height: 1.9;
+    --text-title-lg--line-height: 1.9;
+    --text-title-md--line-height: 1.9;
+    --text-title-sm--line-height: 1.9;
+    --text-body-lg--line-height: 1.9;
+    --text-body-md--line-height: 1.9;
+    --text-body-sm--line-height: 1.9;
+    --text-label-lg--line-height: 1.9;
+    --text-label-md--line-height: 1.9;
+    --text-label-sm--line-height: 1.9;
+    --text-emphasis--line-height: 1.9;
+    --text-caption--line-height: 1.9;
+    --text-legal--line-height: 1.9;
   }
 
   html[lang="ur"] body {
     font-family: var(--font-urdu), var(--font-sans);
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
   }
 
   *,
@@ -68,9 +275,43 @@
     border-color: var(--color-border);
   }
 
+  /* Without these, a long label inside a fieldset or a select widens the page at large text. */
+  fieldset {
+    min-inline-size: 0;
+  }
+
+  select,
+  input,
+  textarea {
+    max-width: 100%;
+  }
+
+  button:not(:disabled),
+  summary,
+  label[for],
+  [role="menuitem"],
+  [role="option"] {
+    cursor: pointer;
+  }
+
+  /* Icons keep their size when the text beside them wraps. */
+  svg {
+    flex-shrink: 0;
+  }
+
+  ::selection {
+    background-color: var(--color-primary-soft);
+  }
+
+  /* 3 px ring, 3 px away. Primary and inverse bands set `--focus` (DESIGN.md 4.2). */
   :focus-visible {
-    outline: 2px solid var(--color-ring);
-    outline-offset: 2px;
+    outline: 3px solid var(--focus, var(--color-ring));
+    outline-offset: 3px;
+  }
+
+  /* A focus target that is not a control: skip-link targets and dialog bodies. */
+  [tabindex="-1"]:focus-visible {
+    outline: none;
   }
 
   /* Member photos are a deterrent-only protection (17 section 11). */
@@ -97,13 +338,300 @@
   }
 }
 
+/* The content column: up to 1,168, and 1,280 with its gutters (DESIGN.md 5.2). */
 @utility container-app {
   width: 100%;
-  max-width: 1120px;
+  max-width: calc(var(--container-content) + 2 * var(--spacing-gutter));
   margin-inline: auto;
-  padding-inline: 1rem;
+  padding-inline: var(--spacing-gutter);
 }
 
 @utility skeleton {
-  @apply animate-pulse rounded-md bg-muted;
+  @apply animate-pulse rounded-sm bg-muted-strong;
+}
+
+/*
+ * Tonal bands (DESIGN.md 6.10). A band sets its fill in `--band` and, in `--tonal`, the fill that
+ * stands out on it, so a chip, row or panel inside never vanishes into the band behind it.
+ */
+@utility band-page {
+  --band: var(--color-background);
+  --tonal: var(--color-muted);
+  background-color: var(--band);
+}
+
+@utility band-sand {
+  --band: var(--color-muted);
+  --tonal: var(--color-background);
+  background-color: var(--band);
+}
+
+@utility band-success {
+  --band: var(--color-success-soft);
+  --tonal: var(--color-background);
+  background-color: var(--band);
+}
+
+@utility band-primary {
+  --band: var(--color-primary);
+  --focus: var(--color-primary-foreground);
+  background-color: var(--band);
+  color: var(--color-primary-foreground);
+}
+
+@utility band-inverse {
+  --band: var(--color-inverse);
+  --focus: var(--color-inverse-foreground);
+  background-color: var(--band);
+  color: var(--color-inverse-foreground);
+}
+
+/* Children alternate background and sand, counting only those that render. */
+@utility band-stack {
+  & > :nth-child(odd) {
+    --band: var(--color-background);
+    --tonal: var(--color-muted);
+    background-color: var(--band);
+  }
+  & > :nth-child(even) {
+    --band: var(--color-muted);
+    --tonal: var(--color-background);
+    background-color: var(--band);
+  }
+}
+
+/* A band inside a column that still reaches both edges. The root needs `overflow-x-clip`. */
+@utility band-bleed {
+  box-shadow: 0 0 0 100vmax var(--band);
+  clip-path: inset(0 -100vmax);
+}
+
+/*
+ * The fill that stands out on the band behind it. What is inside then stands out with the band's
+ * own fill. `:where` keeps that rule weaker than a band or a `--tonal` set on the child.
+ */
+@utility tonal {
+  background-color: var(--tonal, var(--color-muted));
+  :where(&) > * {
+    --tonal: var(--band, var(--color-background));
+  }
+}
+
+/* Gold dots on an 18 px grid: the photo that is not there (DESIGN.md 2.1). */
+/* A block of its own on a band, with `tonal` for its fill. */
+@utility panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-radius: var(--radius-xl);
+  padding: 20px;
+}
+/* A label, its control and what is said about them. */
+@utility field-stack {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: calc(var(--spacing) * 2);
+}
+@utility bullet-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing);
+  padding-inline-start: calc(var(--spacing) * 5);
+  list-style-type: disc;
+  & > li::marker {
+    color: var(--color-accent-decor);
+  }
+}
+@utility lattice {
+  background-color: var(--tonal, var(--color-muted));
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--color-accent-decor) 24%, transparent) 1.4px,
+    transparent 1.9px
+  );
+  background-size: 18px 18px;
+}
+
+/* The landing hero: display large, held back only so far that "khandani" never breaks at 200%. */
+@utility display-hero {
+  font-size: min(var(--text-display-lg), 22vw);
+  line-height: var(--text-display-lg--line-height);
+  letter-spacing: var(--text-display-lg--letter-spacing);
+}
+
+/*
+ * Small arches in a grid (own photos, uploads): three across, two where larger text needs the
+ * room, and never one photo blown up to the width of the phone.
+ */
+@utility arch-grid {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fill,
+      minmax(max((100% - 25px) / 3, min(5.75rem, (100% - 13px) / 2)), 1fr)
+    );
+  gap: 12px;
+}
+
+/* The gold underline of a text link (DESIGN.md 6.2). */
+@utility link-gold {
+  text-decoration-line: underline;
+  text-decoration-color: var(--color-accent-decor);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+}
+
+/* One link that covers its nearest positioned ancestor, with the ring drawn around the whole. */
+@utility stretched-link {
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-lg);
+  }
+  &:focus-visible {
+    outline: none;
+  }
+  &:focus-visible::after {
+    outline: 3px solid var(--focus, var(--color-ring));
+    outline-offset: 3px;
+  }
+}
+
+/* Grows the hit area of a small control to 48 by 48 without moving anything. */
+@utility tap-target {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: min(0px, calc((100% - var(--size-touch)) / 2));
+  }
+}
+
+/*
+ * A row that scrolls sideways, edge to edge. It is the containing block of its screen-reader
+ * text, which would otherwise widen the page, and it leaves room for focus rings.
+ */
+@utility scroll-row {
+  position: relative;
+  overflow-x: auto;
+  margin-inline: calc(-1 * var(--spacing-gutter));
+  margin-block-start: -8px;
+  padding-inline: var(--spacing-gutter);
+  padding-block: 8px 12px;
+  scroll-padding-inline: var(--spacing-gutter);
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-input) transparent;
+  @media (pointer: coarse) {
+    scrollbar-width: none;
+  }
+  @variant max-wide {
+    scrollbar-width: none;
+  }
+}
+
+/*
+ * Full-size profile cards (DESIGN.md 6.9). On wide screens each card spans five rows and takes
+ * their sizes with subgrid, so the parts line up across a row. On phones each keeps its height.
+ */
+@utility card-rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: min(100%, clamp(272px, 30cqi, 340px));
+  align-items: start;
+  column-gap: clamp(20px, 2.8vw, 40px);
+  @variant wide {
+    grid-template-rows: repeat(5, auto);
+    align-items: stretch;
+  }
+  @variant short {
+    grid-auto-columns: min(100%, 272px);
+  }
+}
+
+@utility card-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 340px);
+  justify-content: center;
+  row-gap: 40px;
+  @variant wide {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 272px), 1fr));
+    justify-content: normal;
+    /* Narrower than in the rail, so four cards of 272 share the content column. */
+    column-gap: clamp(16px, 2vw, 24px);
+    row-gap: 0;
+    & > * {
+      max-width: 340px;
+    }
+  }
+}
+
+/*
+ * Toasts (DESIGN.md 6.20). Sonner injects its styles outside any layer, so these are unlayered
+ * too and one attribute more specific.
+ */
+/* Sonner's own theme sets these with two attributes, so this asks for one more. */
+:root [data-sonner-toaster][data-sonner-theme] {
+  --normal-bg: var(--color-inverse);
+  --normal-bg-hover: var(--color-inverse);
+  --normal-text: var(--color-inverse-foreground);
+  --normal-border: var(--color-inverse);
+  --normal-border-hover: var(--color-inverse);
+  --border-radius: var(--radius-lg);
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] {
+  --focus: var(--color-inverse-foreground);
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  font-family: var(--font-sans);
+  font-size: var(--text-body-md);
+  line-height: var(--text-body-md--line-height);
+  box-shadow: var(--shadow-menu);
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-title] {
+  font-weight: 600;
+  line-height: var(--text-body-md--line-height);
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-description] {
+  color: var(--color-inverse-muted);
+  font-size: var(--text-caption);
+  line-height: var(--text-caption--line-height);
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-button] {
+  height: auto;
+  min-height: var(--size-touch);
+  padding-inline: 14px;
+  border-radius: var(--radius-pill);
+  background-color: transparent;
+  color: var(--color-accent-on-inverse);
+  font-size: var(--text-label-lg);
+  font-weight: 700;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-button]:focus-visible {
+  box-shadow: none;
+  outline: 3px solid var(--color-inverse-foreground);
+  outline-offset: 1px;
+}
+
+/*
+ * Inside the toast, at its end. On a phone Sonner's corner puts half of the 48 hit area outside
+ * the window. `:root` outweighs the styles that Sonner adds when it loads.
+ */
+:root [data-sonner-toaster] [data-sonner-toast][data-styled="true"] {
+  padding-inline-end: 56px;
+}
+
+:root [data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-close-button] {
+  inset-inline: auto 14px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+:root [data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-close-button] svg {
+  width: 16px;
+  height: 16px;
 }

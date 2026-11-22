@@ -158,7 +158,7 @@ export function EducationCareerForm({
                   )}
                 </form.AppField>
                 {choosingCurrency ? (
-                  <div className="grid gap-1.5">
+                  <div className="grid gap-2">
                     <Label htmlFor={currencyId}>{t('education_career.currency_label')}</Label>
                     <NativeSelect
                       id={currencyId}
@@ -180,7 +180,7 @@ export function EducationCareerForm({
                   <Button
                     type="button"
                     variant="link"
-                    className="h-11 w-fit px-0"
+                    className="self-start"
                     onClick={() => setChoosingCurrency(true)}
                   >
                     {t('education_career.change_currency')}

@@ -97,15 +97,41 @@ describe('MemberPhoto', () => {
     const image = await screen.findByRole('img', { name: 'Photo of Ayesha K.' })
     expect(image).toHaveAttribute('src', 'https://r2.test/blur.jpg')
     expect(image.className).not.toMatch(/blur/)
+    expect(image.getAttribute('style') ?? '').not.toMatch(/blur|filter/)
     expect(screen.getByText('Photo is private')).toBeVisible()
+    // The Mehfil layers sit over the received image: the veil and the monogram, nothing on it.
+    const veil = document.querySelector('[data-slot="photo-veil"]')
+    expect(veil).toHaveTextContent('AK')
+    // Without it the 58 px letters sit in a 26 px line, on the diamond and the pill.
+    expect(veil?.querySelector('.font-display')).toHaveClass('leading-none')
+    expect(veil?.className).not.toMatch(/blur/)
+    expect(image).toHaveAttribute('data-member-photo')
   })
 
-  it('draws a silhouette by gender when there is no photo', async () => {
+  it('shows a lock with the words for screen readers on a thumb', async () => {
+    const blurred = makePhotoView({ is_blurred: true })
+    renderWithProviders(() => (
+      <MemberPhoto
+        photo={blurred}
+        name="Ayesha K."
+        gender="female"
+        size="thumb"
+        width={60}
+        height={76}
+      />
+    ))
+
+    await screen.findByRole('img', { name: 'Photo of Ayesha K.' })
+    expect(screen.getByText('Photo is private')).toHaveClass('sr-only')
+    expect(document.querySelector('[data-slot="photo-veil"]')).toBeNull()
+  })
+
+  it('draws the monogram when there is no photo', async () => {
     renderWithProviders(() => (
       <>
         <MemberPhoto
           photo={null}
-          name="Ahmed R."
+          name="Muhammad Abdul Rehman S."
           gender="male"
           size="thumb"
           width={72}
@@ -123,10 +149,43 @@ describe('MemberPhoto', () => {
     ))
 
     const placeholders = await screen.findAllByRole('img', { name: 'No photo added yet' })
+    expect(placeholders.map((node) => node.textContent)).toEqual(['MS', 'AK'])
+    expect(placeholders.map((node) => node.getAttribute('data-photo-state'))).toEqual([
+      'none',
+      'none',
+    ])
+    expect(screen.queryByRole('img', { name: /Photo of/ })).not.toBeInTheDocument()
+  })
+
+  it('draws a silhouette by gender when there is no name either', async () => {
+    renderWithProviders(() => (
+      <>
+        <MemberPhoto photo={null} name={null} gender="male" size="thumb" width={60} height={76} />
+        <MemberPhoto photo={null} name={null} gender="female" size="thumb" width={60} height={76} />
+      </>
+    ))
+
+    const placeholders = await screen.findAllByRole('img', { name: 'No photo added yet' })
     expect(placeholders.map((node) => node.getAttribute('data-silhouette'))).toEqual([
       'male',
       'female',
     ])
-    expect(screen.queryByRole('img', { name: /Photo of/ })).not.toBeInTheDocument()
+  })
+
+  it('never says "no photo" for a photo that did not load', async () => {
+    renderWithProviders(() => (
+      <MemberPhoto
+        photo={photo}
+        name="Ayesha K."
+        gender="female"
+        size="medium"
+        width={400}
+        height={500}
+      />
+    ))
+
+    fireEvent.error(await screen.findByRole('img', { name: 'Photo of Ayesha K.' }))
+    expect(screen.getByRole('img', { name: 'Photo of Ayesha K.' })).toHaveTextContent('AK')
+    expect(screen.queryByText('No photo added yet')).not.toBeInTheDocument()
   })
 })

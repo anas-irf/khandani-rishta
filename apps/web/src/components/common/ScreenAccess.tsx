@@ -11,6 +11,8 @@ import { StatusPanel } from './StatusPanel'
 export function ScreenAccess({
   screen,
   allowed = false,
+  header,
+  panelTitleAs,
   children,
 }: {
   /** The screen ID of 16. */
@@ -20,10 +22,21 @@ export function ScreenAccess({
    * interest counterpart, which stays open while paused or closed (17 section 4.3).
    */
   allowed?: boolean
+  /** Stays above the panel: the way back of a screen that has no header of its own then. */
+  header?: ReactNode
+  /** `h2` when that header holds the page's `h1`. */
+  panelTitleAs?: 'h1' | 'h2'
   children: ReactNode
 }) {
   const me = useCurrentMe()
   const panel = allowed ? null : statusPanelFor(me.profile.status, requiredLevel(screen))
-  if (panel) return <StatusPanel status={panel} />
+  if (panel) {
+    return (
+      <>
+        {header}
+        <StatusPanel status={panel} titleAs={panelTitleAs} />
+      </>
+    )
+  }
   return <>{children}</>
 }

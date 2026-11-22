@@ -4,10 +4,12 @@ import { UserX } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { MonogramArch } from '~/components/common/Arch'
 import { ConfirmDialog } from '~/components/common/ConfirmDialog'
 import { EmptyState } from '~/components/common/EmptyState'
 import { InfiniteList } from '~/components/common/InfiniteList'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
+import { Page } from '~/components/common/Page'
 import { PageHeader } from '~/components/common/PageHeader'
 import { ScreenAccess } from '~/components/common/ScreenAccess'
 import { Button } from '~/components/ui/button'
@@ -16,12 +18,16 @@ import { isApiError } from '~/lib/api'
 import type { BlockEntry } from '~/lib/api-types'
 import { formatRelative } from '~/lib/format'
 import { qk } from '~/lib/query'
-import { SettingsPage } from './controls'
 import { useBlocks } from './queries'
 
 export function BlockedMembersScreen() {
+  const { t } = useTranslation('settings')
   return (
-    <ScreenAccess screen="SET-BLOCKED">
+    <ScreenAccess
+      screen="SET-BLOCKED"
+      panelTitleAs="h2"
+      header={<PageHeader title={t('blocked.title')} backTo="/settings" width="column" />}
+    >
       <BlockedMembersContent />
     </ScreenAccess>
   )
@@ -51,23 +57,27 @@ function BlockedMembersContent() {
   }
 
   return (
-    <SettingsPage>
-      <PageHeader title={t('blocked.title')} backTo="/settings" />
-      <p className="text-muted-foreground">{t('blocked.text')}</p>
+    <Page
+      title={t('blocked.title')}
+      description={t('blocked.text')}
+      backTo="/settings"
+      width="column"
+    >
       <InfiniteList
         query={query}
         label={t('blocked.list_label')}
         getKey={(entry) => entry.profile_id}
         renderItem={(entry) => (
-          <div className="flex items-center gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-3">
-            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <p dir="auto" className="truncate font-semibold">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3">
+            <MonogramArch name={entry.display_name} size="sm" />
+            <div className="flex min-w-[min(100%,10rem)] flex-1 flex-col gap-1">
+              <p dir="auto" className="text-title-md">
                 {entry.display_name}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-caption text-muted-foreground tabular-nums">
                 {t('blocked.code', { code: entry.public_code })}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-caption text-muted-foreground">
                 <time dateTime={entry.created_at}>
                   {t('blocked.since', { when: formatRelative(entry.created_at) })}
                 </time>
@@ -90,6 +100,6 @@ function BlockedMembersContent() {
         confirmLabel={t('blocked.unblock')}
         onConfirm={confirmUnblock}
       />
-    </SettingsPage>
+    </Page>
   )
 }

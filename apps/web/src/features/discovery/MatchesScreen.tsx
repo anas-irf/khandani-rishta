@@ -7,15 +7,19 @@ import { toast } from 'sonner'
 import { InfiniteList } from '~/components/common/InfiniteList'
 import { ListSkeleton } from '~/components/common/ListSkeleton'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
+import { profileCardCellClass } from '~/components/common/ProfileCard'
 import { ScreenAccess } from '~/components/common/ScreenAccess'
 import { StatusBanner } from '~/components/common/StatusBanner'
 import { Button } from '~/components/ui/button'
+import { useCandidate } from '~/features/profile-sections/useCandidate'
 import { isApiError } from '~/lib/api'
 import { formatRelative } from '~/lib/format'
+import { cn } from '~/lib/utils'
 import { DiscoveryCard } from './components/DiscoveryCard'
 import { ExhaustedNotice } from './components/ExhaustedNotice'
 import { MatchesEmpty } from './components/MatchesEmpty'
+import { usePassInPlace } from './components/usePassInPlace'
 import { useRecommendations, useRefreshRecommendations } from './queries'
 
 /** While "Finding new matches..." shows, the first page is refetched after 5 and 15 seconds. */
@@ -23,19 +27,19 @@ export const REFRESH_POLL_MS = [5000, 15000] as const
 
 export function MatchesScreen() {
   return (
-    <div className="container-app">
-      <ScreenAccess screen="APP-MATCHES">
-        <MatchesContent />
-      </ScreenAccess>
-    </div>
+    <ScreenAccess screen="APP-MATCHES">
+      <MatchesContent />
+    </ScreenAccess>
   )
 }
 
 function MatchesContent() {
   const { t } = useTranslation('discovery')
+  const { named, name } = useCandidate()
   const online = useOnlineStatus()
   const recommendations = useRecommendations()
   const refresh = useRefreshRecommendations()
+  const passing = usePassInPlace()
   const pages = recommendations.data?.pages
   const first = pages?.[0]
   const last = pages?.[pages.length - 1]
@@ -77,38 +81,37 @@ function MatchesContent() {
       },
     })
 
-  const itemCount = pages?.reduce((sum, page) => sum + page.items.length, 0) ?? 0
+  const itemCount = passing.arrange(pages?.flatMap((page) => page.items) ?? []).length
   const atEnd = recommendations.data !== undefined && !recommendations.hasNextPage
 
   return (
-    <div className="flex flex-col gap-4">
-      <PageHeader
-        title={t('matches.title')}
-        description={
-          first?.refreshed_at
-            ? t('matches.updated', { time: formatRelative(first.refreshed_at) })
-            : undefined
-        }
-        actions={
-          <>
-            <Button
-              variant="ghost"
-              onClick={startRefresh}
-              loading={refresh.isPending}
-              disabled={!online}
-            >
-              {refresh.isPending ? null : <RefreshCw aria-hidden="true" />}
-              {t('matches.refresh')}
-            </Button>
-            <Button asChild variant="ghost" className="text-primary">
-              <Link to="/me/preferences">
-                <SlidersHorizontal aria-hidden="true" />
-                {t('matches.preferences')}
-              </Link>
-            </Button>
-          </>
-        }
-      />
+    <Page
+      title={t('matches.title', { context: named, name })}
+      description={
+        first?.refreshed_at
+          ? t('matches.updated', { time: formatRelative(first.refreshed_at) })
+          : undefined
+      }
+      actions={
+        <>
+          <Button
+            variant="quiet"
+            onClick={startRefresh}
+            loading={refresh.isPending}
+            disabled={!online}
+          >
+            {refresh.isPending ? null : <RefreshCw aria-hidden="true" />}
+            {t('matches.refresh')}
+          </Button>
+          <Button asChild variant="quiet">
+            <Link to="/me/preferences">
+              <SlidersHorizontal aria-hidden="true" />
+              {t('matches.preferences')}
+            </Link>
+          </Button>
+        </>
+      }
+    >
       {banner ? (
         <StatusBanner variant="info" icon={RefreshCw}>
           <span role="status">{t('matches.refreshing')}</span>
@@ -117,11 +120,21 @@ function MatchesContent() {
       <InfiniteList
         query={recommendations}
         getKey={(card) => card.id}
-        label={t('matches.list_label')}
+        arrange={passing.arrange}
+        label={t('matches.list_label', { context: named, name })}
         refreshable={false}
-        listClassName="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+        listClassName="card-grid"
+        itemClassName={cn(profileCardCellClass, 'wide:mb-10')}
         skeleton={<ListSkeleton size="full" count={6} />}
-        renderItem={(card) => <DiscoveryCard card={card} headingLevel="h2" className="h-full" />}
+        renderItem={(card, index) => (
+          <DiscoveryCard
+            card={card}
+            index={index}
+            passing={passing}
+            headingLevel="h2"
+            priority={index === 0}
+          />
+        )}
         empty={
           first ? (
             <MatchesEmpty
@@ -134,13 +147,17 @@ function MatchesContent() {
       />
       {atEnd && itemCount > 0 && last ? (
         last.pool_exhausted ? (
-          <ExhaustedNotice variant="end" hints={last.relaxation_hints} />
+          <ExhaustedNotice
+            variant="end"
+            hints={last.relaxation_hints}
+            className="mx-auto max-w-[420px]"
+          />
         ) : (
           <p className="py-4 text-center text-muted-foreground" data-list-end="">
             {t('matches.end')}
           </p>
         )
       ) : null}
-    </div>
+    </Page>
   )
 }

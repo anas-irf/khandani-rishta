@@ -1,9 +1,11 @@
 import { Camera, CameraOff } from 'lucide-react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ArchIcon } from '~/components/common/Arch'
 import { Button } from '~/components/ui/button'
 import { cn } from '~/lib/utils'
 import { type CameraProblem, type CaptureMode, cameraProblemOf, captureFrame } from './capture'
+import { FlowAlert } from './shared'
 
 /**
  * "Open camera" (16 section 6.22 step 2). On a phone it opens the front camera through the
@@ -26,6 +28,7 @@ export function OpenCameraButton({
   return (
     <>
       <Button
+        size="lg"
         disabled={disabled}
         onClick={() => (mode === 'phone' ? inputRef.current?.click() : onOpenLiveCamera())}
       >
@@ -130,7 +133,7 @@ export function LiveCamera({ onCaptured }: { onCaptured: (blob: Blob) => void })
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <div className="relative w-full max-w-md overflow-hidden rounded-[var(--radius-card)] bg-foreground">
+      <div className="band-inverse relative w-full max-w-form overflow-hidden rounded-lg">
         {/* The preview is mirrored like a mirror; the captured photo is not. */}
         <video
           ref={videoRef}
@@ -143,13 +146,18 @@ export function LiveCamera({ onCaptured }: { onCaptured: (blob: Blob) => void })
         {state === 'starting' ? (
           <p
             role="status"
-            className="absolute inset-0 flex items-center justify-center text-background"
+            className="absolute inset-0 flex items-center justify-center px-4 text-center"
           >
             {t('camera.starting')}
           </p>
         ) : null}
       </div>
-      <Button onClick={() => void capture()} disabled={state !== 'live'} loading={capturing}>
+      <Button
+        size="lg"
+        onClick={() => void capture()}
+        disabled={state !== 'live'}
+        loading={capturing}
+      >
         <Camera aria-hidden="true" />
         {t('camera.capture')}
       </Button>
@@ -168,11 +176,9 @@ function CameraMessage({
 }) {
   return (
     <div role="alert" className="flex flex-col items-center gap-3 px-4 py-6 text-center">
-      <span className="flex size-14 items-center justify-center rounded-full bg-warning-soft text-warning">
-        <CameraOff aria-hidden="true" className="size-7" />
-      </span>
-      <p className="font-semibold">{title}</p>
-      <p className="max-w-md text-muted-foreground">{text}</p>
+      <ArchIcon icon={CameraOff} size="lg" tone="warning" />
+      <p className="text-title-md font-bold">{title}</p>
+      <p className="max-w-measure text-foreground-secondary">{text}</p>
       {action}
     </div>
   )
@@ -213,19 +219,15 @@ export function CapturedReview({
         <img
           src={url}
           alt={t('review.alt')}
-          className="max-h-[50dvh] w-full max-w-md rounded-[var(--radius-card)] object-contain"
+          className="max-h-[50dvh] w-full max-w-form rounded-lg object-contain"
         />
       ) : null}
-      {error ? (
-        <p role="alert" className="text-danger">
-          {error}
-        </p>
-      ) : null}
-      <div className="flex flex-wrap justify-center gap-2">
-        <Button variant="secondary" onClick={onRetake} disabled={busy}>
+      {error ? <FlowAlert>{error}</FlowAlert> : null}
+      <div className="flex w-full flex-wrap justify-center gap-3">
+        <Button variant="secondary" size="lg" fill="row" onClick={onRetake} disabled={busy}>
           {t('review.retake')}
         </Button>
-        <Button onClick={onUse} loading={busy}>
+        <Button size="lg" fill="row" onClick={onUse} loading={busy}>
           {useLabel ?? t('review.use')}
         </Button>
       </div>

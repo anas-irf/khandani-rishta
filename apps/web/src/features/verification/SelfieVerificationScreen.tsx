@@ -1,11 +1,12 @@
 // ME-VERIFY-SELFIE (16 section 6.22, 12 sections 4 and 8.4)
 import { Link, useNavigate } from '@tanstack/react-router'
-import { CircleCheck, ImagePlus } from 'lucide-react'
+import { Clock, ImagePlus } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { ArchIcon } from '~/components/common/Arch'
 import { ErrorState } from '~/components/common/ErrorState'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
 import { Button } from '~/components/ui/button'
 import { Progress } from '~/components/ui/progress'
 import { Skeleton } from '~/components/ui/skeleton'
@@ -18,7 +19,7 @@ import { useCandidate } from './copy'
 import { GestureIllustration } from './GestureIllustration'
 import { useSelfieChallenge, useSubmitVerification, useUploadVerificationImage } from './queries'
 import { CapturedReview, LiveCamera, OpenCameraButton } from './SelfieCapture'
-import { ClosedNotice, imageErrorKey, isGestureMismatch, StepPanel } from './shared'
+import { ClosedNotice, FlowAlert, imageErrorKey, isGestureMismatch, StepPanel } from './shared'
 
 type Step = 'explain' | 'gesture' | 'camera' | 'review' | 'submit' | 'done'
 
@@ -44,11 +45,9 @@ export function SelfieVerificationScreen({ captureMode }: { captureMode?: Captur
   // 12 section 4.1: a selfie needs an approved photo; only an approved photo is the main one.
   const [noPhoto, setNoPhoto] = useState(me.profile.photo === null)
 
-  const header = <PageHeader title={t('selfie.title')} showBack />
-
   if (me.profile.status === 'closed') {
     return (
-      <Layout header={header}>
+      <Layout>
         <ClosedNotice />
       </Layout>
     )
@@ -56,9 +55,10 @@ export function SelfieVerificationScreen({ captureMode }: { captureMode?: Captur
 
   if (noPhoto) {
     return (
-      <Layout header={header}>
+      <Layout>
         <StepPanel>
-          <p className="text-lg font-semibold">{t('selfie.no_photo')}</p>
+          <ArchIcon icon={ImagePlus} size="lg" />
+          <p className="text-title-md font-bold">{t('selfie.no_photo')}</p>
           <Button asChild>
             <Link to="/me/photos">
               <ImagePlus aria-hidden="true" />
@@ -136,16 +136,18 @@ export function SelfieVerificationScreen({ captureMode }: { captureMode?: Captur
   }
 
   return (
-    <Layout header={header}>
+    <Layout>
       {step === 'explain' ? (
         <StepPanel>
-          <p>
+          <p className="text-body-lg">
             {candidate.self ? t('selfie.body_self') : t('selfie.body', { name: candidate.name })}
           </p>
           {candidate.self ? null : (
-            <p className="font-medium">{t('selfie.managed', { name: candidate.name })}</p>
+            <p className="text-title-sm">{t('selfie.managed', { name: candidate.name })}</p>
           )}
-          <Button onClick={() => setStep('gesture')}>{t('selfie.continue')}</Button>
+          <Button size="lg" onClick={() => setStep('gesture')}>
+            {t('selfie.continue')}
+          </Button>
         </StepPanel>
       ) : null}
 
@@ -177,7 +179,7 @@ export function SelfieVerificationScreen({ captureMode }: { captureMode?: Captur
 
       {step === 'submit' && captured && gesture ? (
         <StepPanel>
-          <GestureIllustration gesture={gesture} className="h-24" />
+          <GestureIllustration gesture={gesture} className="w-[86px]" />
           <CapturedReview
             blob={captured}
             useLabel={error ? t('camera.try_again') : t('selfie.submit')}
@@ -187,15 +189,16 @@ export function SelfieVerificationScreen({ captureMode }: { captureMode?: Captur
             error={error}
           />
           {progress !== null ? (
-            <Progress value={progress} aria-label={t('selfie.progress')} className="max-w-md" />
+            <Progress value={progress} aria-label={t('selfie.progress')} className="max-w-form" />
           ) : null}
         </StepPanel>
       ) : null}
 
       {step === 'done' ? (
         <StepPanel>
-          <CircleCheck aria-hidden="true" className="size-12 text-success" />
-          <p role="status" className="text-lg">
+          {/* Sent, not verified yet, so no tick (DESIGN.md 6.6). */}
+          <ArchIcon icon={Clock} size="lg" tone="warning" />
+          <p role="status" className="text-title-md">
             {t('selfie.success')}
           </p>
           <Button asChild>
@@ -207,12 +210,12 @@ export function SelfieVerificationScreen({ captureMode }: { captureMode?: Captur
   )
 }
 
-function Layout({ header, children }: { header: ReactNode; children: ReactNode }) {
+function Layout({ children }: { children: ReactNode }) {
+  const { t } = useTranslation('verification')
   return (
-    <div className="container-app flex max-w-2xl flex-col gap-4">
-      {header}
+    <Page title={t('selfie.title')} showBack width="form">
       {children}
-    </div>
+    </Page>
   )
 }
 
@@ -234,8 +237,8 @@ export function GestureStep({
     return (
       <div role="status" aria-busy="true" className="flex flex-col items-center gap-3 py-6">
         <span className="sr-only">{t('gesture.loading')}</span>
-        <Skeleton className="h-40 w-36" />
-        <Skeleton className="h-5 w-64" />
+        <Skeleton className="h-[160px] w-[144px]" />
+        <Skeleton className="h-5 w-[min(100%,16rem)]" />
       </div>
     )
   }
@@ -252,14 +255,10 @@ export function GestureStep({
   const instruction = t(`gesture.${gesture}`)
   return (
     <StepPanel>
-      {notice ? (
-        <p role="alert" className="font-medium text-warning">
-          {notice}
-        </p>
-      ) : null}
+      {notice ? <FlowAlert tone="warning">{notice}</FlowAlert> : null}
       {intro ? <p>{intro(instruction)}</p> : null}
       <GestureIllustration gesture={gesture} />
-      <p className="text-lg font-semibold" data-testid="gesture-instruction">
+      <p className="text-title-lg" data-testid="gesture-instruction">
         {instruction}
       </p>
       {action(gesture)}

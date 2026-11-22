@@ -7,15 +7,18 @@ import { toast } from 'sonner'
 import { EmptyState } from '~/components/common/EmptyState'
 import { ErrorState } from '~/components/common/ErrorState'
 import { InfiniteList } from '~/components/common/InfiniteList'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
 import { PlainText } from '~/components/common/PlainText'
 import { RelativeTime } from '~/components/common/RelativeTime'
 import { StatusBanner } from '~/components/common/StatusBanner'
+import { inlineLinkClass } from '~/components/common/TextLink'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { useLabelOf } from '~/lib/reference'
 import { TableSkeleton } from './components/DataTable'
 import { Panel } from './components/Facts'
+import { Kbd } from './components/Kbd'
+import { QueueButton, queueGridClass } from './components/QueueButton'
 import { RejectTextDialog } from './components/ReviewDialogs'
 import { sha256Hex } from './hash'
 import { useAdminTexts, useApproveText } from './queries'
@@ -62,8 +65,7 @@ export function TextsScreen() {
   const checklist = t('texts.checklist', { returnObjects: true }) as string[]
 
   return (
-    <div className="flex flex-col gap-4">
-      <PageHeader title={t('texts.title')} description={t('texts.description')} />
+    <Page title={t('texts.title')} description={t('texts.description')}>
       {query.isPending ? (
         <TableSkeleton />
       ) : query.isError ? (
@@ -71,26 +73,26 @@ export function TextsScreen() {
       ) : items.length === 0 || !current ? (
         <EmptyState icon={CircleCheck} title={t('list.queue_empty')} />
       ) : (
-        <div className="grid grid-cols-[18rem_minmax(0,1fr)] items-start gap-4">
+        <div className={queueGridClass}>
           <nav aria-label={t('texts.queue')}>
             <InfiniteList
               query={query}
               getKey={textKey}
               label={t('texts.queue')}
-              listClassName="gap-2"
+              listClassName="flex flex-col gap-1"
+              itemClassName="min-w-0"
               renderItem={(item) => (
-                <button
-                  type="button"
-                  aria-current={selection.isSelected(item) ? 'true' : undefined}
+                <QueueButton
+                  selected={selection.isSelected(item)}
                   onClick={() => selection.select(item)}
-                  className="flex min-h-11 w-full flex-col items-start rounded-md border border-border bg-surface p-2 text-start text-sm hover:bg-muted aria-[current=true]:border-primary aria-[current=true]:bg-primary-soft"
+                  className="flex-col items-start gap-0"
                 >
-                  <span className="font-medium">
+                  <span className="font-semibold">
                     {item.first_name ?? item.public_code}{' '}
                     <span className="font-normal text-muted-foreground">{item.public_code}</span>
                   </span>
                   <span className="text-muted-foreground">{t(`texts.field.${item.field}`)}</span>
-                </button>
+                </QueueButton>
               )}
             />
           </nav>
@@ -104,11 +106,11 @@ export function TextsScreen() {
                 </Badge>
               }
             >
-              <p className="text-sm text-muted-foreground">
+              <p className="text-body-sm text-muted-foreground">
                 <Link
                   to="/admin/profiles/$profileId"
                   params={{ profileId: current.profile_id }}
-                  className="text-primary hover:underline"
+                  className={inlineLinkClass}
                 >
                   {current.first_name ?? current.public_code} ({current.public_code})
                 </Link>
@@ -118,7 +120,7 @@ export function TextsScreen() {
               <PlainText
                 text={current.text}
                 as="div"
-                className="rounded-md bg-muted p-3 text-base leading-relaxed"
+                className="tonal rounded-md px-4 py-3 text-body-md"
               />
             </Panel>
 
@@ -130,7 +132,7 @@ export function TextsScreen() {
               <Button loading={approve.isPending} aria-keyshortcuts="A" onClick={approveNow}>
                 <Check aria-hidden="true" />
                 {t('texts.approve')}
-                <kbd className="ms-1 text-xs opacity-80">A</kbd>
+                <Kbd>A</Kbd>
               </Button>
               <Button
                 variant="secondary"
@@ -140,12 +142,12 @@ export function TextsScreen() {
               >
                 <X aria-hidden="true" />
                 {t('texts.reject')}
-                <kbd className="ms-1 text-xs opacity-80">R</kbd>
+                <Kbd>R</Kbd>
               </Button>
             </div>
 
             <Panel title={t('texts.checklist_title')}>
-              <ul className="list-disc space-y-1 ps-5 text-sm">
+              <ul className="bullet-list text-body-sm">
                 {checklist.map((line) => (
                   <li key={line}>{line}</li>
                 ))}
@@ -164,6 +166,6 @@ export function TextsScreen() {
           onClose={() => setRejecting(null)}
         />
       ) : null}
-    </div>
+    </Page>
   )
 }

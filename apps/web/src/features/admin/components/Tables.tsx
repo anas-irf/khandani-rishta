@@ -5,7 +5,7 @@ import { RelativeTime } from '~/components/common/RelativeTime'
 import { formatDate } from '~/lib/format'
 import { useLabelOf } from '~/lib/reference'
 import type { AdminReportListItem, AuditEntry } from '../types'
-import { type Column, DataTable } from './DataTable'
+import { type Column, DataTable, tableLinkClass } from './DataTable'
 import { StatusBadge } from './StatusBadge'
 
 /** The target of an audit entry as a link to its screen, or plain text when it has none. */
@@ -14,7 +14,7 @@ export function AuditTarget({ entry }: { entry: Pick<AuditEntry, 'target_type' |
   const label = (
     <>
       <span>{t(`audit.target.${entry.target_type}`, { defaultValue: entry.target_type })}</span>{' '}
-      <span className="font-mono text-xs text-muted-foreground">{entry.target_id}</span>
+      <span className="tabular-nums text-caption text-muted-foreground">{entry.target_id}</span>
     </>
   )
   switch (entry.target_type) {
@@ -23,7 +23,7 @@ export function AuditTarget({ entry }: { entry: Pick<AuditEntry, 'target_type' |
         <Link
           to="/admin/profiles/$profileId"
           params={{ profileId: entry.target_id }}
-          className="text-primary hover:underline"
+          className={tableLinkClass}
         >
           {label}
         </Link>
@@ -33,7 +33,7 @@ export function AuditTarget({ entry }: { entry: Pick<AuditEntry, 'target_type' |
         <Link
           to="/admin/users/$userId"
           params={{ userId: entry.target_id }}
-          className="text-primary hover:underline"
+          className={tableLinkClass}
         >
           {label}
         </Link>
@@ -43,7 +43,7 @@ export function AuditTarget({ entry }: { entry: Pick<AuditEntry, 'target_type' |
         <Link
           to="/admin/verifications/$requestId"
           params={{ requestId: entry.target_id }}
-          className="text-primary hover:underline"
+          className={tableLinkClass}
         >
           {label}
         </Link>
@@ -53,7 +53,7 @@ export function AuditTarget({ entry }: { entry: Pick<AuditEntry, 'target_type' |
         <Link
           to="/admin/reports/$reportId"
           params={{ reportId: entry.target_id }}
-          className="text-primary hover:underline"
+          className={tableLinkClass}
         >
           {label}
         </Link>
@@ -61,23 +61,23 @@ export function AuditTarget({ entry }: { entry: Pick<AuditEntry, 'target_type' |
     case 'caste':
     case 'caste_suggestion':
       return (
-        <Link to="/admin/castes" className="text-primary hover:underline">
+        <Link to="/admin/castes" className={tableLinkClass}>
           {label}
         </Link>
       )
     case 'app_setting':
       return entry.target_id === 'announcement' ? (
-        <Link to="/admin/announcements" className="text-primary hover:underline">
+        <Link to="/admin/announcements" className={tableLinkClass}>
           {label}
         </Link>
       ) : (
-        <Link to="/admin/settings" className="text-primary hover:underline">
+        <Link to="/admin/settings" className={tableLinkClass}>
           {label}
         </Link>
       )
     case 'app_release':
       return (
-        <Link to="/admin/releases" className="text-primary hover:underline">
+        <Link to="/admin/releases" className={tableLinkClass}>
           {label}
         </Link>
       )
@@ -107,7 +107,7 @@ export function auditColumns(t: TFunction, showActor = true): Column<AuditEntry>
     {
       id: 'action',
       header: t('audit.col.action'),
-      cell: (entry) => <code className="text-xs">{entry.action}</code>,
+      cell: (entry) => <code className="text-caption">{entry.action}</code>,
     },
     { id: 'target', header: t('audit.col.target'), cell: (entry) => <AuditTarget entry={entry} /> },
     {
@@ -116,7 +116,7 @@ export function auditColumns(t: TFunction, showActor = true): Column<AuditEntry>
       cell: (entry) => {
         const text = JSON.stringify(entry.details)
         return (
-          <code className="block max-w-xs truncate text-xs text-muted-foreground" title={text}>
+          <code className="block max-w-xs min-w-[11rem] text-caption text-muted-foreground wrap-anywhere">
             {text}
           </code>
         )
@@ -137,7 +137,7 @@ export function AuditTable({
 }) {
   const { t } = useTranslation('admin')
   if (entries.length === 0)
-    return <p className="text-sm text-muted-foreground">{t('audit.none')}</p>
+    return <p className="text-body-sm text-muted-foreground">{t('audit.none')}</p>
   return (
     <DataTable
       caption={caption}
@@ -159,7 +159,7 @@ export function ReportsTable({
   const { t } = useTranslation('admin')
   const label = useLabelOf()
   if (reports.length === 0) {
-    return <p className="text-sm text-muted-foreground">{t('reports.none')}</p>
+    return <p className="text-body-sm text-muted-foreground">{t('reports.none')}</p>
   }
   const columns: Column<AdminReportListItem>[] = [
     {
@@ -169,7 +169,7 @@ export function ReportsTable({
         <Link
           to="/admin/reports/$reportId"
           params={{ reportId: report.report_id }}
-          className="font-medium text-primary hover:underline"
+          className={tableLinkClass}
         >
           {label('report_reason', report.reason)}
         </Link>
@@ -221,7 +221,7 @@ export function SanctionsTable({
 }) {
   const { t } = useTranslation('admin')
   if (sanctions.length === 0) {
-    return <p className="text-sm text-muted-foreground">{t('sanctions.none')}</p>
+    return <p className="text-body-sm text-muted-foreground">{t('sanctions.none')}</p>
   }
   const columns: Column<SanctionRow>[] = [
     {

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500" viewBox="0 0 400 500">
+<title>Illustration of a blurred portrait</title>
+<!-- A drawing that is already blurred, the way the API serves a private photo. -->
+<defs>
+<linearGradient id="b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D9CBB6"/><stop offset="1" stop-color="#BBA68B"/></linearGradient>
+<radialGradient id="l" cx="0.64" cy="0.26" r="0.62"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.45"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>
+<radialGradient id="s" cx="0.42" cy="0.34" r="0.78"><stop offset="0" stop-color="#D6A47F"/><stop offset="1" stop-color="#AE7853"/></radialGradient>
+<linearGradient id="c" x1="0" y1="0" x2="0.6" y2="1"><stop offset="0" stop-color="#31605C"/><stop offset="1" stop-color="#22433F"/></linearGradient>
+<linearGradient id="d" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#DCD8C4"/><stop offset="1" stop-color="#A9A68E"/></linearGradient>
+<radialGradient id="v" cx="0.5" cy="0.42" r="0.8"><stop offset="0.55" stop-color="#1A1410" stop-opacity="0"/><stop offset="1" stop-color="#1A1410" stop-opacity="0.3"/></radialGradient>
+<filter id="f" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="22"/><feColorMatrix type="saturate" values="0.85"/></filter>
+</defs>
+<rect width="400" height="500" fill="#CDBCA4"/>
+<g transform="translate(-50 -62.5) scale(1.25)"><g filter="url(#f)">
+<rect width="400" height="500" fill="url(#b)"/>
+<rect width="400" height="500" fill="url(#l)"/>
+<path d="M18 500C26 430 86 394 156 382H244C314 394 374 430 382 500Z" fill="url(#c)"/>
+<path d="M200 96C132 96 104 156 104 226C104 300 100 360 70 430L128 452C150 400 160 350 164 318H236C240 350 250 400 272 452L330 430C300 360 296 300 296 226C296 156 268 96 200 96Z" fill="url(#d)"/>
+<path d="M176 290H224L230 384C214 396 186 396 170 384Z" fill="#A06C4A"/>
+<ellipse cx="200" cy="222" rx="60" ry="78" fill="url(#s)"/>
+<path d="M138 214C134 160 162 130 200 130C238 130 266 160 262 214C256 182 236 160 214 156L200 146L186 156C164 160 144 182 138 214Z" fill="#2B1D18"/>
+<path d="M126 196C130 140 160 108 200 108C240 108 270 140 274 196C262 156 236 134 200 134C164 134 138 156 126 196Z" fill="url(#d)"/>
+<path d="M110 300C100 370 92 440 96 500H176C178 448 186 410 204 388C172 380 132 350 110 300Z" fill="url(#d)"/>
+<path d="M110 300C132 350 172 380 204 388" fill="none" stroke="#000000" stroke-opacity="0.12" stroke-width="3"/>
+<rect width="400" height="500" fill="url(#v)"/>
+</g></g>
+</svg>

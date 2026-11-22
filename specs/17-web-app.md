@@ -504,25 +504,7 @@ On `validation_failed`, map each `fields[i].field` to the form field of the same
 
 ### 9.3 Design tokens
 
-Defined as CSS variables in `styles/app.css` and mapped into Tailwind's theme. The Android app uses the same values (22 section 12).
-
-| Token | Value | Use |
-|---|---|---|
-| Primary | `#0F766E` (deep teal green) | Buttons, links, active navigation |
-| Primary foreground | `#FFFFFF` | Text on primary |
-| Accent | `#B45309` (warm gold-brown) | Compatibility badge, highlights |
-| Success | `#15803D` | Verified badges, confirmations |
-| Warning | `#B45309` | Under review, pending |
-| Danger | `#B91C1C` | Destructive actions, errors |
-| Background | `#FAFAF9` | Page background |
-| Surface | `#FFFFFF` | Cards |
-| Text | `#1C1917` | Body text |
-| Muted text | `#57534E` | Secondary text |
-| Border | `#E7E5E4` | Dividers |
-| Radius | `12px` cards, `8px` inputs, full for chips | |
-| Font | `Inter` for Latin, `Noto Nastaliq Urdu` for Urdu (loaded only for the `ur` locale) | |
-| Base size | `16px` body, never below `14px` | Many users are parents on phones |
-| Touch target | At least `44px` by `44px` | |
+[DESIGN.md](../DESIGN.md) is the source of every design token (colour, type, shape, space, size, elevation and motion) and of the anatomy of the components. `styles/app.css` defines the tokens once, as CSS variables mapped into Tailwind's theme, and components use only those token classes, never a raw value. The Android app keeps the values of 22 section 12 until it adopts its own part of DESIGN.md section 10.
 
 A dark theme is not part of the launch.
 
@@ -530,11 +512,11 @@ A dark theme is not part of the launch.
 
 | Component | Purpose |
 |---|---|
-| `ProfileCard` | Renders a `ProfileCard` object: photo (blurred or clear), display name, age, city, education and profession lines, badges, compatibility badge, up to 3 reason chips, shortlist toggle. One component for every list. |
+| `ProfileCard` | Renders a `ProfileCard` object in the full or compact size, or as the tile, of 16 section 1.5, which lists what each size shows. Education, height, religion or sect, caste and activity are not on cards; they are on the profile. One component for every list. |
 | `MemberPhoto` | Renders a `PhotoView`: correct variant by size, a lock overlay and "Photo is private" label when `is_blurred`, a neutral silhouette (by gender) when `photo` is null. Disables drag and the context menu. |
 | `CompatBadge` | "N% match" pill |
-| `BadgeRow` | Verification and "New" badges with tooltips |
-| `ReasonChips` | Reason codes to translated chips (10 section 7) |
+| `BadgeRow` | Verification badges as words with a tick (12 section 1.2). The "New" label sits on the photo. |
+| `ReasonChips` | Reason codes to a translated list (10 section 7) |
 | `LockedValue` | Placeholder for a value hidden by privacy, with the text from 16 |
 | `SectionCard` | Titled card with an optional "Edit" action |
 | `StatusBanner` | Coloured banner for profile and moderation states |
@@ -637,7 +619,7 @@ Add each to `apps/web/.env.example` or `.dev.vars.example` with a placeholder. T
 | Landing page | Largest Contentful Paint under 2.5 s on a mid-range phone on 4G; under 100 KB of JavaScript before interaction |
 | App shell | Under 250 KB gzipped JavaScript for the first signed-in screen; feature routes split by route |
 | Lists | Render at most 20 new cards per page; images use `loading="lazy"` and explicit `width` and `height` |
-| Card photos | `thumb_url` in compact cards and rows, `medium_url` in full-size cards and on the profile, `large_url` only in the full-screen viewer (16 rule G10) |
+| Card photos | `thumb_url` in compact cards and rows, `medium_url` in full-size cards, in tiles and on the profile, `large_url` only in the full-screen viewer (16 rule G10) |
 | Chat | Virtualise the message list beyond 200 messages |
 | Worker CPU | Signed-in routes do no server work; public pages are prerendered where the table in 3.1 says so |
 

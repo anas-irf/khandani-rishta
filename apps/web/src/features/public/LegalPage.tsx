@@ -24,17 +24,15 @@ function LegalPage({ document }: { document: LegalDocument }) {
   return (
     <>
       <PageHero title={t(`${document}.title`)} lead={t(`${document}.lead`)}>
-        <div className="mt-6">
+        <div className="mt-2 w-full">
           <LegalReviewNotice />
         </div>
       </PageHero>
       <Prose>
-        <div className="max-w-3xl space-y-10">
-          <TableOfContents blocks={clauses} numbered />
-          {clauses.map((clause, index) => (
-            <ContentSection key={clause.id} block={clause} number={index + 1} />
-          ))}
-        </div>
+        <TableOfContents blocks={clauses} numbered />
+        {clauses.map((clause, index) => (
+          <ContentSection key={clause.id} block={clause} number={index + 1} />
+        ))}
       </Prose>
     </>
   )

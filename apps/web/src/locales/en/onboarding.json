@@ -184,6 +184,8 @@
     "verify_text": "Verified profiles are trusted more and can send more interests each day.",
     "privacy_title": "Review your privacy",
     "privacy_text": "Choose who sees your photos, name and family details.",
-    "matches": "See my matches"
+    "matches": "See my matches",
+    "matches_male": "See his matches",
+    "matches_female": "See her matches"
   }
 }

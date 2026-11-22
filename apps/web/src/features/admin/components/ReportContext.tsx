@@ -19,7 +19,7 @@ export function MessageTranscript({ context }: { context: Record<string, unknown
   const reportedId = context.reported_message_id
   const messages = Array.isArray(context.messages) ? context.messages.filter(isMessage) : []
   if (messages.length === 0) {
-    return <p className="text-sm text-muted-foreground">{t('report.no_context')}</p>
+    return <p className="text-body-sm text-muted-foreground">{t('report.no_context')}</p>
   }
   return (
     <ol aria-label={t('report.transcript')} className="flex flex-col gap-2">
@@ -30,14 +30,14 @@ export function MessageTranscript({ context }: { context: Record<string, unknown
             key={message.id}
             aria-current={reported ? 'true' : undefined}
             className={cn(
-              'flex max-w-[85%] flex-col gap-0.5 rounded-lg border p-2 text-sm',
+              'flex max-w-[85%] flex-col gap-1 rounded-row border-[1.5px] px-4 py-2 text-body-sm',
               message.sender === 'reporter' ? 'self-start' : 'self-end',
               message.sender === 'system' && 'self-center',
-              reported ? 'border-danger bg-danger-soft' : 'border-border bg-muted',
+              reported ? 'border-danger bg-danger-soft' : 'tonal border-transparent',
             )}
           >
-            <span className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">
+            <span className="flex flex-wrap items-center gap-2 text-caption text-muted-foreground">
+              <span className="font-semibold text-foreground">
                 {t(`report.sender.${message.sender}`)}
               </span>
               <RelativeTime value={message.created_at} />
@@ -77,7 +77,7 @@ export function ProfileSnapshot({ context }: { context: Record<string, unknown> 
 export function ReportContext({ report }: { report: AdminReportDetail }) {
   const { t } = useTranslation('admin')
   if (!report.context)
-    return <p className="text-sm text-muted-foreground">{t('report.no_context')}</p>
+    return <p className="text-body-sm text-muted-foreground">{t('report.no_context')}</p>
   if (report.subject_type === 'message') return <MessageTranscript context={report.context} />
   if (report.subject_type === 'profile') return <ProfileSnapshot context={report.context} />
   return null

@@ -1,12 +1,11 @@
 // SET-PRIVACY (16 section 6.25, 09 section 3)
-import { Link } from '@tanstack/react-router'
 import { Eye } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ConfirmDialog } from '~/components/common/ConfirmDialog'
 import { ErrorState } from '~/components/common/ErrorState'
-import { PageHeader } from '~/components/common/PageHeader'
-import { SectionCard } from '~/components/common/SectionCard'
+import { Page } from '~/components/common/Page'
+import { TextLink } from '~/components/common/TextLink'
 import { useOwnProfile } from '~/features/profile-sections/queries'
 import type { Privacy } from '~/lib/api-types'
 import { useCurrentMe } from '~/lib/me'
@@ -16,7 +15,7 @@ import {
   SettingRadioCards,
   SettingSelect,
   SettingSwitch,
-  SettingsPage,
+  SettingsGroup,
   SettingsSkeleton,
 } from './controls'
 import { nameExamples } from './name-examples'
@@ -116,8 +115,20 @@ export function PrivacyScreen() {
   const query = usePrivacy()
 
   return (
-    <SettingsPage>
-      <PageHeader title={t('privacy.title')} backTo="/settings" />
+    <Page
+      title={t('privacy.title')}
+      backTo="/settings"
+      width="column"
+      layout={query.isSuccess ? 'bands' : 'body'}
+      header={
+        query.isSuccess ? (
+          <TextLink to={PREVIEW_PATH} className="self-start">
+            <Eye aria-hidden="true" />
+            {t('privacy.preview_link')}
+          </TextLink>
+        ) : null
+      }
+    >
       {query.isPending ? (
         <SettingsSkeleton groups={4} />
       ) : query.isError ? (
@@ -129,7 +140,7 @@ export function PrivacyScreen() {
       ) : (
         <PrivacyGroups privacy={query.data} />
       )}
-    </SettingsPage>
+    </Page>
   )
 }
 
@@ -147,9 +158,9 @@ function PrivacyGroups({ privacy }: { privacy: Privacy }) {
   )
   const withMustHaves = (value: string): RadioCardOption['extra'] =>
     value === 'preference_match' ? (
-      <Link to="/me/preferences" className="text-sm font-medium text-primary underline">
+      <TextLink to="/me/preferences" className="text-label-md">
         {t('privacy.review_must_haves')}
-      </Link>
+      </TextLink>
     ) : undefined
 
   const discoveryOptions: RadioCardOption[] = DISCOVERY.map((value) => ({
@@ -183,15 +194,7 @@ function PrivacyGroups({ privacy }: { privacy: Privacy }) {
 
   return (
     <>
-      <Link
-        to={PREVIEW_PATH}
-        className="inline-flex min-h-11 items-center gap-2 self-start rounded-md font-medium text-primary underline-offset-4 hover:underline"
-      >
-        <Eye aria-hidden="true" className="size-5" />
-        {t('privacy.preview_link')}
-      </Link>
-
-      <SectionCard title={t('privacy.groups.find')}>
+      <SettingsGroup title={t('privacy.groups.find')}>
         <SettingRadioCards
           title={t('privacy.fields.discovery_visibility.title')}
           value={privacy.discovery_visibility}
@@ -212,9 +215,9 @@ function PrivacyGroups({ privacy }: { privacy: Privacy }) {
             void save('interest_permission', value as Privacy['interest_permission'])
           }
         />
-      </SectionCard>
+      </SettingsGroup>
 
-      <SectionCard title={t('privacy.groups.name_photos')}>
+      <SettingsGroup title={t('privacy.groups.name_photos')}>
         <SettingRadioCards
           title={t('privacy.fields.name_display.title')}
           value={privacy.name_display}
@@ -239,17 +242,13 @@ function PrivacyGroups({ privacy }: { privacy: Privacy }) {
           onCheckedChange={(checked) => void save('allow_photo_requests', checked)}
         />
         {me.gate === 'ok' ? (
-          <Link
-            to="/photo-requests"
-            search={{ box: 'received' }}
-            className="inline-flex min-h-11 items-center self-start rounded-md font-medium text-primary underline-offset-4 hover:underline"
-          >
+          <TextLink to="/photo-requests" search={{ box: 'received' }} className="self-start">
             {t('privacy.photo_requests_link')}
-          </Link>
+          </TextLink>
         ) : null}
-      </SectionCard>
+      </SettingsGroup>
 
-      <SectionCard title={t('privacy.groups.details')}>
+      <SettingsGroup title={t('privacy.groups.details')}>
         {DETAIL_KEYS.map((key) => (
           <SettingSelect
             key={key}
@@ -261,10 +260,10 @@ function PrivacyGroups({ privacy }: { privacy: Privacy }) {
             onChange={(value) => void save(key, value as Privacy[typeof key])}
           />
         ))}
-        <p className="text-sm text-muted-foreground">{t('privacy.details_note')}</p>
-      </SectionCard>
+        <p className="text-caption text-muted-foreground">{t('privacy.details_note')}</p>
+      </SettingsGroup>
 
-      <SectionCard title={t('privacy.groups.activity')}>
+      <SettingsGroup title={t('privacy.groups.activity')}>
         {ACTIVITY_KEYS.map((key) => (
           <SettingSwitch
             key={key}
@@ -275,7 +274,7 @@ function PrivacyGroups({ privacy }: { privacy: Privacy }) {
             onCheckedChange={(checked) => void save(key, checked)}
           />
         ))}
-      </SectionCard>
+      </SettingsGroup>
 
       <ConfirmDialog
         open={confirmHidden}

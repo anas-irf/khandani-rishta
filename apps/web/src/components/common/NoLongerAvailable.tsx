@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { SearchX } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '~/components/ui/button'
-import { cn } from '~/lib/utils'
+import { EmptyState } from './EmptyState'
 import { useGoBack } from './PageHeader'
 
 /**
@@ -21,22 +21,21 @@ export function NoLongerAvailable({
   const goBack = useGoBack()
 
   return (
-    <div
-      role="status"
-      className={cn('flex flex-col items-center gap-4 px-4 py-12 text-center', className)}
-    >
-      <span className="flex size-14 items-center justify-center rounded-full bg-muted text-muted-foreground">
-        <SearchX aria-hidden="true" className="size-7" />
-      </span>
-      <h2 className="text-lg font-semibold">{message ?? t('no_longer_available')}</h2>
-      <div className="flex flex-wrap justify-center gap-2">
-        <Button variant="secondary" onClick={goBack}>
-          {t('go_back')}
-        </Button>
-        <Button asChild>
-          <Link to="/home">{t('go_home')}</Link>
-        </Button>
-      </div>
+    <div role="status" className={className}>
+      <EmptyState
+        icon={SearchX}
+        title={message ?? t('no_longer_available')}
+        action={
+          <>
+            <Button variant="secondary" onClick={goBack}>
+              {t('go_back')}
+            </Button>
+            <Button asChild>
+              <Link to="/home">{t('go_home')}</Link>
+            </Button>
+          </>
+        }
+      />
     </div>
   )
 }

@@ -6,13 +6,13 @@ import { useTranslation } from 'react-i18next'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
 import { PlainText } from '~/components/common/PlainText'
 import { StatusBanner } from '~/components/common/StatusBanner'
-import { Button, buttonVariants } from '~/components/ui/button'
+import { TextLink } from '~/components/common/TextLink'
+import { Button } from '~/components/ui/button'
 import { useResubmitProfile } from '~/features/profile-sections/queries'
 import { type ClientFieldError, isApiError } from '~/lib/api'
 import { serverFieldMessage } from '~/lib/form-context'
 import { useCurrentMe } from '~/lib/me'
 import { invalidateMe } from '~/lib/query'
-import { cn } from '~/lib/utils'
 import { fixTargetForStep, stepForField } from './field-sections'
 import { GateLayout } from './GateLayout'
 import { useGateRefresh } from './queries'
@@ -40,7 +40,7 @@ export function ChangesScreen() {
 
   return (
     <GateLayout title={t('changes.title')}>
-      <p className="text-base">{t('changes.text')}</p>
+      <p className="text-body-lg">{t('changes.text')}</p>
 
       {me.profile.status_reason ? (
         <StatusBanner variant="warning" title={t('changes.reason_label')}>
@@ -50,11 +50,11 @@ export function ChangesScreen() {
 
       {problems.length > 0 ? <Problems problems={problems} /> : null}
 
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <Link to="/me" className={cn(buttonVariants({ variant: 'secondary' }))}>
-          {t('changes.edit')}
-        </Link>
-        <Button loading={resubmit.isPending} disabled={!online} onClick={send}>
+      <div className="flex flex-wrap gap-3">
+        <Button asChild variant="secondary" size="lg" fill="row">
+          <Link to="/me">{t('changes.edit')}</Link>
+        </Button>
+        <Button size="lg" fill="row" loading={resubmit.isPending} disabled={!online} onClick={send}>
           {t('changes.resubmit')}
         </Button>
       </div>
@@ -76,7 +76,7 @@ function Problems({ problems }: { problems: ClientFieldError[] }) {
 
   return (
     <StatusBanner variant="danger" title={t('changes.problems_title')}>
-      <ul className="list-disc space-y-1 ps-5">
+      <ul className="bullet-list">
         {problems.map((problem) => {
           const message = serverFieldMessage('gate', problem)
           const step = stepForField(problem.field)
@@ -98,13 +98,11 @@ function Problems({ problems }: { problems: ClientFieldError[] }) {
             return (
               <li key={step}>
                 {target.to === '/me/edit/$section' ? (
-                  <Link to={target.to} params={target.params} className={linkClass}>
+                  <TextLink to={target.to} params={target.params}>
                     {label}
-                  </Link>
+                  </TextLink>
                 ) : (
-                  <Link to={target.to} className={linkClass}>
-                    {label}
-                  </Link>
+                  <TextLink to={target.to}>{label}</TextLink>
                 )}
               </li>
             )
@@ -114,6 +112,3 @@ function Problems({ problems }: { problems: ClientFieldError[] }) {
     </StatusBanner>
   )
 }
-
-const linkClass =
-  'inline-flex min-h-11 items-center font-medium text-primary underline underline-offset-4'

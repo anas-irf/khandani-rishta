@@ -16,7 +16,7 @@ function Harness({ onConfirm }: { onConfirm: () => unknown }) {
         title="Delete the account?"
         description="Everything is removed after 30 days."
         confirmLabel="Delete account"
-        destructive
+        tone="danger"
         confirmPhrase="DELETE"
         onConfirm={onConfirm}
       />

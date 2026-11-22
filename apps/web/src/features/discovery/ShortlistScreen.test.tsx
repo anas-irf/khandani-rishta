@@ -35,7 +35,7 @@ describe('APP-SHORTLIST', () => {
   it('shows the empty state with "See my matches"', async () => {
     renderWithProviders(() => <ShortlistScreen />, { me: db.me })
     expect(await screen.findByText('No saved profiles yet.')).toBeInTheDocument()
-    expect(screen.getByText('Tap the heart on a profile to save it for later.')).toBeInTheDocument()
+    expect(screen.getByText('Tap Shortlist on a profile to save it for later.')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'See my matches' })).toHaveAttribute('href', '/matches')
   })
 

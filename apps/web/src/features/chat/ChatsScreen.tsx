@@ -1,13 +1,25 @@
 // APP-CHATS (16 section 6.10)
 import { Link, Outlet, useNavigate, useParams, useSearch } from '@tanstack/react-router'
-import { BellOff, Clock, MessagesSquare, MoreVertical } from 'lucide-react'
+import {
+  BellOff,
+  CircleAlert,
+  CircleMinus,
+  Clock,
+  MessagesSquare,
+  MoreVertical,
+  UsersRound,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { Band } from '~/components/common/Band'
+import { CountBadge } from '~/components/common/CountBadge'
 import { EmptyState } from '~/components/common/EmptyState'
 import { InfiniteList } from '~/components/common/InfiniteList'
-import { MemberPhoto, Silhouette } from '~/components/common/MemberPhoto'
+import { MemberAvatar } from '~/components/common/MemberAvatar'
+import { UnavailablePhoto } from '~/components/common/MemberPhoto'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
 import { PageHeader } from '~/components/common/PageHeader'
 import { ScreenAccess } from '~/components/common/ScreenAccess'
+import { avatarVariants } from '~/components/ui/avatar'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import {
@@ -16,11 +28,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
-import { Tabs, TabsList, TabsTrigger } from '~/components/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import type { Connection, Gender } from '~/lib/api-types'
 import { formatRelative } from '~/lib/format'
 import { useCurrentMe } from '~/lib/me'
-import { badgeCount, cn } from '~/lib/utils'
+import { cn } from '~/lib/utils'
 import { type ConnectionFilter, useConnections, usePatchConnection } from './queries'
 import { chatsSearchSchema } from './search'
 import { hasNoTextMessages, isQuiet, otherName, stageName } from './text'
@@ -33,21 +45,25 @@ function useFilter(): ConnectionFilter {
 
 /**
  * The `/chats` layout (17 section 9.1): on wide screens the chat list stays beside the open
- * conversation (two panes); on narrow screens the list and the conversation are separate
- * screens, so the side pane is hidden.
+ * conversation (two panes that scroll on their own); on narrow screens the list and the
+ * conversation are separate screens, so the side pane is hidden. The shell gives Chats the
+ * height of the window, so the panes only fill what is left.
  */
 export function ChatsLayout() {
   const { t } = useTranslation('chat')
+  const { connectionId } = useParams({ strict: false }) as { connectionId?: string }
   return (
     <ScreenAccess screen="APP-CHATS">
-      <div className="md:container-app md:grid md:grid-cols-[minmax(17rem,22rem)_minmax(0,1fr)] md:gap-6">
+      <div className="flex min-w-0 flex-1 flex-col has-[[data-conversation]]:min-h-0 wide:mx-auto wide:grid wide:min-h-0 wide:w-full wide:max-w-[calc(var(--container-content)+2*var(--spacing-gutter))] wide:grid-cols-[clamp(280px,34vw,400px)_minmax(0,1fr)] wide:grid-rows-[minmax(0,1fr)] wide:border-x wide:border-border">
         <aside
           aria-label={t('chats.list_label')}
-          className="hidden md:block md:h-[calc(100dvh-4rem)] md:overflow-y-auto md:py-3 md:pe-1"
+          data-fills-window=""
+          // A pane is narrow, so it keeps the gutters of a phone.
+          className="hidden min-h-0 overflow-y-auto border-e border-border [--spacing-gutter:20px] wide:flex wide:flex-col"
         >
-          <ChatList withTitle />
+          <ChatList titleAs={connectionId ? 'h2' : 'h1'} />
         </aside>
-        <div className="min-w-0">
+        <div className="flex min-w-0 flex-1 flex-col has-[[data-conversation]]:min-h-0 wide:min-h-0 wide:overflow-y-auto">
           <Outlet />
         </div>
       </div>
@@ -60,11 +76,11 @@ export function ChatsIndex() {
   const { t } = useTranslation('chat')
   return (
     <>
-      <div className="md:hidden">
+      <div className="flex flex-1 flex-col wide:hidden">
         <ChatsScreen />
       </div>
-      <div className="hidden h-[calc(100dvh-4rem)] items-center justify-center text-center md:flex">
-        <EmptyState icon={MessagesSquare} title={t('chats.select')} />
+      <div className="hidden flex-1 items-center justify-center p-[clamp(20px,3vw,40px)] wide:flex">
+        <EmptyState icon={MessagesSquare} title={t('chats.select')} className="max-w-form" />
       </div>
     </>
   )
@@ -74,45 +90,47 @@ export function ChatsIndex() {
 export function ChatsScreen() {
   return (
     <ScreenAccess screen="APP-CHATS">
-      <div className="container-app">
-        <ChatList withTitle />
-      </div>
+      <ChatList />
     </ScreenAccess>
   )
 }
 
-function ChatList({ withTitle = false }: { withTitle?: boolean }) {
+function ChatList({ titleAs }: { titleAs?: 'h1' | 'h2' }) {
   const { t } = useTranslation('chat')
   const navigate = useNavigate()
   const filter = useFilter()
   const query = useConnections(filter)
 
   return (
-    <div className="flex flex-col gap-3">
-      {withTitle ? <PageHeader title={t('chats.title')} /> : null}
-      <Tabs
-        value={filter}
-        onValueChange={(value) =>
-          void navigate({ to: '/chats', search: { filter: value as ConnectionFilter } })
-        }
-      >
-        <TabsList aria-label={t('chats.filter.label')} className="w-full">
+    <Tabs
+      value={filter}
+      onValueChange={(value) =>
+        void navigate({ to: '/chats', search: { filter: value as ConnectionFilter } })
+      }
+      className="min-w-0 flex-[1_0_auto] gap-0"
+    >
+      <PageHeader title={t('chats.title')} titleAs={titleAs} width="column">
+        <TabsList variant="chip" aria-label={t('chats.filter.label')}>
           {FILTERS.map((value) => (
             <TabsTrigger key={value} value={value}>
               {t(`chats.filter.${value}`)}
             </TabsTrigger>
           ))}
         </TabsList>
-      </Tabs>
-      <InfiniteList
-        query={query}
-        getKey={(connection) => connection.id}
-        label={t('chats.list_label')}
-        listClassName="gap-2"
-        empty={<ChatsEmpty filter={filter} />}
-        renderItem={(connection) => <ChatRow connection={connection} filter={filter} />}
-      />
-    </div>
+      </PageHeader>
+      <TabsContent value={filter} className="rounded-none">
+        <Band as="div" width="column" space="sm">
+          <InfiniteList
+            query={query}
+            getKey={(connection) => connection.id}
+            label={t('chats.list_label')}
+            listClassName="-mx-[12px] flex flex-col"
+            empty={<ChatsEmpty filter={filter} />}
+            renderItem={(connection) => <ChatRow connection={connection} filter={filter} />}
+          />
+        </Band>
+      </TabsContent>
+    </Tabs>
   )
 }
 
@@ -139,9 +157,38 @@ export function otherGender(ownGender: Gender | null): Gender {
   return ownGender === 'male' ? 'female' : 'male'
 }
 
+/** The other member's arch, or the silhouette when they are no longer available. */
+export function OtherAvatar({
+  connection,
+  size,
+}: {
+  connection: Connection
+  size: 'xs' | 'md' | 'lg'
+}) {
+  const { t } = useTranslation('chat')
+  const me = useCurrentMe()
+  const other = connection.other
+  if (other) {
+    return (
+      <MemberAvatar
+        photo={other.photo}
+        name={other.display_name}
+        gender={other.gender}
+        size={size}
+      />
+    )
+  }
+  return (
+    <UnavailablePhoto
+      gender={otherGender(me.profile.gender)}
+      label={otherName(t, connection)}
+      className={avatarVariants({ size })}
+    />
+  )
+}
+
 function ChatRow({ connection, filter }: { connection: Connection; filter: ConnectionFilter }) {
   const { t } = useTranslation(['chat', 'shared'])
-  const me = useCurrentMe()
   const params = useParams({ strict: false }) as { connectionId?: string }
   const name = otherName(t, connection)
   const unread = connection.unread_count > 0
@@ -154,32 +201,14 @@ function ChatRow({ connection, filter }: { connection: Connection; filter: Conne
   return (
     <article
       className={cn(
-        'relative flex items-start gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-3 transition-colors hover:bg-muted has-[[data-row-link]:focus-visible]:ring-2 has-[[data-row-link]:focus-visible]:ring-ring',
-        current && 'border-primary bg-primary-soft',
+        'relative flex flex-wrap items-start gap-x-[12px] gap-y-1 rounded-row px-[12px] py-3 transition-colors',
+        current ? 'bg-primary-soft [--tonal:var(--color-background)]' : 'hover:tonal',
       )}
       data-connection-row={connection.id}
     >
-      {connection.other ? (
-        <MemberPhoto
-          photo={connection.other.photo}
-          name={connection.other.display_name}
-          gender={connection.other.gender}
-          size="thumb"
-          width={48}
-          height={48}
-          className="size-12 shrink-0 rounded-full"
-        />
-      ) : (
-        <Silhouette
-          gender={otherGender(me.profile.gender)}
-          label={name}
-          width={48}
-          height={48}
-          className="size-12 shrink-0 rounded-full"
-        />
-      )}
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <div className="flex items-baseline gap-2">
+      <OtherAvatar connection={connection} size="md" />
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-2">
           <Link
             to="/chats/$connectionId"
             params={{ connectionId: connection.id }}
@@ -187,21 +216,23 @@ function ChatRow({ connection, filter }: { connection: Connection; filter: Conne
             data-row-link=""
             aria-current={current ? 'page' : undefined}
             className={cn(
-              'min-w-0 truncate text-base after:absolute after:inset-0 focus-visible:outline-none',
-              unread ? 'font-bold' : 'font-semibold',
+              'stretched-link max-w-full min-w-0 text-title-md text-foreground after:rounded-row',
+              unread && 'font-bold',
             )}
           >
             {name}
           </Link>
-          <time dateTime={time} className="ms-auto shrink-0 text-sm text-muted-foreground">
+          <time dateTime={time} className="text-caption text-muted-foreground tabular-nums">
             {formatRelative(time)}
           </time>
         </div>
         <div className="flex items-center gap-2">
+          {/* One line by 16 section 6.10: the whole message is one tap away. */}
           <p
             dir="auto"
+            data-preview=""
             className={cn(
-              'min-w-0 flex-1 truncate text-sm',
+              'min-w-0 flex-1 truncate text-body-sm',
               unread ? 'font-semibold text-foreground' : 'text-muted-foreground',
             )}
           >
@@ -213,34 +244,43 @@ function ChatRow({ connection, filter }: { connection: Connection; filter: Conne
               className="size-4 shrink-0 text-muted-foreground"
             />
           ) : null}
-          {unread ? (
-            <span className="min-w-6 shrink-0 rounded-full bg-primary px-1.5 text-center text-sm font-semibold text-primary-foreground">
-              <span aria-hidden="true">{badgeCount(connection.unread_count)}</span>
-              <span className="sr-only">
-                {t('chats.unread', { count: connection.unread_count })}
-              </span>
-            </span>
-          ) : null}
+          <CountBadge
+            count={connection.unread_count}
+            label={t('chats.unread', { count: connection.unread_count })}
+            tone="inverse"
+          />
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 empty:hidden">
           {connection.stage !== 'chatting' ? (
-            <Badge variant="secondary">{stageName(t, connection.stage)}</Badge>
+            <Badge variant="success">
+              <UsersRound aria-hidden="true" />
+              {stageName(t, connection.stage)}
+            </Badge>
           ) : null}
           {connection.pending_stage_proposal?.proposed_by === 'them' &&
           connection.status === 'active' ? (
-            <Badge variant="warning">{t('chats.waiting_for_you')}</Badge>
+            <Badge variant="warning">
+              <CircleAlert aria-hidden="true" />
+              {t('chats.waiting_for_you')}
+            </Badge>
           ) : null}
           {filter === 'ended' || connection.status === 'ended' ? (
-            <Badge variant="outline">{t('chats.ended')}</Badge>
+            <Badge variant="outline">
+              <CircleMinus aria-hidden="true" />
+              {t('chats.ended')}
+            </Badge>
           ) : null}
         </div>
-        {isQuiet(connection) ? (
-          <p className="flex items-start gap-1 text-sm text-muted-foreground">
-            <Clock aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-            {t('chats.quiet')}
-          </p>
-        ) : null}
       </div>
+      {isQuiet(connection) ? (
+        // Under the whole row: at 200% text its words do not fit between the photo and the menu.
+        <p className="order-last flex basis-full items-start gap-2 text-caption text-muted-foreground">
+          <span aria-hidden="true" className="flex h-[1lh] items-center">
+            <Clock className="size-4" />
+          </span>
+          <span className="min-w-0">{t('chats.quiet')}</span>
+        </p>
+      ) : null}
       {connection.status === 'active' ? <RowMenu connection={connection} name={name} /> : null}
     </article>
   )
@@ -257,7 +297,7 @@ function RowMenu({ connection, name }: { connection: Connection; name: string })
         <Button
           variant="ghost"
           size="icon"
-          className="relative z-10 -me-2 shrink-0"
+          className="relative z-10 -me-[8px] shrink-0"
           aria-label={t('chats.menu', { name })}
           disabled={!online}
         >

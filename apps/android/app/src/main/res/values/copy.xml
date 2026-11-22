@@ -37,6 +37,8 @@
     <string name="chat_chat_view_profile">View profile</string>
     <string name="chat_chats_archive">Archive</string>
     <string name="chat_chats_empty_active_action">See my matches</string>
+    <string name="chat_chats_empty_active_action_female">See her matches</string>
+    <string name="chat_chats_empty_active_action_male">See his matches</string>
     <string name="chat_chats_empty_active_text">When an interest is accepted you can chat here.</string>
     <string name="chat_chats_empty_active_title">No conversations yet.</string>
     <string name="chat_chats_empty_archived_text">A new message brings a chat back.</string>
@@ -218,7 +220,7 @@
     <string name="common_actions_close">Close</string>
     <string name="common_actions_confirm">Confirm</string>
     <string name="common_actions_continue">Continue</string>
-    <string name="common_actions_create_profile">Create profile</string>
+    <string name="common_actions_create_profile">Create a free profile</string>
     <string name="common_actions_done">Done</string>
     <string name="common_actions_edit">Edit</string>
     <string name="common_actions_load_more">Load more</string>
@@ -271,12 +273,18 @@
     <string name="common_sign_out_dialog_body">You can sign in again at any time with Google or your email address.</string>
     <string name="common_sign_out_dialog_title">Sign out of Khandani Rishta?</string>
     <string name="common_splash_label">Loading Khandani Rishta</string>
+    <string name="common_switch_off">Off</string>
+    <string name="common_switch_on">On</string>
     <string name="common_time_just_now">Just now</string>
     <string name="common_time_today">Today</string>
     <string name="common_time_yesterday">Yesterday</string>
     <string name="common_toast_approved_live">The profile is approved and live.</string>
     <string name="common_toast_saved">Saved</string>
     <string name="discovery_card_hidden">Hidden.</string>
+    <string name="discovery_card_hidden_for">You will not see this profile for 6 months.</string>
+    <string name="discovery_card_hidden_from">{name} is hidden from your matches.</string>
+    <string name="discovery_card_hidden_from_female">{name} is hidden from her matches.</string>
+    <string name="discovery_card_hidden_from_male">{name} is hidden from his matches.</string>
     <string name="discovery_card_more">More actions for {name}</string>
     <string name="discovery_card_not_interested">Not interested</string>
     <string name="discovery_card_undo">Undo</string>
@@ -300,6 +308,8 @@
     <string name="discovery_dimension_work_after_marriage">Work after marriage</string>
     <string name="discovery_home_announcement_close">Hide this announcement</string>
     <string name="discovery_home_completeness_action">Improve my profile</string>
+    <string name="discovery_home_completeness_action_female">Improve her profile</string>
+    <string name="discovery_home_completeness_action_male">Improve his profile</string>
     <string name="discovery_home_completeness_ring" formatted="false">Profile {value}% complete</string>
     <string name="discovery_home_completeness_text">Complete profiles receive more interest.</string>
     <string name="discovery_home_first_run_close">Hide this tip</string>
@@ -309,6 +319,7 @@
     <string name="discovery_home_greeting_plain">Welcome back</string>
     <string name="discovery_home_nudge_add_about_me_text">A few honest lines help families decide.</string>
     <string name="discovery_home_nudge_add_about_me_title">Write about yourself</string>
+    <string name="discovery_home_nudge_add_about_me_title_named">Write about {name}</string>
     <string name="discovery_home_nudge_add_contact_details_text">Needed before you can share your number with a connection. They stay private until you share.</string>
     <string name="discovery_home_nudge_add_contact_details_title">Add contact details</string>
     <string name="discovery_home_nudge_add_photo_text">Profiles with a photo receive far more interest.</string>
@@ -316,15 +327,32 @@
     <string name="discovery_home_nudge_complete_profile_text" formatted="false">The profile is {completeness}% complete.</string>
     <string name="discovery_home_nudge_complete_profile_title">Complete the profile</string>
     <string name="discovery_home_nudge_set_preferences_text">Tell us who you are looking for.</string>
+    <string name="discovery_home_nudge_set_preferences_text_female">Tell us who she is looking for.</string>
+    <string name="discovery_home_nudge_set_preferences_text_male">Tell us who he is looking for.</string>
     <string name="discovery_home_nudge_set_preferences_title">Set your partner preferences</string>
+    <string name="discovery_home_nudge_set_preferences_title_female">Set her partner preferences</string>
+    <string name="discovery_home_nudge_set_preferences_title_male">Set his partner preferences</string>
     <string name="discovery_home_nudge_verify_identity_text">Verified profiles are trusted more and can send more interests each day.</string>
     <string name="discovery_home_nudge_verify_identity_title">Verify your identity</string>
+    <string name="discovery_home_nudge_verify_identity_title_female">Verify her identity</string>
+    <string name="discovery_home_nudge_verify_identity_title_male">Verify his identity</string>
     <string name="discovery_home_nudge_verify_photo_text">A quick selfie shows that the photos are really you.</string>
+    <string name="discovery_home_nudge_verify_photo_text_female">A quick selfie shows that the photos are really her.</string>
+    <string name="discovery_home_nudge_verify_photo_text_male">A quick selfie shows that the photos are really him.</string>
     <string name="discovery_home_nudge_verify_photo_title">Verify your photo</string>
+    <string name="discovery_home_nudge_verify_photo_title_female">Verify her photo</string>
+    <string name="discovery_home_nudge_verify_photo_title_male">Verify his photo</string>
     <string name="discovery_home_nudges_label">Suggestions for your profile</string>
+    <string name="discovery_home_nudges_label_female">Suggestions for her profile</string>
+    <string name="discovery_home_nudges_label_male">Suggestions for his profile</string>
     <string name="discovery_home_pending_view">View</string>
     <string name="discovery_home_rows_matches">Your matches</string>
+    <string name="discovery_home_rows_matches_fit">They fit you, and you fit them</string>
+    <string name="discovery_home_rows_matches_fit_female">They fit her, and she fits them</string>
+    <string name="discovery_home_rows_matches_fit_male">They fit him, and he fits them</string>
+    <string name="discovery_home_rows_matches_named">{name}\'s matches</string>
     <string name="discovery_home_rows_nearby">Near you</string>
+    <string name="discovery_home_rows_nearby_named">Near {name}</string>
     <string name="discovery_home_rows_new_members">New members</string>
     <string name="discovery_home_rows_see_all">See all</string>
     <string name="discovery_home_rows_see_all_named">See all: {title}</string>
@@ -332,23 +360,37 @@
     <string name="discovery_home_safety_text">Never send money to anyone you meet here.</string>
     <string name="discovery_home_visitors_see_all">See all</string>
     <string name="discovery_home_visitors_see_all_label">See all members who viewed your profile</string>
+    <string name="discovery_home_visitors_see_all_label_named">See all members who viewed {name}\'s profile</string>
     <string name="discovery_home_visitors_title">Viewed your profile</string>
+    <string name="discovery_home_visitors_title_named">Viewed {name}\'s profile</string>
     <string name="discovery_matches_end">That is everyone for now. New members join every day.</string>
     <string name="discovery_matches_list_label">Your matches</string>
+    <string name="discovery_matches_list_label_named">{name}\'s matches</string>
     <string name="discovery_matches_preferences">Preferences</string>
     <string name="discovery_matches_rate_limited">Matches were refreshed a few minutes ago.</string>
     <string name="discovery_matches_refresh">Refresh</string>
     <string name="discovery_matches_refreshing">Finding new matches...</string>
     <string name="discovery_matches_state_age_hint">Widening your age range may also help.</string>
+    <string name="discovery_matches_state_age_hint_female">Widening her age range may also help.</string>
+    <string name="discovery_matches_state_age_hint_male">Widening his age range may also help.</string>
     <string name="discovery_matches_state_exhausted_empty">No more members fit all your must-haves right now.</string>
+    <string name="discovery_matches_state_exhausted_empty_female">No more members fit all her must-haves right now.</string>
+    <string name="discovery_matches_state_exhausted_empty_male">No more members fit all his must-haves right now.</string>
     <string name="discovery_matches_state_exhausted_end">You have seen everyone who fits your must-haves. Loosen one to see more.</string>
+    <string name="discovery_matches_state_exhausted_end_female">You have seen everyone who fits her must-haves. Loosen one to see more.</string>
+    <string name="discovery_matches_state_exhausted_end_male">You have seen everyone who fits his must-haves. Loosen one to see more.</string>
     <string name="discovery_matches_state_finding">Finding your matches...</string>
+    <string name="discovery_matches_state_finding_female">Finding her matches...</string>
+    <string name="discovery_matches_state_finding_male">Finding his matches...</string>
     <string name="discovery_matches_state_hint">Changing your must-have for {dimension} would show {count} more profiles.</string>
+    <string name="discovery_matches_state_hint_female">Changing her must-have for {dimension} would show {count} more profiles.</string>
+    <string name="discovery_matches_state_hint_male">Changing his must-have for {dimension} would show {count} more profiles.</string>
     <string name="discovery_matches_state_none_text">Try the search, or check back later.</string>
     <string name="discovery_matches_state_none_title">No matches yet.</string>
     <string name="discovery_matches_state_review_preferences">Review preferences</string>
     <string name="discovery_matches_state_search">Search</string>
     <string name="discovery_matches_title">Your matches</string>
+    <string name="discovery_matches_title_named">{name}\'s matches</string>
     <string name="discovery_matches_updated">Updated {time}</string>
     <string name="discovery_saved_dialog_title">Save this search</string>
     <string name="discovery_saved_label">Saved searches</string>
@@ -455,7 +497,7 @@
     <string name="discovery_search_years">{value} years</string>
     <string name="discovery_shortlist_add_note">Add a note</string>
     <string name="discovery_shortlist_edit_note">Edit note</string>
-    <string name="discovery_shortlist_empty_text">Tap the heart on a profile to save it for later.</string>
+    <string name="discovery_shortlist_empty_text">Tap Shortlist on a profile to save it for later.</string>
     <string name="discovery_shortlist_empty_title">No saved profiles yet.</string>
     <string name="discovery_shortlist_intro">Only you can see this list.</string>
     <string name="discovery_shortlist_label">Saved profiles</string>
@@ -469,6 +511,8 @@
     <string name="discovery_shortlist_removed">Removed.</string>
     <string name="discovery_shortlist_saved_at">Saved {time}</string>
     <string name="discovery_shortlist_see_matches">See my matches</string>
+    <string name="discovery_shortlist_see_matches_female">See her matches</string>
+    <string name="discovery_shortlist_see_matches_male">See his matches</string>
     <string name="discovery_shortlist_title">Shortlist</string>
     <string name="discovery_shortlist_unavailable">No longer available</string>
     <string name="discovery_shortlist_undo">Undo</string>
@@ -701,11 +745,15 @@
     <string name="interests_empty_received_accepted_title">Interests you accept appear here.</string>
     <string name="interests_empty_received_closed_title">Nothing here yet.</string>
     <string name="interests_empty_received_pending_action">Improve my profile</string>
+    <string name="interests_empty_received_pending_action_female">Improve her profile</string>
+    <string name="interests_empty_received_pending_action_male">Improve his profile</string>
     <string name="interests_empty_received_pending_text">A complete profile with a photo gets noticed more.</string>
     <string name="interests_empty_received_pending_title">No new interests.</string>
     <string name="interests_empty_sent_accepted_title">When someone accepts your interest, it appears here and you can chat.</string>
     <string name="interests_empty_sent_closed_title">Nothing here yet.</string>
     <string name="interests_empty_sent_pending_action">See my matches</string>
+    <string name="interests_empty_sent_pending_action_female">See her matches</string>
+    <string name="interests_empty_sent_pending_action_male">See his matches</string>
     <string name="interests_empty_sent_pending_text">Find someone you like and send one.</string>
     <string name="interests_empty_sent_pending_title">You have not sent any interests.</string>
     <string name="interests_expires_today">Expires today</string>
@@ -942,6 +990,8 @@
     <string name="onboarding_discard_keep">Keep editing</string>
     <string name="onboarding_discard_title">Discard changes?</string>
     <string name="onboarding_done_matches">See my matches</string>
+    <string name="onboarding_done_matches_female">See her matches</string>
+    <string name="onboarding_done_matches_male">See his matches</string>
     <string name="onboarding_done_photo_text">Profiles with a photo receive far more interest.</string>
     <string name="onboarding_done_photo_title">Add a photo</string>
     <string name="onboarding_done_privacy_text">Choose who sees your photos, name and family details.</string>
@@ -1261,10 +1311,14 @@
     <string name="profile_actions_interest_sent">Interest sent</string>
     <string name="profile_actions_label">Actions</string>
     <string name="profile_actions_let_see_photos">Let {name} see my photos</string>
+    <string name="profile_actions_let_see_photos_female">Let {name} see her photos</string>
+    <string name="profile_actions_let_see_photos_male">Let {name} see his photos</string>
     <string name="profile_actions_menu">More actions for {name}</string>
     <string name="profile_actions_not_interested">Not interested</string>
     <string name="profile_actions_open_chat">Open chat</string>
     <string name="profile_actions_photos_granted">{name} can now see your photos.</string>
+    <string name="profile_actions_photos_granted_female">{name} can now see her photos.</string>
+    <string name="profile_actions_photos_granted_male">{name} can now see his photos.</string>
     <string name="profile_actions_report">Report</string>
     <string name="profile_actions_send_interest">Send interest</string>
     <string name="profile_actions_shortlisted">Added to your shortlist.</string>
@@ -1293,9 +1347,13 @@
     <string name="profile_compat_must">Must have</string>
     <string name="profile_compat_not_matched">Does not match</string>
     <string name="profile_compat_owner_fit" formatted="false">You fit {value}% of what {name} is looking for</string>
+    <string name="profile_compat_owner_fit_female" formatted="false">She fits {value}% of what {name} is looking for</string>
+    <string name="profile_compat_owner_fit_male" formatted="false">He fits {value}% of what {name} is looking for</string>
     <string name="profile_compat_ring" formatted="false">{value}% match</string>
     <string name="profile_compat_title">Compatibility</string>
     <string name="profile_compat_viewer_fit" formatted="false">{name} fits {value}% of what you are looking for</string>
+    <string name="profile_compat_viewer_fit_female" formatted="false">{name} fits {value}% of what she is looking for</string>
+    <string name="profile_compat_viewer_fit_male" formatted="false">{name} fits {value}% of what he is looking for</string>
     <string name="profile_decline_also_block">Also block {name}</string>
     <string name="profile_decline_confirm">Decline</string>
     <string name="profile_decline_done">Interest declined.</string>
@@ -1322,10 +1380,16 @@
     <string name="profile_looking_for_none">{name} has not set any preferences.</string>
     <string name="profile_looking_for_range">{min} to {max}</string>
     <string name="profile_looking_for_summary">You match {matched} of {total}.</string>
+    <string name="profile_looking_for_summary_female">She matches {matched} of {total}.</string>
+    <string name="profile_looking_for_summary_male">He matches {matched} of {total}.</string>
     <string name="profile_looking_for_title">What {name} is looking for</string>
     <string name="profile_looking_for_up_to">Up to {value}</string>
     <string name="profile_looking_for_you_do_not_match">You do not match</string>
+    <string name="profile_looking_for_you_do_not_match_female">She does not match</string>
+    <string name="profile_looking_for_you_do_not_match_male">He does not match</string>
     <string name="profile_looking_for_you_match">You match</string>
+    <string name="profile_looking_for_you_match_female">She matches</string>
+    <string name="profile_looking_for_you_match_male">He matches</string>
     <string name="profile_pass_done">You will not see this profile for 6 months.</string>
     <string name="profile_pass_keep">Keep</string>
     <string name="profile_pass_open_interest">You also have an open interest to {name}. Withdraw it?</string>
@@ -1345,6 +1409,8 @@
     <string name="profile_pronoun_male">him</string>
     <string name="profile_received_expires">Expires {date}</string>
     <string name="profile_received_text">{name} is interested in you</string>
+    <string name="profile_received_text_female">{name} is interested in her</string>
+    <string name="profile_received_text_male">{name} is interested in him</string>
     <string name="profile_rows_about_family">About the family</string>
     <string name="profile_rows_area">Area</string>
     <string name="profile_rows_beard">Beard</string>
@@ -2023,11 +2089,16 @@
     <string name="shared_card_activity_today">Active today</string>
     <string name="shared_card_location_with_country">{city}, {country}</string>
     <string name="shared_card_managed_by">Profile managed by {label}</string>
+    <string name="shared_card_more">More</string>
     <string name="shared_card_relation_connected">Connected</string>
     <string name="shared_card_relation_received">Interested in you</string>
+    <string name="shared_card_relation_received_female">Interested in her</string>
+    <string name="shared_card_relation_received_male">Interested in him</string>
     <string name="shared_card_relation_sent">Interest sent</string>
+    <string name="shared_card_shortlist">Shortlist</string>
     <string name="shared_card_shortlist_add">Add {name} to shortlist</string>
     <string name="shared_card_shortlist_remove">Remove {name} from shortlist</string>
+    <string name="shared_card_shortlisted">Shortlisted</string>
     <string name="shared_compat" formatted="false">{value}% match</string>
     <string name="shared_confirm_type_phrase">Type {phrase} to confirm</string>
     <string name="shared_header_back">Back</string>
@@ -2052,22 +2123,42 @@
     <string name="shared_photo_none">No photo added yet</string>
     <string name="shared_photo_private">Photo is private</string>
     <string name="shared_reason_age_fits">Age suits you both</string>
+    <string name="shared_reason_age_fits_female">Age suits them both</string>
+    <string name="shared_reason_age_fits_male">Age suits them both</string>
     <string name="shared_reason_education_fits">Education matches your preference</string>
+    <string name="shared_reason_education_fits_female">Education matches her preference</string>
+    <string name="shared_reason_education_fits_male">Education matches his preference</string>
     <string name="shared_reason_family_values_fit">Family values match your preference</string>
+    <string name="shared_reason_family_values_fit_female">Family values match her preference</string>
+    <string name="shared_reason_family_values_fit_male">Family values match his preference</string>
     <string name="shared_reason_meets_your_must_haves">Meets all your must-haves</string>
+    <string name="shared_reason_meets_your_must_haves_female">Meets all her must-haves</string>
+    <string name="shared_reason_meets_your_must_haves_male">Meets all his must-haves</string>
     <string name="shared_reason_new_member">New member</string>
     <string name="shared_reason_profession_fits">Profession matches your preference</string>
+    <string name="shared_reason_profession_fits_female">Profession matches her preference</string>
+    <string name="shared_reason_profession_fits_male">Profession matches his preference</string>
     <string name="shared_reason_recently_active">Active recently</string>
     <string name="shared_reason_religiosity_fits">Religious practice matches your preference</string>
+    <string name="shared_reason_religiosity_fits_female">Religious practice matches her preference</string>
+    <string name="shared_reason_religiosity_fits_male">Religious practice matches his preference</string>
     <string name="shared_reason_same_caste">Same caste</string>
     <string name="shared_reason_same_city">Lives in your city</string>
+    <string name="shared_reason_same_city_female">Lives in her city</string>
+    <string name="shared_reason_same_city_male">Lives in his city</string>
     <string name="shared_reason_same_mother_tongue">Speaks your mother tongue</string>
+    <string name="shared_reason_same_mother_tongue_female">Speaks her mother tongue</string>
+    <string name="shared_reason_same_mother_tongue_male">Speaks his mother tongue</string>
     <string name="shared_reason_same_region">Lives in your province</string>
+    <string name="shared_reason_same_region_female">Lives in her province</string>
+    <string name="shared_reason_same_region_male">Lives in his province</string>
     <string name="shared_reason_same_sect">Same sect</string>
     <string name="shared_reason_shared_hobbies">Shared interests</string>
     <string name="shared_reason_verified">Verified profile</string>
     <string name="shared_reason_you_meet_their_preferences">You fit what they are looking for</string>
-    <string name="shared_reasons_label">Why this profile is suggested</string>
+    <string name="shared_reason_you_meet_their_preferences_female">She fits what they are looking for</string>
+    <string name="shared_reason_you_meet_their_preferences_male">He fits what they are looking for</string>
+    <string name="shared_reasons_label">Why this match</string>
     <string name="shared_report_also_block">Also block this member</string>
     <string name="shared_report_details_count">{count} of {max} characters</string>
     <string name="shared_report_details_label">Tell us more</string>
@@ -2080,6 +2171,7 @@
     <string name="shared_report_title">Report {name}</string>
     <string name="shared_section_edit">Edit</string>
     <string name="shared_section_edit_named">Edit {title}</string>
+    <string name="shared_shortlist_failed">Could not update the shortlist.</string>
     <string name="shared_shortlist_full">Your shortlist is full. Remove some profiles first.</string>
     <string name="shared_status_panel_closed_action">Reopen the profile</string>
     <string name="shared_status_panel_closed_text">Reopen it to see matches and answer interests. You can still read your chats.</string>
@@ -2222,6 +2314,14 @@
     <plurals name="discovery_home_pending_text">
         <item quantity="one">1 member is interested in you</item>
         <item quantity="other">{count} members are interested in you</item>
+    </plurals>
+    <plurals name="discovery_home_pending_text_female">
+        <item quantity="one">1 member is interested in her</item>
+        <item quantity="other">{count} members are interested in her</item>
+    </plurals>
+    <plurals name="discovery_home_pending_text_male">
+        <item quantity="one">1 member is interested in him</item>
+        <item quantity="other">{count} members are interested in him</item>
     </plurals>
     <plurals name="discovery_home_visitors_text">
         <item quantity="one">1 member viewed the profile this week</item>

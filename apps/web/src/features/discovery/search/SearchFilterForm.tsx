@@ -155,6 +155,7 @@ export function SearchFilterForm({
     title: t(`search.groups.${key}`),
     count: groupCount(filters, key),
     defaultOpen: EXPANDED.has(key),
+    hasError: GROUP_KEYS[key].some((field) => Boolean(errors[field])),
   })
 
   return (

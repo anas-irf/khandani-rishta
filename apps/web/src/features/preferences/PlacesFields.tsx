@@ -1,7 +1,8 @@
 import { useQueries } from '@tanstack/react-query'
-import { Plus, X } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useId, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { RemovableChip } from '~/components/common/Chip'
 import { FieldShell, subId, useFieldDisabled } from '~/components/common/fields/field-shell'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
@@ -115,30 +116,22 @@ export function CityIdsField({
           className="flex flex-wrap gap-2"
         >
           {value.map((id) => (
-            <li
-              key={id}
-              className="inline-flex h-11 items-center rounded-full border border-border bg-primary-soft ps-3 text-sm font-medium"
-            >
-              <span dir="auto">{nameOf(id)}</span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="rounded-full"
-                aria-label={t('fields:multi_select.remove', { item: nameOf(id) })}
+            <li key={id} className="max-w-full">
+              <RemovableChip
+                removeLabel={t('fields:multi_select.remove', { item: nameOf(id) })}
                 disabled={isDisabled}
-                onClick={() => control.setValue(value.filter((entry) => entry !== id))}
+                onRemove={() => control.setValue(value.filter((entry) => entry !== id))}
               >
-                <X aria-hidden="true" />
-              </Button>
+                {nameOf(id)}
+              </RemovableChip>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-muted-foreground">{t('preferences:any')}</p>
+        <p className="text-body-sm text-muted-foreground">{t('preferences:any')}</p>
       )}
       {searchCountries.length > 1 ? (
-        <div className="grid gap-1.5">
+        <div className="grid gap-2">
           <Label htmlFor={countryId}>{t('preferences:cities_country')}</Label>
           <NativeSelect
             id={countryId}
@@ -154,7 +147,7 @@ export function CityIdsField({
           </NativeSelect>
         </div>
       ) : null}
-      <div className="grid gap-1.5">
+      <div className="grid gap-2">
         <Label htmlFor={searchId}>{t('preferences:cities_search')}</Label>
         <Input
           id={searchId}
@@ -169,7 +162,7 @@ export function CityIdsField({
           onChange={(event) => setQuery(event.target.value)}
         />
         {reached ? (
-          <p id={subId(control, 'max')} className="text-sm text-muted-foreground">
+          <p id={subId(control, 'max')} className="text-caption text-muted-foreground">
             {t('fields:multi_select.max_reached', { max })}
           </p>
         ) : null}
@@ -181,15 +174,15 @@ export function CityIdsField({
               <Button
                 type="button"
                 variant="ghost"
-                className="h-auto min-h-11 w-full justify-start gap-2 px-3 py-1.5 text-start"
+                className="w-full justify-start rounded-row px-3 text-start"
                 disabled={isDisabled || reached}
                 onClick={() => add(city)}
               >
                 <Plus aria-hidden="true" />
-                <span className="flex flex-col">
+                <span className="flex min-w-0 flex-col">
                   <span dir="auto">{city.name}</span>
                   {city.region_name ? (
-                    <span className="text-sm font-normal text-muted-foreground">
+                    <span className="text-body-sm font-normal text-muted-foreground">
                       {city.region_name}
                     </span>
                   ) : null}
@@ -198,7 +191,7 @@ export function CityIdsField({
             </li>
           ))}
           {search.isSuccess && results.length === 0 ? (
-            <li role="status" className="px-3 text-sm text-muted-foreground">
+            <li role="status" className="px-3 text-body-sm text-muted-foreground">
               {t('fields:city.no_results')}
             </li>
           ) : null}

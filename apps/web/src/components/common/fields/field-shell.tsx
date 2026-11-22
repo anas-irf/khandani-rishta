@@ -86,9 +86,32 @@ export function OptionalMark({ required }: { required?: boolean }) {
   return <span className="font-normal text-muted-foreground">{t('common:optional')}</span>
 }
 
+/** How much is written of what fits ("120 / 300"), or what is wrong with it. */
+export function CharCount({
+  id,
+  over = false,
+  children,
+}: {
+  id?: string
+  over?: boolean
+  children: ReactNode
+}) {
+  return (
+    <p
+      id={id}
+      className={cn(
+        'text-end text-caption tabular-nums',
+        over ? 'font-semibold text-danger' : 'text-muted-foreground',
+      )}
+    >
+      {children}
+    </p>
+  )
+}
+
 export function FieldHelp({ id, children }: { id: string; children: ReactNode }) {
   return (
-    <div id={id} className="text-sm text-muted-foreground">
+    <div id={id} className="text-caption text-muted-foreground">
       {children}
     </div>
   )
@@ -97,9 +120,9 @@ export function FieldHelp({ id, children }: { id: string; children: ReactNode })
 export function FieldError({ id, message }: { id: string; message: string | undefined }) {
   if (!message) return null
   return (
-    <p id={id} className="flex items-start gap-1.5 text-sm font-medium text-danger">
-      <CircleAlert aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-      <span>{message}</span>
+    <p id={id} className="flex items-start gap-2 text-caption font-semibold text-danger">
+      <CircleAlert aria-hidden="true" className="mt-[0.2em] size-4" />
+      <span className="min-w-0">{message}</span>
     </p>
   )
 }
@@ -137,7 +160,7 @@ export function FieldShell({
   labelHidden = false,
 }: FieldShellProps) {
   const labelClass = cn(
-    'flex flex-wrap items-center gap-x-1.5 text-sm font-medium leading-snug text-foreground',
+    'flex max-w-full flex-wrap items-center gap-x-2 text-label-lg text-foreground',
     labelHidden && 'sr-only',
   )
   const labelContent = (
@@ -152,8 +175,8 @@ export function FieldShell({
 
   if (kind === 'fieldset') {
     return (
-      <fieldset className={cn('grid min-w-0 gap-1.5', className)}>
-        <legend className={cn('mb-1.5 p-0', labelClass)}>{labelContent}</legend>
+      <fieldset className={cn('field-stack min-w-0', className)}>
+        <legend className={cn('mb-2 p-0', labelClass)}>{labelContent}</legend>
         {help}
         {children}
         {error}
@@ -162,7 +185,7 @@ export function FieldShell({
   }
 
   return (
-    <div className={cn('grid gap-1.5', className)}>
+    <div className={cn('field-stack', className)}>
       {kind === 'label' ? (
         <Label htmlFor={control.inputId} className={labelClass}>
           {labelContent}

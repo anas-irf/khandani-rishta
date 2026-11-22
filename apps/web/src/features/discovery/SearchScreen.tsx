@@ -5,9 +5,12 @@ import { RotateCcw, Search as SearchIcon, SlidersHorizontal, UserRoundSearch } f
 import { type FormEvent, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { EmptyState } from '~/components/common/EmptyState'
+import { FieldError } from '~/components/common/fields/field-shell'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
 import { ScreenAccess } from '~/components/common/ScreenAccess'
+import { StickyActionBar } from '~/components/common/StickyActionBar'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
@@ -16,6 +19,7 @@ import { isApiError } from '~/lib/api'
 import type { OwnProfile, SearchFilters, SearchSort } from '~/lib/api-types'
 import { serverFieldMessage } from '~/lib/form-context'
 import { useCurrentMe } from '~/lib/me'
+import { useIsWide } from '~/lib/media'
 import { errorMessage, qk } from '~/lib/query'
 import { cn } from '~/lib/utils'
 import { useFindProfileCode, useSavedSearches, useSearch } from './queries'
@@ -43,11 +47,9 @@ export type SearchScreenProps = {
 
 export function SearchScreen(props: SearchScreenProps) {
   return (
-    <div className="container-app">
-      <ScreenAccess screen="APP-SEARCH">
-        <SearchContent {...props} />
-      </ScreenAccess>
-    </div>
+    <ScreenAccess screen="APP-SEARCH">
+      <SearchContent {...props} />
+    </ScreenAccess>
   )
 }
 
@@ -57,6 +59,7 @@ function SearchContent({ q, savedSearchId }: SearchScreenProps) {
   const profileId = me.profile.id
   const navigate = useNavigate()
   const online = useOnlineStatus()
+  const wide = useIsWide()
   const queryClient = useQueryClient()
   const viewerCountry =
     queryClient.getQueryData<OwnProfile>(qk.ownProfile())?.location.country_code ?? 'PK'
@@ -73,6 +76,17 @@ function SearchContent({ q, savedSearchId }: SearchScreenProps) {
   const [view, setView] = useState<'form' | 'results'>(active ? 'results' : 'form')
   const [saving, setSaving] = useState(false)
   const formRef = useRef<HTMLFormElement | null>(null)
+  const formId = useId()
+  const fieldsRef = useRef<HTMLDivElement | null>(null)
+  const filtersRef = useRef<HTMLButtonElement | null>(null)
+  // Phones show one view at a time, so the control that switched it is gone: focus moves along.
+  const focusView = useRef<'form' | 'results' | null>(null)
+  useEffect(() => {
+    if (focusView.current !== view) return
+    focusView.current = null
+    if (view === 'results') filtersRef.current?.focus()
+    else focusFirstControl(fieldsRef.current)
+  }, [view])
 
   const preferences = usePreferences()
   const savedSearches = useSavedSearches()
@@ -155,6 +169,7 @@ function SearchContent({ q, savedSearchId }: SearchScreenProps) {
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
+    focusView.current = 'results'
     run(cleanFilters(draft))
   }
 
@@ -163,62 +178,96 @@ function SearchContent({ q, savedSearchId }: SearchScreenProps) {
   }
 
   const editFilters = () => {
+    focusView.current = 'form'
     setView('form')
-    formRef.current?.querySelector<HTMLElement>('select, input, button')?.focus()
+    focusFirstControl(fieldsRef.current)
   }
 
   const activeCount = countActiveFilters(active?.filters ?? {})
 
+  // At the bottom of a phone, after the form and tied to it by `form`: a sticky bar cannot rise
+  // above the box it is in, and at large text the form starts too low to hold it above the
+  // navigation. On wide screens at the head of the filters, so it covers none of them when the
+  // screen opens. It is placed in the document where it is seen.
+  const actions = (
+    <StickyActionBar
+      placement={wide ? 'top' : 'bottom'}
+      className="w-auto flex-row flex-wrap max-wide:-mx-gutter wide:-mx-[20px]"
+    >
+      {/* 22 at the sides, so both share the 280 column at 768. */}
+      <Button
+        type="submit"
+        form={formId}
+        size="lg"
+        fill="main"
+        className="px-[22px]"
+        disabled={!online}
+      >
+        <SearchIcon aria-hidden="true" />
+        {t('search.actions.search')}
+      </Button>
+      <Button
+        type="button"
+        variant="secondary"
+        size="compact"
+        className="min-h-touch-lg flex-auto"
+        onClick={() => setDraft({})}
+      >
+        <RotateCcw aria-hidden="true" />
+        {t('search.actions.reset')}
+      </Button>
+    </StickyActionBar>
+  )
+
   return (
-    <div className="flex flex-col gap-4">
-      <PageHeader title={t('search.title')} />
-      <div className="md:grid md:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] md:items-start md:gap-6">
-        <div className={cn('flex flex-col gap-4', view === 'results' && 'hidden', 'md:flex')}>
+    <Page title={t('search.title')}>
+      <div className="wide:grid wide:grid-cols-[clamp(280px,30vw,352px)_minmax(0,1fr)] wide:items-start wide:gap-x-[clamp(24px,3vw,40px)]">
+        <div
+          className={cn('flex min-w-0 flex-col gap-6', view === 'results' && 'hidden', 'wide:flex')}
+        >
           <SavedSearches
             onRun={(saved) => {
+              focusView.current = 'results'
               setDraft(saved.filters)
               run(saved.filters)
             }}
           />
           <CodeFinder />
           <form
+            id={formId}
             ref={formRef}
             onSubmit={submit}
             noValidate
             aria-label={t('search.form_label')}
-            className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-border bg-surface px-4 py-2 shadow-sm"
+            className="flex min-w-0 flex-col wide:tonal wide:rounded-xl wide:px-[20px] wide:pb-2"
           >
-            <SearchFilterForm
-              filters={draft}
-              onChange={setDraft}
-              errors={fieldErrors}
-              viewerGender={me.profile.gender}
-              viewerCountry={viewerCountry}
-            />
-            <div className="sticky bottom-20 z-10 -mx-4 flex flex-wrap gap-2 border-t border-border bg-surface px-4 py-3 md:bottom-0">
-              <Button type="submit" className="flex-1" disabled={!online}>
-                <SearchIcon aria-hidden="true" />
-                {t('search.actions.search')}
-              </Button>
-              <Button type="button" variant="secondary" onClick={() => setDraft({})}>
-                <RotateCcw aria-hidden="true" />
-                {t('search.actions.reset')}
-              </Button>
+            {wide ? actions : null}
+            <div ref={fieldsRef} className="flex min-w-0 flex-col wide:pt-2">
               <Button
                 type="button"
-                variant="ghost"
-                className="text-primary"
+                variant="link"
+                className="mb-[8px] self-start"
                 disabled={!preferences.data}
                 onClick={applyPreferences}
               >
                 {t('search.actions.use_preferences')}
               </Button>
+              <SearchFilterForm
+                filters={draft}
+                onChange={setDraft}
+                errors={fieldErrors}
+                viewerGender={me.profile.gender}
+                viewerCountry={viewerCountry}
+              />
             </div>
           </form>
+          {wide ? null : actions}
         </div>
-        <div className={cn('flex flex-col gap-4', view === 'form' && 'hidden', 'md:flex')}>
-          <div className="md:hidden">
-            <Button variant="secondary" onClick={() => setView('form')}>
+        <div
+          className={cn('flex min-w-0 flex-col gap-5', view === 'form' && 'hidden', 'wide:flex')}
+        >
+          <div className="wide:hidden">
+            <Button ref={filtersRef} variant="secondary" onClick={editFilters}>
               <SlidersHorizontal aria-hidden="true" />
               {activeCount > 0
                 ? t('search.actions.filters_count', { count: activeCount })
@@ -238,15 +287,21 @@ function SearchContent({ q, savedSearchId }: SearchScreenProps) {
               onSave={() => setSaving(true)}
             />
           ) : (
-            <p className="hidden py-10 text-center text-muted-foreground md:block">
-              {t('search.results.start')}
-            </p>
+            <EmptyState
+              icon={SearchIcon}
+              title={t('search.results.start')}
+              className="hidden wide:flex"
+            />
           )}
         </div>
       </div>
       <SaveSearchDialog open={saving} onOpenChange={setSaving} filters={active?.filters ?? {}} />
-    </div>
+    </Page>
   )
+}
+
+function focusFirstControl(fields: HTMLElement | null) {
+  fields?.querySelector<HTMLElement>('select, input, button:not(:disabled)')?.focus()
 }
 
 /**
@@ -288,13 +343,13 @@ function CodeFinder() {
       onSubmit={submit}
       noValidate
       aria-label={t('search.quick_find')}
-      className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-border bg-surface p-4 shadow-sm"
+      className="flex min-w-0 flex-col gap-2"
     >
-      <Label htmlFor={inputId} className="flex items-center gap-2">
-        <UserRoundSearch aria-hidden="true" className="size-4 text-primary" />
+      <Label htmlFor={inputId}>
+        <UserRoundSearch aria-hidden="true" className="size-5 text-primary" />
         {t('search.code_label')}
       </Label>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Input
           id={inputId}
           value={code}
@@ -302,6 +357,7 @@ function CodeFinder() {
           autoComplete="off"
           autoCapitalize="characters"
           spellCheck={false}
+          className="w-auto flex-[1_1_9rem]"
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? errorId : undefined}
           onChange={(event) => setCode(event.target.value)}
@@ -310,11 +366,9 @@ function CodeFinder() {
           {t('search.find')}
         </Button>
       </div>
-      {error ? (
-        <p id={errorId} role="alert" className="text-sm text-danger">
-          {error}
-        </p>
-      ) : null}
+      <div role="alert">
+        <FieldError id={errorId} message={error ?? undefined} />
+      </div>
     </form>
   )
 }

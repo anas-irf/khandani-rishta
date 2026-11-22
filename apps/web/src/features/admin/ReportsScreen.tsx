@@ -4,12 +4,12 @@ import { CircleCheck } from 'lucide-react'
 import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { EmptyState } from '~/components/common/EmptyState'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
 import { RelativeTime } from '~/components/common/RelativeTime'
 import { Badge } from '~/components/ui/badge'
 import { NativeSelect, NativeSelectOption } from '~/components/ui/native-select'
 import { useLabelOf } from '~/lib/reference'
-import { AdminList, type Column } from './components/DataTable'
+import { AdminList, type Column, tableLinkClass } from './components/DataTable'
 import { FormField } from './components/FormField'
 import { StatusBadge } from './components/StatusBadge'
 import { useAdminReports } from './queries'
@@ -50,7 +50,7 @@ export function ReportsScreen() {
           to="/admin/reports/$reportId"
           params={{ reportId: item.report_id }}
           data-queue-link=""
-          className="font-medium text-primary underline-offset-2 hover:underline"
+          className={tableLinkClass}
         >
           {label('report_reason', item.reason)}
         </Link>
@@ -102,44 +102,45 @@ export function ReportsScreen() {
   ]
 
   return (
-    <div ref={container} className="flex flex-col gap-4">
-      <PageHeader title={t('reports.title')} description={t('reports.description')} />
-      <form
-        aria-label={t('reports.filters')}
-        onSubmit={(event) => event.preventDefault()}
-        className="flex items-end gap-3"
-      >
-        <FormField label={t('reports.status')} className="w-56">
-          {(props) => (
-            <NativeSelect
-              {...props}
-              value={filters.status}
-              onChange={(event) =>
-                setFilters({ status: event.target.value as (typeof REPORT_STATUSES)[number] })
-              }
-            >
-              {REPORT_STATUSES.map((status) => (
-                <NativeSelectOption key={status} value={status}>
-                  {t(`status.${status}`)}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
-          )}
-        </FormField>
-      </form>
-      <AdminList
-        caption={t('reports.caption')}
-        query={query}
-        columns={columns}
-        getKey={(item) => item.report_id}
-        empty={
-          filters.status === 'open' ? (
-            <EmptyState icon={CircleCheck} title={t('list.queue_empty')} />
-          ) : (
-            <EmptyState title={t('reports.empty')} />
-          )
-        }
-      />
+    <div ref={container} className="flex min-w-0 flex-1 flex-col">
+      <Page title={t('reports.title')} description={t('reports.description')}>
+        <form
+          aria-label={t('reports.filters')}
+          onSubmit={(event) => event.preventDefault()}
+          className="flex items-end gap-3"
+        >
+          <FormField label={t('reports.status')} className="w-56">
+            {(props) => (
+              <NativeSelect
+                {...props}
+                value={filters.status}
+                onChange={(event) =>
+                  setFilters({ status: event.target.value as (typeof REPORT_STATUSES)[number] })
+                }
+              >
+                {REPORT_STATUSES.map((status) => (
+                  <NativeSelectOption key={status} value={status}>
+                    {t(`status.${status}`)}
+                  </NativeSelectOption>
+                ))}
+              </NativeSelect>
+            )}
+          </FormField>
+        </form>
+        <AdminList
+          caption={t('reports.caption')}
+          query={query}
+          columns={columns}
+          getKey={(item) => item.report_id}
+          empty={
+            filters.status === 'open' ? (
+              <EmptyState icon={CircleCheck} title={t('list.queue_empty')} />
+            ) : (
+              <EmptyState title={t('reports.empty')} />
+            )
+          }
+        />
+      </Page>
     </div>
   )
 }

@@ -116,7 +116,7 @@ describe('useShortlistToggle', () => {
     expect(queryClient.getQueryData<Home>(qk.home())?.new_members[0]?.relation.is_shortlisted).toBe(
       false,
     )
-    expect(await screen.findByText('Something went wrong. Please try again.')).toBeInTheDocument()
+    expect(await screen.findByText('Could not update the shortlist.')).toBeInTheDocument()
   })
 })
 

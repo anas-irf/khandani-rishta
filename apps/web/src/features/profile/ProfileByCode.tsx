@@ -7,7 +7,8 @@ import { NoLongerAvailable } from '~/components/common/NoLongerAvailable'
 import { ScreenAccess } from '~/components/common/ScreenAccess'
 import { isApiError } from '~/lib/api'
 import { normalizeProfileCode } from '../discovery/search-params'
-import { ProfileSkeleton } from './ProfileScreen'
+import { ProfileTopBar } from './components/ProfileTopBar'
+import { ProfileSkeleton, ProfileStateLayout } from './ProfileScreen'
 import { useProfileByCode } from './queries'
 
 /**
@@ -17,9 +18,11 @@ import { useProfileByCode } from './queries'
  */
 export function ProfileByCode({ publicCode }: { publicCode: string }) {
   return (
-    <div className="container-app pt-4">
-      <ScreenAccess screen="APP-PROFILE">
-        <Resolve publicCode={normalizeProfileCode(publicCode)} />
+    <div className="flex min-w-0 flex-1 flex-col">
+      <ScreenAccess screen="APP-PROFILE" header={<ProfileTopBar />}>
+        <ProfileStateLayout>
+          <Resolve publicCode={normalizeProfileCode(publicCode)} />
+        </ProfileStateLayout>
       </ScreenAccess>
     </div>
   )

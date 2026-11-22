@@ -67,17 +67,77 @@ function ClerkSessionBridge({ children }: { children: ReactNode }) {
   return <AuthSessionContext.Provider value={session}>{children}</AuthSessionContext.Provider>
 }
 
-/** Clerk's appearance set to the brand colours and font (17 section 9.3). */
+const clerkFocus = { outline: '3px solid var(--color-ring)', outlineOffset: '3px' }
+/** Clerk's variant rules use up to four selectors, so the class is repeated to win over them. */
+const OVER_CLERK = '&&&&&'
+/** Clerk draws borders as shadows at a tenth of their colour, so a control gets its own border. */
+const clerkControl = {
+  border: '1.5px solid var(--color-input)',
+  boxShadow: 'none',
+}
+const clerkSecondary = {
+  minHeight: 'var(--size-touch)',
+  color: 'var(--color-foreground)',
+  borderRadius: 'var(--radius-pill)',
+  [OVER_CLERK]: clerkControl,
+  [`${OVER_CLERK}:focus-visible`]: clerkFocus,
+}
+const clerkField = {
+  minHeight: 'var(--size-touch)',
+  borderRadius: 'var(--radius-input)',
+  [OVER_CLERK]: clerkControl,
+  [`${OVER_CLERK}:focus`]: clerkFocus,
+  [`${OVER_CLERK}[aria-invalid="true"]`]: { borderColor: 'var(--color-danger)' },
+}
+
+/**
+ * Clerk's appearance set to the Mehfil Heritage tokens (17 section 9.3). Clerk derives shades
+ * from `variables`, so those need the colours themselves rather than CSS variables. `elements`
+ * are plain CSS on Clerk's parts, for what the variables cannot say: 48 targets, visible
+ * borders, flat fills (DESIGN.md 4.2, 5.3, 8).
+ */
 const clerkAppearance = {
   variables: {
-    colorPrimary: '#0F766E',
-    colorDanger: '#B91C1C',
-    colorSuccess: '#15803D',
-    colorWarning: '#B45309',
-    colorBackground: '#FFFFFF',
-    fontFamily: '"Inter Variable", Inter, ui-sans-serif, system-ui, sans-serif',
-    fontSize: '16px',
-    borderRadius: '8px',
+    colorPrimary: '#6E1D34',
+    colorPrimaryForeground: '#FAF6F0',
+    colorDanger: '#A4262C',
+    colorSuccess: '#2D6350',
+    colorWarning: '#8A5300',
+    colorBackground: '#FFFCF7',
+    colorForeground: '#23191D',
+    colorMuted: '#F2EAE0',
+    colorMutedForeground: '#5A4B4F',
+    colorNeutral: '#23191D',
+    colorInput: '#FFFCF7',
+    colorInputForeground: '#23191D',
+    colorBorder: '#8F7E77',
+    colorRing: '#6E1D34',
+    fontFamily: '"Source Sans 3 Variable", "Source Sans 3", "Noto Sans", ui-sans-serif, sans-serif',
+    fontSize: '1.0625rem',
+    borderRadius: '16px',
+  },
+  elements: {
+    cardBox: { border: '1px solid var(--color-border)', boxShadow: 'none' },
+    card: { boxShadow: 'none' },
+    formButtonPrimary: {
+      minHeight: 'var(--size-touch-lg)',
+      borderRadius: 'var(--radius-pill)',
+      fontWeight: 700,
+      [OVER_CLERK]: { boxShadow: 'none' },
+      [`${OVER_CLERK}::after`]: { display: 'none' },
+      [`${OVER_CLERK}:focus-visible`]: clerkFocus,
+    },
+    socialButtonsBlockButton: clerkSecondary,
+    socialButtonsBlockButtonText: { color: 'var(--color-foreground)' },
+    alternativeMethodsBlockButton: clerkSecondary,
+    formFieldInput: clerkField,
+    otpCodeFieldInput: clerkField,
+    formResendCodeLink: { minHeight: 'var(--size-touch)', '&:focus-visible': clerkFocus },
+    identityPreviewEditButton: {
+      minWidth: 'var(--size-touch)',
+      minHeight: 'var(--size-touch)',
+      '&:focus-visible': clerkFocus,
+    },
   },
 }
 

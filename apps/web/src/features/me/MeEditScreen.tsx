@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '~/components/common/ConfirmDialog'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
 import { NotFound } from '~/components/NotFound'
 import { Button } from '~/components/ui/button'
 import { useOwnProfile } from '~/features/profile-sections/queries'
@@ -40,11 +40,9 @@ export function MeEditScreen({ section: slug }: { section: string }) {
   const section = sectionFromSlug(slug)
   if (!section) {
     return (
-      <div className="container-app">
-        <NotFound>
-          <p>{t('edit.not_found')}</p>
-        </NotFound>
-      </div>
+      <NotFound>
+        <p>{t('edit.not_found')}</p>
+      </NotFound>
     )
   }
   return <EditSection key={section} section={section} />
@@ -97,15 +95,19 @@ function EditSection({ section }: { section: SectionKey }) {
   }
 
   return (
-    <div className="container-app flex max-w-xl flex-col gap-4">
-      <PageHeader title={t(`edit.title.${section}`)} showBack />
+    <Page title={t(`edit.title.${section}`)} showBack width="form">
       <SectionForm
         section={section}
         mode="edit"
         onSaved={onSaved}
         onDirtyChange={setDirty}
         footer={
-          <Button type="button" variant="secondary" onClick={() => void navigate({ to: '/me' })}>
+          <Button
+            type="button"
+            variant="quiet"
+            fill="phone"
+            onClick={() => void navigate({ to: '/me' })}
+          >
             {t('contacts.cancel')}
           </Button>
         }
@@ -120,7 +122,7 @@ function EditSection({ section }: { section: SectionKey }) {
         description={t('discard.body')}
         confirmLabel={t('discard.discard')}
         cancelLabel={t('discard.keep')}
-        destructive
+        tone="danger"
         onConfirm={() => {
           if (blocker.status === 'blocked') blocker.proceed()
         }}
@@ -142,6 +144,6 @@ function EditSection({ section }: { section: SectionKey }) {
           done('/me/preferences')
         }}
       />
-    </div>
+    </Page>
   )
 }

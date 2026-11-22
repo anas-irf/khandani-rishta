@@ -83,7 +83,10 @@ describe('ADM-SETTINGS', () => {
     await user.clear(input)
     await user.type(input, '800')
     await user.click(
-      screen.getByRole('button', { name: 'Reset limits.messages_per_day to its default' }),
+      screen.getByRole('button', {
+        name: 'Reset to default',
+        description: 'Reset limits.messages_per_day to its default',
+      }),
     )
 
     await waitFor(() => expect(save).toHaveLength(1))

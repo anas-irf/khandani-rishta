@@ -10,7 +10,7 @@ const TIP_KEYS = ['respect', 'money', 'phone', 'report'] as const
 function TipsList() {
   const { t } = useTranslation('chat')
   return (
-    <ul className="list-disc space-y-1 ps-5">
+    <ul className="bullet-list">
       {TIP_KEYS.map((key) => (
         <li key={key}>{t(`tips.${key}`)}</li>
       ))}
@@ -75,11 +75,13 @@ export function FirstChatTips({
   return (
     <section
       aria-labelledby="first-chat-tips"
-      className="relative mx-auto my-2 w-full max-w-lg rounded-[var(--radius-card)] border border-primary/40 bg-primary-soft p-4 pe-12 text-sm"
+      className="tonal relative mx-auto my-2 w-full max-w-form rounded-xl p-[20px] pe-[56px] text-body-sm"
     >
-      <h2 id="first-chat-tips" className="mb-2 flex items-center gap-2 text-base font-semibold">
-        <ShieldCheck aria-hidden="true" className="size-5 text-primary" />
-        {t('tips.title')}
+      <h2 id="first-chat-tips" className="mb-2 flex items-start gap-2 text-title-md font-bold">
+        <span aria-hidden="true" className="flex h-[1lh] items-center">
+          <ShieldCheck className="size-5 text-primary" />
+        </span>
+        <span className="min-w-0">{t('tips.title')}</span>
       </h2>
       <TipsList />
       <Button

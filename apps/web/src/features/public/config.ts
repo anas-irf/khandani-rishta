@@ -40,6 +40,6 @@ export type PublicPageKey =
 
 /**
  * Props for a `<Link>` to the sign-in page. `/sign-in/$` is a splat route (Clerk owns the
- * sub-paths), and "Create profile" and "Sign in" both open it (17 section 3.2).
+ * sub-paths), and "Create a free profile" and "Sign in" both open it (17 section 3.2).
  */
 export const signInLink = { to: '/sign-in/$', params: { _splat: '' } } as const

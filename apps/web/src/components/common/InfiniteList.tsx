@@ -35,12 +35,16 @@ export type InfiniteListProps<T> = {
   empty?: ReactNode
   /** First-load placeholder (default: compact card skeletons). */
   skeleton?: ReactNode
+  /** Changes what is shown of the loaded items (a passed card that keeps its place). */
+  arrange?: (items: T[]) => T[]
   /** Shows the "Refresh" control on wide screens (16 rule G5). Default true. */
   refreshable?: boolean
   /** Accessible name of the list. */
   label?: string
-  /** Classes of the `<ul>` (for example a grid). */
+  /** Classes of the `<ul>`, in place of the default column of rows (for example `card-grid`). */
   listClassName?: string
+  /** Classes of each `<li>`, in place of the hairline under a row. */
+  itemClassName?: string
   className?: string
 }
 
@@ -57,9 +61,11 @@ export function InfiniteList<T>({
   getKey,
   empty = null,
   skeleton,
+  arrange,
   refreshable = true,
   label,
-  listClassName,
+  listClassName = 'flex flex-col',
+  itemClassName = 'border-b border-border',
   className,
 }: InfiniteListProps<T>) {
   const { t } = useTranslation('shared')
@@ -102,13 +108,14 @@ export function InfiniteList<T>({
     )
   }
 
-  const items = query.data.pages.flatMap((page) => page.items)
+  const loaded = query.data.pages.flatMap((page) => page.items)
+  const items = arrange ? arrange(loaded) : loaded
   const refreshing = query.isFetching && !isFetchingNextPage
   const refresh = refreshable ? (
-    <div className="hidden justify-end md:flex">
+    <div className="hidden justify-end wide:flex">
       <Button
-        variant="ghost"
-        size="sm"
+        variant="quiet"
+        size="compact"
         onClick={() => void query.refetch()}
         disabled={refreshing}
         aria-busy={refreshing || undefined}
@@ -121,7 +128,7 @@ export function InfiniteList<T>({
 
   if (items.length === 0) {
     return (
-      <div className={cn('flex flex-col gap-2', className)}>
+      <div className={cn('flex flex-col gap-3', className)}>
         {refresh}
         {empty}
       </div>
@@ -129,11 +136,13 @@ export function InfiniteList<T>({
   }
 
   return (
-    <div className={cn('flex flex-col gap-3', className)}>
+    <div className={cn('flex min-w-0 flex-col gap-3', className)}>
       {refresh}
-      <ul aria-label={label} className={cn('flex flex-col gap-3', listClassName)}>
+      <ul aria-label={label} className={listClassName}>
         {items.map((item, index) => (
-          <li key={getKey(item)}>{renderItem(item, index)}</li>
+          <li key={getKey(item)} className={itemClassName}>
+            {renderItem(item, index)}
+          </li>
         ))}
       </ul>
       <div ref={sentinel} aria-hidden="true" className="h-px" />
@@ -144,7 +153,7 @@ export function InfiniteList<T>({
       ) : null}
       {isFetchNextPageError ? (
         <div role="alert" className="flex flex-col items-center gap-2 py-4 text-center">
-          <p className="text-sm text-muted-foreground">{t('list.load_more_failed')}</p>
+          <p className="text-body-sm text-muted-foreground">{t('list.load_more_failed')}</p>
           <Button variant="secondary" onClick={() => void fetchNextPage()}>
             {t('common:actions.retry')}
           </Button>

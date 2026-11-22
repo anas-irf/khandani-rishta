@@ -24,7 +24,7 @@ Each screen in section 6 is described with these parts:
 | States | Loading, empty (with exact copy) and error. |
 | Platform differences | Only where web and Android must differ. |
 
-Type and field names such as `ProfileCard.display_name` refer to 15 section 4. All copy is English and lives under i18n keys in the clients. Text in the `self` form follows the wording pattern of 07 section 3.2 where it talks about the candidate. Wherever copy says "{name}", it means the other member's `display_name`.
+Type and field names such as `ProfileCard.display_name` refer to 15 section 4. All copy is English and lives under i18n keys in the clients. Text in the `self` form follows the wording pattern of 07 section 3.2 where it talks about the candidate. On a managed profile that pattern has three additions: headings name the candidate instead of using a pronoun ("{first_name}'s matches", "Near {first_name}", "Viewed {first_name}'s profile"); "you both" becomes "them both" ("Age suits them both"); "my" becomes "his" or "her" ("Improve his profile"). Text addressed to the person at the screen keeps "you" ("You will not see this profile for 6 months."). Wherever copy says "{name}", it means the other member's `display_name`.
 
 ### 1.2 Global rules
 
@@ -39,7 +39,7 @@ Type and field names such as `ProfileCard.display_name` refer to 15 section 4. A
 | G7 | Optimistic updates | Allowed only for: shortlist on and off, pass and its undo, marking notifications or messages read, mute and archive, and the "sending" state of a chat message. On failure the change is reverted and a toast explains. Everything else waits for the server: sending, accepting, declining or withdrawing an interest, block, report, ending a connection, contact share, stage proposals, pause, close, delete, privacy changes and every form save. |
 | G8 | Confirmation dialogs | Required before: decline, withdraw, block, unblock, end connection, stop sharing contact, remove photo, remove saved search, pause, close, reopen, delete account, sign out. The dialog names the consequence in one or two sentences. The confirming button repeats the verb ("Block", "End connection"). |
 | G9 | Toasts | Short confirmations ("Interest sent", "Saved"). They disappear after 4 seconds. Errors that need a decision use a dialog instead. |
-| G10 | Photos of other members | Use `PhotoView.thumb_url` in compact cards and rows, `medium_url` in full-size cards and on the profile, and `large_url` only in the photo viewer. When `is_blurred` is true, show the image as received with a small lock icon. Never apply or remove blur on the device for another member's photo. When `photo` is `null`, show a neutral placeholder (a silhouette, different for male and female profiles). No save, share or download control exists for another member's photo. |
+| G10 | Photos of other members | Use `PhotoView.thumb_url` in compact cards and rows, `medium_url` in full-size cards, in tiles and on the profile, and `large_url` only in the photo viewer. When `is_blurred` is true, show the image as received with a small lock icon. Never apply or remove blur on the device for another member's photo. When `photo` is `null`, show a neutral placeholder (a silhouette, different for male and female profiles). No save, share or download control exists for another member's photo. |
 | G11 | Dates and times | Relative for the last 7 days ("5 min ago", "Yesterday"), then the date. Chat messages show the time; day separators show the date. All in the device's time zone. |
 | G12 | Direction | Layouts use start and end, never left and right, so the Urdu phase can mirror them. |
 | G13 | Accessibility | Every control has a text label. Touch targets are at least 48 by 48 dp on Android and 44 by 44 px on the web. Colour is never the only signal (statuses also have text or an icon). |
@@ -73,24 +73,31 @@ Shown in place of the content of a screen whose access level the member's profil
 
 ### 1.5 The profile card
 
-Lists of members use one shared component, fed by `ProfileCard`. It has two sizes.
+Lists of members use one shared component, fed by `ProfileCard`. It has two sizes and a small tile (below the table). A card shows only what helps a family decide whether to open the profile; the other details are on `APP-PROFILE`. When a card grows too tall, content leaves the card before text gets smaller.
 
-| Element | Source | Full size (matches, search, home rows) | Compact size (interests, shortlist, visitors, requests) |
+| Element | Source | Full size (matches, search, "Your matches" on home) | Compact size (interests, shortlist, visitors, requests, "Near you" on home) |
 |---|---|---|---|
 | Photo | `photo` (`medium_url` in full size, `thumb_url` in compact) or the placeholder; a lock icon when `photo.is_blurred` | Yes | Yes |
 | Photo count | `photo_count`, as "{n} photos", when 2 or more | Yes | No |
 | Name and age | `display_name`, `age`, as "Ayesha K., 26" | Yes | Yes |
-| Badges | `badges`, as small icons after the name in the order `id_verified`, `photo_verified`, `phone_verified`, `new` (12 section 1.2). Accessible labels: "ID verified", "Photo verified", "Phone verified", "New". Only earned badges appear. | Yes | Yes |
+| Badges | `badges`, in the order `id_verified`, `photo_verified`, `phone_verified`, as words with a tick by the name: "ID verified", "Photo verified", "Phone verified", never as icons alone; `new` as a "New" label on the photo (12 section 1.2). Only earned badges appear. | Yes | Yes |
 | Location | `city_name`, and the country name when `country_code` differs from the viewer's own | Yes | Yes |
-| Education and work | Name of `education_level_code`; name of `profession_code`, or the label of `employment_type` when there is no profession | Yes | One line |
-| Key facts | Height (07 section 4.3 format), label of `marital_status` when it is not `never_married`, name of `sect_code` or of `religion_code`, `caste_label` when not `null` | Yes | No |
+| Work | Name of `profession_code`, or the label of `employment_type` when there is no profession | Yes | Yes |
+| Marital status | Label of `marital_status` when it is not `never_married` | Yes | No |
 | Managed by | "Profile managed by {label of managed_by}" when it is not `self` | Yes | No |
-| Match | `compat` as "{n}% match" when not `null`; up to 3 chips from `reasons` (labels in 10 section 7) | Yes | Percentage only |
-| Activity | Label of `last_active` when not `null`: `online` "Online now", `today` "Active today", `this_week` "Active this week", `this_month` "Active this month", `earlier` "Active a while ago" | Yes | No |
+| Match | `compat` as "{n}% match" when not `null`; up to 3 reasons from `reasons` (labels in 10 section 7) | Yes | Percentage only |
 | Relation hint | From `relation`: "Interest sent" (`interest_direction = 'sent'`), "Interested in you" (`'received'`), "Connected" (`tier = 'connection'`) | Yes | Yes |
-| Shortlist control | A heart, filled when `relation.is_shortlisted` | Yes | No |
+| Shortlist control | A button with a heart and the label "Shortlist". When `relation.is_shortlisted` it is pressed, the heart is filled and the label reads "Shortlisted". | Yes | No |
+| More | A button "More" that opens a menu with "Not interested" (6.4) | Yes | No |
+| Education | Name of `education_level_code` | No, `APP-PROFILE` only | No |
+| Height, religion or sect, caste | Height (07 section 4.3 format), name of `sect_code` or of `religion_code`, `caste_label` when not `null` | No, `APP-PROFILE` only | No |
+| Activity | Label of `last_active` when not `null`: `online` "Online now", `today` "Active today", `this_week` "Active this week", `this_month` "Active this month", `earlier` "Active a while ago" | No, `APP-PROFILE` only | No |
 
-Tapping a card opens `APP-PROFILE` for `ProfileCard.id`. The heart calls `PUT /v1/shortlist/{profile_id}` with `{}` or `DELETE /v1/shortlist/{profile_id}` (optimistic, G7).
+Location, work and marital status share one line on the full size ("Lahore · Software and IT · Divorced"); location and work share one line on the compact size. `ProfileCard` still carries the fields of the last three rows (15 section 4); the card does not show them.
+
+The tile is used only by "New members" on home, so that row stays small. It shows the photo (`medium_url`, because the thumb is a square crop) with the "New" label, the name and age, `compat` as "{n}% match" when not `null`, and the location and work on two lines. It has nothing else.
+
+Tapping a card opens `APP-PROFILE` for `ProfileCard.id`. "Shortlist" calls `PUT /v1/shortlist/{profile_id}` with `{}` or `DELETE /v1/shortlist/{profile_id}` (optimistic, G7).
 
 ### 1.6 Copy owned by other documents
 
@@ -110,7 +117,7 @@ Several texts shown on these screens are defined once elsewhere so that the app,
 | Notification texts and targets | 14 section 3 |
 | Notification preference labels | 14 section 6.1 |
 | Blocked-account and deletion copy, sign-out steps | 06 sections 8.4, 9 and 10.1 |
-| Match reason chips | 10 section 7 |
+| Match reasons | 10 section 7 |
 | Option labels of every closed list | 05 section 2 |
 
 ## 2. Navigation structure
@@ -559,10 +566,10 @@ Specified in full in 07. One pointer per screen:
 | 4 | Greeting | Always | "Welcome back, {Me.profile.first_name}". For a managed profile: "Welcome back. Managing {first_name}'s profile." |
 | 5 | First-run tip | Once, 07 section 15.2 | The tip card. |
 | 6 | Pending interests | `pending_interests` above 0 | "{n} members are interested in you" (singular: "1 member is interested in you") with the button "View". Opens `APP-INTERESTS`, Received. |
-| 7 | Nudges | `nudges` not empty | A horizontal row of cards, one per nudge, in the given order. Texts and targets below. |
-| 8 | "Your matches" | Always | A horizontal row of full-size cards from `recommendations` (up to 10). Header link "See all" opens `APP-MATCHES`. Empty and exhausted states below. |
-| 9 | "New members" | `new_members` not empty | A horizontal row of cards. Header link "See all" opens `APP-SEARCH` with `joined_within_days = 7` and `sort = newest` applied. |
-| 10 | "Near you" | `nearby` not empty | A horizontal row of cards. Header link "See all" opens `APP-SEARCH` with the viewer's own city in `city_ids` and `sort = best_match`. |
+| 7 | "Your matches" | Always | Under the title, when the row is not empty: "They fit you, and you fit them". A horizontal row of full-size cards from `recommendations` (up to 10). Header link "See all" opens `APP-MATCHES`. Empty and exhausted states below. |
+| 8 | Nudges | `nudges` not empty | A horizontal row of cards, one per nudge, in the given order, after the matches so that the first match is on the first screen. On phones a card shows its title, and its text is for screen readers. Texts and targets below. |
+| 9 | "New members" | `new_members` not empty | A horizontal row of tiles (1.5). Header link "See all" opens `APP-SEARCH` with `joined_within_days = 7` and `sort = newest` applied. |
+| 10 | "Near you" | `nearby` not empty | A list of compact cards, one column on phones and up to three on wide web. Header link "See all" opens `APP-SEARCH` with the viewer's own city in `city_ids` and `sort = best_match`. |
 | 11 | "Viewed your profile" | `visitors_count_7d` above 0 | "{visitors_count_7d} members viewed the profile this week", up to 5 small photos from `recent_visitors`, link "See all" opens `APP-VISITORS`. |
 | 12 | Completeness card | `completeness` under 70 | A ring with `completeness`, "Complete profiles receive more interest.", button "Improve my profile" opens `ME-PROFILE`. |
 | 13 | Safety line | Always | "Never send money to anyone you meet here. Read the safety tips." Opens `PUB-SAFETY` or `SET-HELP`. |
@@ -594,8 +601,8 @@ When `pool_exhausted` is true, each entry of `relaxation_hints` (at most 2, retu
 | Control | Endpoint | On success | On error |
 |---|---|---|---|
 | Tap a card | None | Opens `APP-PROFILE` | |
-| Heart on a card | `PUT /v1/shortlist/{profile_id}` with `{}`, or `DELETE /v1/shortlist/{profile_id}` | Heart toggles (optimistic) | Revert; toast "Could not update the shortlist." |
-| Card menu, "Not interested" | `PUT /v1/passes/{profile_id}` | The card leaves the row (optimistic). Toast "Hidden. Undo" for 5 seconds; "Undo" calls `DELETE /v1/passes/{profile_id}` and restores the card (11 section 12). | Revert; generic toast |
+| "Shortlist" on a card | `PUT /v1/shortlist/{profile_id}` with `{}`, or `DELETE /v1/shortlist/{profile_id}` | The button toggles between "Shortlist" and "Shortlisted" (optimistic) | Revert; toast "Could not update the shortlist." |
+| Card menu, "Not interested" | `PUT /v1/passes/{profile_id}` | The card is replaced in place (optimistic) by a panel: "{name} is hidden from your matches.", "You will not see this profile for 6 months." and the button "Undo". The panel stays until the member leaves the screen, with no time limit. "Undo" calls `DELETE /v1/passes/{profile_id}` and restores the card (11 section 12). | Revert; generic toast |
 
 **States:** loading: skeleton rows. Error: G3. Status panel per 1.4.
 
@@ -625,7 +632,7 @@ When `pool_exhausted` is true, each entry of `relaxation_hints` (at most 2, retu
 | Control | Endpoint | On success | On error |
 |---|---|---|---|
 | "Refresh" | `POST /v1/recommendations/refresh` | `202`. Show the refreshing banner and refetch as in block 2. | `rate_limited`: toast "Matches were refreshed a few minutes ago." |
-| Card tap, heart, "Not interested" | As on `APP-HOME` | | |
+| Card tap, "Shortlist", "Not interested" | As on `APP-HOME` | | |
 
 **States:** loading: skeleton cards. Empty (no items on the first page): the same texts as the "Your matches" row of 6.4. Error: G3.
 
@@ -744,7 +751,7 @@ A row of chips above the form, one per saved search (`name`), newest first.
 | # | Block | Source | Details |
 |---|---|---|---|
 | 1 | Photo gallery | `photos`, `relation.photo_access`, `locked` | A swipeable gallery, primary photo first, with a position indicator. `medium_url` is used. Tapping a photo opens `APP-PHOTOS`. With no photos: the placeholder and the caption "No photo added yet". When `locked` contains `photos`, the overlay of the "Photo access" table below is drawn over the blurred image. |
-| 2 | Header | `card.display_name`, `card.age`, `card.badges`, `is_online`, `card.last_active`, `card.public_code`, `card.managed_by` | Name and age, followed by the badge icons (1.5). "Online now" when `is_online` is true, otherwise the `last_active` label (1.5) when not `null`. The profile code in small type with a copy control. "Profile managed by {label}" when `managed_by` is not `self`. |
+| 2 | Header | `card.display_name`, `card.age`, `card.badges`, `is_online`, `card.last_active`, `card.public_code`, `card.managed_by` | Name and age, followed by the badges (1.5). "Online now" when `is_online` is true, otherwise the `last_active` label (1.5) when not `null`. The profile code in small type with a copy control. "Profile managed by {label}" when `managed_by` is not `self`. |
 | 2a | Verification | `card.badges` | Shown when at least one of the three verification badges is present. One line per earned badge, with the texts of 12 section 1.2: `id_verified` "Identity document checked by our team", `photo_verified` "Photos checked against a live selfie", `phone_verified` "Phone number confirmed". Checks that were not done are not listed. Under the lines, the fixed disclaimer: "Verification confirms identity details only. Always take your own care and involve your family." |
 | 3 | Compatibility | `compatibility` | See "Compatibility block". Hidden when `compatibility` is `null`. |
 | 4 | About | `about_me` | Title "About {name}". Hidden when `null`. |
@@ -806,7 +813,7 @@ The checks behind these answers are in 09 section 6.3, and the mapping to `relat
 | Element | Source | Display |
 |---|---|---|
 | Headline | `compatibility.compat` | A ring with "{n}% match". |
-| Reasons | `compatibility.reasons` | Up to 3 chips (labels in 10 section 7). |
+| Reasons | `compatibility.reasons` | Up to 3, as a list without ticks (labels in 10 section 7). |
 | Two bars | `viewer_fit`, `owner_fit` | "{name} fits {viewer_fit}% of what you are looking for" and "You fit {owner_fit}% of what {name} is looking for". |
 | Detail list | `compatibility.dimensions` | Behind a control "See details". One row per dimension: the dimension label (table below), a tick when `matched` is true or a cross when false, and a "Must have" tag when `importance` is `must`. |
 
@@ -840,10 +847,12 @@ The bar's content is decided by `relation`, evaluated top to bottom.
 | # | Condition | Primary control | Secondary controls |
 |---|---|---|---|
 | 1 | `tier = 'connection'` | "Open chat" opens `APP-CHAT` with `connection_id` | Menu: "Connection details" (`APP-CONNECTION`), "Report", "Block" |
-| 2 | `tier = 'interest_from_owner'` (they sent the viewer an interest) | "Accept" | "Decline"; heart; menu: "Report", "Block". Above the bar: "{name} is interested in you" and the interest's `message` when set, with "Expires {date of expires_at}". |
-| 3 | `tier = 'interest_to_owner'` (the viewer's interest is pending) | A disabled button "Interest sent" | "Withdraw"; heart; menu |
-| 4 | `tier = 'member'` and `can_send_interest` is true | "Send interest" | Heart; "Not interested"; menu: "Report", "Block" |
-| 5 | `tier = 'member'` and `can_send_interest` is false | A disabled button with the text for `cannot_send_reason` below | Heart; "Not interested"; menu |
+| 2 | `tier = 'interest_from_owner'` (they sent the viewer an interest) | "Accept" | "Decline"; "Shortlist"; menu: "Report", "Block". Above the bar: "{name} is interested in you" and the interest's `message` when set, with "Expires {date of expires_at}". |
+| 3 | `tier = 'interest_to_owner'` (the viewer's interest is pending) | A disabled button "Interest sent" | "Withdraw"; "Shortlist"; menu |
+| 4 | `tier = 'member'` and `can_send_interest` is true | "Send interest" | "Shortlist"; "Not interested"; menu: "Report", "Block" |
+| 5 | `tier = 'member'` and `can_send_interest` is false | A disabled button with the text for `cannot_send_reason` below | "Shortlist"; "Not interested"; menu |
+
+"Shortlist" is the labelled toggle of 1.5: "Shortlist", or "Shortlisted" while the profile is on the viewer's shortlist.
 
 In rows 1 to 3 the menu also contains "Let {name} see my photos" when the viewer's own `photo_visibility` is not `members`. It calls `PUT /v1/me/photo-access/grants/{profile_id}` and shows the toast "{name} can now see your photos." Access given this way is listed, and can be removed, on `APP-PHOTO-REQUESTS`.
 
@@ -868,7 +877,7 @@ Actions:
 | "Accept" | `POST /v1/interests/{interest.id}/accept` | Toast "You are now connected." Open `APP-CHAT` for the returned connection. | `limit_reached` with `details.side = 'you'`: "You have reached the maximum number of connections. End one to accept." With `details.side = 'them'`: "This member cannot take new connections right now. Please try again later." `invalid_state`: refetch the profile. |
 | "Decline" | Dialog: "Decline this interest? {name} will not be notified." with a checkbox "Also block {name}" and the buttons "Decline" and "Cancel". Then `POST /v1/interests/{interest.id}/decline` with `{ "also_block" }` | Toast "Interest declined." Go back. | `invalid_state`: refetch. |
 | "Withdraw" | Dialog: "Withdraw your interest? You can send a new one after 7 days." Then `POST /v1/interests/{interest.id}/withdraw` | Toast "Interest withdrawn." Refetch the profile. | `invalid_state`: refetch. |
-| Heart | `PUT /v1/shortlist/{profile_id}` with `{ "note" }` or `DELETE` | Optimistic. After adding, a snackbar offers "Add a note": a text field (at most 300 characters) saved with another `PUT`. | Revert. `limit_reached` (200 entries, 11 section 12): "Your shortlist is full. Remove some profiles first." |
+| "Shortlist" | `PUT /v1/shortlist/{profile_id}` with `{ "note" }` or `DELETE` | Optimistic. After adding, a snackbar offers "Add a note": a text field (at most 300 characters) saved with another `PUT`. | Revert. `limit_reached` (200 entries, 11 section 12): "Your shortlist is full. Remove some profiles first." |
 | "Not interested" | `PUT /v1/passes/{profile_id}` | Toast "You will not see this profile for 6 months. Undo" for 5 seconds. Go back. "Undo" calls `DELETE /v1/passes/{profile_id}`. If the viewer has a pending interest to this member, the pass does not withdraw it; ask "You also have an open interest to {name}. Withdraw it?" with "Withdraw" and "Keep". | Generic toast. |
 | "Report" | The report dialog of 6.11 with `subject_type = 'profile'` | | |
 | "Block" | Dialog: "Block {name}? You will no longer see each other anywhere. Any connection and chat between you ends." Then `PUT /v1/blocks/{profile_id}` | Toast "Blocked." Go back and remove the profile from cached lists. | Generic toast. |
@@ -1243,7 +1252,7 @@ A checkbox "Also block {name}" (ticked automatically when the reason is `inappro
 | Entry points | The Me menu or the avatar menu. |
 | Data | `GET /v1/shortlist`, paginated. |
 | Content | Title "Shortlist" and the line "Only you can see this list." Then one row per item: the compact profile card of `profile`, the `note` in italics when set, and "Saved {relative created_at}". When `profile` is `null`: a grey row "No longer available" with a "Remove" control, which calls `DELETE /v1/shortlist/{profile_id}` with the item's `profile_id`. |
-| States | Loading: skeleton rows. Empty: "No saved profiles yet. Tap the heart on a profile to save it for later." with the button "See my matches". Error: G3. |
+| States | Loading: skeleton rows. Empty: "No saved profiles yet. Tap Shortlist on a profile to save it for later." with the button "See my matches". Error: G3. |
 
 | Control | Endpoint | On success | On error |
 |---|---|---|---|

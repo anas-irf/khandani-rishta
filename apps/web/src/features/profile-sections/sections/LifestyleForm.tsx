@@ -1,14 +1,15 @@
 // ONB-07 (07 section 9) and ME-EDIT `lifestyle` (08 section 2).
 import { useStore } from '@tanstack/react-form'
-import { ChevronDown, Sparkles } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 import { useId, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ConfirmDialog } from '~/components/common/ConfirmDialog'
+import { Disclosure } from '~/components/common/Disclosure'
 import { Button } from '~/components/ui/button'
+import { Toggle } from '~/components/ui/toggle'
 import { ageFromDateOfBirth } from '~/lib/format'
 import { useLabelOf, useReference } from '~/lib/reference'
 import { track } from '~/lib/track'
-import { cn } from '~/lib/utils'
 import { ChipsField, TextStatusNote } from '../fields'
 import { FieldGroup, FormShell, useLatest, useManagedForm } from '../form-shell'
 import { buildAboutMeDraft } from '../help-me-write'
@@ -67,10 +68,9 @@ export function LifestyleForm({
   })
   const [schema] = useState(() => lifestyleSchema())
   const [defaultValues] = useState(() => lifestyleFromProfile(profile))
-  const [appearanceOpen, setAppearanceOpen] = useState(false)
   const [activePrompt, setActivePrompt] = useState<number | null>(null)
   const [replaceDraft, setReplaceDraft] = useState<string | null>(null)
-  const appearanceId = useId()
+  const promptsId = useId()
 
   const managed = useManagedForm({
     namespace: SECTION_NS,
@@ -93,7 +93,6 @@ export function LifestyleForm({
       (name) => (state.fieldMeta[name as keyof LifestyleValues]?.errors.length ?? 0) > 0,
     ),
   )
-  const appearanceShown = appearanceOpen || appearanceHasError
 
   const hobbyGroups = useMemo(
     () =>
@@ -261,79 +260,55 @@ export function LifestyleForm({
           </form.AppField>
         </FieldGroup>
 
-        <section className="flex flex-col gap-5">
-          <h3 className="text-base font-semibold">
-            <button
-              type="button"
-              aria-expanded={appearanceShown}
-              aria-controls={appearanceId}
-              onClick={() => setAppearanceOpen((open) => !open)}
-              className="flex min-h-11 w-full items-center justify-between gap-2 text-start"
-            >
-              <span>
-                {t('lifestyle.group_appearance')}{' '}
-                <span className="font-normal text-muted-foreground">{t('common:optional')}</span>
-              </span>
-              <ChevronDown
-                aria-hidden="true"
-                className={cn('size-5 transition-transform', appearanceShown && 'rotate-180')}
-              />
-            </button>
-          </h3>
-          <div id={appearanceId} hidden={!appearanceShown} className="flex flex-col gap-5">
-            {appearanceShown ? (
-              <>
-                <form.AppField name="weight_kg">
+        <Disclosure
+          ornament
+          title={t('lifestyle.group_appearance')}
+          note={t('common:optional')}
+          forceOpen={appearanceHasError}
+        >
+          <form.AppField name="weight_kg">
+            {(field) => <field.NumberField label={t('lifestyle.weight_kg_label')} max={200} />}
+          </form.AppField>
+          <form.AppField name="complexion">
+            {(field) => (
+              <field.SelectField label={t('lifestyle.complexion_label')} list="complexion" />
+            )}
+          </form.AppField>
+          <form.AppField name="body_type">
+            {(field) => (
+              <field.SelectField label={t('lifestyle.body_type_label')} list="body_type" />
+            )}
+          </form.AppField>
+          <form.AppField name="blood_group">
+            {(field) => (
+              <field.SelectField label={t('lifestyle.blood_group_label')} list="blood_group" />
+            )}
+          </form.AppField>
+          <form.AppField name="disability">
+            {(field) => (
+              <field.SelectField label={t('lifestyle.disability_label')} list="disability" />
+            )}
+          </form.AppField>
+          <form.Subscribe
+            selector={(state) =>
+              state.values.disability != null && state.values.disability !== 'none'
+            }
+          >
+            {(withDetails) =>
+              withDetails ? (
+                <form.AppField name="disability_details">
                   {(field) => (
-                    <field.NumberField label={t('lifestyle.weight_kg_label')} max={200} />
-                  )}
-                </form.AppField>
-                <form.AppField name="complexion">
-                  {(field) => (
-                    <field.SelectField label={t('lifestyle.complexion_label')} list="complexion" />
-                  )}
-                </form.AppField>
-                <form.AppField name="body_type">
-                  {(field) => (
-                    <field.SelectField label={t('lifestyle.body_type_label')} list="body_type" />
-                  )}
-                </form.AppField>
-                <form.AppField name="blood_group">
-                  {(field) => (
-                    <field.SelectField
-                      label={t('lifestyle.blood_group_label')}
-                      list="blood_group"
+                    <field.TextField
+                      label={t('lifestyle.disability_details_label')}
+                      maxLength={300}
                     />
                   )}
                 </form.AppField>
-                <form.AppField name="disability">
-                  {(field) => (
-                    <field.SelectField label={t('lifestyle.disability_label')} list="disability" />
-                  )}
-                </form.AppField>
-                <form.Subscribe
-                  selector={(state) =>
-                    state.values.disability != null && state.values.disability !== 'none'
-                  }
-                >
-                  {(withDetails) =>
-                    withDetails ? (
-                      <form.AppField name="disability_details">
-                        {(field) => (
-                          <field.TextField
-                            label={t('lifestyle.disability_details_label')}
-                            maxLength={300}
-                          />
-                        )}
-                      </form.AppField>
-                    ) : null
-                  }
-                </form.Subscribe>
-                <p className="text-sm text-muted-foreground">{t('lifestyle.health_help')}</p>
-              </>
-            ) : null}
-          </div>
-        </section>
+              ) : null
+            }
+          </form.Subscribe>
+          <p className="text-caption text-muted-foreground">{t('lifestyle.health_help')}</p>
+        </Disclosure>
 
         <FieldGroup title={t('lifestyle.group_hobbies')}>
           <form.AppField name="hobby_codes">
@@ -350,25 +325,19 @@ export function LifestyleForm({
 
         <FieldGroup title={t('lifestyle.group_about', wording)}>
           <div className="flex flex-col gap-2">
-            <p id={`${appearanceId}-prompts`} className="text-sm font-medium">
+            <p id={promptsId} className="text-label-lg">
               {t('lifestyle.prompts_label')}
             </p>
-            <ul aria-labelledby={`${appearanceId}-prompts`} className="flex flex-col gap-1">
+            <ul aria-labelledby={promptsId} className="flex flex-col gap-2">
               {prompts.map((prompt, index) => (
                 <li key={prompt}>
-                  <button
-                    type="button"
-                    aria-pressed={activePrompt === index}
-                    onClick={() => setActivePrompt(activePrompt === index ? null : index)}
-                    className={cn(
-                      'min-h-11 w-full rounded-[var(--radius-input)] border px-3 py-2 text-start text-sm transition-colors',
-                      activePrompt === index
-                        ? 'border-primary bg-primary-soft'
-                        : 'border-border bg-surface hover:bg-muted',
-                    )}
+                  <Toggle
+                    variant="row"
+                    pressed={activePrompt === index}
+                    onPressedChange={(pressed) => setActivePrompt(pressed ? index : null)}
                   >
                     {prompt}
-                  </button>
+                  </Toggle>
                 </li>
               ))}
             </ul>
@@ -383,13 +352,13 @@ export function LifestyleForm({
               />
             )}
           </form.AppField>
-          <Button type="button" variant="outline" className="self-start" onClick={onHelpMeWrite}>
+          <Button type="button" variant="secondary" className="self-start" onClick={onHelpMeWrite}>
             <Sparkles aria-hidden="true" />
             {t('lifestyle.help_me_write')}
           </Button>
           <TextStatusNote status={profile.text_status.about_me} />
           {mode === 'edit' ? (
-            <p className="text-sm text-muted-foreground">{t('form.review_note')}</p>
+            <p className="text-caption text-muted-foreground">{t('form.review_note')}</p>
           ) : null}
         </FieldGroup>
       </FormShell>

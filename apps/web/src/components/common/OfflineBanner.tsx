@@ -33,7 +33,7 @@ export function OfflineBanner({ className }: { className?: string }) {
       {online ? null : (
         <p
           className={cn(
-            'flex items-center justify-center gap-2 bg-foreground px-4 py-1.5 text-sm text-background',
+            'band-inverse flex items-center justify-center gap-2 px-gutter py-2 text-label-sm',
             className,
           )}
         >

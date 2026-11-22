@@ -1,6 +1,7 @@
 import { type FormEvent, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { FieldError } from '~/components/common/fields/field-shell'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
 import { ReportDialog } from '~/components/common/ReportDialog'
 import {
@@ -143,15 +144,15 @@ function EndForm({
 
   return (
     <DialogContent closeLabel={t('common:actions.close')} aria-describedby={ids.text}>
-      <form onSubmit={(event) => void submit(event)} className="grid gap-4" noValidate>
+      <form onSubmit={(event) => void submit(event)} className="flex flex-col gap-4" noValidate>
         <DialogHeader>
           <DialogTitle>{t('chat:end.title')}</DialogTitle>
-          <DialogDescription id={ids.text} className="text-base text-foreground">
+          <DialogDescription id={ids.text} className="text-foreground">
             {t('chat:end.text', { name })}
           </DialogDescription>
         </DialogHeader>
         <fieldset className="grid gap-1" aria-describedby={error ? ids.error : undefined}>
-          <legend id={ids.legend} className="mb-1 text-sm font-medium">
+          <legend id={ids.legend} className="mb-1 text-label-lg">
             {t('chat:end.reason_label')}
           </legend>
           <RadioGroup
@@ -167,23 +168,16 @@ function EndForm({
             className="gap-0"
           >
             {options.map((option) => (
-              <Label
-                key={option.code}
-                className="min-h-11 cursor-pointer gap-3 rounded-[var(--radius-input)] px-1 font-normal text-base hover:bg-muted"
-              >
+              <Label key={option.code} variant="option" className="py-1">
                 <RadioGroupItem value={option.code} />
                 {t(`chat:end.reason.${option.code}`, { defaultValue: option.label })}
               </Label>
             ))}
           </RadioGroup>
-          {error ? (
-            <p id={ids.error} className="text-sm text-danger">
-              {error}
-            </p>
-          ) : null}
+          <FieldError id={ids.error} message={error ?? undefined} />
         </fieldset>
         {connection.other ? (
-          <Label className="min-h-11 cursor-pointer gap-3 font-normal text-base">
+          <Label variant="option">
             <Checkbox
               checked={alsoBlock}
               onCheckedChange={(checked) => setAlsoBlock(checked === true)}
@@ -192,7 +186,7 @@ function EndForm({
           </Label>
         ) : null}
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={end.isPending}>
+          <Button variant="secondary" onClick={onClose} disabled={end.isPending}>
             {t('common:actions.cancel')}
           </Button>
           <Button type="submit" variant="destructive" loading={end.isPending} disabled={!online}>

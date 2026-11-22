@@ -1,29 +1,33 @@
 // APP-INTERESTS (16 section 6.9)
 import { useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate, useSearch } from '@tanstack/react-router'
-import { AlertTriangle, Clock, Heart, Send } from 'lucide-react'
+import { CircleMinus, Clock, Mail, Send, UsersRound } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '~/components/common/ConfirmDialog'
+import { CountBadge } from '~/components/common/CountBadge'
+import { DeclineDialog } from '~/components/common/DeclineDialog'
 import { EmptyState } from '~/components/common/EmptyState'
+import { ExpiryNote } from '~/components/common/ExpiryNote'
 import { InfiniteList } from '~/components/common/InfiniteList'
-import { Silhouette } from '~/components/common/MemberPhoto'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
-import { PageHeader } from '~/components/common/PageHeader'
-import { PlainText } from '~/components/common/PlainText'
+import { Page } from '~/components/common/Page'
 import { ProfileCard } from '~/components/common/ProfileCard'
+import { QuoteBlock } from '~/components/common/QuoteBlock'
+import { RowAnswers, RowMeta } from '~/components/common/RowParts'
 import { ScreenAccess } from '~/components/common/ScreenAccess'
+import { UnavailableRow } from '~/components/common/UnavailableRow'
+import { UnreadDot } from '~/components/common/UnreadDot'
+import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
-import { Checkbox } from '~/components/ui/checkbox'
-import { Label } from '~/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { isApiError } from '~/lib/api'
 import type { Interest, InterestBox, InterestListStatus } from '~/lib/api-types'
 import { daysUntil, formatRelative } from '~/lib/format'
 import { useCurrentMe } from '~/lib/me'
 import { qk, removeFromPages } from '~/lib/query'
-import { badgeCount, cn } from '~/lib/utils'
+import { cn } from '~/lib/utils'
 import {
   useAcceptInterest,
   useDeclineInterest,
@@ -35,7 +39,6 @@ import { interestsSearchSchema } from './search'
 
 const STATUSES: readonly InterestListStatus[] = ['pending', 'accepted', 'closed']
 const SEEN_DELAY_MS = 1000
-const ATTENTION_DAYS = 3
 
 export function InterestsScreen() {
   return (
@@ -58,30 +61,30 @@ function InterestsContent() {
   const pending = me.counters.pending_interests
 
   return (
-    <div className="container-app flex max-w-3xl flex-col gap-3">
-      <PageHeader title={t('title')} />
-      <Tabs
-        value={box}
-        onValueChange={(value) => go({ box: value as InterestBox, status: 'pending' })}
+    <Tabs
+      value={box}
+      onValueChange={(value) => go({ box: value as InterestBox, status: 'pending' })}
+      className="min-w-0 flex-1 gap-0"
+    >
+      <Page
+        title={t('title')}
+        width="column"
+        header={
+          <TabsList aria-label={t('box.label')}>
+            <TabsTrigger value="received">
+              {t('box.received')}
+              <CountBadge count={pending} label={t('box.badge', { count: pending })} />
+            </TabsTrigger>
+            <TabsTrigger value="sent">{t('box.sent')}</TabsTrigger>
+          </TabsList>
+        }
       >
-        <TabsList aria-label={t('box.label')} className="w-full">
-          <TabsTrigger value="received">
-            {t('box.received')}
-            {pending > 0 ? (
-              <span className="min-w-5 rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-foreground">
-                <span aria-hidden="true">{badgeCount(pending)}</span>
-                <span className="sr-only">{t('box.badge', { count: pending })}</span>
-              </span>
-            ) : null}
-          </TabsTrigger>
-          <TabsTrigger value="sent">{t('box.sent')}</TabsTrigger>
-        </TabsList>
-        <TabsContent value={box} className="flex flex-col gap-3">
+        <TabsContent value={box}>
           <Tabs
             value={status}
             onValueChange={(value) => go({ box, status: value as InterestListStatus })}
           >
-            <TabsList aria-label={t('status.label')} className="w-full">
+            <TabsList variant="chip" aria-label={t('status.label')}>
               {STATUSES.map((value) => (
                 <TabsTrigger key={value} value={value}>
                   {t(`status.${box}.${value}`)}
@@ -93,8 +96,8 @@ function InterestsContent() {
             </TabsContent>
           </Tabs>
         </TabsContent>
-      </Tabs>
-    </div>
+      </Page>
+    </Tabs>
   )
 }
 
@@ -184,7 +187,7 @@ function InterestsEmpty({ box, status }: { box: InterestBox; status: InterestLis
   }
   return (
     <EmptyState
-      icon={box === 'received' ? Heart : Send}
+      icon={box === 'received' ? Mail : Send}
       title={t(`${base}.title`)}
       text={status === 'pending' ? t(`${base}.text`) : undefined}
       action={action}
@@ -211,88 +214,79 @@ function InterestItem({
     <div
       id={`interest-${interest.id}`}
       className={cn(
-        'relative rounded-[var(--radius-card)]',
-        highlighted && 'ring-2 ring-primary ring-offset-2',
+        'relative',
+        // The row a notification named (17 section 3.3), on its own fill.
+        highlighted &&
+          '-mx-[12px] rounded-lg bg-primary-soft px-[12px] [--tonal:var(--color-background)]',
       )}
       data-highlighted={highlighted || undefined}
     >
       {showUnseen ? (
-        <span className="absolute top-3 end-3 z-20 flex size-3 rounded-full bg-primary">
-          <span className="sr-only">{t('unseen')}</span>
-        </span>
+        <UnreadDot
+          label={t('unseen')}
+          className={cn('absolute top-3 z-20', highlighted ? 'start-[12px]' : 'start-0')}
+        />
       ) : null}
       {profile ? (
         <ProfileCard
           card={{ ...profile, compat: interest.compat_score }}
           size="compact"
           actions={
-            <div className="flex w-full flex-col gap-2">
+            <div className="flex w-full flex-col gap-3">
               <InterestDetails interest={interest} box={box} />
               <InterestActions interest={interest} box={box} status={status} />
             </div>
           }
         />
       ) : (
-        <article
-          className="flex gap-3 rounded-[var(--radius-card)] border border-border bg-muted p-3 text-muted-foreground"
-          data-unavailable=""
-        >
-          <Silhouette
-            gender="male"
-            label={t('unavailable')}
-            width={72}
-            height={72}
-            className="size-18 shrink-0 rounded-[var(--radius-input)]"
-          />
-          <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <p className="font-medium">{t('unavailable')}</p>
-            <InterestDetails interest={interest} box={box} />
-          </div>
-        </article>
+        <UnavailableRow data-unavailable="" text={t('unavailable')}>
+          <InterestDetails interest={interest} box={box} />
+        </UnavailableRow>
       )}
     </div>
   )
 }
 
+const STATUS_LOOK = {
+  accepted: { icon: UsersRound, variant: 'success' },
+  no_response: { icon: Clock, variant: 'outline' },
+} as const
+
 function InterestDetails({ interest, box }: { interest: Interest; box: InterestBox }) {
   const { t } = useTranslation('interests')
   const days = daysUntil(interest.expires_at)
-  const waiting = interest.status === 'pending'
-  const soon = waiting && days <= ATTENTION_DAYS
   const label =
     interest.display_status === 'pending'
       ? null
       : t(`display_status.${interest.display_status}`, { defaultValue: '' })
+  const { icon: StatusIcon, variant } = STATUS_LOOK[
+    interest.display_status as keyof typeof STATUS_LOOK
+  ] ?? { icon: CircleMinus, variant: 'outline' }
 
   return (
-    <div className="flex flex-col gap-1 text-sm">
+    <div className="flex max-w-full flex-col items-start gap-2">
       {interest.message ? (
-        <PlainText
-          text={t('message', { message: interest.message })}
-          className="text-base text-foreground"
-        />
+        <QuoteBlock text={t('message', { message: interest.message })} className="max-w-full" />
       ) : null}
-      <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground">
-        <time dateTime={interest.created_at}>
+      <RowMeta>
+        <time dateTime={interest.created_at} className="text-caption text-muted-foreground">
           {t(box === 'received' ? 'received_at' : 'sent_at', {
             time: formatRelative(interest.created_at),
           })}
         </time>
-        {waiting ? (
-          <span
-            className={cn('inline-flex items-center gap-1', soon && 'font-medium text-warning')}
-            data-attention={soon || undefined}
-          >
-            {soon ? (
-              <AlertTriangle aria-hidden="true" className="size-4" />
-            ) : (
-              <Clock aria-hidden="true" className="size-4" />
-            )}
-            {days === 0 ? t('expires_today') : t('expires_in', { count: days })}
-          </span>
+        {interest.status === 'pending' ? (
+          <ExpiryNote
+            expiresAt={interest.expires_at}
+            text={days === 0 ? t('expires_today') : t('expires_in', { count: days })}
+          />
         ) : null}
-        {label ? <span className="font-medium text-foreground">{label}</span> : null}
-      </p>
+        {label ? (
+          <Badge variant={variant}>
+            <StatusIcon aria-hidden="true" />
+            {label}
+          </Badge>
+        ) : null}
+      </RowMeta>
     </div>
   )
 }
@@ -315,7 +309,6 @@ function InterestActions({
   const withdraw = useWithdrawInterest({ handles: ['invalid_state', 'not_found'] })
   const [declineOpen, setDeclineOpen] = useState(false)
   const [withdrawOpen, setWithdrawOpen] = useState(false)
-  const [alsoBlock, setAlsoBlock] = useState(false)
   const profile = interest.profile
   if (!profile) return null
 
@@ -345,7 +338,7 @@ function InterestActions({
       },
     )
 
-  const onDecline = async () => {
+  const onDecline = async (alsoBlock: boolean) => {
     try {
       await decline.mutateAsync({ id: interest.id, profileId: profile.id, alsoBlock })
     } catch (error) {
@@ -376,7 +369,7 @@ function InterestActions({
   if (interest.status === 'accepted' && interest.connection_id) {
     return (
       <div className="flex flex-wrap gap-2">
-        <Button asChild variant="soft">
+        <Button asChild variant="secondary">
           <Link to="/chats/$connectionId" params={{ connectionId: interest.connection_id }}>
             {t('actions.open_chat')}
           </Link>
@@ -388,38 +381,26 @@ function InterestActions({
 
   if (interest.direction === 'received') {
     return (
-      <div className="flex flex-wrap gap-2">
-        <Button onClick={onAccept} loading={accept.isPending} disabled={!online}>
-          {t('actions.accept')}
-        </Button>
+      <RowAnswers>
         <Button
           variant="secondary"
-          onClick={() => {
-            setAlsoBlock(false)
-            setDeclineOpen(true)
-          }}
+          fill="side"
+          onClick={() => setDeclineOpen(true)}
           disabled={!online || accept.isPending}
         >
           {t('actions.decline')}
         </Button>
-        <ConfirmDialog
+        <Button fill="main" onClick={onAccept} loading={accept.isPending} disabled={!online}>
+          {t('actions.accept')}
+        </Button>
+        <DeclineDialog
           open={declineOpen}
           onOpenChange={setDeclineOpen}
-          title={t('decline.title')}
-          description={t('decline.text', { name })}
-          confirmLabel={t('decline.confirm')}
-          destructive
-          onConfirm={onDecline}
-        >
-          <Label className="min-h-11 cursor-pointer gap-3 font-normal text-base">
-            <Checkbox
-              checked={alsoBlock}
-              onCheckedChange={(checked) => setAlsoBlock(checked === true)}
-            />
-            {t('decline.also_block', { name })}
-          </Label>
-        </ConfirmDialog>
-      </div>
+          name={name}
+          namespace="interests"
+          onDecline={onDecline}
+        />
+      </RowAnswers>
     )
   }
 
@@ -434,7 +415,7 @@ function InterestActions({
         title={t('withdraw.title')}
         description={t('withdraw.text')}
         confirmLabel={t('withdraw.confirm')}
-        destructive
+        tone="ink"
         onConfirm={onWithdraw}
       />
     </div>

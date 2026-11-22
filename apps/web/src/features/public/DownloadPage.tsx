@@ -1,6 +1,8 @@
 import { Link, useRouter } from '@tanstack/react-router'
 import { Download, Smartphone } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { ArchIcon } from '~/components/common/Arch'
+import { SectionHeading } from '~/components/common/SectionHeading'
 import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
 import { signInLink } from './config'
@@ -19,14 +21,12 @@ export function DownloadPage({ result }: { result: ReleaseResult }) {
     <>
       <PageHero title={t('download.title')} lead={t('download.lead')} />
       <Prose>
-        <div className="max-w-3xl space-y-10">
-          {result.status === 'ready' ? (
-            <ReleaseSections result={result} />
-          ) : (
-            <Unavailable result={result} />
-          )}
-          <BrowserSection />
-        </div>
+        {result.status === 'ready' ? (
+          <ReleaseSections result={result} />
+        ) : (
+          <Unavailable result={result} />
+        )}
+        <BrowserSection />
       </Prose>
     </>
   )
@@ -41,11 +41,11 @@ function ReleaseSections({ result }: { result: Extract<ReleaseResult, { status: 
     <>
       <section
         aria-labelledby="download-version"
-        className="space-y-4 rounded-[var(--radius-card)] border border-border bg-surface p-5 md:p-6"
+        className="band-sand flex flex-col items-start gap-4 rounded-xl p-[clamp(24px,3vw,40px)]"
       >
-        <div className="flex items-center gap-3">
-          <Smartphone aria-hidden="true" className="size-8 shrink-0 text-primary" />
-          <h2 id="download-version" className="text-2xl font-semibold">
+        <div className="flex max-w-full items-center gap-4">
+          <ArchIcon icon={Smartphone} />
+          <h2 id="download-version" className="min-w-0 text-headline-sm">
             {t('download.ready.version', { version: release.version_name })}
           </h2>
         </div>
@@ -56,27 +56,21 @@ function ReleaseSections({ result }: { result: Extract<ReleaseResult, { status: 
           </a>
         </Button>
         {release.release_notes ? (
-          <div className="space-y-1">
-            <h3 className="font-semibold">{t('download.ready.notes_title')}</h3>
-            <p className="whitespace-pre-line leading-relaxed text-muted-foreground">
-              {release.release_notes}
-            </p>
+          <div className="flex flex-col gap-1">
+            <h3 className="text-emphasis">{t('download.ready.notes_title')}</h3>
+            <p className="whitespace-pre-line text-foreground-secondary">{release.release_notes}</p>
           </div>
         ) : null}
       </section>
 
-      <section aria-labelledby="download-requirements" className="space-y-2">
-        <h2 id="download-requirements" className="text-2xl font-semibold">
-          {t('download.requirements.title')}
-        </h2>
+      <section aria-labelledby="download-requirements" className="flex flex-col gap-2">
+        <SectionHeading id="download-requirements" title={t('download.requirements.title')} />
         <p>{t('download.requirements.body')}</p>
       </section>
 
-      <section aria-labelledby="download-install" className="space-y-3">
-        <h2 id="download-install" className="text-2xl font-semibold">
-          {t('download.install.title')}
-        </h2>
-        <ol className="list-decimal space-y-2 ps-6 leading-relaxed marker:font-semibold marker:text-primary">
+      <section aria-labelledby="download-install" className="flex flex-col gap-3">
+        <SectionHeading id="download-install" title={t('download.install.title')} />
+        <ol className="max-w-measure list-decimal space-y-2 ps-[32px] text-body-lg marker:font-bold marker:text-primary">
           {steps.map((step) => (
             <li key={step} className="ps-1">
               {step}
@@ -91,10 +85,8 @@ function ReleaseSections({ result }: { result: Extract<ReleaseResult, { status: 
         </Alert>
       </section>
 
-      <section aria-labelledby="download-updates" className="space-y-2">
-        <h2 id="download-updates" className="text-2xl font-semibold">
-          {t('download.updates.title')}
-        </h2>
+      <section aria-labelledby="download-updates" className="flex flex-col gap-2">
+        <SectionHeading id="download-updates" title={t('download.updates.title')} />
         <p>{t('download.updates.body')}</p>
       </section>
     </>
@@ -110,16 +102,16 @@ function Unavailable({ result }: { result: Exclude<ReleaseResult, { status: 'rea
   return (
     <section
       aria-labelledby="download-unavailable"
-      className="space-y-4 rounded-[var(--radius-card)] border border-border bg-surface p-5 md:p-6"
+      className="band-sand flex flex-col items-start gap-4 rounded-xl p-[clamp(24px,3vw,40px)]"
     >
-      <h2 id="download-unavailable" className="text-2xl font-semibold">
+      <h2 id="download-unavailable" className="max-w-full text-headline-sm">
         {t(`${key}.title`)}
       </h2>
-      <p className="leading-relaxed">{t(`${key}.body`)}</p>
+      <p className="max-w-measure text-body-lg">{t(`${key}.body`)}</p>
       <div className="flex flex-wrap gap-3">
         <CreateProfileButton />
         {result.status === 'error' ? (
-          <Button variant="outline" size="lg" onClick={() => void router.invalidate()}>
+          <Button variant="secondary" size="lg" onClick={() => void router.invalidate()}>
             {t('download.error.retry')}
           </Button>
         ) : null}
@@ -131,12 +123,10 @@ function Unavailable({ result }: { result: Exclude<ReleaseResult, { status: 'rea
 function BrowserSection() {
   const { t } = useTranslation('public')
   return (
-    <section aria-labelledby="download-browser" className="space-y-3">
-      <h2 id="download-browser" className="text-2xl font-semibold">
-        {t('download.browser.title')}
-      </h2>
+    <section aria-labelledby="download-browser" className="flex flex-col items-start gap-3">
+      <SectionHeading id="download-browser" title={t('download.browser.title')} />
       <p>{t('download.browser.body')}</p>
-      <Button asChild size="lg" variant="outline">
+      <Button asChild size="lg" variant="secondary">
         <Link {...signInLink}>{t('download.browser.button')}</Link>
       </Button>
     </section>

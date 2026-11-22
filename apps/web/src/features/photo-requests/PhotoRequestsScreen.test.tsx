@@ -58,7 +58,7 @@ describe('PhotoRequestsScreen (APP-PHOTO-REQUESTS)', () => {
 
     const list = await screen.findByRole('list', { name: 'Received photo requests' })
     const item = within(list).getByRole('listitem')
-    expect(within(item).getByRole('link', { name: /, \d+$/ })).toBeInTheDocument()
+    expect(within(item).getByRole('link', { name: /,\s\d+$/ })).toBeInTheDocument()
     expect(within(item).getByText(/^Asked /)).toBeInTheDocument()
     expect(within(item).getByRole('button', { name: 'Approve' })).toBeInTheDocument()
     expect(within(item).getByRole('button', { name: 'Not now' })).toBeInTheDocument()

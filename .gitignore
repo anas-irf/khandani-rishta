@@ -44,3 +44,11 @@ captures/
 .DS_Store
 Thumbs.db
 scripts/.geo-cache/
+
+# Local tool files, kept out of the repo
+/.*/skills/
+.agents/
+skills-lock.json
+
+# Downloaded design backups (canvas files and DESIGN.md copies), kept local
+/.backup/

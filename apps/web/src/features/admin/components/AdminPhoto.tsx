@@ -1,5 +1,6 @@
 import { MemberPhoto, type MemberPhotoSize } from '~/components/common/MemberPhoto'
 import type { Gender, PhotoView } from '~/lib/api-types'
+import { cn } from '~/lib/utils'
 
 /**
  * A photo as staff see it: always the unblurred variant (18 section 4.1). `MemberPhoto` takes
@@ -25,6 +26,7 @@ export function AdminPhoto({
   size,
   width,
   height,
+  whole = false,
   className,
 }: {
   photoId: string
@@ -37,6 +39,11 @@ export function AdminPhoto({
   size: MemberPhotoSize
   width: number
   height: number
+  /**
+   * The photo under judgement: every corner and edge, so neither the arch nor the crop can hide
+   * a number, a watermark or a second face (13 section 4).
+   */
+  whole?: boolean
   className?: string
 }) {
   return (
@@ -47,7 +54,9 @@ export function AdminPhoto({
       size={size}
       width={width}
       height={height}
-      className={className}
+      variant={whole ? 'bare' : undefined}
+      imageClassName={whole ? 'object-contain' : undefined}
+      className={cn(whole && 'rounded-lg', className)}
     />
   )
 }

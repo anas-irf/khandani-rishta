@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { FieldError, OptionalMark } from '~/components/common/fields/field-shell'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
 import { Button } from '~/components/ui/button'
 import {
@@ -14,6 +15,7 @@ import {
 } from '~/components/ui/dialog'
 import { Label } from '~/components/ui/label'
 import { Textarea } from '~/components/ui/textarea'
+import { Toggle } from '~/components/ui/toggle'
 import { useSendInterest } from '~/features/interests/queries'
 import { isApiError } from '~/lib/api'
 import type { SendInterestResult } from '~/lib/api-types'
@@ -22,7 +24,6 @@ import { serverFieldMessage } from '~/lib/form-context'
 import { formatDate } from '~/lib/format'
 import { useCurrentMe } from '~/lib/me'
 import { qk } from '~/lib/query'
-import { cn } from '~/lib/utils'
 
 /** At most 300 characters (11 section 2.2). */
 export const MESSAGE_MAX = 300
@@ -42,9 +43,9 @@ export type SendOutcome =
 /**
  * The send dialog of 16 section 6.7: "Send an interest to {name}", the interests left today, an
  * optional message (at most 300 characters, with a counter) with the templates of 11 section 2.2
- * as chips that fill the field (the third only when the sender's profile is managed by someone
+ * as rows that fill the field (the third only when the sender's profile is managed by someone
  * else), and the helper text. Then `POST /v1/interests`; every error code of 6.7 is answered here
- * or passed to `onOutcome`.
+ * or passed to `onOutcome`. A bottom sheet on phones, in the rail's place on wide screens.
  */
 export function SendInterestDialog({
   open,
@@ -146,81 +147,64 @@ export function SendInterestDialog({
     )
   }
 
+  const choice = (value: string, label: string) => (
+    <Toggle
+      key={value}
+      variant="row"
+      className="py-2"
+      pressed={message === value}
+      onPressedChange={() => setMessage(value)}
+    >
+      {label}
+    </Toggle>
+  )
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <form onSubmit={submit} noValidate className="flex flex-col gap-4">
+      <DialogContent placement="rail" closeLabel={t('common:actions.close')}>
+        {/* Close set: "Send interest" is on screen when this opens at 1280x800 and 360x800. */}
+        <form onSubmit={submit} noValidate className="flex flex-col gap-3">
           <DialogHeader>
             <DialogTitle>{t('profile:send.title', { name })}</DialogTitle>
-            <DialogDescription>{t('profile:send.left', { left, total: perDay })}</DialogDescription>
+            <DialogDescription className="text-body-sm tabular-nums">
+              {t('profile:send.left', { left, total: perDay })}
+            </DialogDescription>
           </DialogHeader>
-          <fieldset className="flex flex-col gap-2">
-            <legend className="mb-2 text-sm font-medium">
-              {t('profile:send.templates_label')}
-            </legend>
-            <div className="flex flex-col gap-2">
-              {templates.map((key) => {
-                const text = t(`profile:send.${key}`)
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    aria-pressed={message === text}
-                    onClick={() => setMessage(text)}
-                    className={cn(
-                      'min-h-11 rounded-[var(--radius-input)] border px-3 py-2 text-start text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                      message === text
-                        ? 'border-primary bg-primary-soft'
-                        : 'border-input bg-surface hover:bg-muted',
-                    )}
-                  >
-                    {text}
-                  </button>
-                )
-              })}
-              <button
-                type="button"
-                aria-pressed={message === ''}
-                onClick={() => setMessage('')}
-                className={cn(
-                  'min-h-11 self-start rounded-full border px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  message === ''
-                    ? 'border-primary bg-primary-soft'
-                    : 'border-input bg-surface hover:bg-muted',
-                )}
-              >
-                {t('profile:send.template_none')}
-              </button>
-            </div>
-          </fieldset>
           <div className="flex flex-col gap-2">
-            <Label htmlFor={fieldId}>
-              {t('profile:send.message_label')}{' '}
-              <span className="font-normal text-muted-foreground">{t('common:optional')}</span>
+            <Label htmlFor={fieldId} className="flex-wrap">
+              {t('profile:send.message_label')} <OptionalMark />
             </Label>
             <Textarea
               id={fieldId}
               name="message"
               dir="auto"
-              rows={4}
+              rows={3}
               value={message}
               maxLength={MESSAGE_MAX}
               aria-invalid={error ? true : undefined}
               aria-describedby={`${fieldId}-help ${fieldId}-count${error ? ` ${fieldId}-error` : ''}`}
               onChange={(event) => setMessage(event.target.value)}
             />
-            <div className="flex justify-between gap-3 text-sm text-muted-foreground">
-              <p id={`${fieldId}-help`}>{t('profile:send.helper')}</p>
-              <p id={`${fieldId}-count`} className="shrink-0">
+            <div className="flex flex-wrap justify-between gap-x-3 gap-y-1 text-caption text-muted-foreground">
+              <p id={`${fieldId}-help`} className="min-w-0 flex-[1_1_12rem]">
+                {t('profile:send.helper')}
+              </p>
+              <p id={`${fieldId}-count`} className="tabular-nums">
                 {t('profile:send.count', { count: message.length, max: MESSAGE_MAX })}
               </p>
             </div>
-            {error ? (
-              <p id={`${fieldId}-error`} className="text-sm text-danger">
-                {error}
-              </p>
-            ) : null}
+            <FieldError id={`${fieldId}-error`} message={error ?? undefined} />
           </div>
+          <fieldset>
+            <legend className="mb-1 text-label-lg">{t('profile:send.templates_label')}</legend>
+            <div className="flex flex-col gap-2">
+              {templates.map((key) => {
+                const text = t(`profile:send.${key}`)
+                return choice(text, text)
+              })}
+              {choice('', t('profile:send.template_none'))}
+            </div>
+          </fieldset>
           <DialogFooter>
             <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
               {t('common:actions.cancel')}

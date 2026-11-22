@@ -2,6 +2,8 @@ import type { VariantProps } from 'class-variance-authority'
 import { AlertDialog as AlertDialogPrimitive } from 'radix-ui'
 import type * as React from 'react'
 import { buttonVariants } from '~/components/ui/button'
+import { dialogContentVariants, dialogFooterClass, overlayClass } from '~/components/ui/dialog'
+import { useReturnFocus } from '~/lib/focus'
 import { cn } from '~/lib/utils'
 
 function AlertDialog(props: React.ComponentProps<typeof AlertDialogPrimitive.Root>) {
@@ -23,10 +25,7 @@ function AlertDialogOverlay({
   return (
     <AlertDialogPrimitive.Overlay
       data-slot="alert-dialog-overlay"
-      className={cn(
-        'fixed inset-0 z-50 bg-foreground/50 motion-safe:transition-opacity motion-safe:duration-150 motion-safe:starting:opacity-0',
-        className,
-      )}
+      className={cn(overlayClass, className)}
       {...props}
     />
   )
@@ -38,17 +37,21 @@ function AlertDialogOverlay({
  */
 function AlertDialogContent({
   className,
+  placement,
+  onOpenAutoFocus,
+  onCloseAutoFocus,
   ...props
-}: React.ComponentProps<typeof AlertDialogPrimitive.Content>) {
+}: React.ComponentProps<typeof AlertDialogPrimitive.Content> &
+  VariantProps<typeof dialogContentVariants>) {
+  const returnFocus = useReturnFocus({ onOpenAutoFocus, onCloseAutoFocus })
   return (
     <AlertDialogPortal>
       <AlertDialogOverlay />
       <AlertDialogPrimitive.Content
         data-slot="alert-dialog-content"
-        className={cn(
-          'fixed inset-0 z-50 m-auto grid h-fit max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg gap-4 overflow-y-auto rounded-[var(--radius-card)] border border-border bg-surface p-5 text-foreground shadow-lg focus-visible:outline-none motion-safe:transition-[opacity,scale] motion-safe:duration-150 motion-safe:starting:scale-95 motion-safe:starting:opacity-0',
-          className,
-        )}
+        data-placement={placement ?? 'center'}
+        className={cn(dialogContentVariants({ placement }), className)}
+        {...returnFocus}
         {...props}
       />
     </AlertDialogPortal>
@@ -59,7 +62,7 @@ function AlertDialogHeader({ className, ...props }: React.ComponentProps<'div'>)
   return (
     <div
       data-slot="alert-dialog-header"
-      className={cn('flex flex-col gap-1.5 text-start', className)}
+      className={cn('flex flex-col gap-2 text-start', className)}
       {...props}
     />
   )
@@ -67,11 +70,7 @@ function AlertDialogHeader({ className, ...props }: React.ComponentProps<'div'>)
 
 function AlertDialogFooter({ className, ...props }: React.ComponentProps<'div'>) {
   return (
-    <div
-      data-slot="alert-dialog-footer"
-      className={cn('flex flex-col-reverse gap-2 sm:flex-row sm:justify-end', className)}
-      {...props}
-    />
+    <div data-slot="alert-dialog-footer" className={cn(dialogFooterClass, className)} {...props} />
   )
 }
 
@@ -82,7 +81,7 @@ function AlertDialogTitle({
   return (
     <AlertDialogPrimitive.Title
       data-slot="alert-dialog-title"
-      className={cn('text-lg font-semibold leading-snug', className)}
+      className={cn('text-title-lg', className)}
       {...props}
     />
   )
@@ -95,7 +94,7 @@ function AlertDialogDescription({
   return (
     <AlertDialogPrimitive.Description
       data-slot="alert-dialog-description"
-      className={cn('text-sm text-muted-foreground', className)}
+      className={cn('text-body-md text-foreground-secondary', className)}
       {...props}
     />
   )
@@ -103,7 +102,10 @@ function AlertDialogDescription({
 
 type ButtonStyleProps = Pick<VariantProps<typeof buttonVariants>, 'variant' | 'size'>
 
-/** The confirming button. Use `variant="destructive"` for destructive confirmations. */
+/**
+ * The confirming button. Use `ink` for a negative choice that destroys nothing and `destructive`
+ * for one that does (DESIGN.md 6.1).
+ */
 function AlertDialogAction({
   className,
   variant = 'default',
@@ -122,7 +124,7 @@ function AlertDialogAction({
 /** The dismissing button. Closes the dialog without any further code. */
 function AlertDialogCancel({
   className,
-  variant = 'outline',
+  variant = 'secondary',
   size,
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Cancel> & ButtonStyleProps) {

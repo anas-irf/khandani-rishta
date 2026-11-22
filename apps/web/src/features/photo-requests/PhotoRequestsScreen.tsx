@@ -1,16 +1,19 @@
 // APP-PHOTO-REQUESTS (16 section 6.16)
 import { useNavigate, useSearch } from '@tanstack/react-router'
-import { ImageOff, Images, UserRoundCheck } from 'lucide-react'
+import { Clock, ImageOff, Images, UserRoundCheck } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ConfirmDialog } from '~/components/common/ConfirmDialog'
+import { CountBadge } from '~/components/common/CountBadge'
 import { EmptyState } from '~/components/common/EmptyState'
 import { InfiniteList } from '~/components/common/InfiniteList'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
 import { ProfileCard } from '~/components/common/ProfileCard'
+import { RowAnswers, RowMeta } from '~/components/common/RowParts'
 import { ScreenAccess } from '~/components/common/ScreenAccess'
-import { CountBadge } from '~/components/layout/PrimaryNav'
+import { UnavailableRow } from '~/components/common/UnavailableRow'
+import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { ToggleGroup, ToggleGroupItem } from '~/components/ui/toggle-group'
@@ -44,35 +47,38 @@ function PhotoRequestsContent() {
   const box: PhotoAccessBox = search.box === 'sent' ? 'sent' : 'received'
 
   return (
-    <div className="container-app">
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-3 pb-6">
-        <PageHeader title={t('title')} />
-        <Tabs
-          value={box}
-          onValueChange={(next) =>
-            void navigate({
-              to: '/photo-requests',
-              search: { box: next === 'sent' ? 'sent' : 'received' },
-              replace: true,
-            })
-          }
-        >
-          <TabsList aria-label={t('tabs.label')} className="w-full">
+    <Tabs
+      value={box}
+      onValueChange={(next) =>
+        void navigate({
+          to: '/photo-requests',
+          search: { box: next === 'sent' ? 'sent' : 'received' },
+          replace: true,
+        })
+      }
+      className="min-w-0 flex-1 gap-0"
+    >
+      <Page
+        title={t('title')}
+        width="column"
+        header={
+          <TabsList aria-label={t('tabs.label')}>
             <TabsTrigger value="received">
               {t('tabs.received')}
               <CountBadge count={me.counters.pending_photo_requests} />
             </TabsTrigger>
             <TabsTrigger value="sent">{t('tabs.sent')}</TabsTrigger>
           </TabsList>
-          <TabsContent value="received">
-            <ReceivedList />
-          </TabsContent>
-          <TabsContent value="sent">
-            <SentList />
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
+        }
+      >
+        <TabsContent value="received">
+          <ReceivedList />
+        </TabsContent>
+        <TabsContent value="sent">
+          <SentList />
+        </TabsContent>
+      </Page>
+    </Tabs>
   )
 }
 
@@ -83,7 +89,7 @@ function ReceivedList() {
   const query = usePhotoAccess('received', waiting ? 'pending' : 'granted')
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       <ToggleGroup
         type="single"
         value={filter}
@@ -91,7 +97,6 @@ function ReceivedList() {
           if (next === 'waiting' || next === 'approved') setFilter(next)
         }}
         aria-label={t('filter.label')}
-        className="w-full"
       >
         <ToggleGroupItem value="waiting">{t('filter.waiting')}</ToggleGroupItem>
         <ToggleGroupItem value="approved">{t('filter.approved')}</ToggleGroupItem>
@@ -142,29 +147,31 @@ function RequestItem({ entry, box }: { entry: PhotoAccessEntry; box: PhotoAccess
   let buttons: ReactNode = null
   if (box === 'received' && entry.status === 'pending') {
     buttons = (
-      <>
-        <Button
-          size="default"
-          loading={grant.isPending}
-          disabled={!online || deny.isPending}
-          onClick={() => grant.mutate({ entry, name })}
-        >
-          {t('approve')}
-        </Button>
+      <RowAnswers>
         <Button
           variant="secondary"
+          fill="side"
           loading={deny.isPending}
           disabled={!online || grant.isPending}
           onClick={() => deny.mutate({ entry, name })}
         >
           {t('deny')}
         </Button>
-      </>
+        <Button
+          fill="main"
+          loading={grant.isPending}
+          disabled={!online || deny.isPending}
+          onClick={() => grant.mutate({ entry, name })}
+        >
+          {t('approve')}
+        </Button>
+      </RowAnswers>
     )
   } else if (box === 'received' && entry.status === 'granted') {
     buttons = (
       <Button
         variant="secondary"
+        size="compact"
         disabled={!online || answering}
         onClick={() => setConfirmingRevoke(true)}
       >
@@ -173,24 +180,23 @@ function RequestItem({ entry, box }: { entry: PhotoAccessEntry; box: PhotoAccess
     )
   }
 
-  const details = (
-    <p className="basis-full text-sm text-muted-foreground">
-      <time dateTime={entry.created_at}>
-        {t('asked', { when: formatRelative(entry.created_at) })}
-      </time>
-      {box === 'sent' ? (
-        <>
-          {' · '}
-          <span className="font-medium text-foreground">{statusLabel(entry.status, t)}</span>
-        </>
-      ) : null}
-    </p>
-  )
+  const granted = entry.status === 'granted'
+  const StatusIcon = granted ? UserRoundCheck : Clock
   const actions = (
-    <>
-      {details}
+    <div className="flex w-full flex-col items-start gap-3">
+      <RowMeta>
+        <time dateTime={entry.created_at} className="text-caption text-muted-foreground">
+          {t('asked', { when: formatRelative(entry.created_at) })}
+        </time>
+        {box === 'sent' ? (
+          <Badge variant={granted ? 'success' : 'outline'}>
+            <StatusIcon aria-hidden="true" />
+            {statusLabel(entry.status, t)}
+          </Badge>
+        ) : null}
+      </RowMeta>
       {buttons}
-    </>
+    </div>
   )
 
   return (
@@ -198,13 +204,9 @@ function RequestItem({ entry, box }: { entry: PhotoAccessEntry; box: PhotoAccess
       {entry.profile ? (
         <ProfileCard card={entry.profile} size="compact" actions={actions} headingLevel="h3" />
       ) : (
-        <div
-          data-photo-request-unavailable=""
-          className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-border bg-surface p-3"
-        >
-          <p className="font-semibold">{t('unavailable')}</p>
-          <div className="flex flex-wrap gap-2">{actions}</div>
-        </div>
+        <UnavailableRow data-photo-request-unavailable="" text={t('unavailable')}>
+          {actions}
+        </UnavailableRow>
       )}
       <ConfirmDialog
         open={confirmingRevoke}
@@ -212,7 +214,7 @@ function RequestItem({ entry, box }: { entry: PhotoAccessEntry; box: PhotoAccess
         title={t('revoke.title')}
         description={t('revoke.text', { name })}
         confirmLabel={t('remove_access')}
-        destructive
+        tone="ink"
         onConfirm={() => revoke.mutateAsync(entry)}
       />
     </>

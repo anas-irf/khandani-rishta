@@ -1,11 +1,10 @@
 // SET-HOME (16 section 6.24)
-import { Link } from '@tanstack/react-router'
 import { Bell, LifeBuoy, Phone, ShieldCheck, UserCog, UserX } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { PageHeader } from '~/components/common/PageHeader'
+import { LinkRow } from '~/components/common/LinkRow'
+import { Page } from '~/components/common/Page'
 import { useCurrentMe } from '~/lib/me'
 import { APP_VERSION } from './app-version'
-import { RowChevron, SettingsPage } from './controls'
 import { SignOutButton } from './SignOutButton'
 
 const ROWS = [
@@ -24,30 +23,22 @@ export function SettingsHomeScreen() {
   const rows = ROWS.filter((row) => !('onlyWhenOk' in row) || me.gate === 'ok')
 
   return (
-    <SettingsPage>
-      <PageHeader title={t('title')} />
+    <Page title={t('title')} width="column">
       <nav aria-label={t('home.list_label')}>
-        <ul className="divide-y divide-border overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface">
+        <ul className="flex flex-col">
           {rows.map((row) => (
-            <li key={row.key}>
-              <Link
-                to={row.to}
-                className="flex min-h-12 w-full items-center gap-3 px-4 py-3 text-base font-medium transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-              >
-                <row.icon aria-hidden="true" className="size-5 text-muted-foreground" />
-                <span className="flex-1">{t(`home.rows.${row.key}`)}</span>
-                <RowChevron />
-              </Link>
+            <li key={row.key} className="border-b border-border">
+              <LinkRow to={row.to} icon={row.icon} label={t(`home.rows.${row.key}`)} />
             </li>
           ))}
         </ul>
       </nav>
-      <div className="flex flex-col items-start gap-3">
+      <div className="flex flex-col items-start gap-4">
         <SignOutButton />
-        <p className="text-sm text-muted-foreground">
+        <p className="text-caption text-muted-foreground">
           {t('home.version', { version: APP_VERSION })}
         </p>
       </div>
-    </SettingsPage>
+    </Page>
   )
 }

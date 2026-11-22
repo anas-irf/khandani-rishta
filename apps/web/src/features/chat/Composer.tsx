@@ -1,8 +1,10 @@
 import { Link } from '@tanstack/react-router'
-import { SendHorizontal } from 'lucide-react'
+import { SendHorizontal, TriangleAlert } from 'lucide-react'
 import { type KeyboardEvent, useId, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { inlineLinkClass } from '~/components/common/TextLink'
 import { Button } from '~/components/ui/button'
+import { Textarea } from '~/components/ui/textarea'
 import { sendTyping } from '~/lib/realtime'
 import { cn } from '~/lib/utils'
 import { MESSAGE_MAX_LENGTH } from './queries'
@@ -33,14 +35,14 @@ export function ComposerDisabled({ reason }: { reason: ComposerBlock }) {
   return (
     <div
       role="status"
-      className="border-t border-border bg-muted px-4 py-3 text-center text-sm text-muted-foreground"
+      className="border-t border-border bg-muted px-[16px] pt-3 pb-[max(12px,env(safe-area-inset-bottom))] text-center text-body-sm text-foreground-secondary"
       data-composer-disabled={reason}
     >
       {t(`disabled.${reason}`)}
       {reason === 'closed' ? (
         <>
           {' '}
-          <Link to="/settings/account" className="font-medium text-primary underline">
+          <Link to="/settings/account" className={inlineLinkClass}>
             {t('disabled.reopen')}
           </Link>
         </>
@@ -88,13 +90,16 @@ export function Composer({
   }
 
   return (
-    <div className="border-t border-border bg-surface px-3 py-2">
+    <div className="border-t border-border bg-surface px-[12px] pt-2 pb-[max(8px,env(safe-area-inset-bottom))]">
       {limitReached ? (
         <p
           role="alert"
-          className="mb-2 rounded-[var(--radius-input)] bg-warning-soft px-3 py-2 text-sm"
+          className="mb-2 flex items-start gap-2 rounded-md bg-warning-soft px-3 py-2 text-body-sm"
         >
-          {t('composer.limit_banner')}
+          <span aria-hidden="true" className="flex h-[1lh] items-center">
+            <TriangleAlert className="size-4 text-warning" />
+          </span>
+          <span className="min-w-0">{t('composer.limit_banner')}</span>
         </p>
       ) : null}
       <form
@@ -107,7 +112,7 @@ export function Composer({
         <label htmlFor={ids.field} className="sr-only">
           {t('composer.label')}
         </label>
-        <textarea
+        <Textarea
           ref={field}
           id={ids.field}
           dir="auto"
@@ -123,13 +128,13 @@ export function Composer({
             }
           }}
           onKeyDown={onKeyDown}
-          className="field-sizing-content max-h-[8.5rem] min-h-11 flex-1 resize-none rounded-[var(--radius-input)] border border-input bg-surface px-3 py-2 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="field-sizing-content max-h-[min(9.5rem,30dvh)] min-h-touch flex-1 resize-none py-[9px] max-wide:min-h-touch-lg max-wide:py-[13px]"
         />
         <Button type="submit" size="icon" aria-label={t('composer.send')} disabled={empty}>
           <SendHorizontal aria-hidden="true" className="rtl:-scale-x-100" />
         </Button>
       </form>
-      <div className="flex justify-between gap-2 pt-1 text-sm text-muted-foreground">
+      <div className="flex justify-between gap-2 pt-1 text-caption text-muted-foreground tabular-nums empty:hidden">
         <span id={ids.hint} className="sr-only">
           {t('composer.hint')}
         </span>

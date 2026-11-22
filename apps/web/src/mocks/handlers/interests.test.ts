@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Connection, Interest, Page } from '~/lib/api-types'
+import { pinSeededClock } from '~/test/clock'
 import { db } from '../db'
 import { apiUrl } from '../http'
 import { interestsState } from './interests'
@@ -31,6 +32,8 @@ function interest(id: string): Interest {
   if (!found) throw new Error(`No interest ${id}`)
   return found
 }
+
+pinSeededClock()
 
 describe('mock: GET /v1/interests', () => {
   it('lists by box and status, newest first, with the quiet decline for senders', async () => {

@@ -58,7 +58,7 @@
       "safety": "Safety",
       "nikah_guide": "Nikah guide",
       "faq": "FAQ",
-      "download": "Download"
+      "download": "Download the app"
     }
   },
 
@@ -92,7 +92,7 @@
 
   "home": {
     "hero": {
-      "title": "Rishta, the khandani way.",
+      "title": "Rishta, the <em>khandani</em> way.",
       "subtitle": "A respectful place for families and individuals in Pakistan and abroad to find a life partner. Free to use.",
       "secondary": "How it works"
     },
@@ -181,7 +181,7 @@
       "link": "See all questions and answers"
     },
     "cta": {
-      "title": "Start your search today.",
+      "title": "Start your search <em>today.</em>",
       "body": "It is free, and you decide what to share."
     }
   },

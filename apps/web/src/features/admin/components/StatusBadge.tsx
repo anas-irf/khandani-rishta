@@ -1,8 +1,16 @@
+import { CircleDot, CircleX, Clock, type LucideIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Badge } from '~/components/ui/badge'
 import { fallbackLabel } from '~/lib/reference'
 
-type Variant = 'success' | 'warning' | 'danger' | 'secondary'
+type Variant = 'success' | 'warning' | 'danger' | 'tag' | 'secondary'
+
+/** An icon beside the words. No tick: that means verified (DESIGN.md 6.6). */
+const ICONS: Partial<Record<Variant, LucideIcon>> = {
+  success: CircleDot,
+  warning: Clock,
+  danger: CircleX,
+}
 
 const VARIANTS: Record<string, Variant> = {
   active: 'success',
@@ -21,7 +29,7 @@ const VARIANTS: Record<string, Variant> = {
   banned: 'danger',
   closed: 'danger',
   failed: 'danger',
-  admin: 'danger',
+  admin: 'tag',
 }
 
 /**
@@ -30,8 +38,11 @@ const VARIANTS: Record<string, Variant> = {
  */
 export function StatusBadge({ status }: { status: string }) {
   const { t } = useTranslation('admin')
+  const variant = VARIANTS[status] ?? 'secondary'
+  const Icon = ICONS[variant]
   return (
-    <Badge variant={VARIANTS[status] ?? 'secondary'}>
+    <Badge variant={variant}>
+      {Icon ? <Icon aria-hidden="true" /> : null}
       {t(`status.${status}`, { defaultValue: fallbackLabel(status) })}
     </Badge>
   )

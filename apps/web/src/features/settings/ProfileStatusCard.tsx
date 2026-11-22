@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
-import { SectionCard } from '~/components/common/SectionCard'
 import { Button } from '~/components/ui/button'
 import { useCurrentMe } from '~/lib/me'
 import type { AccountDialog } from './AccountDialogs'
+import { SettingsGroup } from './controls'
 import { useNikahCheck, useResumeProfile } from './queries'
 
 type StatusLine = 'active' | 'paused' | 'closed' | 'not_live'
@@ -29,9 +29,9 @@ export function ProfileStatusCard({ onOpen }: { onOpen: (dialog: AccountDialog) 
   const nikah = useNikahCheck(closed)
 
   return (
-    <SectionCard title={t('account.status.title')}>
+    <SettingsGroup title={t('account.status.title')}>
       <p data-profile-status={status}>{t(`account.status.line.${statusLineOf(status)}`)}</p>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-3">
         {status === 'active' ? (
           <Button variant="secondary" disabled={!online} onClick={() => onOpen('pause')}>
             {t('account.status.pause.action')}
@@ -63,6 +63,6 @@ export function ProfileStatusCard({ onOpen }: { onOpen: (dialog: AccountDialog) 
           </Button>
         ) : null}
       </div>
-    </SectionCard>
+    </SettingsGroup>
   )
 }

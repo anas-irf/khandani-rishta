@@ -5,18 +5,19 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '~/components/common/ConfirmDialog'
-import { ErrorState } from '~/components/common/ErrorState'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
 import { PlainText } from '~/components/common/PlainText'
 import { RelativeTime } from '~/components/common/RelativeTime'
 import { StatusBanner } from '~/components/common/StatusBanner'
 import { Button } from '~/components/ui/button'
-import { Skeleton } from '~/components/ui/skeleton'
 import { formatDate } from '~/lib/format'
 import { useLabelOf } from '~/lib/reference'
 import { useIsAdmin } from './access'
+import { ActionToolbar } from './components/ActionToolbar'
 import { AdminPhoto } from './components/AdminPhoto'
+import { DetailState, detailGridClass } from './components/DetailState'
 import { Facts, Panel } from './components/Facts'
+import { Kbd } from './components/Kbd'
 import { ReportContext } from './components/ReportContext'
 import { ResolveReportDialog } from './components/ResolveReportDialog'
 import { RejectPhotoDialog } from './components/ReviewDialogs'
@@ -38,22 +39,10 @@ type Dialog =
   | null
 
 export function ReportScreen() {
-  const { t } = useTranslation('admin')
   const reportId = useRouteId('reportId')
   const query = useAdminReport(reportId)
 
-  if (query.isPending) {
-    return (
-      <div role="status" aria-busy="true" className="flex flex-col gap-3">
-        <span className="sr-only">{t('list.loading')}</span>
-        <Skeleton className="h-12 w-1/2" />
-        <Skeleton className="h-64 w-full" />
-      </div>
-    )
-  }
-  if (query.isError) {
-    return <ErrorState error={query.error} onRetry={() => void query.refetch()} />
-  }
+  if (query.isPending || query.isError) return <DetailState query={query} />
   return <ReportView data={query.data} />
 }
 
@@ -137,29 +126,23 @@ function ReportView({ data }: { data: AdminReportDetail }) {
   const sanctionKinds: SanctionKind[] = isAdmin ? ['warn', 'suspend', 'ban'] : ['warn', 'suspend']
 
   return (
-    <div className="flex flex-col gap-4">
-      <PageHeader
-        title={t('report.title', { reason: reasonLabel })}
-        description={t('report.subtitle', { target: targetName, code: target.public_code })}
-        backTo="/admin/reports"
-        backLabel={t('report.back')}
-        actions={
-          <>
-            <PriorityBadge priority={data.priority} />
-            <StatusBadge status={data.status} />
-          </>
-        }
-      />
-
+    <Page
+      title={t('report.title', { reason: reasonLabel })}
+      description={t('report.subtitle', { target: targetName, code: target.public_code })}
+      backTo="/admin/reports"
+      backLabel={t('report.back')}
+      actions={
+        <>
+          <PriorityBadge priority={data.priority} />
+          <StatusBadge status={data.status} />
+        </>
+      }
+    >
       {data.source === 'system' ? (
         <StatusBanner variant="warning">{t('report.system_note')}</StatusBanner>
       ) : null}
 
-      <div
-        role="toolbar"
-        aria-label={t('report.actions')}
-        className="sticky top-0 z-10 flex flex-wrap items-center gap-2 border-b border-border bg-background py-2"
-      >
+      <ActionToolbar label={t('report.actions')}>
         <Button
           loading={claim.isPending}
           disabled={!isOpen}
@@ -168,7 +151,7 @@ function ReportView({ data }: { data: AdminReportDetail }) {
         >
           <HandMetal aria-hidden="true" />
           {t('report.claim')}
-          <kbd className="ms-1 text-xs opacity-80">C</kbd>
+          <Kbd>C</Kbd>
         </Button>
         <Button
           variant="secondary"
@@ -178,7 +161,7 @@ function ReportView({ data }: { data: AdminReportDetail }) {
         >
           <Gavel aria-hidden="true" />
           {t('report.sanction')}
-          <kbd className="ms-1 text-xs opacity-80">S</kbd>
+          <Kbd>S</Kbd>
         </Button>
         <Button
           variant="secondary"
@@ -188,22 +171,24 @@ function ReportView({ data }: { data: AdminReportDetail }) {
         >
           <ShieldCheck aria-hidden="true" />
           {t('report.resolve')}
-          <kbd className="ms-1 text-xs opacity-80">X</kbd>
+          <Kbd>X</Kbd>
         </Button>
-        <Button asChild variant="ghost">
+        <Button asChild variant="link" className="mx-2">
           <Link to="/admin/profiles/$profileId" params={{ profileId: target.profile_id }}>
             {t('report.open_profile')}
           </Link>
         </Button>
-        <Button asChild variant="ghost">
+        <Button asChild variant="link" className="mx-2">
           <Link to="/admin/users/$userId" params={{ userId: target.user_id }}>
             {t('report.open_account')}
           </Link>
         </Button>
-        {isOpen ? <p className="text-sm text-muted-foreground">{t('report.claim_first')}</p> : null}
-      </div>
+        {isOpen ? (
+          <p className="text-body-sm text-muted-foreground">{t('report.claim_first')}</p>
+        ) : null}
+      </ActionToolbar>
 
-      <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-4">
+      <div className={detailGridClass}>
         <div className="flex min-w-0 flex-col gap-4">
           <Facts
             title={t('report.summary')}
@@ -243,7 +228,8 @@ function ReportView({ data }: { data: AdminReportDetail }) {
                 size="large"
                 width={400}
                 height={500}
-                className="aspect-[4/5] w-full max-w-sm rounded-md"
+                whole
+                className="aspect-[4/5] w-full max-w-sm"
               />
               {data.photo.status === 'approved' || data.photo.status === 'pending_review' ? (
                 <Button
@@ -372,6 +358,6 @@ function ReportView({ data }: { data: AdminReportDetail }) {
           onConfirm={() => resolveRelated(dialog.note)}
         />
       ) : null}
-    </div>
+    </Page>
   )
 }

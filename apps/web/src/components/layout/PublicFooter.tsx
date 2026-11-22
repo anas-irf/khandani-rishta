@@ -1,92 +1,84 @@
-import { Link } from '@tanstack/react-router'
+import { Link, type LinkProps } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { signInLink } from '~/features/public/config'
 
-const linkClass =
-  'inline-flex min-h-11 items-center rounded-[var(--radius-input)] text-sm text-muted-foreground underline-offset-4 hover:text-primary hover:underline'
+type FooterLink = { key: string; link: LinkProps }
 
-/** Footer of every public page (16 section 7.11): three columns, copyright and the GeoNames credit. */
+/** The three columns of 16 section 7.11, in its order. */
+const COLUMNS: { title: string; links: FooterLink[] }[] = [
+  {
+    title: 'about_title',
+    links: [
+      { key: 'how_it_works', link: { to: '/how-it-works' } },
+      { key: 'safety', link: { to: '/safety' } },
+      { key: 'faq', link: { to: '/faq' } },
+      { key: 'nikah_guide', link: { to: '/nikah-guide' } },
+    ],
+  },
+  {
+    title: 'start_title',
+    links: [
+      { key: 'create_profile', link: signInLink },
+      { key: 'sign_in', link: signInLink },
+      { key: 'download', link: { to: '/download' } },
+    ],
+  },
+  {
+    title: 'legal_title',
+    links: [
+      { key: 'terms', link: { to: '/terms' } },
+      { key: 'privacy', link: { to: '/privacy' } },
+      { key: 'community_guidelines', link: { to: '/community-guidelines' } },
+      { key: 'contact', link: { to: '/contact' } },
+    ],
+  },
+]
+
+/**
+ * Footer of every public page (16 section 7.11): the dark band with the name, three columns of
+ * links, and the legal line with the GeoNames credit.
+ */
 export function PublicFooter() {
   const { t } = useTranslation('public')
   const { t: tc } = useTranslation()
 
   return (
-    <footer className="border-t border-border bg-surface">
-      <div className="container-app py-10">
-        <nav aria-label={t('footer.label')} className="grid gap-8 sm:grid-cols-3">
-          <div>
-            <h2 className="text-base font-semibold">{t('footer.about_title')}</h2>
-            <ul className="mt-2">
-              <li>
-                <Link to="/how-it-works" className={linkClass}>
-                  {t('links.how_it_works')}
-                </Link>
-              </li>
-              <li>
-                <Link to="/safety" className={linkClass}>
-                  {t('links.safety')}
-                </Link>
-              </li>
-              <li>
-                <Link to="/faq" className={linkClass}>
-                  {t('links.faq')}
-                </Link>
-              </li>
-              <li>
-                <Link to="/nikah-guide" className={linkClass}>
-                  {t('links.nikah_guide')}
-                </Link>
-              </li>
-            </ul>
+    <footer className="band-inverse">
+      <div className="container-app pt-[clamp(40px,5vw,64px)] pb-8">
+        <div className="flex flex-wrap gap-x-16 gap-y-10">
+          <div className="flex min-w-0 flex-[1_1_240px] flex-col gap-3">
+            <p className="font-display text-wordmark-lg">{tc('app_name')}</p>
+            <p className="max-w-[34ch] text-body-sm text-inverse-muted">
+              {t('meta.default_description')}
+            </p>
           </div>
-          <div>
-            <h2 className="text-base font-semibold">{t('footer.start_title')}</h2>
-            <ul className="mt-2">
-              <li>
-                <Link {...signInLink} className={linkClass}>
-                  {t('links.create_profile')}
-                </Link>
-              </li>
-              <li>
-                <Link {...signInLink} className={linkClass}>
-                  {t('links.sign_in')}
-                </Link>
-              </li>
-              <li>
-                <Link to="/download" className={linkClass}>
-                  {t('links.download')}
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h2 className="text-base font-semibold">{t('footer.legal_title')}</h2>
-            <ul className="mt-2">
-              <li>
-                <Link to="/terms" className={linkClass}>
-                  {t('links.terms')}
-                </Link>
-              </li>
-              <li>
-                <Link to="/privacy" className={linkClass}>
-                  {t('links.privacy')}
-                </Link>
-              </li>
-              <li>
-                <Link to="/community-guidelines" className={linkClass}>
-                  {t('links.community_guidelines')}
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className={linkClass}>
-                  {t('links.contact')}
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </nav>
+          <nav
+            aria-label={t('footer.label')}
+            className="grid min-w-0 flex-[3_1_540px] grid-cols-[repeat(auto-fit,minmax(min(170px,100%),1fr))] gap-x-10 gap-y-10"
+          >
+            {COLUMNS.map((column) => (
+              <div key={column.title} className="min-w-0">
+                <h2 className="mb-2 text-label-md font-bold text-accent-on-inverse">
+                  {t(`footer.${column.title}`)}
+                </h2>
+                <ul className="flex flex-col gap-[8px]">
+                  {column.links.map(({ key, link }) => (
+                    <li key={key}>
+                      <Link
+                        {...link}
+                        className="inline-flex min-h-touch min-w-touch max-w-full items-center rounded-sm text-body-md text-inverse-foreground hover:link-gold"
+                      >
+                        {t(`links.${key}`)}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </nav>
+        </div>
 
-        <div className="mt-8 flex flex-col gap-1 border-t border-border pt-6 text-sm text-muted-foreground">
+        <div className="mt-8 flex flex-wrap justify-between gap-x-6 gap-y-2 border-t border-accent-decor/40 pt-5 text-legal text-inverse-muted">
           <p>{t('footer.copyright', { year: new Date().getFullYear() })}</p>
           <p>{tc('geonames')}</p>
         </div>

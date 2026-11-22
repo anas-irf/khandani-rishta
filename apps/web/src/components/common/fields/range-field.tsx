@@ -2,9 +2,9 @@ import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Label } from '~/components/ui/label'
 import { NativeSelect, NativeSelectOption } from '~/components/ui/native-select'
-import { Switch } from '~/components/ui/switch'
 import { useFieldControl } from '~/lib/form-context'
 import { feetInchesToCm, formatHeightShort, MAX_HEIGHT_CM, MIN_HEIGHT_CM } from '~/lib/format'
+import { SwitchRow } from '../SwitchRow'
 import { ariaFor, type BaseFieldProps, FieldShell, subId, useFieldDisabled } from './field-shell'
 
 export type RangeValue = { min: number | null; max: number | null }
@@ -112,10 +112,10 @@ export function RangeField({
       className={className}
       kind="fieldset"
     >
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,7.5rem),1fr))] gap-3">
         {ends.map((end) => (
-          <div key={end.key} className="grid gap-1">
-            <Label htmlFor={end.id} className="text-sm font-normal text-muted-foreground">
+          <div key={end.key} className="grid min-w-0 gap-1">
+            <Label htmlFor={end.id} variant="part">
               {end.label}
             </Label>
             <NativeSelect
@@ -144,17 +144,13 @@ export function RangeField({
         ))}
       </div>
       {noPreference ? (
-        <div className="flex min-h-11 items-center gap-3">
-          <Switch
-            id={switchId}
-            checked={empty}
-            onCheckedChange={toggleNoPreference}
-            disabled={isDisabled}
-          />
-          <Label htmlFor={switchId} className="text-base font-normal">
-            {noPreferenceLabel ?? t('fields:range.no_preference')}
-          </Label>
-        </div>
+        <SwitchRow
+          id={switchId}
+          label={noPreferenceLabel ?? t('fields:range.no_preference')}
+          checked={empty}
+          onCheckedChange={toggleNoPreference}
+          disabled={isDisabled}
+        />
       ) : null}
     </FieldShell>
   )

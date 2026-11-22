@@ -151,7 +151,7 @@ export function ProfileSections({ profile }: { profile: AdminProfile['profile'] 
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(17rem,1fr))] items-start gap-4">
       {SECTIONS.map((section) => {
         const data = record[section.id]
         const title = t(`profile.section.${section.id}`)

@@ -2,16 +2,17 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import type * as React from 'react'
 import { cn } from '~/lib/utils'
 
+/** A soft fill, flat and without an outline (DESIGN.md 5.3). */
 const alertVariants = cva(
-  'relative grid w-full grid-cols-[0_1fr] items-start gap-y-0.5 rounded-[var(--radius-card)] border px-4 py-3 text-foreground has-[>svg]:grid-cols-[1.25rem_1fr] has-[>svg]:gap-x-3 [&>svg]:size-5 [&>svg]:translate-y-0.5 [&>svg]:text-current',
+  'relative grid w-full grid-cols-[0_minmax(0,1fr)] items-start gap-y-1 rounded-card px-5 py-4 text-foreground has-[>svg]:grid-cols-[1.25rem_minmax(0,1fr)] has-[>svg]:gap-x-3 [&>svg]:size-5 [&>svg]:translate-y-[3px] [&>svg]:text-current',
   {
     variants: {
       variant: {
-        default: 'border-border bg-surface',
-        info: 'border-primary/40 bg-primary-soft [&>svg]:text-primary',
-        success: 'border-success/40 bg-success-soft [&>svg]:text-success',
-        warning: 'border-warning/40 bg-warning-soft [&>svg]:text-warning',
-        danger: 'border-danger/40 bg-danger-soft [&>svg]:text-danger',
+        default: 'tonal',
+        info: 'bg-primary-soft [&>svg]:text-primary',
+        success: 'bg-success-soft [&>svg]:text-success',
+        warning: 'bg-warning-soft [&>svg]:text-warning',
+        danger: 'bg-danger-soft [&>svg]:text-danger',
       },
     },
     defaultVariants: {
@@ -44,7 +45,7 @@ function AlertTitle({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="alert-title"
-      className={cn('col-start-2 min-h-5 text-base font-semibold leading-snug', className)}
+      className={cn('col-start-2 text-title-sm font-bold', className)}
       {...props}
     />
   )
@@ -54,10 +55,7 @@ function AlertDescription({ className, ...props }: React.ComponentProps<'div'>) 
   return (
     <div
       data-slot="alert-description"
-      className={cn(
-        'col-start-2 grid justify-items-start gap-1 text-sm [&_p]:leading-relaxed',
-        className,
-      )}
+      className={cn('col-start-2 grid justify-items-start gap-1 text-body-sm', className)}
       {...props}
     />
   )

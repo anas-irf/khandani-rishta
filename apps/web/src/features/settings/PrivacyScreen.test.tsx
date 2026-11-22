@@ -119,7 +119,9 @@ describe('PrivacyScreen (SET-PRIVACY)', () => {
 
     expect(
       await screen.findByRole('radio', {
-        name: /Only people who fit my must-haves.*Only members who meet every preference you marked as a must-have can find/,
+        name: 'Only people who fit my must-haves',
+        // The help is the radio's description (RadioCard); two groups share the same title.
+        description: /Only members who meet every preference you marked as a must-have can find/,
       }),
     ).toBeChecked()
     expect(screen.getByRole('radio', { name: /Connections only/ })).toBeChecked()

@@ -37,7 +37,7 @@ export function ProfilePreviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent closeLabel={t('preview.close')} className="max-w-5xl">
+      <DialogContent closeLabel={t('preview.close')} className="wide:max-w-[64rem]">
         <DialogHeader>
           <DialogTitle>{t('preview.title')}</DialogTitle>
           <DialogDescription>
@@ -76,9 +76,9 @@ function PreviewBody({ position, profile }: { position: Position; profile: OwnPr
     return (
       <div role="status" aria-busy="true" className="flex flex-col gap-3">
         <span className="sr-only">{t('preview.loading')}</span>
-        <Skeleton className="aspect-[4/3] w-full max-w-sm" />
-        <Skeleton className="h-6 w-48" />
-        <Skeleton className="h-4 w-64" />
+        <Skeleton className="aspect-[4/5] w-full max-w-[18rem] rounded-arch-lg" />
+        <Skeleton className="h-6 w-[min(100%,12rem)]" />
+        <Skeleton className="h-4 w-[min(100%,16rem)]" />
       </div>
     )
   }
@@ -97,7 +97,7 @@ function PreviewBody({ position, profile }: { position: Position; profile: OwnPr
   return (
     <div className="flex flex-col gap-4" data-preview-as={position}>
       {hidden.length > 0 ? (
-        <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
+        <ul className="flex flex-col gap-1 text-body-sm text-muted-foreground">
           {hidden.map((key) => (
             <li key={key}>{t('preview.hidden_text', { text: t(`profile.moderation.${key}`) })}</li>
           ))}
@@ -106,7 +106,7 @@ function PreviewBody({ position, profile }: { position: Position; profile: OwnPr
       <ProfileDetailView
         detail={preview.data}
         preview
-        aside={
+        notice={
           <StatusBanner variant="info" icon={Info}>
             {t('preview.banner')}
           </StatusBanner>

@@ -1,5 +1,6 @@
 import { ChevronDown } from 'lucide-react'
 import type * as React from 'react'
+import { controlVariants } from '~/components/ui/input'
 import { cn } from '~/lib/utils'
 
 /**
@@ -14,20 +15,20 @@ function NativeSelect({
   ...props
 }: React.ComponentProps<'select'> & { wrapperClassName?: string }) {
   return (
-    <div data-slot="native-select-wrapper" className={cn('relative w-full', wrapperClassName)}>
+    <div
+      data-slot="native-select-wrapper"
+      className={cn('relative w-full min-w-0 max-w-full', wrapperClassName)}
+    >
       <select
         data-slot="native-select"
-        className={cn(
-          'peer h-11 w-full min-w-0 appearance-none rounded-[var(--radius-input)] border border-input bg-surface ps-3 pe-10 text-base text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-60 aria-invalid:border-danger aria-invalid:ring-danger/20 aria-invalid:focus-visible:ring-danger',
-          className,
-        )}
+        className={cn('peer', controlVariants({ control: 'select' }), className)}
         {...props}
       >
         {children}
       </select>
       <ChevronDown
         aria-hidden="true"
-        className="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground peer-disabled:opacity-60"
+        className="pointer-events-none absolute end-[10px] top-1/2 size-5 -translate-y-1/2 text-muted-foreground"
       />
     </div>
   )

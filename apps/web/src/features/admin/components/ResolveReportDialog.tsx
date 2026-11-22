@@ -1,5 +1,8 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { FieldError } from '~/components/common/fields/field-shell'
+import { RadioCard } from '~/components/common/RadioCard'
+import { RadioGroup } from '~/components/ui/radio-group'
 import { validate } from '../forms'
 import { useResolveReport } from '../queries'
 import { resolveReportSchema } from '../schemas'
@@ -34,6 +37,7 @@ export function ResolveReportDialog({
   const [note, setNote] = useState('')
   const [confirming, setConfirming] = useState(false)
   const form = useDialogErrors(['outcome', 'note'])
+  const outcomeId = useId()
 
   const submit = async () => {
     const result = validate(resolveReportSchema, { outcome, note }, t)
@@ -65,34 +69,32 @@ export function ResolveReportDialog({
     >
       {confirming ? null : (
         <>
-          <fieldset className="grid gap-1.5">
-            <legend className="text-sm font-medium">{t('report.outcome')}</legend>
-            {(['actioned', 'dismissed'] as const).map((option) => (
-              <label key={option} className="flex min-h-11 items-center gap-2 text-sm">
-                <input
-                  type="radio"
-                  name="outcome"
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-2 text-label-lg">{t('report.outcome')}</legend>
+            <RadioGroup
+              name="outcome"
+              aria-label={t('report.outcome')}
+              value={outcome}
+              onValueChange={(value) => setOutcome(value as ReportOutcome)}
+            >
+              {(['actioned', 'dismissed'] as const).map((option) => (
+                <RadioCard
+                  key={option}
+                  id={`${outcomeId}-${option}`}
                   value={option}
-                  checked={outcome === option}
                   disabled={onlyDismiss && option === 'actioned'}
-                  onChange={() => setOutcome(option)}
-                  className="size-4 accent-primary"
+                  label={t(`report.outcome_${option}`)}
+                  description={t(`report.outcome_${option}_hint`)}
                 />
-                <span>
-                  {t(`report.outcome_${option}`)}
-                  <span className="block text-muted-foreground">
-                    {t(`report.outcome_${option}_hint`)}
-                  </span>
-                </span>
-              </label>
-            ))}
+              ))}
+            </RadioGroup>
             {form.errors.outcome ? (
-              <p role="alert" className="text-sm text-danger">
-                {form.errors.outcome}
-              </p>
+              <div role="alert">
+                <FieldError id={`${outcomeId}-error`} message={form.errors.outcome} />
+              </div>
             ) : null}
             {onlyDismiss ? (
-              <p className="text-sm text-muted-foreground">{t('report.open_only_dismiss')}</p>
+              <p className="text-caption text-muted-foreground">{t('report.open_only_dismiss')}</p>
             ) : null}
           </fieldset>
           <CountedTextarea

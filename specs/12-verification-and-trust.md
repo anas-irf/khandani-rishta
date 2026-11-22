@@ -24,7 +24,7 @@ Entering an identity number without verifying the document earns no badge. The n
 
 | Place | Rule |
 |---|---|
-| Profile card (`ProfileCard.badges`) | Small icons after the name, in the order `id_verified`, `photo_verified`, `phone_verified`, `new`. Only earned badges appear. |
+| Profile card (`ProfileCard.badges`) | By the name, as words with a tick ("ID verified", "Photo verified", "Phone verified"), never icons alone, in the order `id_verified`, `photo_verified`, `phone_verified`; `new` as a "New" label on the photo. Only earned badges appear. |
 | Profile screen (`APP-PROFILE`) | A "Verification" block listing each earned badge with one line of plain text: "Identity document checked by our team", "Photos checked against a live selfie", "Phone number confirmed". Unearned checks are not listed (no red crosses on another member's profile). |
 | Own profile (`ME-PROFILE`, `ME-VERIFY`) | All three checks with their state and a button to start each one. |
 | Wording | Never "100% genuine" or "guaranteed". The fixed disclaimer under the block: "Verification confirms identity details only. Always take your own care and involve your family." |

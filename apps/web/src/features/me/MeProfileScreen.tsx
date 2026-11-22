@@ -1,31 +1,29 @@
 // ME-PROFILE (16 section 6.17, 08 section 1)
 import { useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
-import {
-  ChevronRight,
-  Copy,
-  Eye,
-  Heart,
-  ImageIcon,
-  type LucideIcon,
-  Settings,
-  Users,
-} from 'lucide-react'
+import { Copy, Eye, Heart, ImageIcon, type LucideIcon, Settings, Users } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { ArchFrame, Monogram } from '~/components/common/Arch'
 import { BadgeRow } from '~/components/common/BadgeRow'
+import { Band } from '~/components/common/Band'
+import { CountBadge } from '~/components/common/CountBadge'
 import { ErrorState } from '~/components/common/ErrorState'
-import { Silhouette } from '~/components/common/MemberPhoto'
-import { PageHeader } from '~/components/common/PageHeader'
+import { LinkRow } from '~/components/common/LinkRow'
+import { Page } from '~/components/common/Page'
 import { PlainText } from '~/components/common/PlainText'
+import { ProgressRing } from '~/components/common/ProgressRing'
 import { SectionCard } from '~/components/common/SectionCard'
 import { StatusBanner } from '~/components/common/StatusBanner'
 import { useResumeProfile } from '~/components/common/StatusPanel'
+import { TextLink } from '~/components/common/TextLink'
+import { avatarVariants } from '~/components/ui/avatar'
 import { Button } from '~/components/ui/button'
 import { Skeleton } from '~/components/ui/skeleton'
 import { usePreferences } from '~/features/preferences/queries'
+import { TextStatusNote } from '~/features/profile-sections/fields'
 import { useOwnProfile, useResubmitProfile } from '~/features/profile-sections/queries'
 import { isApiError } from '~/lib/api'
 import type { OwnProfile, Preferences, Privacy, TextStatus } from '~/lib/api-types'
@@ -34,49 +32,63 @@ import { gateHome, showsPrimaryNavigation } from '~/lib/gate'
 import { useCurrentMe } from '~/lib/me'
 import { errorMessage, qk } from '~/lib/query'
 import { useLabelOf } from '~/lib/reference'
-import { badgeCount, cn, toSlug } from '~/lib/utils'
+import { cn, toSlug } from '~/lib/utils'
 import { hasContactDetails } from './contacts'
 import { ProfilePreviewDialog } from './ProfilePreviewDialog'
 import { usePrivacy } from './queries'
 import { completenessHints, excerpt, mustHaveCount, ownBadges, sectionIsEmpty } from './summaries'
 
 /**
- * The member's own profile at a glance: header, profile code, status banner, completeness,
- * the preview, and a card per editable part (08 section 1.1). On narrow screens it also carries
- * the Me menu and the gear icon to `SET-HOME` (16 section 2.2).
+ * The member's own profile at a glance: on sand who they are and the profile code, then the
+ * status, completeness and the preview, then a group per editable part, two to a band on wide
+ * screens (08 section 1.1, DESIGN.md 6.10). On narrow screens it also carries the Me menu and
+ * the gear icon to `SET-HOME` (16 section 2.2).
  */
 export function MeProfileScreen() {
-  const { t } = useTranslation('me')
   const profile = useOwnProfile()
 
-  const header = (
-    <PageHeader
-      title={t('profile.title')}
-      actions={
-        <Button asChild variant="ghost" size="icon" className="md:hidden">
-          <Link to="/settings" aria-label={t('profile.settings')}>
-            <Settings aria-hidden="true" className="size-5" />
-          </Link>
-        </Button>
-      }
-    />
-  )
-
+  if (profile.isSuccess) return <ProfileContent profile={profile.data} />
   return (
-    <div className="container-app flex max-w-3xl flex-col gap-4">
-      {header}
+    <MePage header={profile.isPending ? <HeaderSkeleton /> : null}>
       {profile.isPending ? (
         <ProfileSkeleton />
-      ) : profile.isError ? (
+      ) : (
         <ErrorState
           error={profile.error}
           onRetry={() => void profile.refetch()}
           retrying={profile.isFetching}
         />
-      ) : (
-        <ProfileContent profile={profile.data} />
       )}
-    </div>
+    </MePage>
+  )
+}
+
+function MePage({
+  header,
+  layout,
+  children,
+}: {
+  header: ReactNode
+  layout?: 'bands'
+  children: ReactNode
+}) {
+  const { t } = useTranslation('me')
+  return (
+    <Page
+      title={t('profile.title')}
+      width="column"
+      layout={layout}
+      header={header}
+      actions={
+        <Button asChild variant="ghost" size="icon" className="wide:hidden">
+          <Link to="/settings" aria-label={t('profile.settings')}>
+            <Settings aria-hidden="true" />
+          </Link>
+        </Button>
+      }
+    >
+      {children}
+    </Page>
   )
 }
 
@@ -88,19 +100,28 @@ function ProfileContent({ profile }: { profile: OwnProfile }) {
   const [previewOpen, setPreviewOpen] = useState(false)
 
   return (
-    <>
-      <ProfileHeaderBlock profile={profile} />
-      <ProfileCode code={profile.public_code} />
-      <MeMenu
-        full={showsPrimaryNavigation(me)}
-        photoRequests={me.counters.pending_photo_requests}
-      />
-      <StatusBanners profile={profile} />
-      <CompletenessCard profile={profile} />
-      <Button variant="secondary" className="self-start" onClick={() => setPreviewOpen(true)}>
-        <Eye aria-hidden="true" />
-        {t('profile.preview_button')}
-      </Button>
+    <MePage
+      layout="bands"
+      header={
+        <>
+          <ProfileHeaderBlock profile={profile} />
+          <ProfileCode code={profile.public_code} />
+        </>
+      }
+    >
+      <Band as="div" tone="auto" width="column" space="sm" innerClassName="flex flex-col gap-5">
+        <MeMenu
+          full={showsPrimaryNavigation(me)}
+          photoRequests={me.counters.pending_photo_requests}
+        />
+        <StatusBanners profile={profile} />
+        <CompletenessCard profile={profile} />
+        <Button variant="secondary" className="self-start" onClick={() => setPreviewOpen(true)}>
+          <Eye aria-hidden="true" />
+          {t('profile.preview_button')}
+        </Button>
+        <ProfilePreviewDialog open={previewOpen} onOpenChange={setPreviewOpen} profile={profile} />
+      </Band>
       <SectionCards
         profile={profile}
         preferences={preferences.data ?? null}
@@ -108,8 +129,7 @@ function ProfileContent({ profile }: { profile: OwnProfile }) {
         privacy={privacy.data ?? null}
         privacyPending={privacy.isPending}
       />
-      <ProfilePreviewDialog open={previewOpen} onOpenChange={setPreviewOpen} profile={profile} />
-    </>
+    </MePage>
   )
 }
 
@@ -120,6 +140,7 @@ function ProfileContent({ profile }: { profile: OwnProfile }) {
 function ProfileHeaderBlock({ profile }: { profile: OwnProfile }) {
   const { t } = useTranslation('me')
   const { basics, location } = profile
+  const noPhotoId = useId()
   const primary = profile.photos.find((photo) => photo.is_primary && photo.medium_url) ?? null
   const name = [basics.first_name, basics.last_name].filter(Boolean).join(' ')
   const age = basics.date_of_birth ? ageFromDateOfBirth(basics.date_of_birth) : null
@@ -132,33 +153,44 @@ function ProfileHeaderBlock({ profile }: { profile: OwnProfile }) {
         : city
 
   return (
-    <section className="flex items-center gap-4">
+    <section className="flex flex-wrap items-center gap-x-[20px] gap-y-3 pt-1">
       <Link
         to="/me/photos"
         aria-label={t('profile.photo_open')}
-        className="block size-24 shrink-0 overflow-hidden rounded-full border border-border bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:size-28"
+        aria-describedby={primary ? undefined : noPhotoId}
+        className="block rounded-arch"
       >
-        {primary?.medium_url ? (
-          <img
-            src={primary.medium_url}
-            alt=""
-            width={112}
-            height={112}
-            draggable={false}
-            className="size-full object-cover"
-          />
-        ) : (
-          <Silhouette gender={basics.gender ?? 'female'} label={t('profile.photo_none')} />
-        )}
+        <ArchFrame
+          className={cn(
+            'flex h-[120px] w-[96px] items-center justify-center',
+            !primary && 'lattice',
+          )}
+        >
+          {primary?.medium_url ? (
+            <img
+              src={primary.medium_url}
+              alt=""
+              width={96}
+              height={120}
+              draggable={false}
+              className="size-full object-cover"
+            />
+          ) : (
+            <Monogram name={name} size="md" />
+          )}
+        </ArchFrame>
       </Link>
-      <div className="flex min-w-0 flex-col gap-1">
-        <p className="flex flex-wrap items-center gap-2 text-xl font-semibold">
-          <span dir="auto" className="truncate">
-            {name}
-          </span>
-          <BadgeRow badges={ownBadges(profile.verification)} />
+      {primary ? null : (
+        <span id={noPhotoId} hidden>
+          {t('profile.photo_none')}
+        </span>
+      )}
+      <div className="flex min-w-[min(100%,11rem)] flex-1 flex-col gap-1">
+        <p className="text-headline-sm">
+          <span dir="auto">{name}</span>
         </p>
-        {ageCity ? <p className="text-muted-foreground">{ageCity}</p> : null}
+        {ageCity ? <p className="text-foreground-secondary">{ageCity}</p> : null}
+        <BadgeRow badges={ownBadges(profile.verification)} className="mt-2" />
       </div>
     </section>
   )
@@ -166,6 +198,7 @@ function ProfileHeaderBlock({ profile }: { profile: OwnProfile }) {
 
 function ProfileCode({ code }: { code: string }) {
   const { t } = useTranslation('me')
+  const hintId = useId()
   const copy = async () => {
     const url = `${window.location.origin}/p/${code}`
     try {
@@ -176,24 +209,29 @@ function ProfileCode({ code }: { code: string }) {
     }
   }
   return (
-    <section className="flex flex-col gap-1 rounded-[var(--radius-card)] border border-border bg-surface p-4">
-      <div className="flex items-center justify-between gap-3">
-        <p>
-          <span className="text-sm text-muted-foreground">{t('profile.code.label')}</span>{' '}
-          <span className="font-mono text-lg font-semibold tracking-wide" dir="ltr">
+    <section className="tonal flex flex-col gap-1 rounded-xl px-[16px] py-3">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+        <p className="flex max-w-full flex-wrap items-baseline gap-x-2">
+          <span className="text-body-sm text-muted-foreground">{t('profile.code.label')}</span>{' '}
+          <span className="text-title-md font-bold tabular-nums" dir="ltr" data-profile-code="">
             {code}
           </span>
         </p>
+        {/* Named by its visible words (WCAG 2.5.3). The profile it copies is the description. */}
         <Button
-          variant="secondary"
-          aria-label={t('profile.code.copy_label', { code })}
+          variant="quiet"
+          size="compact"
+          aria-describedby={hintId}
           onClick={() => void copy()}
         >
           <Copy aria-hidden="true" />
           {t('profile.code.copy')}
         </Button>
+        <span id={hintId} hidden>
+          {t('profile.code.copy_label', { code })}
+        </span>
       </div>
-      <p className="text-sm text-muted-foreground">{t('profile.code.help')}</p>
+      <p className="text-caption text-muted-foreground">{t('profile.code.help')}</p>
     </section>
   )
 }
@@ -201,8 +239,7 @@ function ProfileCode({ code }: { code: string }) {
 /** The Me menu of 16 section 2.2, on narrow screens only (wide screens use the avatar menu). */
 function MeMenu({ full, photoRequests }: { full: boolean; photoRequests: number }) {
   const { t } = useTranslation('me')
-  const count = badgeCount(photoRequests)
-  const items: { to: string; label: string; icon: LucideIcon; badge?: string; name?: string }[] = [
+  const items: { to: string; label: string; icon: LucideIcon; count?: number; name?: string }[] = [
     ...(full
       ? [
           { to: '/shortlist', label: t('profile.menu.shortlist'), icon: Heart },
@@ -211,37 +248,28 @@ function MeMenu({ full, photoRequests }: { full: boolean; photoRequests: number 
             to: '/photo-requests',
             label: t('profile.menu.photo_requests'),
             icon: ImageIcon,
-            badge: count,
-            name: count
-              ? t('profile.menu.photo_requests_count', { count: photoRequests })
-              : undefined,
+            count: photoRequests,
+            name:
+              photoRequests > 0
+                ? t('profile.menu.photo_requests_count', { count: photoRequests })
+                : undefined,
           },
         ]
       : []),
     { to: '/settings', label: t('profile.menu.settings'), icon: Settings },
   ]
   return (
-    <nav aria-label={t('profile.menu.label')} className="md:hidden">
-      <ul className="divide-y divide-border overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface">
+    <nav aria-label={t('profile.menu.label')} className="wide:hidden">
+      <ul className="flex flex-col">
         {items.map((item) => (
-          <li key={item.to}>
-            <Link
+          <li key={item.to} className="border-b border-border">
+            <LinkRow
               to={item.to}
+              icon={item.icon}
+              label={item.label}
               aria-label={item.name}
-              className="flex min-h-12 items-center gap-3 px-4 py-2 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-            >
-              <item.icon aria-hidden="true" className="size-5 text-muted-foreground" />
-              <span className="flex-1">{item.label}</span>
-              {item.badge ? (
-                <span className="rounded-full bg-danger px-2 py-0.5 text-sm font-medium text-danger-foreground">
-                  {item.badge}
-                </span>
-              ) : null}
-              <ChevronRight
-                aria-hidden="true"
-                className="size-4 text-muted-foreground rtl:-scale-x-100"
-              />
-            </Link>
+              trailing={item.count ? <CountBadge count={item.count} decorative /> : null}
+            />
           </li>
         ))}
       </ul>
@@ -318,7 +346,7 @@ function StatusBanners({ profile }: { profile: OwnProfile }) {
         <StatusBanner
           variant="warning"
           action={
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col items-start gap-2">
               {resubmitErrors.length > 0 ? (
                 <ul role="alert" className="list-disc ps-5 text-danger">
                   {resubmitErrors.map((message) => (
@@ -327,7 +355,6 @@ function StatusBanners({ profile }: { profile: OwnProfile }) {
                 </ul>
               ) : null}
               <Button
-                className="self-start"
                 loading={resubmit.isPending}
                 onClick={() => {
                   setResubmitErrors([])
@@ -355,7 +382,7 @@ function StatusBanners({ profile }: { profile: OwnProfile }) {
           <p>{t('profile.banner.changes_requested')}</p>
           <PlainText
             text={profile.status_reason ?? me.profile.status_reason}
-            className="font-medium"
+            className="font-semibold"
           />
         </StatusBanner>
       )
@@ -376,11 +403,7 @@ function StatusBanners({ profile }: { profile: OwnProfile }) {
             key={key}
             variant={status === 'rejected' ? 'danger' : 'info'}
             title={text}
-            action={
-              <Button asChild variant="link" className="h-auto px-0">
-                <Link to={fix}>{t('profile.moderation.fix', { text })}</Link>
-              </Button>
-            }
+            action={<TextLink to={fix}>{t('profile.moderation.fix', { text })}</TextLink>}
           >
             <ModerationText status={status} />
           </StatusBanner>
@@ -391,7 +414,7 @@ function StatusBanners({ profile }: { profile: OwnProfile }) {
 }
 
 /** The owner-only label of a moderated text (08 section 1.4); nothing when approved. */
-export function ModerationText({ status }: { status: TextStatus }) {
+function ModerationText({ status }: { status: TextStatus }) {
   const { t } = useTranslation('me')
   if (status === 'approved') return null
   return (
@@ -408,39 +431,22 @@ function CompletenessCard({ profile }: { profile: OwnProfile }) {
   if (profile.completeness >= 100) return null
   const hints = completenessHints(profile)
   const value = Math.max(0, Math.min(100, profile.completeness))
-  const circumference = 2 * Math.PI * 26
 
   return (
-    <section className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-4">
-      <div className="flex items-center gap-4">
-        <svg aria-hidden="true" viewBox="0 0 64 64" className="size-16 shrink-0 -rotate-90">
-          <circle cx="32" cy="32" r="26" fill="none" strokeWidth="7" className="stroke-border" />
-          <circle
-            cx="32"
-            cy="32"
-            r="26"
-            fill="none"
-            strokeWidth="7"
-            strokeLinecap="round"
-            className="stroke-primary"
-            strokeDasharray={circumference}
-            strokeDashoffset={circumference * (1 - value / 100)}
-          />
-        </svg>
-        <p className="text-lg font-semibold">{t('profile.completeness.line', { value })}</p>
+    <section className="tonal panel gap-3">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+        {/* Decoration: the same number is in the line beside it. */}
+        <ProgressRing kind="completeness" value={value} />
+        <p className="min-w-[min(100%,11rem)] flex-1 text-title-lg">
+          {t('profile.completeness.line', { value })}
+        </p>
       </div>
       {hints.length > 0 ? (
         <nav aria-label={t('profile.completeness.hints')}>
-          <ul className="flex flex-col divide-y divide-border">
+          <ul className="flex flex-col">
             {hints.map((hint) => (
-              <li key={hint.key}>
-                <Link
-                  to={hint.to}
-                  className="flex min-h-11 items-center justify-between gap-2 py-2 font-medium text-primary hover:underline"
-                >
-                  {t(`profile.completeness.${hint.key}`)}
-                  <ChevronRight aria-hidden="true" className="size-4 rtl:-scale-x-100" />
-                </Link>
+              <li key={hint.key} className="border-t border-border">
+                <LinkRow to={hint.to} label={t(`profile.completeness.${hint.key}`)} />
               </li>
             ))}
           </ul>
@@ -457,11 +463,23 @@ function CompletenessCard({ profile }: { profile: OwnProfile }) {
 function CardAction({ to, action, title }: { to: string; action: string; title: string }) {
   const { t } = useTranslation('me')
   return (
-    <Button asChild variant="ghost" className="-me-2 text-primary">
-      <Link to={to} aria-label={t('profile.actions.named', { action, title })}>
-        {action}
-      </Link>
-    </Button>
+    <TextLink to={to} aria-label={t('profile.actions.named', { action, title })}>
+      {action}
+    </TextLink>
+  )
+}
+
+/** One band of two groups: side by side on wide screens, one under the other on phones. */
+function PairBand({ children }: { children: ReactNode }) {
+  return (
+    <Band
+      as="div"
+      tone="auto"
+      width="column"
+      innerClassName="grid grid-cols-[minmax(0,1fr)] gap-x-[clamp(24px,4vw,48px)] gap-y-10 wide:grid-cols-2"
+    >
+      {children}
+    </Band>
   )
 }
 
@@ -470,7 +488,7 @@ function Lines({ lines }: { lines: (string | null | undefined | false)[] }) {
   const shown = lines.filter((line): line is string => Boolean(line))
   if (shown.length === 0) return <p className="text-muted-foreground">{t('profile.not_added')}</p>
   return (
-    <div className="flex flex-col gap-0.5">
+    <div className="flex flex-col gap-1">
       {shown.map((line) => (
         <p key={line}>{line}</p>
       ))}
@@ -526,238 +544,253 @@ function SectionCards({
   const musts = preferences ? mustHaveCount(preferences) : 0
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      <SectionCard
-        title={title('photos')}
-        action={
-          <CardAction
-            to="/me/photos"
-            action={t('profile.actions.manage')}
-            title={title('photos')}
-          />
-        }
-      >
-        {thumbs.length > 0 ? (
-          <ul className="flex gap-2">
-            {thumbs.map((photo, index) => (
-              <li key={photo.id}>
-                <img
-                  src={photo.thumb_url ?? ''}
-                  alt={t('profile.summary.photo_thumb', { position: index + 1 })}
-                  width={64}
-                  height={64}
-                  draggable={false}
-                  className="size-16 rounded-[var(--radius-input)] object-cover"
-                />
-              </li>
-            ))}
-          </ul>
-        ) : null}
-        <Lines
-          lines={[
-            profile.photos.length > 0
-              ? t('profile.summary.photo_count', { count: profile.photos.length })
-              : null,
-            privacy
-              ? t('profile.summary.photo_visibility', {
-                  label: label('photo_visibility', privacy.photo_visibility),
-                })
-              : null,
-          ]}
-        />
-      </SectionCard>
-
-      <SectionCard title={title('basics')} action={editAction('basics')}>
-        <Lines
-          lines={[
-            join(
-              label('gender', basics.gender),
-              age !== null ? t('profile.summary.age', { age }) : null,
-            ),
-            join(
-              label('marital_status', basics.marital_status),
-              basics.height_cm ? formatHeight(basics.height_cm) : null,
-            ),
-          ]}
-        />
-      </SectionCard>
-
-      <SectionCard title={title('community')} action={editAction('community')}>
-        <Lines
-          lines={[
-            join(label('religions', community.religion_code), label('sects', community.sect_code)),
-            join(caste, label('languages', community.mother_tongue_code)),
-          ]}
-        />
-      </SectionCard>
-
-      <SectionCard title={title('location')} action={editAction('location')}>
-        <Lines
-          lines={[
-            join(
-              location.city?.name ?? location.city_other,
-              location.city?.region_name,
-              label('countries', location.country_code),
-            ),
-          ]}
-        />
-      </SectionCard>
-
-      <SectionCard title={title('education_career')} action={editAction('education_career')}>
-        <Lines
-          lines={[
-            label('education_levels', education.education_level_code),
-            education.profession_code
-              ? label('profession_categories', education.profession_code)
-              : label('employment_type', education.employment_type),
-          ]}
-        />
-      </SectionCard>
-
-      <SectionCard title={title('family')} action={editAction('family', familyEmpty)}>
-        <Lines
-          lines={[
-            join(
-              family.father_status
-                ? t('profile.summary.father', {
-                    value: label('parent_status', family.father_status),
-                  })
-                : null,
-              family.mother_status
-                ? t('profile.summary.mother', {
-                    value: label('parent_status', family.mother_status),
-                  })
-                : null,
-            ),
-            family.brothers_count !== null || family.sisters_count !== null
-              ? t('profile.summary.siblings', {
-                  brothers: family.brothers_count ?? 0,
-                  sisters: family.sisters_count ?? 0,
-                })
-              : null,
-            label('family_type', family.family_type),
-          ]}
-        />
-        <ModerationLabel status={profile.text_status.about_family} />
-      </SectionCard>
-
-      <SectionCard title={title('lifestyle')} action={editAction('lifestyle', lifestyleEmpty)}>
-        <Lines lines={[label('religiosity', lifestyle.religiosity)]} />
-        <PlainText text={excerpt(lifestyle.about_me)} className="text-muted-foreground" />
-        <ModerationLabel status={profile.text_status.about_me} />
-      </SectionCard>
-
-      <SectionCard
-        title={title('preferences')}
-        action={<CardAction to="/me/preferences" action={edit} title={title('preferences')} />}
-      >
-        {preferencesPending ? (
-          <Skeleton className="h-5 w-40" />
-        ) : (
+    <>
+      <PairBand>
+        <SectionCard
+          title={title('photos')}
+          action={
+            <CardAction
+              to="/me/photos"
+              action={t('profile.actions.manage')}
+              title={title('photos')}
+            />
+          }
+        >
+          {thumbs.length > 0 ? (
+            <ul className="flex flex-wrap gap-2">
+              {thumbs.map((photo, index) => (
+                <li key={photo.id}>
+                  <ArchFrame className={avatarVariants({ size: 'md' })}>
+                    <img
+                      src={photo.thumb_url ?? ''}
+                      alt={t('profile.summary.photo_thumb', { position: index + 1 })}
+                      width={56}
+                      height={70}
+                      draggable={false}
+                      className="size-full object-cover"
+                    />
+                  </ArchFrame>
+                </li>
+              ))}
+            </ul>
+          ) : null}
           <Lines
-            lines={
-              preferences
-                ? [
-                    t('profile.summary.age_range', {
-                      min: preferences.age_min,
-                      max: preferences.age_max,
-                    }),
-                    musts > 0
-                      ? t('profile.summary.must_haves', { count: musts })
-                      : t('profile.summary.must_haves_none'),
-                  ]
-                : []
-            }
-          />
-        )}
-        <ModerationLabel status={profile.text_status.partner_notes} />
-      </SectionCard>
-
-      <SectionCard
-        title={title('verification')}
-        action={<CardAction to="/me/verification" action={open} title={title('verification')} />}
-      >
-        <Lines
-          lines={[
-            t('profile.summary.id', {
-              state: stateOf(verification.id_verified, verification.pending.id_document),
-            }),
-            t('profile.summary.photo_check', {
-              state: stateOf(verification.photo_verified, verification.pending.selfie),
-            }),
-            t('profile.summary.phone', {
-              state: verification.phone_verified
-                ? t('profile.summary.state_confirmed')
-                : t('profile.summary.state_not_confirmed'),
-            }),
-          ]}
-        />
-      </SectionCard>
-
-      <SectionCard
-        title={title('contacts')}
-        action={
-          <CardAction
-            to="/settings/contacts"
-            action={contactsAdded ? edit : add}
-            title={title('contacts')}
-          />
-        }
-      >
-        <Lines lines={[contactsAdded ? t('profile.summary.contacts_added') : null]} />
-      </SectionCard>
-
-      <SectionCard title={title('account_for')} action={editAction('account_for')}>
-        <Lines
-          lines={[
-            profile.account_for.manager_name
-              ? t('profile.summary.manager', {
-                  label: label('managed_by', profile.account_for.managed_by),
-                  name: profile.account_for.manager_name,
-                })
-              : label('managed_by', profile.account_for.managed_by),
-          ]}
-        />
-      </SectionCard>
-
-      <SectionCard
-        title={title('privacy')}
-        action={<CardAction to="/settings/privacy" action={open} title={title('privacy')} />}
-      >
-        {privacyPending ? (
-          <Skeleton className="h-5 w-40" />
-        ) : (
-          <Lines
-            lines={
+            lines={[
+              profile.photos.length > 0
+                ? t('profile.summary.photo_count', { count: profile.photos.length })
+                : null,
               privacy
-                ? [
-                    t('profile.summary.photo_privacy', {
-                      label: label('photo_visibility', privacy.photo_visibility),
-                    }),
-                    t('profile.summary.name_display', {
-                      label: label('name_display', privacy.name_display),
-                    }),
-                  ]
-                : []
-            }
+                ? t('profile.summary.photo_visibility', {
+                    label: label('photo_visibility', privacy.photo_visibility),
+                  })
+                : null,
+            ]}
           />
-        )}
-      </SectionCard>
-    </div>
+        </SectionCard>
+
+        <SectionCard title={title('basics')} action={editAction('basics')}>
+          <Lines
+            lines={[
+              join(
+                label('gender', basics.gender),
+                age !== null ? t('profile.summary.age', { age }) : null,
+              ),
+              join(
+                label('marital_status', basics.marital_status),
+                basics.height_cm ? formatHeight(basics.height_cm) : null,
+              ),
+            ]}
+          />
+        </SectionCard>
+      </PairBand>
+
+      <PairBand>
+        <SectionCard title={title('community')} action={editAction('community')}>
+          <Lines
+            lines={[
+              join(
+                label('religions', community.religion_code),
+                label('sects', community.sect_code),
+              ),
+              join(caste, label('languages', community.mother_tongue_code)),
+            ]}
+          />
+        </SectionCard>
+
+        <SectionCard title={title('location')} action={editAction('location')}>
+          <Lines
+            lines={[
+              join(
+                location.city?.name ?? location.city_other,
+                location.city?.region_name,
+                label('countries', location.country_code),
+              ),
+            ]}
+          />
+        </SectionCard>
+      </PairBand>
+
+      <PairBand>
+        <SectionCard title={title('education_career')} action={editAction('education_career')}>
+          <Lines
+            lines={[
+              label('education_levels', education.education_level_code),
+              education.profession_code
+                ? label('profession_categories', education.profession_code)
+                : label('employment_type', education.employment_type),
+            ]}
+          />
+        </SectionCard>
+
+        <SectionCard title={title('family')} action={editAction('family', familyEmpty)}>
+          <Lines
+            lines={[
+              join(
+                family.father_status
+                  ? t('profile.summary.father', {
+                      value: label('parent_status', family.father_status),
+                    })
+                  : null,
+                family.mother_status
+                  ? t('profile.summary.mother', {
+                      value: label('parent_status', family.mother_status),
+                    })
+                  : null,
+              ),
+              family.brothers_count !== null || family.sisters_count !== null
+                ? t('profile.summary.siblings', {
+                    brothers: family.brothers_count ?? 0,
+                    sisters: family.sisters_count ?? 0,
+                  })
+                : null,
+              label('family_type', family.family_type),
+            ]}
+          />
+          <TextStatusNote status={profile.text_status.about_family} />
+        </SectionCard>
+      </PairBand>
+
+      <PairBand>
+        <SectionCard title={title('lifestyle')} action={editAction('lifestyle', lifestyleEmpty)}>
+          <Lines lines={[label('religiosity', lifestyle.religiosity)]} />
+          <PlainText text={excerpt(lifestyle.about_me)} className="text-foreground-secondary" />
+          <TextStatusNote status={profile.text_status.about_me} />
+        </SectionCard>
+
+        <SectionCard
+          title={title('preferences')}
+          action={<CardAction to="/me/preferences" action={edit} title={title('preferences')} />}
+        >
+          {preferencesPending ? (
+            <Skeleton className="h-5 w-[min(100%,10rem)]" />
+          ) : (
+            <Lines
+              lines={
+                preferences
+                  ? [
+                      t('profile.summary.age_range', {
+                        min: preferences.age_min,
+                        max: preferences.age_max,
+                      }),
+                      musts > 0
+                        ? t('profile.summary.must_haves', { count: musts })
+                        : t('profile.summary.must_haves_none'),
+                    ]
+                  : []
+              }
+            />
+          )}
+          <TextStatusNote status={profile.text_status.partner_notes} />
+        </SectionCard>
+      </PairBand>
+
+      <PairBand>
+        <SectionCard
+          title={title('verification')}
+          action={<CardAction to="/me/verification" action={open} title={title('verification')} />}
+        >
+          <Lines
+            lines={[
+              t('profile.summary.id', {
+                state: stateOf(verification.id_verified, verification.pending.id_document),
+              }),
+              t('profile.summary.photo_check', {
+                state: stateOf(verification.photo_verified, verification.pending.selfie),
+              }),
+              t('profile.summary.phone', {
+                state: verification.phone_verified
+                  ? t('profile.summary.state_confirmed')
+                  : t('profile.summary.state_not_confirmed'),
+              }),
+            ]}
+          />
+        </SectionCard>
+
+        <SectionCard
+          title={title('contacts')}
+          action={
+            <CardAction
+              to="/settings/contacts"
+              action={contactsAdded ? edit : add}
+              title={title('contacts')}
+            />
+          }
+        >
+          <Lines lines={[contactsAdded ? t('profile.summary.contacts_added') : null]} />
+        </SectionCard>
+      </PairBand>
+
+      <PairBand>
+        <SectionCard title={title('account_for')} action={editAction('account_for')}>
+          <Lines
+            lines={[
+              profile.account_for.manager_name
+                ? t('profile.summary.manager', {
+                    label: label('managed_by', profile.account_for.managed_by),
+                    name: profile.account_for.manager_name,
+                  })
+                : label('managed_by', profile.account_for.managed_by),
+            ]}
+          />
+        </SectionCard>
+
+        <SectionCard
+          title={title('privacy')}
+          action={<CardAction to="/settings/privacy" action={open} title={title('privacy')} />}
+        >
+          {privacyPending ? (
+            <Skeleton className="h-5 w-[min(100%,10rem)]" />
+          ) : (
+            <Lines
+              lines={
+                privacy
+                  ? [
+                      t('profile.summary.photo_privacy', {
+                        label: label('photo_visibility', privacy.photo_visibility),
+                      }),
+                      t('profile.summary.name_display', {
+                        label: label('name_display', privacy.name_display),
+                      }),
+                    ]
+                  : []
+              }
+            />
+          )}
+        </SectionCard>
+      </PairBand>
+    </>
   )
 }
 
-function ModerationLabel({ status }: { status: TextStatus }) {
-  if (status === 'approved') return null
+function HeaderSkeleton() {
   return (
-    <p
-      className={cn(
-        'rounded-[var(--radius-input)] px-3 py-2 text-sm',
-        status === 'rejected' ? 'bg-danger-soft text-danger' : 'bg-warning-soft',
-      )}
-    >
-      <ModerationText status={status} />
-    </p>
+    <div aria-hidden="true" className="flex items-center gap-4">
+      <Skeleton className="h-[120px] w-[96px] rounded-arch" />
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <Skeleton className="h-6 w-[min(100%,12rem)]" />
+        <Skeleton className="h-4 w-[min(100%,8rem)]" />
+      </div>
+    </div>
   )
 }
 
@@ -766,20 +799,10 @@ function ProfileSkeleton() {
   return (
     <div role="status" aria-busy="true" className="flex flex-col gap-4">
       <span className="sr-only">{t('profile.loading')}</span>
-      <div aria-hidden="true" className="flex items-center gap-4">
-        <Skeleton className="size-24 rounded-full" />
-        <div className="flex flex-1 flex-col gap-2">
-          <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-32" />
-        </div>
-      </div>
-      <div aria-hidden="true" className="grid gap-4 md:grid-cols-2">
+      <div aria-hidden="true" className="grid gap-x-8 gap-y-8 wide:grid-cols-2">
         {[0, 1, 2, 3].map((index) => (
-          <div
-            key={index}
-            className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-border bg-surface p-4"
-          >
-            <Skeleton className="h-5 w-32" />
+          <div key={index} className="flex flex-col gap-2">
+            <Skeleton className="h-6 w-[min(100%,10rem)]" />
             <Skeleton className="h-4 w-3/4" />
             <Skeleton className="h-4 w-1/2" />
           </div>

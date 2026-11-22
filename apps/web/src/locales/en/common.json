@@ -19,7 +19,7 @@
     "see_all": "See all",
     "sign_in": "Sign in",
     "sign_out": "Sign out",
-    "create_profile": "Create profile"
+    "create_profile": "Create a free profile"
   },
   "nav": {
     "primary_label": "Main",
@@ -47,6 +47,10 @@
     "body": "You can sign in again at any time with Google or your email address."
   },
   "offline": "You are offline",
+  "switch": {
+    "on": "On",
+    "off": "Off"
+  },
   "toast": {
     "saved": "Saved",
     "approved_live": "The profile is approved and live."

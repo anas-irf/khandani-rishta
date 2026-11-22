@@ -11,6 +11,9 @@
     "managed_by": "Profile managed by {{label}}",
     "shortlist_add": "Add {{name}} to shortlist",
     "shortlist_remove": "Remove {{name}} from shortlist",
+    "shortlist": "Shortlist",
+    "shortlisted": "Shortlisted",
+    "more": "More",
     "activity": {
       "online": "Online now",
       "today": "Active today",
@@ -21,6 +24,8 @@
     "relation": {
       "sent": "Interest sent",
       "received": "Interested in you",
+      "received_male": "Interested in him",
+      "received_female": "Interested in her",
       "connected": "Connected"
     }
   },
@@ -32,21 +37,41 @@
     "phone_verified": "Phone verified",
     "new": "New"
   },
-  "reasons_label": "Why this profile is suggested",
+  "reasons_label": "Why this match",
   "reason": {
     "same_city": "Lives in your city",
+    "same_city_male": "Lives in his city",
+    "same_city_female": "Lives in her city",
     "same_caste": "Same caste",
     "same_sect": "Same sect",
     "you_meet_their_preferences": "You fit what they are looking for",
+    "you_meet_their_preferences_male": "He fits what they are looking for",
+    "you_meet_their_preferences_female": "She fits what they are looking for",
     "age_fits": "Age suits you both",
+    "age_fits_male": "Age suits them both",
+    "age_fits_female": "Age suits them both",
     "education_fits": "Education matches your preference",
+    "education_fits_male": "Education matches his preference",
+    "education_fits_female": "Education matches her preference",
     "religiosity_fits": "Religious practice matches your preference",
+    "religiosity_fits_male": "Religious practice matches his preference",
+    "religiosity_fits_female": "Religious practice matches her preference",
     "family_values_fit": "Family values match your preference",
+    "family_values_fit_male": "Family values match his preference",
+    "family_values_fit_female": "Family values match her preference",
     "profession_fits": "Profession matches your preference",
+    "profession_fits_male": "Profession matches his preference",
+    "profession_fits_female": "Profession matches her preference",
     "same_mother_tongue": "Speaks your mother tongue",
+    "same_mother_tongue_male": "Speaks his mother tongue",
+    "same_mother_tongue_female": "Speaks her mother tongue",
     "same_region": "Lives in your province",
+    "same_region_male": "Lives in his province",
+    "same_region_female": "Lives in her province",
     "shared_hobbies": "Shared interests",
     "meets_your_must_haves": "Meets all your must-haves",
+    "meets_your_must_haves_male": "Meets all his must-haves",
+    "meets_your_must_haves_female": "Meets all her must-haves",
     "verified": "Verified profile",
     "new_member": "New member",
     "recently_active": "Active recently"
@@ -111,7 +136,8 @@
     "success": "Blocked."
   },
   "shortlist": {
-    "full": "Your shortlist is full. Remove some profiles first."
+    "full": "Your shortlist is full. Remove some profiles first.",
+    "failed": "Could not update the shortlist."
   },
   "photo_access": {
     "sent": "Request sent.",

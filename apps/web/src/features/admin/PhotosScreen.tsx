@@ -1,13 +1,13 @@
 // ADM-PHOTOS: the photo review queue (18 section 4.2).
-import { Link } from '@tanstack/react-router'
 import { Check, CircleCheck, Flag } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { EmptyState } from '~/components/common/EmptyState'
 import { ErrorState } from '~/components/common/ErrorState'
 import { InfiniteList } from '~/components/common/InfiniteList'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
 import { StatusBanner } from '~/components/common/StatusBanner'
+import { TextLink } from '~/components/common/TextLink'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { NativeSelect, NativeSelectOption } from '~/components/ui/native-select'
@@ -17,6 +17,8 @@ import { AdminPhoto } from './components/AdminPhoto'
 import { TableSkeleton } from './components/DataTable'
 import { Facts, Panel } from './components/Facts'
 import { FormField } from './components/FormField'
+import { Kbd } from './components/Kbd'
+import { QueueButton, queueGridClass } from './components/QueueButton'
 import { StatusBadge } from './components/StatusBadge'
 import { useAdminPhotos, useApprovePhoto, useRejectPhoto } from './queries'
 import { useSearchFilters } from './search'
@@ -76,8 +78,7 @@ export function PhotosScreen() {
   })
 
   return (
-    <div className="flex flex-col gap-4">
-      <PageHeader title={t('photos.title')} description={t('photos.description')} />
+    <Page title={t('photos.title')} description={t('photos.description')}>
       <FormField label={t('photos.status')} className="w-56">
         {(props) => (
           <NativeSelect
@@ -103,19 +104,18 @@ export function PhotosScreen() {
       ) : items.length === 0 || !current ? (
         <EmptyState icon={CircleCheck} title={t('list.queue_empty')} />
       ) : (
-        <div className="grid grid-cols-[18rem_minmax(0,1fr)] items-start gap-4">
+        <div className={queueGridClass}>
           <nav aria-label={t('photos.queue')}>
             <InfiniteList
               query={query}
               getKey={(item) => item.photo_id}
               label={t('photos.queue')}
-              listClassName="gap-2"
+              listClassName="flex flex-col gap-1"
+              itemClassName="min-w-0"
               renderItem={(item) => (
-                <button
-                  type="button"
-                  aria-current={selection.isSelected(item) ? 'true' : undefined}
+                <QueueButton
+                  selected={selection.isSelected(item)}
                   onClick={() => selection.select(item)}
-                  className="flex min-h-11 w-full items-center gap-3 rounded-md border border-border bg-surface p-2 text-start hover:bg-muted aria-[current=true]:border-primary aria-[current=true]:bg-primary-soft"
                 >
                   <AdminPhoto
                     photoId={item.photo_id}
@@ -125,10 +125,10 @@ export function PhotosScreen() {
                     size="thumb"
                     width={48}
                     height={60}
-                    className="h-15 w-12 shrink-0 rounded"
+                    className="h-[60px] w-[48px]"
                   />
-                  <span className="flex min-w-0 flex-col text-sm">
-                    <span className="truncate font-medium">
+                  <span className="flex min-w-0 flex-col items-start gap-1">
+                    <span className="max-w-full font-bold">
                       {item.first_name ?? item.public_code}
                     </span>
                     <span className="text-muted-foreground">{item.public_code}</span>
@@ -139,7 +139,7 @@ export function PhotosScreen() {
                       </Badge>
                     ) : null}
                   </span>
-                </button>
+                </QueueButton>
               )}
             />
           </nav>
@@ -152,7 +152,7 @@ export function PhotosScreen() {
           />
         </div>
       )}
-    </div>
+    </Page>
   )
 }
 
@@ -184,7 +184,7 @@ function PhotoReview({
       {item.profile_is_photo_verified ? (
         <StatusBanner variant="warning">{t('photos.banner_verified')}</StatusBanner>
       ) : null}
-      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(12rem,100%),1fr))] gap-4">
         <div className="flex flex-col gap-2">
           <AdminPhoto
             photoId={item.photo_id}
@@ -194,25 +194,22 @@ function PhotoReview({
             size="large"
             width={480}
             height={600}
-            className="aspect-[4/5] w-full rounded-[var(--radius-card)]"
+            whole
+            className="aspect-[4/5] w-full"
           />
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-x-3">
             <StatusBadge status={item.status} />
-            <Link
-              to="/admin/profiles/$profileId"
-              params={{ profileId: item.profile_id }}
-              className="text-sm text-primary hover:underline"
-            >
+            <TextLink to="/admin/profiles/$profileId" params={{ profileId: item.profile_id }}>
               {t('photos.open_profile', { code: item.public_code })}
-            </Link>
+            </TextLink>
           </div>
         </div>
         <div className="flex flex-col gap-4">
           <Panel title={t('photos.other_photos')}>
             {item.other_photos.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t('photos.no_other')}</p>
+              <p className="text-body-sm text-muted-foreground">{t('photos.no_other')}</p>
             ) : (
-              <ul className="grid grid-cols-3 gap-2">
+              <ul className="arch-grid">
                 {item.other_photos.map((photo) => (
                   <li key={photo.photo_id} className="flex flex-col gap-1">
                     <AdminPhoto
@@ -224,7 +221,7 @@ function PhotoReview({
                       size="medium"
                       width={120}
                       height={150}
-                      className="aspect-[4/5] rounded-md"
+                      className="aspect-[4/5] w-full"
                     />
                     <span className="flex flex-wrap gap-1">
                       <StatusBadge status={photo.status} />
@@ -252,11 +249,7 @@ function PhotoReview({
         </div>
       </div>
 
-      <div
-        role="toolbar"
-        aria-label={t('photos.decision')}
-        className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-4"
-      >
+      <div role="toolbar" aria-label={t('photos.decision')} className="tonal panel">
         <Button
           className="w-fit"
           disabled={busy || item.status !== 'pending_review'}
@@ -265,23 +258,21 @@ function PhotoReview({
         >
           <Check aria-hidden="true" />
           {t('photo.approve')}
-          <kbd className="ms-1 text-xs opacity-80">A</kbd>
+          <Kbd>A</Kbd>
         </Button>
         <fieldset className="grid gap-2">
-          <legend className="mb-1 text-sm font-medium">{t('photos.reject_with')}</legend>
-          <div className="grid grid-cols-2 gap-2">
+          <legend className="mb-2 text-label-lg">{t('photos.reject_with')}</legend>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(14rem,100%),1fr))] gap-2">
             {reasons.slice(0, 8).map((reason, index) => (
               <Button
                 key={reason.code}
                 variant="secondary"
-                className="justify-start"
+                className="justify-start rounded-row px-4 text-start"
                 disabled={busy}
                 aria-keyshortcuts={String(index + 1)}
                 onClick={() => onReject(reason.code)}
               >
-                <kbd className="rounded border border-border bg-muted px-1.5 text-xs">
-                  {index + 1}
-                </kbd>
+                <Kbd>{index + 1}</Kbd>
                 {reason.label}
               </Button>
             ))}
@@ -290,14 +281,14 @@ function PhotoReview({
       </div>
 
       <Panel title={t('photo.checklist_title')}>
-        <table className="w-full text-sm">
+        <table className="w-full text-body-sm">
           <caption className="sr-only">{t('photo.checklist_title')}</caption>
           <thead>
             <tr>
-              <th scope="col" className="pb-1 text-start font-medium text-muted-foreground">
+              <th scope="col" className="pb-1 text-start text-label-sm text-muted-foreground">
                 {t('photo.checklist_finding')}
               </th>
-              <th scope="col" className="pb-1 text-start font-medium text-muted-foreground">
+              <th scope="col" className="pb-1 text-start text-label-sm text-muted-foreground">
                 {t('photo.checklist_decision')}
               </th>
             </tr>
@@ -305,8 +296,8 @@ function PhotoReview({
           <tbody>
             {checklist.map((row) => (
               <tr key={row.finding} className="border-t border-border">
-                <td className="py-1.5 pe-3 align-top">{row.finding}</td>
-                <td className="py-1.5 align-top">{row.decision}</td>
+                <td className="py-2 pe-3 align-top">{row.finding}</td>
+                <td className="py-2 align-top">{row.decision}</td>
               </tr>
             ))}
           </tbody>

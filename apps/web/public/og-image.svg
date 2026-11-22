@@ -1,22 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-labelledby="t d">
-  <!-- Static brand image for Open Graph (17 section 13). Never a member photo.
+  <!-- Static brand image for Open Graph (17 section 13), in the Mehfil Heritage colours and type
+       of DESIGN.md. Never a member photo.
+       An image cannot load the web fonts, so the type is sized for the wider system serifs.
        Most social networks need a PNG: export this file to /og-image.png (1200 x 630) before launch,
        then point `OG_IMAGE_PATH` in src/features/public/config.ts at it. -->
   <title id="t">Khandani Rishta</title>
   <desc id="d">Rishta, the khandani way. A free, family-first rishta platform.</desc>
-  <rect width="1200" height="630" fill="#FAFAF9"/>
-  <rect width="1200" height="14" fill="#0F766E"/>
-  <rect y="616" width="1200" height="14" fill="#B45309"/>
-  <g transform="translate(96 84)">
-    <rect width="104" height="104" rx="26" fill="#0F766E"/>
-    <circle cx="41" cy="52" r="21" fill="none" stroke="#FFFFFF" stroke-width="6.5"/>
-    <circle cx="63" cy="52" r="21" fill="none" stroke="#FEF3C7" stroke-width="6.5"/>
+  <rect width="1200" height="630" fill="#FAF6F0"/>
+  <rect y="606" width="1200" height="24" fill="#6E1D34"/>
+  <g transform="translate(96 72) scale(2.4)">
+    <path d="M2 35V15A13 13 0 0 1 28 15V35" fill="none" stroke="#6E1D34" stroke-width="2"/>
+    <path d="M8 35V16A7 7 0 0 1 22 16V35" fill="none" stroke="#B68B40" stroke-width="1.4"/>
+    <rect x="12.2" y="23" width="5.6" height="5.6" transform="rotate(45 15 25.8)" fill="#6E1D34"/>
   </g>
-  <text x="224" y="158" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-size="52" font-weight="700" fill="#1C1917">Khandani Rishta</text>
-  <text x="96" y="352" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-size="96" font-weight="700" fill="#0F766E">Rishta, the</text>
-  <text x="96" y="456" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-size="96" font-weight="700" fill="#0F766E">khandani way.</text>
-  <text x="96" y="540" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-size="36" fill="#57534E">A free, family-first rishta platform.</text>
-  <path d="M860 602V392a120 120 0 0 1 240 0v210z" fill="#CCFBF1" stroke="#0F766E" stroke-width="6"/>
-  <circle cx="954" cy="452" r="42" fill="none" stroke="#0F766E" stroke-width="10"/>
-  <circle cx="1006" cy="452" r="42" fill="none" stroke="#B45309" stroke-width="10"/>
+  <text x="192" y="136" font-family="'Instrument Serif', Georgia, 'Times New Roman', serif" font-size="56" fill="#23191D">Khandani Rishta</text>
+  <text x="96" y="328" font-family="'Instrument Serif', Georgia, 'Times New Roman', serif" font-size="88" fill="#23191D">Rishta, the</text>
+  <text x="96" y="428" font-family="'Instrument Serif', Georgia, 'Times New Roman', serif" font-size="88" fill="#23191D"><tspan font-style="italic" fill="#6E1D34">khandani</tspan> way.</text>
+  <path d="M96 494h64" stroke="#B68B40" stroke-width="2"/>
+  <rect x="168" y="489" width="10" height="10" transform="rotate(45 173 494)" fill="#B68B40"/>
+  <text x="96" y="552" font-family="'Source Sans 3', 'Segoe UI', Arial, sans-serif" font-size="34" fill="#3D3034">A free, family-first rishta platform.</text>
+  <g transform="translate(776 120)">
+    <path d="M0 486V167A167 167 0 0 1 334 167V486Z" fill="#F2EAE0"/>
+    <path d="M20 486V167A147 147 0 0 1 314 167V486" fill="none" stroke="#B68B40" stroke-width="2"/>
+    <path d="M44 486V167A123 123 0 0 1 290 167V486" fill="none" stroke="#B68B40" stroke-opacity="0.45" stroke-width="2"/>
+    <rect x="159" y="172" width="16" height="16" transform="rotate(45 167 180)" fill="#B68B40"/>
+    <text x="167" y="330" text-anchor="middle" font-family="'Instrument Serif', Georgia, 'Times New Roman', serif" font-style="italic" font-size="136" fill="#6E1D34">KR</text>
+  </g>
 </svg>

@@ -44,25 +44,36 @@ export function BlockedScreen() {
 
   return (
     <GateLayout title={banned ? t('blocked.banned.title') : t('blocked.suspended.title')}>
-      {body ? <p className="text-base">{body}</p> : null}
-      <p className="text-sm text-muted-foreground">{t('blocked.profile_code', { code })}</p>
-      <div className="flex flex-wrap gap-x-4">
+      {body ? <p className="text-body-lg">{body}</p> : null}
+      <p className="text-body-sm text-muted-foreground tabular-nums">
+        {t('blocked.profile_code', { code })}
+      </p>
+      <div className="flex flex-wrap gap-x-5">
         <PublicPageLink to="/community-guidelines">{t('layout.guidelines')}</PublicPageLink>
         <PublicPageLink to="/terms">{t('layout.terms')}</PublicPageLink>
       </div>
 
       {purgeAfter ? (
-        <p role="status" className="text-base font-medium">
+        <p role="status" className="text-body-md font-semibold">
           {t('blocked.data_deletion', { date: formatLongDateInZone(purgeAfter, timeZone) })}
         </p>
       ) : null}
 
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <a href={mailto} className={cn(buttonVariants({ variant: 'default' }))}>
+      <div className="flex flex-wrap gap-3">
+        <a
+          href={mailto}
+          className={cn(buttonVariants({ variant: 'default', size: 'lg', fill: 'row' }))}
+        >
           {t('blocked.contact_support')}
         </a>
         {purgeAfter ? null : (
-          <Button variant="outline" disabled={!online} onClick={() => setDeleting(true)}>
+          <Button
+            variant="secondary"
+            size="lg"
+            fill="row"
+            disabled={!online}
+            onClick={() => setDeleting(true)}
+          >
             {t('blocked.delete_data')}
           </Button>
         )}

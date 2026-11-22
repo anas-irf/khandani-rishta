@@ -4,21 +4,24 @@ import type * as React from 'react'
 import { cn } from '~/lib/utils'
 
 /**
- * Colour is never the only carrier of meaning (20 section 7): always give a badge a text label,
- * and an icon where it helps.
+ * DESIGN.md 6.3 and 6.4: a pill at 15 / 700. Colour is never the only carrier of meaning
+ * (20 section 7): always give a badge a text label, and an icon where it helps. A tick means
+ * verified and nothing else.
  */
 const badgeVariants = cva(
-  'inline-flex w-fit shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full border border-transparent px-2.5 py-0.5 text-sm font-medium [&>svg]:pointer-events-none [&>svg]:size-3.5',
+  'inline-flex w-fit max-w-full items-center justify-center gap-1.5 rounded-pill px-3 py-[5px] text-start text-label-sm font-bold whitespace-normal [&>svg]:pointer-events-none [&>svg]:size-3.5 [&>svg]:shrink-0',
   {
     variants: {
       variant: {
         default: 'bg-primary text-primary-foreground',
-        secondary: 'bg-muted text-muted-foreground',
-        outline: 'border-border bg-surface text-foreground',
+        /** "Must have", and other words in primary on primary soft. */
+        tag: 'bg-primary-soft px-2.5 py-[3px] text-primary',
         success: 'bg-success-soft text-success',
+        secondary: 'tonal text-foreground-secondary',
+        outline: 'border border-input text-foreground-secondary',
         warning: 'bg-warning-soft text-warning',
         danger: 'bg-danger-soft text-danger',
-        accent: 'bg-accent text-accent-foreground',
+        inverse: 'bg-inverse text-inverse-foreground',
       },
     },
     defaultVariants: {

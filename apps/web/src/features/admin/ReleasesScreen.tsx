@@ -5,12 +5,14 @@ import { toast } from 'sonner'
 import { ConfirmDialog } from '~/components/common/ConfirmDialog'
 import { EmptyState } from '~/components/common/EmptyState'
 import { ErrorState } from '~/components/common/ErrorState'
-import { PageHeader } from '~/components/common/PageHeader'
+import { DiamondTitle } from '~/components/common/Ornament'
+import { Page } from '~/components/common/Page'
 import { RelativeTime } from '~/components/common/RelativeTime'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
+import { cn } from '~/lib/utils'
 import { RequireAdmin } from './access'
-import { type Column, DataTable, TableSkeleton } from './components/DataTable'
+import { type Column, DataTable, TableSkeleton, tableLinkClass } from './components/DataTable'
 import { CountedTextarea, FormField } from './components/FormField'
 import { ErrorSummary, useDialogErrors } from './components/useDialogErrors'
 import { validate } from './forms'
@@ -52,7 +54,7 @@ function Releases() {
         <a
           href={release.download_url}
           rel="noopener noreferrer"
-          className="break-all text-primary hover:underline"
+          className={cn(tableLinkClass, 'break-all')}
         >
           {release.download_url}
         </a>
@@ -75,8 +77,7 @@ function Releases() {
   ]
 
   return (
-    <div className="flex flex-col gap-6">
-      <PageHeader title={t('releases.title')} description={t('releases.description')} />
+    <Page title={t('releases.title')} description={t('releases.description')}>
       {query.isSuccess ? <ReleaseForm latestCode={latestCode} currentMin={currentMin} /> : null}
       {query.isPending ? (
         <TableSkeleton />
@@ -92,7 +93,7 @@ function Releases() {
           getKey={(release) => release.id}
         />
       )}
-    </div>
+    </Page>
   )
 }
 
@@ -183,17 +184,12 @@ function ReleaseForm({ latestCode, currentMin }: { latestCode: number; currentMi
   const lockedOut = pending ? pending.min_supported_version_code - currentMin : 0
 
   return (
-    <form
-      onSubmit={submit}
-      noValidate
-      aria-labelledby="release-form-title"
-      className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-4"
-    >
+    <form onSubmit={submit} noValidate aria-labelledby="release-form-title" className="tonal panel">
       <div>
-        <h2 id="release-form-title" className="text-lg font-semibold">
-          {t('releases.form_title')}
+        <h2 id="release-form-title" className="text-title-md font-bold">
+          <DiamondTitle>{t('releases.form_title')}</DiamondTitle>
         </h2>
-        <p className="text-sm text-muted-foreground">{t('releases.form_hint')}</p>
+        <p className="text-body-sm text-muted-foreground">{t('releases.form_hint')}</p>
       </div>
       <ErrorSummary messages={form.rest} />
       <div className="grid grid-cols-3 gap-4">
@@ -283,7 +279,7 @@ function ReleaseForm({ latestCode, currentMin }: { latestCode: number; currentMi
             min: pending.min_supported_version_code,
           })}
           confirmLabel={t('releases.publish')}
-          destructive
+          tone="danger"
           onConfirm={() => publish(pending)}
         />
       ) : null}

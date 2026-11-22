@@ -135,7 +135,7 @@ describe('prepareImage', () => {
     expect(result.blob.size).toBe(900_000)
     expect(pipeline.draws).toEqual([{ width: 2048, height: 1536 }])
     // Transparent PNG pixels become white, not black.
-    expect(pipeline.fills).toEqual(['#ffffff'])
+    expect(pipeline.fills).toEqual(['white'])
   })
 
   it('never enlarges a small photo but still re-encodes it', async () => {

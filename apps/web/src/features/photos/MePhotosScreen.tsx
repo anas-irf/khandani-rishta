@@ -1,7 +1,7 @@
 // ME-PHOTOS (16 section 6.19, 08 section 5.5)
-import { Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
+import { TextLink } from '~/components/common/TextLink'
 import { Skeleton } from '~/components/ui/skeleton'
 import { usePrivacy } from '~/features/me/queries'
 import { useLabelOf } from '~/lib/reference'
@@ -17,26 +17,26 @@ export function MePhotosScreen() {
   const label = useLabelOf()
 
   return (
-    <div className="container-app flex max-w-3xl flex-col gap-4">
-      <PageHeader title={t('screen.title')} showBack />
-      {privacy.data ? (
-        <p className="flex flex-wrap items-center gap-x-2">
-          <span>
-            {t('screen.privacy_line', {
-              label: label('photo_visibility', privacy.data.photo_visibility),
-            })}
-          </span>
-          <Link
-            to="/settings/privacy"
-            className="inline-flex min-h-11 items-center font-medium text-primary underline-offset-4 hover:underline"
-          >
-            {t('screen.privacy_change')}
-          </Link>
-        </p>
-      ) : privacy.isPending ? (
-        <Skeleton className="h-6 w-2/3" />
-      ) : null}
+    <Page
+      title={t('screen.title')}
+      showBack
+      width="form"
+      header={
+        privacy.data ? (
+          <p className="flex flex-wrap items-center gap-x-3 text-body-sm text-foreground-secondary">
+            <span>
+              {t('screen.privacy_line', {
+                label: label('photo_visibility', privacy.data.photo_visibility),
+              })}
+            </span>
+            <TextLink to="/settings/privacy">{t('screen.privacy_change')}</TextLink>
+          </p>
+        ) : privacy.isPending ? (
+          <Skeleton className="h-6 w-2/3" />
+        ) : null
+      }
+    >
       <PhotoManager context="me" />
-    </div>
+    </Page>
   )
 }

@@ -74,13 +74,16 @@ test.describe('public page frame', () => {
     await expect(banner.getByRole('link', { name: 'Khandani Rishta' })).toHaveAttribute('href', '/')
 
     if (isMobile) {
+      // The page is complete before its scripts run. The header marks itself once React runs it
+      // (`useBarHeight` in apps/web/src/lib/media.ts), and only then can the menu open.
+      await expect(banner).toHaveAttribute('data-sticky-bar', '')
       await banner.getByRole('button', { name: 'Open menu' }).click()
       const menu = page.getByRole('dialog', { name: 'Menu' })
-      for (const name of ['How it works', 'Safety', 'Nikah guide', 'FAQ', 'Download']) {
+      for (const name of ['How it works', 'Safety', 'Nikah guide', 'FAQ', 'Download the app']) {
         await expect(menu.getByRole('link', { name })).toBeVisible()
       }
       await expect(menu.getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', /\/sign-in/)
-      await expect(menu.getByRole('link', { name: 'Create profile' })).toHaveAttribute(
+      await expect(menu.getByRole('link', { name: 'Create a free profile' })).toHaveAttribute(
         'href',
         /\/sign-in/,
       )
@@ -88,12 +91,12 @@ test.describe('public page frame', () => {
       const nav = banner.getByRole('navigation', { name: 'Main' })
       await expect(nav.getByRole('link', { name: 'How it works' })).toBeVisible()
       await expect(nav.getByRole('link', { name: 'Safety' })).toBeVisible()
-      await expect(nav.getByRole('link', { name: 'Download' })).toBeVisible()
+      await expect(nav.getByRole('link', { name: 'Download the app' })).toBeVisible()
       await expect(banner.getByRole('link', { name: 'Sign in' })).toHaveAttribute(
         'href',
         /\/sign-in/,
       )
-      await expect(banner.getByRole('link', { name: 'Create profile' })).toHaveAttribute(
+      await expect(banner.getByRole('link', { name: 'Create a free profile' })).toHaveAttribute(
         'href',
         /\/sign-in/,
       )

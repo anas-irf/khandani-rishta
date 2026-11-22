@@ -2,7 +2,7 @@ import { TriangleAlert } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '~/components/ui/button'
 import { isApiError } from '~/lib/api'
-import { cn } from '~/lib/utils'
+import { EmptyState } from './EmptyState'
 
 /**
  * A screen-level load error (16 rule G3): "Something went wrong", the support text, "Try again"
@@ -24,21 +24,19 @@ export function ErrorState({
   const requestId = isApiError(error) ? error.requestId : null
 
   return (
-    <div
-      role="alert"
-      className={cn('flex flex-col items-center gap-3 px-4 py-10 text-center', className)}
-    >
-      <span className="flex size-14 items-center justify-center rounded-full bg-danger-soft text-danger">
-        <TriangleAlert aria-hidden="true" className="size-7" />
-      </span>
-      <h2 className="text-lg font-semibold">{t('generic.screen_title')}</h2>
-      <p className="max-w-md text-muted-foreground">{t('generic.screen_text')}</p>
-      <Button onClick={onRetry} loading={retrying}>
-        {t('generic.try_again')}
-      </Button>
-      {requestId ? (
-        <p className="text-sm text-muted-foreground">{t('reference', { id: requestId })}</p>
-      ) : null}
+    <div role="alert" className={className}>
+      <EmptyState
+        icon={TriangleAlert}
+        tone="danger"
+        title={t('generic.screen_title')}
+        text={t('generic.screen_text')}
+        action={
+          <Button onClick={onRetry} loading={retrying}>
+            {t('generic.try_again')}
+          </Button>
+        }
+        footnote={requestId ? t('reference', { id: requestId }) : null}
+      />
     </div>
   )
 }

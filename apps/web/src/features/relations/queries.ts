@@ -188,7 +188,7 @@ export function useShortlistToggle() {
       shortlisted
         ? http.put(`/v1/shortlist/${seg(profileId)}`, note === undefined ? {} : { note })
         : http.delete(`/v1/shortlist/${seg(profileId)}`),
-    meta: { limitText: 'shared:shortlist.full' },
+    meta: { limitText: 'shared:shortlist.full', errorText: 'shared:shortlist.failed' },
     onMutate: async ({ profileId, shortlisted, note }) => {
       await queryClient.cancelQueries({ queryKey: qk.profile(profileId) })
       const previous = takeSnapshot(queryClient, [

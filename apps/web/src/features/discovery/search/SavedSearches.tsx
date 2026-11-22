@@ -3,7 +3,9 @@ import { type FormEvent, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '~/components/common/ConfirmDialog'
+import { CharCount, FieldError } from '~/components/common/fields/field-shell'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
+import { SwitchRow } from '~/components/common/SwitchRow'
 import { Button } from '~/components/ui/button'
 import {
   Dialog,
@@ -22,7 +24,6 @@ import {
 } from '~/components/ui/dropdown-menu'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
-import { Switch } from '~/components/ui/switch'
 import { isApiError } from '~/lib/api'
 import type { SavedSearch, SearchFilters } from '~/lib/api-types'
 import { serverFieldMessage } from '~/lib/form-context'
@@ -56,30 +57,33 @@ export function SavedSearches({ onRun }: { onRun: (saved: SavedSearch) => void }
 
   return (
     <section aria-label={t('saved.label')} className="flex flex-col gap-2">
-      <h2 className="text-sm font-medium text-muted-foreground">{t('saved.label')}</h2>
+      <h2 className="text-label-md text-muted-foreground">{t('saved.label')}</h2>
       <ul className="flex flex-wrap gap-2">
         {items.map((item) => (
           <li
             key={item.id}
-            className="inline-flex items-center rounded-full border border-border bg-surface"
+            className="inline-flex max-w-full items-stretch rounded-lg border border-input"
           >
-            <button
-              type="button"
+            <Button
+              variant="ghost"
               onClick={() => onRun(item)}
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-s-full ps-4 pe-2 text-sm font-medium hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="min-w-0 justify-start rounded-none rounded-s-lg ps-4 pe-2 text-start text-label-md"
             >
               <Bookmark aria-hidden="true" className="size-4 text-primary" />
-              <span dir="auto">{item.name}</span>
-            </button>
+              <span dir="auto" className="min-w-0">
+                {item.name}
+              </span>
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  size="icon"
                   aria-label={t('saved.menu', { name: item.name })}
-                  className="inline-flex size-11 items-center justify-center rounded-e-full hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="h-auto min-h-touch rounded-none rounded-e-lg"
                 >
-                  <MoreVertical aria-hidden="true" className="size-4" />
-                </button>
+                  <MoreVertical aria-hidden="true" />
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onSelect={() => setRenaming(item)} disabled={!online}>
@@ -98,7 +102,11 @@ export function SavedSearches({ onRun }: { onRun: (saved: SavedSearch) => void }
                   {t('saved.notify')}
                 </DropdownMenuCheckboxItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={() => setRemoving(item)} disabled={!online}>
+                <DropdownMenuItem
+                  variant="destructive"
+                  onSelect={() => setRemoving(item)}
+                  disabled={!online}
+                >
                   {t('saved.remove')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -113,7 +121,7 @@ export function SavedSearches({ onRun }: { onRun: (saved: SavedSearch) => void }
         title={t('saved.remove_title')}
         description={t('saved.remove_text', { name: removing?.name ?? '' })}
         confirmLabel={t('saved.remove')}
-        destructive
+        tone="danger"
         onConfirm={() => (removing ? remove.mutateAsync(removing.id) : undefined)}
       />
     </section>
@@ -144,14 +152,10 @@ function NameField({
         aria-describedby={`${id}-count${error ? ` ${id}-error` : ''}`}
         onChange={(event) => onChange(event.target.value)}
       />
-      <p id={`${id}-count`} className="text-end text-sm text-muted-foreground">
+      <CharCount id={`${id}-count`}>
         {t('saved.name_count', { count: value.length, max: NAME_MAX })}
-      </p>
-      {error ? (
-        <p id={`${id}-error`} className="text-sm text-danger">
-          {error}
-        </p>
-      ) : null}
+      </CharCount>
+      <FieldError id={`${id}-error`} message={error ?? undefined} />
     </div>
   )
 }
@@ -230,7 +234,6 @@ export function SaveSearchDialog({
 }) {
   const { t } = useTranslation(['discovery', 'common', 'errors'])
   const create = useCreateSavedSearch()
-  const switchId = useId()
   const [name, setName] = useState('')
   const [notify, setNotify] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -271,16 +274,11 @@ export function SaveSearchDialog({
             <DialogTitle>{t('discovery:saved.dialog_title')}</DialogTitle>
           </DialogHeader>
           <NameField value={name} onChange={setName} error={error} />
-          <div className="flex min-h-11 items-center justify-between gap-3">
-            <Label htmlFor={switchId} className="text-base font-normal">
-              {t('discovery:saved.notify_label')}
-            </Label>
-            <Switch
-              id={switchId}
-              checked={notify}
-              onCheckedChange={(checked) => setNotify(checked === true)}
-            />
-          </div>
+          <SwitchRow
+            label={t('discovery:saved.notify_label')}
+            checked={notify}
+            onCheckedChange={setNotify}
+          />
           <DialogFooter>
             <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
               {t('common:actions.cancel')}

@@ -2,31 +2,32 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { Mail, MessageCircle, Phone, X } from 'lucide-react'
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { Band } from '~/components/common/Band'
 import { BlockDialog } from '~/components/common/BlockDialog'
 import { ConfirmDialog } from '~/components/common/ConfirmDialog'
+import { DefinitionList, DefinitionRow } from '~/components/common/DefinitionList'
 import { ErrorState } from '~/components/common/ErrorState'
-import { Silhouette } from '~/components/common/MemberPhoto'
+import { LinkRow } from '~/components/common/LinkRow'
 import { NoLongerAvailable } from '~/components/common/NoLongerAvailable'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
 import { PlainText } from '~/components/common/PlainText'
 import { ProfileCard } from '~/components/common/ProfileCard'
 import { ReportDialog } from '~/components/common/ReportDialog'
 import { ScreenAccess } from '~/components/common/ScreenAccess'
 import { SectionCard } from '~/components/common/SectionCard'
+import { SwitchRow } from '~/components/common/SwitchRow'
 import { Button } from '~/components/ui/button'
-import { Label } from '~/components/ui/label'
-import { Switch } from '~/components/ui/switch'
 import { useOwnProfile } from '~/features/profile-sections/queries'
 import { isApiError } from '~/lib/api'
 import type { Connection, ContactShareBody, SharedContact } from '~/lib/api-types'
 import { formatLongDate, formatPhone } from '~/lib/format'
 import { useCurrentMe } from '~/lib/me'
 import { useLabelOf } from '~/lib/reference'
-import { otherGender } from './ChatsScreen'
+import { OtherAvatar } from './ChatsScreen'
 import {
   ContactShareDialog,
   SHARE_ITEMS,
@@ -55,23 +56,21 @@ function ConnectionDetails({ connectionId }: { connectionId: string }) {
     if (notFound) forgetConnection(queryClient, connectionId)
   }, [notFound, queryClient, connectionId])
 
+  if (connection.data && !notFound) return <ConnectionContent connection={connection.data} />
   return (
-    <div className="container-app flex max-w-2xl flex-col gap-4 pb-6">
-      <PageHeader title={t('connection.title')} backTo={`/chats/${connectionId}`} />
+    <Page title={t('connection.title')} backTo={`/chats/${connectionId}`} width="column">
       {connection.isPending ? (
         <DetailsSkeleton />
       ) : notFound ? (
         <NoLongerAvailable />
-      ) : !connection.data ? (
+      ) : (
         <ErrorState
           error={connection.error}
           onRetry={() => void connection.refetch()}
           retrying={connection.isFetching}
         />
-      ) : (
-        <ConnectionContent connection={connection.data} />
       )}
-    </div>
+    </Page>
   )
 }
 
@@ -81,7 +80,7 @@ function DetailsSkeleton() {
     <div role="status" aria-busy="true" className="flex flex-col gap-4">
       <span className="sr-only">{t('list.loading')}</span>
       {['h-28', 'h-40', 'h-32', 'h-24'].map((height) => (
-        <div key={height} className={`skeleton w-full rounded-[var(--radius-card)] ${height}`} />
+        <div key={height} className={`skeleton w-full rounded-card ${height}`} />
       ))}
     </div>
   )
@@ -101,90 +100,97 @@ function ConnectionContent({ connection }: { connection: Connection }) {
   const [blockOpen, setBlockOpen] = useState(false)
   const backToList = () => void navigate({ to: '/chats' })
 
-  return (
-    <>
-      <section aria-label={name} className="flex flex-col gap-2">
-        {connection.other ? (
-          <ProfileCard
-            card={connection.other}
-            size="compact"
-            headingLevel="h2"
-            actions={
-              <Button asChild variant="secondary">
-                <Link to="/profiles/$profileId" params={{ profileId: connection.other.id }}>
-                  {t('chat:connection.view_profile')}
-                </Link>
-              </Button>
-            }
-          />
-        ) : (
-          <div className="flex items-center gap-3 rounded-[var(--radius-card)] border border-border bg-muted p-3">
-            <Silhouette
-              gender={otherGender(me.profile.gender)}
-              label={name}
-              width={56}
-              height={56}
-              className="size-14 shrink-0 rounded-full"
-            />
-            <h2 className="font-semibold">{name}</h2>
-          </div>
-        )}
-        <p className="text-sm text-muted-foreground">
-          {t('chat:connection.connected_since', { date: formatLongDate(connection.created_at) })}
-        </p>
-      </section>
-
-      {active ? (
-        <>
-          <SectionCard title={t('chat:stage.title')}>
-            <StageBlock connection={connection} canEngage={canEngage} />
-          </SectionCard>
-          <MyContactCard connection={connection} name={name} canEngage={canEngage} />
-          <TheirContactCard connection={connection} name={name} />
-          <ChatSettingsCard connection={connection} />
-        </>
+  const member = (
+    <section aria-label={name} className="flex flex-col items-start gap-1">
+      {connection.other ? (
+        <ProfileCard
+          card={connection.other}
+          size="compact"
+          headingLevel="h2"
+          className="self-stretch"
+          actions={
+            <Button asChild variant="quiet" size="compact">
+              <Link to="/profiles/$profileId" params={{ profileId: connection.other.id }}>
+                {t('chat:connection.view_profile')}
+              </Link>
+            </Button>
+          }
+        />
       ) : (
-        <div
-          className="rounded-[var(--radius-card)] border border-border bg-muted p-4"
-          role="status"
-        >
-          <p>
-            {t('chat:connection.ended_on', {
-              date: formatLongDate(connection.ended_at ?? connection.created_at),
-            })}
-          </p>
-          {connection.ended_by === 'me' && connection.ended_reason ? (
-            <p className="mt-1 text-sm text-muted-foreground">
-              {t('chat:connection.ended_reason', {
-                reason: label('connection_end_reason', connection.ended_reason),
-              })}
-            </p>
-          ) : null}
+        <div className="flex max-w-full items-center gap-4 py-3">
+          <OtherAvatar connection={connection} size="lg" />
+          <h2 className="min-w-0 text-title-md font-bold">{name}</h2>
         </div>
       )}
+      <p className="text-caption text-muted-foreground">
+        {t('chat:connection.connected_since', { date: formatLongDate(connection.created_at) })}
+      </p>
+    </section>
+  )
 
-      <SectionCard title={t('chat:connection.help.title')}>
-        <ul className="flex flex-col">
-          <li>
-            <Link
-              to="/safety"
-              className="inline-flex min-h-11 items-center font-medium text-primary underline"
-            >
-              {t('chat:connection.help.safety')}
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/nikah-guide"
-              className="inline-flex min-h-11 items-center font-medium text-primary underline"
-            >
-              {t('chat:connection.help.nikah')}
-            </Link>
-          </li>
-        </ul>
-      </SectionCard>
+  return (
+    <Page
+      title={t('chat:connection.title')}
+      backTo={`/chats/${connection.id}`}
+      width="column"
+      layout="bands"
+      header={member}
+    >
+      {active ? (
+        <>
+          <Band tone="auto" as="div" width="column">
+            <SectionCard title={t('chat:stage.title')}>
+              <StageBlock connection={connection} canEngage={canEngage} />
+            </SectionCard>
+          </Band>
+          <Band tone="auto" as="div" width="column">
+            <MyContactCard connection={connection} name={name} canEngage={canEngage} />
+          </Band>
+          <Band tone="auto" as="div" width="column">
+            <TheirContactCard connection={connection} name={name} />
+          </Band>
+          <Band tone="auto" as="div" width="column">
+            <ChatSettingsCard connection={connection} />
+          </Band>
+        </>
+      ) : (
+        <Band tone="auto" as="div" width="column">
+          <div className="tonal rounded-xl px-5 py-4" role="status">
+            <p>
+              {t('chat:connection.ended_on', {
+                date: formatLongDate(connection.ended_at ?? connection.created_at),
+              })}
+            </p>
+            {connection.ended_by === 'me' && connection.ended_reason ? (
+              <p className="mt-1 text-body-sm text-foreground-secondary">
+                {t('chat:connection.ended_reason', {
+                  reason: label('connection_end_reason', connection.ended_reason),
+                })}
+              </p>
+            ) : null}
+          </div>
+        </Band>
+      )}
 
-      <section aria-label={t('chat:connection.actions_label')} className="flex flex-wrap gap-2">
+      <Band tone="auto" as="div" width="column">
+        <SectionCard title={t('chat:connection.help.title')}>
+          <ul className="flex flex-col">
+            <li className="border-b border-border">
+              <LinkRow to="/safety" label={t('chat:connection.help.safety')} />
+            </li>
+            <li className="border-b border-border">
+              <LinkRow to="/nikah-guide" label={t('chat:connection.help.nikah')} />
+            </li>
+          </ul>
+        </SectionCard>
+      </Band>
+
+      <Band
+        tone="auto"
+        width="column"
+        aria-label={t('chat:connection.actions_label')}
+        innerClassName="flex flex-wrap gap-3"
+      >
         {active ? (
           <Button variant="destructive" onClick={() => setEndOpen(true)} disabled={!online}>
             {t('chat:chat.end')}
@@ -200,7 +206,7 @@ function ConnectionContent({ connection }: { connection: Connection }) {
             </Button>
           </>
         ) : null}
-      </section>
+      </Band>
 
       <EndConnectionDialog
         connection={connection}
@@ -227,7 +233,7 @@ function ConnectionContent({ connection }: { connection: Connection }) {
         </>
       ) : null}
       <StageFollowUps connection={connection} />
-    </>
+    </Page>
   )
 }
 
@@ -271,7 +277,7 @@ function MyContactCard({
     <SectionCard title={t('connection.my_contact.title')}>
       <div className="flex flex-col gap-3">
         {hint === 'pending' && !sharing && canEngage ? (
-          <div className="relative flex flex-col gap-2 rounded-[var(--radius-input)] bg-primary-soft p-3 pe-12">
+          <div className="relative flex flex-col gap-3 rounded-lg bg-primary-soft p-[16px] pe-[56px]">
             <p>{t('stage.share_hint')}</p>
             <Button className="self-start" onClick={openShare} disabled={!online}>
               {t('connection.my_contact.share')}
@@ -290,19 +296,16 @@ function MyContactCard({
         {sharing && share ? (
           <>
             <p>{t('connection.my_contact.sharing')}</p>
-            <ul className="flex flex-col gap-1">
+            <DefinitionList>
               {SHARE_ITEMS.filter((item) => share[item.key]).map((item) => {
                 const value = profile.data ? contactValue(profile.data.contacts, item.key) : null
                 return (
-                  <li key={item.key} className="flex flex-col">
-                    <span className="text-sm text-muted-foreground">
-                      {t(`connection.item.${item.label}`)}
-                    </span>
-                    <span>{value ?? ''}</span>
-                  </li>
+                  <DefinitionRow key={item.key} label={t(`connection.item.${item.label}`)}>
+                    {value ?? ''}
+                  </DefinitionRow>
                 )
               })}
-            </ul>
+            </DefinitionList>
             <div className="flex flex-wrap gap-2">
               {canEngage ? (
                 <Button variant="secondary" onClick={openShare} disabled={!online}>
@@ -339,7 +342,7 @@ function MyContactCard({
         title={t('connection.my_contact.stop_title', { name })}
         description={t('share.warning')}
         confirmLabel={t('connection.my_contact.stop')}
-        destructive
+        tone="ink"
         onConfirm={async () => {
           await stop.mutateAsync(connection.id)
           toast.success(t('connection.my_contact.stopped'))
@@ -428,19 +431,19 @@ function SharedContactRows({ contact }: { contact: SharedContact }) {
   return (
     <div className="flex flex-col gap-3">
       {contact.preferred_contact === 'guardian' ? (
-        <p className="font-medium">{t('connection.their_contact.guardian_first')}</p>
+        <p className="text-title-sm">{t('connection.their_contact.guardian_first')}</p>
       ) : null}
-      <ul className="flex flex-col gap-2">
+      <ul className="flex flex-col">
         {rows.map((row) => (
-          <li key={row.key} className="flex items-center gap-3">
+          <li key={row.key} className="flex items-center gap-3 border-b border-border py-3">
             <span className="flex min-w-0 flex-1 flex-col">
-              <span className="text-sm text-muted-foreground">{row.title}</span>
-              <span dir="auto" className="break-words">
+              <span className="text-body-sm text-muted-foreground">{row.title}</span>
+              <span dir="auto" className="text-title-sm">
                 {row.value}
               </span>
             </span>
             {row.href ? (
-              <Button asChild variant="soft" size="icon">
+              <Button asChild variant="secondary" size="icon">
                 <a
                   href={row.href}
                   aria-label={row.action}
@@ -458,10 +461,10 @@ function SharedContactRows({ contact }: { contact: SharedContact }) {
       {contact.best_time_to_call ? (
         <PlainText
           text={t('connection.their_contact.best_time', { text: contact.best_time_to_call })}
-          className="text-sm"
+          className="text-body-sm"
         />
       ) : null}
-      <p className="text-sm text-muted-foreground">{t('connection.their_contact.private')}</p>
+      <p className="text-caption text-muted-foreground">{t('connection.their_contact.private')}</p>
     </div>
   )
 }
@@ -470,32 +473,21 @@ function ChatSettingsCard({ connection }: { connection: Connection }) {
   const { t } = useTranslation('chat')
   const patch = usePatchConnection()
   const online = useOnlineStatus()
-  const ids = { mute: useId(), archive: useId() }
   return (
     <SectionCard title={t('connection.settings.title')}>
-      <div className="flex flex-col gap-1">
-        <div className="flex min-h-11 items-center justify-between gap-3">
-          <Label htmlFor={ids.mute} className="text-base font-normal">
-            {t('connection.settings.mute')}
-          </Label>
-          <Switch
-            id={ids.mute}
-            checked={connection.is_muted}
-            disabled={!online}
-            onCheckedChange={(checked) => patch.mutate({ id: connection.id, is_muted: checked })}
-          />
-        </div>
-        <div className="flex min-h-11 items-center justify-between gap-3">
-          <Label htmlFor={ids.archive} className="text-base font-normal">
-            {t('connection.settings.archive')}
-          </Label>
-          <Switch
-            id={ids.archive}
-            checked={connection.is_archived}
-            disabled={!online}
-            onCheckedChange={(checked) => patch.mutate({ id: connection.id, is_archived: checked })}
-          />
-        </div>
+      <div className="flex flex-col gap-3">
+        <SwitchRow
+          label={t('connection.settings.mute')}
+          checked={connection.is_muted}
+          disabled={!online}
+          onCheckedChange={(checked) => patch.mutate({ id: connection.id, is_muted: checked })}
+        />
+        <SwitchRow
+          label={t('connection.settings.archive')}
+          checked={connection.is_archived}
+          disabled={!online}
+          onCheckedChange={(checked) => patch.mutate({ id: connection.id, is_archived: checked })}
+        />
       </div>
     </SectionCard>
   )

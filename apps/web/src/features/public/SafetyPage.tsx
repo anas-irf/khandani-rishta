@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { SectionHeading } from '~/components/common/SectionHeading'
 import { SUPPORT_EMAIL } from './config'
 import { ContentSection, PageHero, Prose, useBlock, useList } from './content'
 
@@ -20,24 +21,20 @@ export function SafetyPage() {
     <>
       <PageHero title={t('safety.title')} lead={t('safety.lead')} />
       <Prose>
-        <div className="max-w-3xl space-y-10">
-          <section aria-labelledby="tips-title" className="space-y-3">
-            <h2 id="tips-title" className="text-2xl font-semibold">
-              {t('safety.tips_title')}
-            </h2>
-            <ol className="list-decimal space-y-3 ps-6 leading-relaxed marker:font-semibold marker:text-primary">
-              {tips.map((tip) => (
-                <li key={tip.title} className="ps-1">
-                  <strong className="font-semibold">{tip.title}</strong> {tip.body}
-                </li>
-              ))}
-            </ol>
-          </section>
+        <section aria-labelledby="tips-title" className="flex flex-col gap-3">
+          <SectionHeading id="tips-title" title={t('safety.tips_title')} />
+          <ol className="max-w-measure list-decimal space-y-3 ps-[32px] text-body-lg marker:font-bold marker:text-primary">
+            {tips.map((tip) => (
+              <li key={tip.title} className="ps-1">
+                <strong className="font-bold">{tip.title}</strong> {tip.body}
+              </li>
+            ))}
+          </ol>
+        </section>
 
-          <ContentSection block={{ id: 'tools', title: t('safety.tools.title'), details: tools }} />
-          <ContentSection block={wrong} />
-          <ContentSection block={parents} />
-        </div>
+        <ContentSection block={{ id: 'tools', title: t('safety.tools.title'), details: tools }} />
+        <ContentSection block={wrong} />
+        <ContentSection block={parents} />
       </Prose>
     </>
   )

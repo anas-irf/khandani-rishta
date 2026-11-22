@@ -20,7 +20,7 @@ export function ProgressHeader({
   const group = groupOf(step)
   return (
     <div className="flex flex-col gap-2">
-      <ol aria-label={t('progress.label')} className="grid grid-cols-4 gap-1.5">
+      <ol aria-label={t('progress.label')} className="grid grid-cols-4 gap-2">
         {groups.map((entry) => {
           const name = t(`groups.${entry.key}`)
           const percent = Math.round((entry.done / entry.total) * 100)
@@ -32,12 +32,13 @@ export function ProgressHeader({
               <span
                 aria-hidden="true"
                 className={cn(
-                  'block h-1.5 overflow-hidden rounded-full bg-muted',
-                  entry.key === group?.key && 'ring-1 ring-primary/40',
+                  'block h-[6px] overflow-hidden rounded-pill',
+                  // The group the member is in; its name is written under the segments.
+                  entry.key === group?.key ? 'bg-primary-soft' : 'bg-muted-strong',
                 )}
               >
                 <span
-                  className="block h-full rounded-full bg-primary transition-[width]"
+                  className="block h-full rounded-pill bg-primary transition-[width]"
                   style={{ width: `${percent}%` }}
                 />
               </span>
@@ -45,9 +46,11 @@ export function ProgressHeader({
           )
         })}
       </ol>
-      <p className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
-        <span className="font-medium text-foreground">{t(`groups.${group?.key ?? 'about'}`)}</span>
-        <span>
+      <p className="flex flex-wrap items-center justify-between gap-x-3 text-caption text-muted-foreground">
+        <span className="text-label-sm text-foreground">
+          {t(`groups.${group?.key ?? 'about'}`)}
+        </span>
+        <span className="tabular-nums">
           {t('progress.step', { n: stepIndex(step) + 1, total: ONBOARDING_STEPS.length })}
         </span>
       </p>

@@ -4,22 +4,23 @@ import { Check, ShieldAlert, X } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { ErrorState } from '~/components/common/ErrorState'
-import { PageHeader } from '~/components/common/PageHeader'
+import { DiamondTitle } from '~/components/common/Ornament'
+import { Page } from '~/components/common/Page'
 import { RelativeTime } from '~/components/common/RelativeTime'
 import { StatusBanner } from '~/components/common/StatusBanner'
 import { Button } from '~/components/ui/button'
 import { Checkbox } from '~/components/ui/checkbox'
 import { NativeSelect, NativeSelectOption } from '~/components/ui/native-select'
-import { Skeleton } from '~/components/ui/skeleton'
 import { Textarea } from '~/components/ui/textarea'
 import { formatDate } from '~/lib/format'
 import { useLabelOf, useOptions } from '~/lib/reference'
 import { ActionDialog } from './components/ActionDialog'
 import { AdminPhoto } from './components/AdminPhoto'
 import { DataTable } from './components/DataTable'
+import { DetailState } from './components/DetailState'
 import { Facts, Panel } from './components/Facts'
 import { FormField } from './components/FormField'
+import { Kbd } from './components/Kbd'
 import { SanctionDialog } from './components/SanctionDialog'
 import { StatusBadge } from './components/StatusBadge'
 import { ErrorSummary, useDialogErrors } from './components/useDialogErrors'
@@ -40,22 +41,10 @@ import { useShortcuts } from './shortcuts'
 import type { AdminVerificationDetail, AdminVerificationListItem } from './types'
 
 export function VerificationScreen() {
-  const { t } = useTranslation('admin')
   const requestId = useRouteId('requestId')
   const query = useAdminVerification(requestId)
 
-  if (query.isPending) {
-    return (
-      <div role="status" aria-busy="true" className="flex flex-col gap-3">
-        <span className="sr-only">{t('list.loading')}</span>
-        <Skeleton className="h-12 w-1/2" />
-        <Skeleton className="h-80 w-full" />
-      </div>
-    )
-  }
-  if (query.isError) {
-    return <ErrorState error={query.error} onRetry={() => void query.refetch()} />
-  }
+  if (query.isPending || query.isError) return <DetailState query={query} />
   return (
     <VerificationView
       key={query.data.request_id}
@@ -130,21 +119,19 @@ function VerificationView({
   )
 
   return (
-    <div className="flex flex-col gap-4">
-      <PageHeader
-        title={t('verification.title', { name })}
-        description={
-          <>
-            {t(`verifications.kind.${data.kind}`)}
-            {' - '}
-            {t('verification.submitted')} <RelativeTime value={data.created_at} />
-          </>
-        }
-        backTo="/admin/verifications"
-        backLabel={t('verification.back')}
-        actions={<StatusBadge status={data.status} />}
-      />
-
+    <Page
+      title={t('verification.title', { name })}
+      description={
+        <>
+          {t(`verifications.kind.${data.kind}`)}
+          {' - '}
+          {t('verification.submitted')} <RelativeTime value={data.created_at} />
+        </>
+      }
+      backTo="/admin/verifications"
+      backLabel={t('verification.back')}
+      actions={<StatusBadge status={data.status} />}
+    >
       {data.media_purged ? (
         <StatusBanner variant="info">{t('verification.purged')}</StatusBanner>
       ) : null}
@@ -170,8 +157,10 @@ function VerificationView({
       <div className="grid grid-cols-2 items-start gap-4">
         <div className="flex min-w-0 flex-col gap-4">
           <div className="flex items-center justify-between gap-2">
-            <h2 className="text-base font-semibold">{t('verification.images')}</h2>
-            <Button variant="secondary" size="sm" loading={reloading} onClick={onReload}>
+            <h2 className="text-title-md font-bold">
+              <DiamondTitle>{t('verification.images')}</DiamondTitle>
+            </h2>
+            <Button variant="secondary" loading={reloading} onClick={onReload}>
               {t('image.reload_all')}
             </Button>
           </div>
@@ -230,7 +219,7 @@ function VerificationView({
                 {
                   label: t('verification.number'),
                   value: (
-                    <span dir="ltr" className="font-mono text-base tracking-wide">
+                    <span dir="ltr" className="tabular-nums text-body-md">
                       {identity.number}
                     </span>
                   ),
@@ -273,9 +262,9 @@ function VerificationView({
           />
           <Panel title={t('verification.approved_photos')}>
             {profile.photos.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t('verification.no_photos')}</p>
+              <p className="text-body-sm text-muted-foreground">{t('verification.no_photos')}</p>
             ) : (
-              <ul className="grid grid-cols-3 gap-2">
+              <ul className="arch-grid">
                 {profile.photos.map((photo) => (
                   <li key={photo.photo_id}>
                     <AdminPhoto
@@ -287,7 +276,8 @@ function VerificationView({
                       size="medium"
                       width={120}
                       height={150}
-                      className="aspect-[4/5] rounded-md"
+                      whole
+                      className="aspect-[4/5] w-full"
                     />
                   </li>
                 ))}
@@ -304,7 +294,7 @@ function VerificationView({
             <label
               key={item}
               htmlFor={`${data.request_id}-check-${index}`}
-              className="flex min-h-11 items-start gap-3 py-1 text-sm"
+              className="flex min-h-touch items-start gap-3 py-[11px] text-body-md"
             >
               <Checkbox
                 id={`${data.request_id}-check-${index}`}
@@ -339,7 +329,7 @@ function VerificationView({
           >
             <Check aria-hidden="true" />
             {t('verification.approve')}
-            <kbd className="ms-1 text-xs opacity-80">A</kbd>
+            <Kbd>A</Kbd>
           </Button>
           <Button
             variant="secondary"
@@ -349,17 +339,17 @@ function VerificationView({
           >
             <X aria-hidden="true" />
             {t('verification.reject')}
-            <kbd className="ms-1 text-xs opacity-80">R</kbd>
+            <Kbd>R</Kbd>
           </Button>
           {pending && !allChecked ? (
-            <p className="text-sm text-muted-foreground">{t('verification.tick_all')}</p>
+            <p className="text-body-sm text-muted-foreground">{t('verification.tick_all')}</p>
           ) : null}
         </div>
       </Panel>
 
       <Panel title={t('verification.previous')}>
         {data.previous_requests.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t('verification.no_previous')}</p>
+          <p className="text-body-sm text-muted-foreground">{t('verification.no_previous')}</p>
         ) : (
           <DataTable
             caption={t('verification.previous')}
@@ -420,7 +410,7 @@ function VerificationView({
           }}
         />
       ) : null}
-    </div>
+    </Page>
   )
 }
 

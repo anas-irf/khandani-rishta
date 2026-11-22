@@ -2,11 +2,13 @@ import { Link, Outlet } from '@tanstack/react-router'
 import { BookOpenCheck, Keyboard } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { CountBadge } from '~/components/common/CountBadge'
+import { SkipLink } from '~/components/common/SkipLink'
+import { LogoMark } from '~/components/layout/Logo'
 import { NotFound } from '~/components/NotFound'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { useCurrentMe } from '~/lib/me'
-import { badgeCount, cn } from '~/lib/utils'
 import { isStaffRole } from './access'
 import { ConductDialog, ShortcutHelpDialog } from './components/HelpDialogs'
 import { useAdminOverview } from './queries'
@@ -94,15 +96,11 @@ function AdminShell({ role }: { role: StaffRole }) {
 
   return (
     <div className="flex min-h-dvh min-w-[1024px] flex-col bg-background">
-      <a
-        href="#admin-main"
-        className="sr-only focus:not-sr-only focus:fixed focus:start-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-surface focus:px-4 focus:py-2"
-      >
-        {t('layout.skip')}
-      </a>
-      <header className="flex h-14 shrink-0 items-center gap-4 border-b border-border bg-surface px-4">
-        <p className="text-lg font-bold text-primary">{t('layout.title')}</p>
-        <Badge variant={role === 'admin' ? 'danger' : 'secondary'}>{t(`role.${role}`)}</Badge>
+      <SkipLink target="admin-main" label={t('layout.skip')} />
+      <header className="flex min-h-[64px] shrink-0 items-center gap-3 border-b border-border px-5 py-2">
+        <LogoMark className="size-[32px]" />
+        <p className="text-title-md font-bold">{t('layout.title')}</p>
+        <Badge variant={role === 'admin' ? 'default' : 'secondary'}>{t(`role.${role}`)}</Badge>
         <div className="ms-auto flex items-center gap-2">
           <Button variant="ghost" onClick={() => setDialog('shortcuts')}>
             <Keyboard aria-hidden="true" />
@@ -114,8 +112,8 @@ function AdminShell({ role }: { role: StaffRole }) {
         </div>
       </header>
       <div className="flex min-h-0 flex-1">
-        <aside className="flex w-60 shrink-0 flex-col justify-between border-e border-border bg-surface">
-          <nav aria-label={t('layout.nav')} className="p-2">
+        <aside className="band-sand flex w-[min(15rem,30%)] shrink-0 flex-col justify-between">
+          <nav aria-label={t('layout.nav')} className="p-3">
             <ul className="flex flex-col gap-1">
               {items.map((item) => {
                 const count = overview.data ? (item.count?.(overview.data.queues) ?? 0) : 0
@@ -124,28 +122,27 @@ function AdminShell({ role }: { role: StaffRole }) {
                     <Link
                       to={item.to}
                       activeOptions={{ exact: item.to === '/admin' }}
-                      className={cn(
-                        'flex min-h-11 items-center justify-between gap-2 rounded-md px-3 text-sm font-medium text-foreground hover:bg-muted',
-                      )}
+                      className="flex min-h-touch items-center justify-between gap-2 rounded-lg px-4 py-[8px] text-label-md transition-colors"
+                      inactiveProps={{ className: 'text-foreground hover:tonal' }}
                       activeProps={{
-                        className: 'bg-primary-soft text-primary hover:bg-primary-soft',
+                        className: 'bg-primary-soft font-bold text-primary',
                         'aria-current': 'page',
                       }}
                     >
-                      <span>{t(`nav.${item.label}`)}</span>
-                      {count > 0 ? (
-                        <Badge variant="secondary" className="min-w-6">
-                          <span aria-hidden="true">{badgeCount(count)}</span>
-                          <span className="sr-only">{t('layout.waiting', { count })}</span>
-                        </Badge>
-                      ) : null}
+                      <span className="min-w-0">{t(`nav.${item.label}`)}</span>
+                      <CountBadge
+                        count={count}
+                        label={t('layout.waiting', { count })}
+                        tone="inverse"
+                        size="small"
+                      />
                     </Link>
                   </li>
                 )
               })}
             </ul>
           </nav>
-          <footer className="border-t border-border p-2">
+          <footer className="border-t border-border p-3">
             <Button
               variant="ghost"
               className="w-full justify-start"
@@ -156,7 +153,7 @@ function AdminShell({ role }: { role: StaffRole }) {
             </Button>
           </footer>
         </aside>
-        <main id="admin-main" tabIndex={-1} className="min-w-0 flex-1 p-6 outline-none">
+        <main id="admin-main" tabIndex={-1} className="flex min-w-0 flex-1 flex-col">
           <Outlet />
         </main>
       </div>

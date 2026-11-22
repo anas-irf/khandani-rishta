@@ -4,14 +4,14 @@ import { Search } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { EmptyState } from '~/components/common/EmptyState'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '~/components/ui/native-select'
 import { AUDIT_TARGET_TYPES, isOneOf } from '~/lib/api-enums'
 import { RequireAdmin } from './access'
 import { AUDIT_ACTIONS } from './audit-codes'
-import { AdminList, type Column } from './components/DataTable'
+import { AdminList, type Column, tableLinkClass } from './components/DataTable'
 import { FormField } from './components/FormField'
 import { auditColumns } from './components/Tables'
 import { useAuditLog } from './queries'
@@ -58,7 +58,7 @@ function AuditLog() {
             <Link
               to="/admin/users/$userId"
               params={{ userId: entry.actor.user_id }}
-              className="text-primary hover:underline"
+              className={tableLinkClass}
             >
               {entry.actor.email ?? entry.actor.user_id}
             </Link>
@@ -72,8 +72,7 @@ function AuditLog() {
   )
 
   return (
-    <div className="flex flex-col gap-4">
-      <PageHeader title={t('audit.title')} description={t('audit.description')} />
+    <Page title={t('audit.title')} description={t('audit.description')}>
       <form
         aria-label={t('audit.filters')}
         onSubmit={submit}
@@ -146,6 +145,6 @@ function AuditLog() {
         getKey={(entry) => entry.id}
         empty={<EmptyState title={filtered ? t('audit.empty_filtered') : t('audit.empty')} />}
       />
-    </div>
+    </Page>
   )
 }

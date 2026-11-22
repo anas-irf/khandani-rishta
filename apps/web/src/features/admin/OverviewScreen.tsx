@@ -3,9 +3,12 @@ import { Link } from '@tanstack/react-router'
 import type { TFunction } from 'i18next'
 import { RefreshCw, TriangleAlert } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { Band } from '~/components/common/Band'
 import { ErrorState } from '~/components/common/ErrorState'
-import { PageHeader } from '~/components/common/PageHeader'
+import { DiamondTitle } from '~/components/common/Ornament'
+import { Page } from '~/components/common/Page'
 import { RelativeTime } from '~/components/common/RelativeTime'
+import { SectionHeading } from '~/components/common/SectionHeading'
 import { Button } from '~/components/ui/button'
 import { Skeleton } from '~/components/ui/skeleton'
 import { cn } from '~/lib/utils'
@@ -101,24 +104,28 @@ export function OverviewScreen() {
   )
 
   return (
-    <div className="flex flex-col gap-6">
-      <PageHeader
-        title={t('home.title')}
-        description={
-          query.data ? (
-            <>
-              {t('home.updated')} <RelativeTime value={query.data.generated_at} />
-            </>
-          ) : undefined
-        }
-        actions={refresh}
-      />
+    <Page
+      title={t('home.title')}
+      layout={query.isSuccess ? 'bands' : 'body'}
+      description={
+        query.data ? (
+          <>
+            {t('home.updated')} <RelativeTime value={query.data.generated_at} />
+          </>
+        ) : undefined
+      }
+      actions={refresh}
+    >
       {query.isPending ? (
-        <div role="status" aria-busy="true" className="grid grid-cols-3 gap-4">
+        <div
+          role="status"
+          aria-busy="true"
+          className="grid grid-cols-[repeat(auto-fit,minmax(14rem,1fr))] gap-4"
+        >
           <span className="sr-only">{t('list.loading')}</span>
           {Array.from({ length: 6 }, (_, index) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: placeholders have no identity.
-            <Skeleton key={index} className="h-28" />
+            <Skeleton key={index} className="h-28 rounded-xl" />
           ))}
         </div>
       ) : query.isError ? (
@@ -129,18 +136,16 @@ export function OverviewScreen() {
           <Metrics metrics={query.data.metrics} />
         </>
       )}
-    </div>
+    </Page>
   )
 }
 
 function Queues({ overview }: { overview: AdminOverview }) {
   const { t } = useTranslation('admin')
   return (
-    <section aria-labelledby="home-queues" className="flex flex-col gap-3">
-      <h2 id="home-queues" className="text-lg font-semibold">
-        {t('home.queues')}
-      </h2>
-      <ul className="grid grid-cols-3 gap-4">
+    <Band tone="auto" aria-labelledby="home-queues" innerClassName="flex flex-col gap-4">
+      <SectionHeading id="home-queues" title={t('home.queues')} />
+      <ul className="grid grid-cols-[repeat(auto-fit,minmax(14rem,1fr))] gap-4">
         {queueCards(overview.queues, t).map((card) => {
           const late = card.targetHours > 0 && hoursSince(card.oldest) > card.targetHours
           return (
@@ -148,22 +153,24 @@ function Queues({ overview }: { overview: AdminOverview }) {
               <Link
                 to={card.to}
                 className={cn(
-                  'flex h-full flex-col gap-1 rounded-[var(--radius-card)] border p-4 transition-colors hover:bg-muted',
-                  late ? 'border-warning bg-warning-soft' : 'border-border bg-surface',
+                  'flex h-full flex-col gap-1 rounded-xl border-[1.5px] p-5 text-foreground transition-colors',
+                  late
+                    ? 'border-warning bg-warning-soft'
+                    : 'tonal border-transparent hover:bg-muted-strong',
                 )}
               >
-                <span className="text-sm font-medium text-muted-foreground">
+                <span className="text-label-md text-muted-foreground">
                   {t(`home.queue.${card.id}`)}
                 </span>
-                <span className="text-3xl font-semibold">{NUMBER.format(card.count)}</span>
-                {card.detail ? <span className="text-sm">{card.detail}</span> : null}
+                <span className="text-headline-lg tabular-nums">{NUMBER.format(card.count)}</span>
+                {card.detail ? <span className="text-body-sm">{card.detail}</span> : null}
                 {card.oldest ? (
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-body-sm text-muted-foreground">
                     {t('home.oldest')} <RelativeTime value={card.oldest} />
                   </span>
                 ) : null}
                 {late ? (
-                  <span className="flex items-center gap-1 text-sm font-medium text-warning">
+                  <span className="flex items-center gap-1 text-body-sm font-semibold text-warning">
                     <TriangleAlert aria-hidden="true" className="size-4" />
                     {t('home.over_target', { hours: card.targetHours })}
                   </span>
@@ -173,7 +180,7 @@ function Queues({ overview }: { overview: AdminOverview }) {
           )
         })}
       </ul>
-    </section>
+    </Band>
   )
 }
 
@@ -183,11 +190,9 @@ function Metrics({ metrics }: { metrics: AdminOverview['metrics'] }) {
   const label = (key: string) => t(`home.metric.${key}`)
   const status = metrics.profiles_by_status
   return (
-    <section aria-labelledby="home-metrics" className="flex flex-col gap-3">
-      <h2 id="home-metrics" className="text-lg font-semibold">
-        {t('home.metrics')}
-      </h2>
-      <div className="grid grid-cols-3 gap-4">
+    <Band tone="auto" aria-labelledby="home-metrics" innerClassName="flex flex-col gap-4">
+      <SectionHeading id="home-metrics" title={t('home.metrics')} />
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(17rem,1fr))] gap-4">
         <Facts
           title={t('home.group.people')}
           columns={2}
@@ -242,26 +247,31 @@ function Metrics({ metrics }: { metrics: AdminOverview['metrics'] }) {
         />
         <section
           className={cn(
-            'flex flex-col gap-2 rounded-[var(--radius-card)] border p-4',
-            metrics.jobs_dead > 0 ? 'border-danger bg-danger-soft' : 'border-border bg-surface',
+            'flex flex-col gap-2 rounded-xl border-[1.5px] p-5',
+            metrics.jobs_dead > 0 ? 'border-danger bg-danger-soft' : 'tonal border-transparent',
           )}
         >
-          <h3 className="text-base font-semibold">{t('home.group.system')}</h3>
-          <p className="text-sm text-muted-foreground">{label('jobs_dead')}</p>
+          <h3 className="text-title-md font-bold">
+            <DiamondTitle>{t('home.group.system')}</DiamondTitle>
+          </h3>
+          <p className="text-body-sm text-muted-foreground">{label('jobs_dead')}</p>
           <p
-            className={cn('text-3xl font-semibold', metrics.jobs_dead > 0 && 'text-danger')}
+            className={cn('text-headline-lg tabular-nums', metrics.jobs_dead > 0 && 'text-danger')}
             data-testid="jobs-dead"
           >
             {n(metrics.jobs_dead)}
           </p>
           {metrics.jobs_dead > 0 ? (
-            <p role="alert" className="flex items-center gap-1 text-sm font-medium text-danger">
+            <p
+              role="alert"
+              className="flex items-center gap-1 text-body-sm font-semibold text-danger"
+            >
               <TriangleAlert aria-hidden="true" className="size-4" />
               {t('home.jobs_dead_hint')}
             </p>
           ) : null}
         </section>
       </div>
-    </section>
+    </Band>
   )
 }

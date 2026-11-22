@@ -22,12 +22,14 @@ export function DeletionScreen() {
 
   return (
     <GateLayout title={t('deletion.title')}>
-      <p className="text-base">
+      <p className="text-body-lg">
         {date ? t('deletion.text', { date }) : t('deletion.text_no_date')}
       </p>
-      <p className="text-base text-muted-foreground">{t('deletion.hidden')}</p>
-      <div>
+      <p className="text-foreground-secondary">{t('deletion.hidden')}</p>
+      <div className="flex flex-wrap">
         <Button
+          size="lg"
+          fill="row"
           loading={cancel.isPending}
           disabled={!online}
           onClick={() =>

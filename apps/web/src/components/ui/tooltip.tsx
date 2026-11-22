@@ -44,14 +44,15 @@ function TooltipContent({
       <TooltipPrimitive.Content
         data-slot="tooltip-content"
         sideOffset={sideOffset}
+        collisionPadding={8}
         className={cn(
-          'z-50 max-w-xs origin-(--radix-tooltip-content-transform-origin) rounded-md bg-foreground px-3 py-1.5 text-sm text-balance text-background motion-safe:transition-[opacity,scale] motion-safe:duration-100 motion-safe:starting:scale-95 motion-safe:starting:opacity-0',
+          'z-50 max-w-[min(320px,calc(100vw-16px))] origin-(--radix-tooltip-content-transform-origin) rounded-item bg-inverse px-3 py-2 text-caption text-balance text-inverse-foreground motion-safe:transition-[opacity,scale] motion-safe:starting:scale-95 motion-safe:starting:opacity-0',
           className,
         )}
         {...props}
       >
         {children}
-        <TooltipPrimitive.Arrow className="fill-foreground" />
+        <TooltipPrimitive.Arrow className="fill-inverse" />
       </TooltipPrimitive.Content>
     </TooltipPrimitive.Portal>
   )

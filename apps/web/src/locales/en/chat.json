@@ -111,7 +111,9 @@
       "active": {
         "title": "No conversations yet.",
         "text": "When an interest is accepted you can chat here.",
-        "action": "See my matches"
+        "action": "See my matches",
+        "action_male": "See his matches",
+        "action_female": "See her matches"
       },
       "archived": {
         "title": "Archived chats appear here.",

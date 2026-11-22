@@ -1,6 +1,8 @@
 import { Link } from '@tanstack/react-router'
+import { ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { CountBadge } from '~/components/common/CountBadge'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,11 +23,12 @@ import {
 } from '~/components/ui/dropdown-menu'
 import { useSignOut } from '~/features/auth/useSignOut'
 import { useCurrentMe } from '~/lib/me'
-import { CountBadge } from './PrimaryNav'
+import { initialsOf } from '~/lib/utils'
 
 /**
- * The avatar menu of the wide top bar (16 section 2.2): My profile, Shortlist, Who viewed me,
- * Photo requests, Settings, Sign out. A custom menu, not Clerk's UserButton (17 section 5).
+ * The account menu of the wide top bar (16 section 2.2, DESIGN.md 6.16): the arch and the name,
+ * then My profile, Shortlist, Who viewed me, Photo requests, Settings, Sign out. A custom menu,
+ * not Clerk's UserButton (17 section 5).
  */
 export function AccountMenu() {
   const { t } = useTranslation()
@@ -33,24 +36,35 @@ export function AccountMenu() {
   const signOut = useSignOut()
   const [confirming, setConfirming] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
-  const initial = (me.profile.first_name ?? me.user.email ?? '?').slice(0, 1).toUpperCase()
+  const name = me.profile.first_name
+  const initials = initialsOf(name ?? me.user.email?.slice(0, 1)) || '?'
   const isStaff = me.user.role === 'moderator' || me.user.role === 'admin'
 
   return (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger
-          aria-label={t('nav.account_menu')}
-          className="inline-flex size-11 items-center justify-center rounded-full hover:bg-muted"
+          // The visible name is part of the accessible name (WCAG 2.5.3).
+          aria-label={[t('nav.account_menu'), name].filter(Boolean).join(', ')}
+          className="inline-flex min-h-touch max-w-full items-center gap-2.5 rounded-pill ps-1 pe-3 text-label-lg text-foreground transition-colors hover:bg-muted [&[data-state=open]>svg]:rotate-180"
         >
-          <Avatar className="size-9">
+          <Avatar className="h-[48px] w-[38px]">
             {me.profile.photo?.thumb_url ? (
               <AvatarImage src={me.profile.photo.thumb_url} alt="" />
             ) : null}
-            <AvatarFallback>{initial}</AvatarFallback>
+            <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
+          {name ? (
+            <span className="hidden max-w-[6rem] min-w-0 text-start roomy:inline xl:max-w-[9rem]">
+              {name}
+            </span>
+          ) : null}
+          <ChevronDown
+            aria-hidden="true"
+            className="size-[18px] transition-transform duration-(--duration-base)"
+          />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="min-w-56">
+        <DropdownMenuContent align="end" className="min-w-[280px]">
           <DropdownMenuItem asChild>
             <Link to="/me">{t('nav.my_profile')}</Link>
           </DropdownMenuItem>
@@ -90,7 +104,9 @@ export function AccountMenu() {
           <AlertDialogFooter>
             <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
             <AlertDialogAction
+              variant="ink"
               disabled={signingOut}
+              aria-busy={signingOut || undefined}
               onClick={(event) => {
                 event.preventDefault()
                 setSigningOut(true)

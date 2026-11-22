@@ -1,4 +1,4 @@
-import { Check, Lock } from 'lucide-react'
+import { CircleX, Clock, Lock } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import {
   ariaFor,
@@ -6,6 +6,8 @@ import {
   subId,
   useFieldDisabled,
 } from '~/components/common/fields/field-shell'
+import { inlineLinkClass } from '~/components/common/TextLink'
+import { Toggle, toggleVariants } from '~/components/ui/toggle'
 import type { TextStatus } from '~/lib/api-types'
 import { useFieldControl } from '~/lib/form-context'
 import { useCurrentMe } from '~/lib/me'
@@ -26,13 +28,15 @@ export function LockedField({ label, value }: { label: string; value: string }) 
   const code = me.profile.public_code
   const subject = encodeURIComponent(t('locked.mail_subject', { code }))
   return (
-    <div className="grid gap-1.5">
-      <span className="text-sm font-medium">{label}</span>
-      <p className="flex min-h-11 items-center gap-2 rounded-[var(--radius-input)] border border-border bg-muted px-3">
-        <Lock aria-label={t('locked.icon')} className="size-4 shrink-0 text-muted-foreground" />
-        <span dir="auto">{value}</span>
+    <div className="field-stack">
+      <span className="text-label-lg">{label}</span>
+      <p className="flex min-h-touch items-center gap-3 rounded-input bg-muted-strong px-4 py-2 text-foreground-secondary">
+        <Lock aria-label={t('locked.icon')} className="size-4" />
+        <span dir="auto" className="min-w-0">
+          {value}
+        </span>
       </p>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-caption text-muted-foreground">
         <Trans
           t={t}
           i18nKey="locked.explanation"
@@ -40,10 +44,7 @@ export function LockedField({ label, value }: { label: string; value: string }) 
           components={{
             mail: (
               // biome-ignore lint/a11y/useAnchorContent: Trans puts the address inside.
-              <a
-                href={`mailto:${email}?subject=${subject}`}
-                className="font-medium text-primary underline underline-offset-4"
-              />
+              <a href={`mailto:${email}?subject=${subject}`} className={inlineLinkClass} />
             ),
           }}
         />
@@ -97,24 +98,18 @@ export function ChipsField({
   const chip = (option: Option) => {
     const selected = value.includes(option.code)
     return (
-      <button
+      <Toggle
         key={option.code}
-        type="button"
         name={option.code === firstCode ? control.name : undefined}
-        aria-pressed={selected}
+        pressed={selected}
         disabled={isDisabled || (!selected && reached)}
-        onClick={() => toggle(option.code)}
+        onPressedChange={() => toggle(option.code)}
         onBlur={control.onBlur}
-        className={cn(
-          'inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
-          selected
-            ? 'border-primary bg-primary-soft text-foreground'
-            : 'border-border bg-surface text-foreground hover:bg-muted',
-        )}
       >
-        {selected ? <Check aria-hidden="true" className="size-4 text-primary" /> : null}
-        <span dir="auto">{option.label}</span>
-      </button>
+        <span dir="auto" className="min-w-0">
+          {option.label}
+        </span>
+      </Toggle>
     )
   }
 
@@ -137,14 +132,14 @@ export function ChipsField({
         {groups ? (
           groups.map((group) => (
             <div key={group.key} className="grid gap-2">
-              <span className="text-sm text-muted-foreground">{group.title}</span>
+              <span className="text-label-md text-muted-foreground">{group.title}</span>
               <div className="flex flex-wrap gap-2">{group.options.map(chip)}</div>
             </div>
           ))
         ) : (
           <div className="flex flex-wrap gap-2">
             {emptyLabel && value.length === 0 ? (
-              <span className="inline-flex min-h-11 items-center rounded-full border border-primary bg-primary-soft px-3 text-sm font-medium">
+              <span data-state="on" className={toggleVariants()}>
                 {emptyLabel}
               </span>
             ) : null}
@@ -153,7 +148,7 @@ export function ChipsField({
         )}
       </div>
       {reached && maxMessage ? (
-        <p id={maxId} className="text-sm text-muted-foreground">
+        <p id={maxId} className="text-caption text-muted-foreground">
           {maxMessage}
         </p>
       ) : null}
@@ -165,14 +160,19 @@ export function ChipsField({
 export function TextStatusNote({ status }: { status: TextStatus }) {
   const { t } = useTranslation('profile_sections')
   if (status === 'approved') return null
+  const pending = status === 'pending'
+  const Icon = pending ? Clock : CircleX
   return (
     <p
       className={cn(
-        'rounded-[var(--radius-input)] px-3 py-2 text-sm',
-        status === 'pending' ? 'bg-warning-soft' : 'bg-danger-soft',
+        'flex items-start gap-2 rounded-md px-4 py-3 text-body-sm',
+        pending ? 'bg-warning-soft' : 'bg-danger-soft',
       )}
     >
-      {status === 'pending' ? t('form.text_pending') : t('form.text_rejected')}
+      <span aria-hidden="true" className="flex h-[1lh] items-center">
+        <Icon className={cn('size-4', pending ? 'text-warning' : 'text-danger')} />
+      </span>
+      <span className="min-w-0">{pending ? t('form.text_pending') : t('form.text_rejected')}</span>
     </p>
   )
 }

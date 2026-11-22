@@ -1,12 +1,15 @@
 // ADM-SETTINGS: the `app_settings` editor (18 section 7.1).
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { Band } from '~/components/common/Band'
 import { ConfirmDialog } from '~/components/common/ConfirmDialog'
 import { ErrorState } from '~/components/common/ErrorState'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
+import { SectionHeading } from '~/components/common/SectionHeading'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
+import { Label } from '~/components/ui/label'
 import { NativeSelect, NativeSelectOption } from '~/components/ui/native-select'
 import { Switch } from '~/components/ui/switch'
 import { formatDate } from '~/lib/format'
@@ -38,8 +41,17 @@ function SettingsEditor() {
   const { t } = useTranslation('admin')
   const query = useAdminSettings()
 
-  if (query.isPending) return <TableSkeleton rows={8} />
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => void query.refetch()} />
+  if (query.isPending || query.isError) {
+    return (
+      <Page title={t('settings.title')} description={t('settings.description')}>
+        {query.isPending ? (
+          <TableSkeleton rows={8} />
+        ) : (
+          <ErrorState error={query.error} onRetry={() => void query.refetch()} />
+        )}
+      </Page>
+    )
+  }
 
   const settings = query.data
   const saved = Object.fromEntries(settings.map((setting) => [setting.key, setting.value]))
@@ -49,27 +61,28 @@ function SettingsEditor() {
   })).filter((entry) => entry.items.length > 0)
 
   return (
-    <div className="flex flex-col gap-6">
-      <PageHeader title={t('settings.title')} description={t('settings.description')} />
+    <Page title={t('settings.title')} description={t('settings.description')} layout="bands">
       {groups.map(({ group, items }) => (
-        <section
+        <Band
           key={group}
+          tone="auto"
           aria-labelledby={`settings-${group}`}
-          className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-4"
+          innerClassName="flex flex-col gap-3"
         >
-          <h2 id={`settings-${group}`} className="text-lg font-semibold">
-            {t(`settings.group.${group}`)}
-          </h2>
-          <ul className="flex flex-col divide-y divide-border">
+          <SectionHeading id={`settings-${group}`} title={t(`settings.group.${group}`)} />
+          <ul className="flex flex-col">
             {items.map((setting) => (
-              <li key={`${setting.key}-${JSON.stringify(setting.value)}`} className="py-3">
+              <li
+                key={`${setting.key}-${JSON.stringify(setting.value)}`}
+                className="border-b border-border py-4"
+              >
                 <SettingRow setting={setting} saved={saved} />
               </li>
             ))}
           </ul>
-        </section>
+        </Band>
       ))}
-    </div>
+    </Page>
   )
 }
 
@@ -121,6 +134,7 @@ function SettingRow({ setting, saved }: { setting: AdminSetting; saved: Record<s
   const [draft, setDraft] = useState<Draft>(() => toDraft(rule, setting.value))
   const [error, setError] = useState<string>()
   const [confirm, setConfirm] = useState<{ value: unknown; warning: string } | null>(null)
+  const resetHintId = useId()
 
   const next = fromDraft(rule, draft)
   const changed = !sameValue(next, setting.value)
@@ -160,15 +174,15 @@ function SettingRow({ setting, saved }: { setting: AdminSetting; saved: Record<s
   }
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(17rem,100%),1fr))] gap-4">
       <div className="flex flex-col gap-1">
-        <p className="font-mono text-sm font-semibold">{setting.key}</p>
-        <p className="text-sm">{t(`settings.meaning.${setting.key}`, { defaultValue: '' })}</p>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-title-sm wrap-anywhere tabular-nums">{setting.key}</p>
+        <p className="text-body-sm">{t(`settings.meaning.${setting.key}`, { defaultValue: '' })}</p>
+        <p className="text-body-sm text-muted-foreground">
           {t('settings.default', { value: display(setting.default) })}
         </p>
         {setting.updated_at ? (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-body-sm text-muted-foreground">
             {t('settings.updated', {
               email: setting.updated_by_email ?? t('common.none'),
               date: formatDate(setting.updated_at),
@@ -200,10 +214,13 @@ function SettingRow({ setting, saved }: { setting: AdminSetting; saved: Record<s
             variant="secondary"
             disabled={isDefault && !changed}
             onClick={reset}
-            aria-label={t('settings.reset_named', { key: setting.key })}
+            aria-describedby={resetHintId}
           >
             {t('settings.reset')}
           </Button>
+          <span id={resetHintId} hidden>
+            {t('settings.reset_named', { key: setting.key })}
+          </span>
         </div>
       </div>
       {confirm ? (
@@ -237,10 +254,7 @@ function SettingInput({
   switch (rule?.kind) {
     case 'bool':
       return (
-        <label
-          htmlFor={`${settingKey}-switch`}
-          className="flex min-h-11 items-center gap-3 text-sm"
-        >
+        <Label htmlFor={`${settingKey}-switch`} variant="option">
           <Switch
             id={`${settingKey}-switch`}
             checked={draft === true}
@@ -248,7 +262,7 @@ function SettingInput({
             aria-label={settingKey}
           />
           {draft === true ? t('settings.on') : t('settings.off')}
-        </label>
+        </Label>
       )
     case 'moderation':
       return (

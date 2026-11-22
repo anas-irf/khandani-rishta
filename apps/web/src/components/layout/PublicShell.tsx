@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
+import { SkipLink } from '~/components/common/SkipLink'
 import { PublicFooter } from './PublicFooter'
 import { PublicHeader } from './PublicHeader'
 
@@ -12,14 +13,9 @@ export function PublicShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-dvh flex-col bg-background">
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-[60] focus:rounded-[var(--radius-input)] focus:bg-surface focus:px-4 focus:py-3 focus:font-medium focus:text-primary focus:shadow-lg"
-      >
-        {t('nav.skip_to_content')}
-      </a>
+      <SkipLink label={t('nav.skip_to_content')} />
       <PublicHeader />
-      <main id="main" tabIndex={-1} className="flex-1 focus:outline-none">
+      <main id="main" tabIndex={-1} className="flex flex-1 flex-col">
         {children}
       </main>
       <PublicFooter />

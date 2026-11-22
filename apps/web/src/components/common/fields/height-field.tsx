@@ -74,8 +74,8 @@ export function HeightField({
       kind="fieldset"
     >
       <div className="flex flex-wrap items-end gap-2">
-        <div className="grid w-28 gap-1">
-          <Label htmlFor={control.inputId} className="text-sm font-normal text-muted-foreground">
+        <div className="grid w-[min(100%,8rem)] gap-1">
+          <Label htmlFor={control.inputId} variant="part">
             {t('fields:height.feet')}
           </Label>
           <NativeSelect
@@ -95,8 +95,8 @@ export function HeightField({
             ))}
           </NativeSelect>
         </div>
-        <div className="grid w-28 gap-1">
-          <Label htmlFor={inchesId} className="text-sm font-normal text-muted-foreground">
+        <div className="grid w-[min(100%,8rem)] gap-1">
+          <Label htmlFor={inchesId} variant="part">
             {t('fields:height.inches')}
           </Label>
           <NativeSelect
@@ -116,7 +116,7 @@ export function HeightField({
           </NativeSelect>
         </div>
         {value != null ? (
-          <p className="flex h-11 items-center text-sm text-muted-foreground">
+          <p className="flex min-h-touch items-center text-body-sm text-muted-foreground tabular-nums">
             {t('fields:height.centimetres', { cm: value })}
           </p>
         ) : null}

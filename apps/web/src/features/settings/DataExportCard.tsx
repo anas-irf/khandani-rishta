@@ -2,11 +2,11 @@ import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ErrorState } from '~/components/common/ErrorState'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
-import { SectionCard } from '~/components/common/SectionCard'
 import { Button, buttonVariants } from '~/components/ui/button'
 import { Skeleton } from '~/components/ui/skeleton'
 import { formatDate } from '~/lib/format'
 import { cn } from '~/lib/utils'
+import { SettingsGroup } from './controls'
 import { useDataExport, useRequestExport } from './queries'
 
 /**
@@ -23,6 +23,7 @@ export function DataExportCard() {
   const requestButton = (label: string, variant: 'default' | 'secondary' = 'default') => (
     <Button
       variant={variant}
+      className="self-start"
       loading={request.isPending}
       disabled={!online}
       onClick={() => request.mutate()}
@@ -37,7 +38,7 @@ export function DataExportCard() {
       <div role="status" aria-busy="true" className="flex flex-col gap-3">
         <span className="sr-only">{t('saving.working')}</span>
         <Skeleton className="h-5 w-3/4" />
-        <Skeleton className="h-11 w-44 rounded-[var(--radius-input)]" />
+        <Skeleton className="min-h-touch w-[min(100%,11rem)] rounded-pill" />
       </div>
     )
   } else if (query.isError) {
@@ -62,7 +63,7 @@ export function DataExportCard() {
                 date: latest.expires_at ? formatDate(latest.expires_at) : '',
               })}
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-3">
               {latest.download_url ? (
                 <a
                   href={latest.download_url}
@@ -104,5 +105,5 @@ export function DataExportCard() {
     }
   }
 
-  return <SectionCard title={t('account.data.title')}>{content}</SectionCard>
+  return <SettingsGroup title={t('account.data.title')}>{content}</SettingsGroup>
 }

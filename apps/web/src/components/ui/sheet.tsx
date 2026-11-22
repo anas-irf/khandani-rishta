@@ -1,6 +1,8 @@
 import { X } from 'lucide-react'
 import { Dialog as SheetPrimitive } from 'radix-ui'
 import type * as React from 'react'
+import { buttonVariants } from '~/components/ui/button'
+import { overlayClass } from '~/components/ui/dialog'
 import { cn } from '~/lib/utils'
 
 function Sheet(props: React.ComponentProps<typeof SheetPrimitive.Root>) {
@@ -26,10 +28,7 @@ function SheetOverlay({
   return (
     <SheetPrimitive.Overlay
       data-slot="sheet-overlay"
-      className={cn(
-        'fixed inset-0 z-50 bg-foreground/50 motion-safe:transition-opacity motion-safe:duration-200 motion-safe:starting:opacity-0',
-        className,
-      )}
+      className={cn(overlayClass, className)}
       {...props}
     />
   )
@@ -41,11 +40,11 @@ type SheetSide = 'start' | 'end' | 'top' | 'bottom'
 // animation flip in right-to-left layouts. `ltr:` and `rtl:` pick the slide-in direction.
 const sideClasses: Record<SheetSide, string> = {
   start:
-    'inset-y-0 start-0 h-full w-3/4 max-w-sm border-e motion-safe:starting:ltr:-translate-x-full motion-safe:starting:rtl:translate-x-full',
-  end: 'inset-y-0 end-0 h-full w-3/4 max-w-sm border-s motion-safe:starting:ltr:translate-x-full motion-safe:starting:rtl:-translate-x-full',
-  top: 'inset-x-0 top-0 h-auto max-h-[90dvh] border-b motion-safe:starting:-translate-y-full',
+    'inset-y-0 start-0 h-full w-[min(380px,100%)] rounded-e-lg motion-safe:starting:ltr:-translate-x-full motion-safe:starting:rtl:translate-x-full',
+  end: 'inset-y-0 end-0 h-full w-[min(380px,100%)] rounded-s-lg motion-safe:starting:ltr:translate-x-full motion-safe:starting:rtl:-translate-x-full',
+  top: 'inset-x-0 top-0 h-auto max-h-[90dvh] rounded-b-lg motion-safe:starting:-translate-y-full',
   bottom:
-    'inset-x-0 bottom-0 h-auto max-h-[90dvh] rounded-t-[var(--radius-card)] border-t motion-safe:starting:translate-y-full',
+    'inset-x-0 bottom-0 h-auto max-h-[90dvh] rounded-sheet motion-safe:starting:translate-y-full',
 }
 
 type SheetContentProps = React.ComponentProps<typeof SheetPrimitive.Content> & {
@@ -74,7 +73,7 @@ function SheetContent({
         data-side={side}
         data-with-close={showCloseButton}
         className={cn(
-          'group/sheet fixed z-50 flex flex-col gap-4 overflow-y-auto border-border bg-surface p-5 text-foreground shadow-lg focus-visible:outline-none motion-safe:transition-[translate] motion-safe:duration-200',
+          'group/sheet fixed z-50 flex flex-col gap-5 overflow-y-auto bg-surface px-[20px] py-6 text-foreground shadow-bar [--tonal:var(--color-muted)] [&>*]:shrink-0 motion-safe:transition-[translate] motion-safe:duration-(--duration-base)',
           sideClasses[side],
           className,
         )}
@@ -85,7 +84,10 @@ function SheetContent({
           <SheetPrimitive.Close
             data-slot="sheet-close-button"
             aria-label={closeLabel}
-            className="absolute end-2 top-2 inline-flex size-11 items-center justify-center rounded-[var(--radius-input)] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&_svg]:size-5"
+            className={cn(
+              buttonVariants({ variant: 'quiet', size: 'icon' }),
+              'absolute end-3 top-3',
+            )}
           >
             <X aria-hidden="true" />
           </SheetPrimitive.Close>
@@ -100,7 +102,7 @@ function SheetHeader({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot="sheet-header"
       className={cn(
-        'flex flex-col gap-1.5 text-start group-data-[with-close=true]/sheet:pe-9',
+        'flex flex-col gap-2 text-start group-data-[with-close=true]/sheet:pe-[52px]',
         className,
       )}
       {...props}
@@ -112,7 +114,7 @@ function SheetFooter({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="sheet-footer"
-      className={cn('mt-auto flex flex-col gap-2', className)}
+      className={cn('mt-auto flex flex-col gap-3', className)}
       {...props}
     />
   )
@@ -122,7 +124,7 @@ function SheetTitle({ className, ...props }: React.ComponentProps<typeof SheetPr
   return (
     <SheetPrimitive.Title
       data-slot="sheet-title"
-      className={cn('text-lg font-semibold leading-snug', className)}
+      className={cn('text-title-lg', className)}
       {...props}
     />
   )
@@ -135,7 +137,7 @@ function SheetDescription({
   return (
     <SheetPrimitive.Description
       data-slot="sheet-description"
-      className={cn('text-sm text-muted-foreground', className)}
+      className={cn('text-body-md text-foreground-secondary', className)}
       {...props}
     />
   )

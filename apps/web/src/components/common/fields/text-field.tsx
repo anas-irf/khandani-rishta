@@ -5,8 +5,14 @@ import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
 import { Textarea } from '~/components/ui/textarea'
 import { useFieldControl } from '~/lib/form-context'
-import { cn } from '~/lib/utils'
-import { ariaFor, type BaseFieldProps, FieldShell, subId, useFieldDisabled } from './field-shell'
+import {
+  ariaFor,
+  type BaseFieldProps,
+  CharCount,
+  FieldShell,
+  subId,
+  useFieldDisabled,
+} from './field-shell'
 
 type InputMode = HTMLAttributes<HTMLInputElement>['inputMode']
 
@@ -119,20 +125,14 @@ export function TextAreaField({
         })}
       />
       {maxLength != null ? (
-        <p
-          id={counterId}
-          className={cn(
-            'text-end text-sm tabular-nums',
-            over ? 'font-medium text-danger' : 'text-muted-foreground',
-          )}
-        >
+        <CharCount id={counterId} over={over}>
           <span aria-hidden="true">
             {t('fields:text_area.counter', { length, max: maxLength })}
           </span>
           <span className="sr-only">
             {t('fields:text_area.counter_label', { length, max: maxLength })}
           </span>
-        </p>
+        </CharCount>
       ) : null}
     </FieldShell>
   )
@@ -186,7 +186,7 @@ export function NumberField({
       maxLength={max != null ? String(max).length : undefined}
       placeholder={placeholder}
       disabled={isDisabled}
-      className={stepper ? 'w-20 text-center' : undefined}
+      className={stepper ? 'w-[5.5rem] px-[8px] text-center tabular-nums' : undefined}
       {...ariaFor(control, { required, hasHelp: Boolean(helpText) })}
     />
   )
@@ -200,9 +200,9 @@ export function NumberField({
       className={className}
     >
       {stepper ? (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
-            variant="outline"
+            variant="secondary"
             size="icon"
             aria-label={t('fields:number.decrease', { label })}
             disabled={isDisabled || (value != null && value <= lower)}
@@ -212,7 +212,7 @@ export function NumberField({
           </Button>
           {input}
           <Button
-            variant="outline"
+            variant="secondary"
             size="icon"
             aria-label={t('fields:number.increase', { label })}
             disabled={isDisabled || (max != null && value != null && value >= max)}

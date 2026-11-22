@@ -4,7 +4,8 @@ import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '~/components/common/ConfirmDialog'
-import { PageHeader, useGoBack } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
+import { useGoBack } from '~/components/common/PageHeader'
 import { Button } from '~/components/ui/button'
 import { PreferencesForm } from '~/features/preferences/PreferencesForm'
 
@@ -25,9 +26,7 @@ export function MePreferencesScreen() {
   })
 
   return (
-    <div className="container-app flex max-w-2xl flex-col gap-4">
-      <PageHeader title={t('prefs.title')} showBack />
-      <p>{t('prefs.intro')}</p>
+    <Page title={t('prefs.title')} description={t('prefs.intro')} showBack width="form">
       <PreferencesForm
         mode="edit"
         onDirtyChange={setDirty}
@@ -37,7 +36,7 @@ export function MePreferencesScreen() {
           goBack()
         }}
         footer={
-          <Button type="button" variant="secondary" onClick={goBack}>
+          <Button type="button" variant="quiet" fill="phone" onClick={goBack}>
             {t('contacts.cancel')}
           </Button>
         }
@@ -51,11 +50,11 @@ export function MePreferencesScreen() {
         description={t('discard.body')}
         confirmLabel={t('discard.discard')}
         cancelLabel={t('discard.keep')}
-        destructive
+        tone="danger"
         onConfirm={() => {
           if (blocker.status === 'blocked') blocker.proceed()
         }}
       />
-    </div>
+    </Page>
   )
 }

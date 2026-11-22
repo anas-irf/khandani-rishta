@@ -66,7 +66,9 @@
       "pending": {
         "title": "No new interests.",
         "text": "A complete profile with a photo gets noticed more.",
-        "action": "Improve my profile"
+        "action": "Improve my profile",
+        "action_male": "Improve his profile",
+        "action_female": "Improve her profile"
       },
       "accepted": {
         "title": "Interests you accept appear here."
@@ -79,7 +81,9 @@
       "pending": {
         "title": "You have not sent any interests.",
         "text": "Find someone you like and send one.",
-        "action": "See my matches"
+        "action": "See my matches",
+        "action_male": "See his matches",
+        "action_female": "See her matches"
       },
       "accepted": {
         "title": "When someone accepts your interest, it appears here and you can chat."

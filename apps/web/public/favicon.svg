@@ -1,6 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40">
   <title>Khandani Rishta</title>
-  <rect width="40" height="40" rx="10" fill="#0F766E"/>
-  <circle cx="16" cy="20" r="8" fill="none" stroke="#FFFFFF" stroke-width="2.5"/>
-  <circle cx="24" cy="20" r="8" fill="none" stroke="#FEF3C7" stroke-width="2.5"/>
+  <!-- The arch mark of components/layout/Logo.tsx, with fixed colours (DESIGN.md 2.1). -->
+  <rect width="40" height="40" rx="10" fill="#FAF6F0"/>
+  <g transform="translate(5 2)">
+    <path d="M2 35V15A13 13 0 0 1 28 15V35" fill="none" stroke="#6E1D34" stroke-width="3"/>
+    <path d="M8 35V16A7 7 0 0 1 22 16V35" fill="none" stroke="#B68B40" stroke-width="2"/>
+    <rect x="11.8" y="22.6" width="6.4" height="6.4" transform="rotate(45 15 25.8)" fill="#6E1D34"/>
+  </g>
 </svg>

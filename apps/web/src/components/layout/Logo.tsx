@@ -3,45 +3,69 @@ import { useTranslation } from 'react-i18next'
 import { cn } from '~/lib/utils'
 
 /**
- * The brand mark: two joined rings on the primary colour. Decorative, so it is hidden from
- * screen readers; the name next to it is the link text. `public/favicon.svg` is the same drawing
- * with fixed colours.
+ * The brand mark: two arches and a diamond. Decorative, so it is hidden from screen readers; the
+ * name next to it is the text. `public/favicon.svg` is the same drawing with fixed colours.
  */
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg
-      viewBox="0 0 40 40"
+      viewBox="0 0 30 36"
       aria-hidden="true"
       focusable="false"
-      className={cn('size-9 shrink-0', className)}
+      className={cn('h-9 w-auto shrink-0', className)}
     >
-      <rect width="40" height="40" rx="10" className="fill-primary" />
-      <circle
-        cx="16"
-        cy="20"
-        r="8"
+      <path
+        d="M2 35V15A13 13 0 0 1 28 15V35"
         fill="none"
-        strokeWidth="2.5"
-        className="stroke-primary-foreground"
+        strokeWidth="2"
+        className="stroke-primary"
       />
-      <circle cx="24" cy="20" r="8" fill="none" strokeWidth="2.5" className="stroke-accent-soft" />
+      <path
+        d="M8 35V16A7 7 0 0 1 22 16V35"
+        fill="none"
+        strokeWidth="1.4"
+        className="stroke-accent-decor"
+      />
+      <rect
+        x="12.2"
+        y="23"
+        width="5.6"
+        height="5.6"
+        transform="rotate(45 15 25.8)"
+        className="fill-primary"
+      />
     </svg>
   )
 }
 
-/** The logo with the name, linking to the landing page. */
-export function Logo({ className }: { className?: string }) {
+/**
+ * The mark and the name in serif: 24 on phones, 28 on wide screens (DESIGN.md 6.16). The name
+ * wraps at larger text and is never cut.
+ */
+export function Wordmark({ className }: { className?: string }) {
   const { t } = useTranslation()
   return (
-    <Link
-      to="/"
+    <span
+      data-slot="wordmark"
       className={cn(
-        'inline-flex min-h-11 shrink-0 items-center gap-2 rounded-[var(--radius-input)] text-lg font-bold text-foreground',
+        'flex min-w-0 items-center gap-3 font-display text-wordmark text-foreground wide:text-wordmark-lg',
         className,
       )}
     >
-      <LogoMark />
-      <span>{t('app_name')}</span>
+      <LogoMark className="h-[1.14em]" />
+      <span className="min-w-0">{t('app_name')}</span>
+    </span>
+  )
+}
+
+/** The box of a link that is the logo. */
+export const logoLinkClass = 'flex min-h-touch min-w-0 items-center rounded-sm'
+
+/** The logo with the name, linking to the landing page. */
+export function Logo({ className }: { className?: string }) {
+  return (
+    <Link to="/" className={cn(logoLinkClass, className)}>
+      <Wordmark />
     </Link>
   )
 }

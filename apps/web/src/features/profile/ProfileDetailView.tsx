@@ -1,15 +1,27 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { Check, Copy, Minus, ShieldCheck, X } from 'lucide-react'
+import { Check, ChevronDown, Copy, Minus, UsersRound, X } from 'lucide-react'
 import { type ReactNode, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { BadgeRow } from '~/components/common/BadgeRow'
+import { BadgeRow, VERIFICATION_BADGES } from '~/components/common/BadgeRow'
+import { BleedBand } from '~/components/common/Band'
+import { Chip } from '~/components/common/Chip'
+import { DefinitionList, DefinitionRow } from '~/components/common/DefinitionList'
 import { LockedValue } from '~/components/common/LockedValue'
+import { MetaLine } from '~/components/common/MetaLine'
+import { NameAge } from '~/components/common/NameAge'
+import { Percent } from '~/components/common/Percent'
 import { PlainText } from '~/components/common/PlainText'
+import { ProgressRing } from '~/components/common/ProgressRing'
 import { ReasonChips } from '~/components/common/ReasonChips'
 import { SectionCard } from '~/components/common/SectionCard'
+import { SectionHeading } from '~/components/common/SectionHeading'
+import { useCardFacts } from '~/components/common/useCardFacts'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '~/components/ui/collapsible'
+import { Progress } from '~/components/ui/progress'
+import { useCandidate } from '~/features/profile-sections/useCandidate'
 import type { Badge as BadgeCode, LockedGroup, Me, ProfileDetail, Tier } from '~/lib/api-types'
 import { formatHeight } from '~/lib/format'
 import { qk } from '~/lib/query'
@@ -25,45 +37,75 @@ export type ProfileDetailViewProps = {
    * compatibility, no controls that act on the profile.
    */
   preview?: boolean
-  /** Shown under the summary in the first column: the action bar on `APP-PROFILE`. */
-  aside?: ReactNode
-  /** Shown after the last block: the safety footer on `APP-PROFILE`. */
+  /** At the top of the hero: the back control on wide screens. */
+  lead?: ReactNode
+  /** A note in the hero, under the summary: the owner's preview banner. */
+  notice?: ReactNode
+  /** The last band: the safety footer on `APP-PROFILE`. */
   footer?: ReactNode
 }
 
+/** The gallery beside the name and facts, stacked when they do not fit. */
+export const profileColumnsClass = 'flex flex-wrap gap-x-10 gap-y-8'
+
 /**
- * The content of another member's profile (16 section 6.7 blocks 1 to 11): photos, header,
- * verification, compatibility, about, the detail blocks with locked groups, and what the member
- * is looking for. On wide screens two columns: photos and summary, then details (17 section 9.1).
+ * The content of another member's profile (16 section 6.7 blocks 1 to 11): the hero with photos,
+ * header and verification, then one band per part, taking turns between background and sand
+ * whichever parts are there (DESIGN.md 6.10). Two groups share a band where they fit.
  */
 export function ProfileDetailView({
   detail,
   preview = false,
-  aside,
+  lead,
+  notice,
   footer,
 }: ProfileDetailViewProps) {
   const { t } = useTranslation('profile')
+  const nameId = useId()
+  const detailBands = useDetailBands(detail)
   const name = detail.card.display_name
+
+  const bands: { key: string; content: ReactNode }[] = []
+  if (!preview && detail.compatibility) {
+    bands.push({ key: 'compatibility', content: <CompatibilityBlock detail={detail} /> })
+  }
+  if (detail.about_me) {
+    bands.push({
+      key: 'about',
+      content: (
+        <SectionCard title={t('about.title', { name })}>
+          <PlainText text={detail.about_me} className="max-w-measure text-body-lg" />
+        </SectionCard>
+      ),
+    })
+  }
+  bands.push(...detailBands)
+  bands.push({ key: 'looking-for', content: <LookingForBlock detail={detail} /> })
+  if (footer) bands.push({ key: 'footer', content: footer })
+
   return (
-    <div className="flex flex-col gap-4 md:grid md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:items-start md:gap-6">
-      <div className="flex flex-col gap-4 md:sticky md:top-20">
-        <ProfileGallery detail={detail} preview={preview} />
-        <ProfileHeader detail={detail} />
-        <VerificationBlock badges={detail.card.badges} />
-        {aside}
-      </div>
-      <div className="flex flex-col gap-4">
-        {!preview && detail.compatibility ? <CompatibilityBlock detail={detail} /> : null}
-        {detail.about_me ? (
-          <SectionCard title={t('about.title', { name })}>
-            <PlainText text={detail.about_me} />
-          </SectionCard>
-        ) : null}
-        <DetailBlocks detail={detail} />
-        <LookingForBlock detail={detail} />
-        {footer}
-      </div>
-    </div>
+    <article aria-labelledby={nameId} className="flex min-w-0 flex-1 flex-col">
+      <BleedBand tone="sand" className={cn(lead && 'pt-3')}>
+        {lead}
+        <div className={profileColumnsClass}>
+          <ProfileGallery
+            detail={detail}
+            preview={preview}
+            className="mx-auto max-w-[clamp(260px,80vw,380px)] flex-[1_1_300px]"
+          />
+          <div className="flex min-w-0 max-w-full flex-[1_1_340px] flex-col gap-4">
+            <ProfileHeader detail={detail} nameId={nameId} />
+            <VerificationBlock badges={detail.card.badges} />
+            {notice}
+          </div>
+        </div>
+      </BleedBand>
+      {bands.map(({ key, content }, index) => (
+        <BleedBand key={key} tone={index % 2 === 0 ? 'page' : 'sand'} className="last:flex-1">
+          {content}
+        </BleedBand>
+      ))}
+    </article>
   )
 }
 
@@ -71,16 +113,20 @@ export function ProfileDetailView({
 // Header and verification (blocks 2 and 2a)
 // ---------------------------------------------------------------------------
 
-function ProfileHeader({ detail }: { detail: ProfileDetail }) {
-  const { t } = useTranslation(['profile', 'shared', 'common'])
+function ProfileHeader({ detail, nameId }: { detail: ProfileDetail; nameId: string }) {
+  const { t } = useTranslation(['profile', 'shared'])
   const label = useLabelOf()
   const { card } = detail
-  const activity =
-    detail.is_online === true
-      ? t('profile:header.online')
-      : card.last_active
-        ? t(`shared:card.activity.${card.last_active}`, { defaultValue: '' })
-        : ''
+  const { country, work } = useCardFacts(card)
+  const location = country
+    ? t('shared:card.location_with_country', { city: card.city_name, country })
+    : card.city_name
+  const online = detail.is_online === true
+  const activity = online
+    ? t('profile:header.online')
+    : card.last_active
+      ? t(`shared:card.activity.${card.last_active}`, { defaultValue: '' })
+      : ''
 
   const copy = async () => {
     try {
@@ -92,58 +138,86 @@ function ProfileHeader({ detail }: { detail: ProfileDetail }) {
   }
 
   return (
-    <header className="flex flex-col gap-1">
-      <h1 className="flex flex-wrap items-center gap-x-2 gap-y-1 text-2xl font-semibold leading-snug">
-        <span className="break-words">
-          {t('common:format.name_age', { name: card.display_name, age: card.age })}
+    <header className="flex min-w-0 flex-col items-start gap-4">
+      <div className="flex max-w-full flex-wrap items-center gap-x-3 gap-y-2">
+        <span className="tonal max-w-full rounded-lg px-3 py-[8px] text-label-sm font-bold break-all tabular-nums">
+          <span className="sr-only">{t('profile:header.code', { code: card.public_code })}</span>
+          <span aria-hidden="true">{card.public_code}</span>
         </span>
-        <BadgeRow badges={card.badges} />
-      </h1>
-      {activity ? <p className="text-muted-foreground">{activity}</p> : null}
-      <p className="flex items-center gap-1 text-sm text-muted-foreground">
-        <span>{t('profile:header.code', { code: card.public_code })}</span>
         <Button
-          variant="ghost"
+          variant="secondary"
           size="icon"
           aria-label={t('profile:header.copy_code')}
           onClick={() => void copy()}
         >
           <Copy aria-hidden="true" className="size-4" />
         </Button>
-      </p>
+        {activity ? (
+          <p className="flex items-center gap-2 text-body-sm text-muted-foreground">
+            <span
+              aria-hidden="true"
+              className={cn(
+                'size-[9px] shrink-0 rounded-pill',
+                online ? 'bg-success' : 'border-2 border-input',
+              )}
+            />
+            {activity}
+          </p>
+        ) : null}
+      </div>
+      <h1 id={nameId} className="max-w-full text-headline-lg xl:text-headline-lg-wide tabular-nums">
+        <NameAge name={card.display_name} age={card.age} />
+      </h1>
+      <BadgeRow badges={card.badges} />
+      <MetaLine
+        parts={[
+          location,
+          work,
+          label('marital_status', card.marital_status),
+          label('sects', card.sect_code),
+        ]}
+        className="text-body-lg"
+      />
       {card.managed_by && card.managed_by !== 'self' ? (
-        <p className="text-muted-foreground">
-          {t('profile:header.managed_by', { label: label('managed_by', card.managed_by) })}
+        <p className="flex max-w-full items-start gap-3 rounded-lg bg-primary-soft px-4 py-2 text-label-md font-bold text-primary">
+          <span aria-hidden="true" className="flex h-[1lh] items-center">
+            <UsersRound className="size-[18px]" />
+          </span>
+          <span className="min-w-0">
+            {t('profile:header.managed_by', { label: label('managed_by', card.managed_by) })}
+          </span>
         </p>
       ) : null}
     </header>
   )
 }
 
-const VERIFICATION_BADGES: readonly BadgeCode[] = [
-  'id_verified',
-  'photo_verified',
-  'phone_verified',
-]
-
 function VerificationBlock({ badges }: { badges: readonly BadgeCode[] }) {
   const { t } = useTranslation('profile')
+  const headingId = useId()
   const earned = VERIFICATION_BADGES.filter((badge) => badges.includes(badge))
   if (earned.length === 0) return null
   return (
     <section
-      aria-label={t('verification.title')}
-      className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-success/30 bg-success-soft/40 p-4"
+      aria-labelledby={headingId}
+      className="band-success mt-1 flex flex-col gap-3 rounded-lg px-[20px] py-5"
     >
-      <ul className="flex flex-col gap-1.5">
+      <h2 id={headingId} className="text-figure">
+        {t('verification.title')}
+      </h2>
+      <ul className="flex flex-col gap-3">
         {earned.map((badge) => (
-          <li key={badge} className="flex items-start gap-2">
-            <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-success" />
-            {t(`verification.${badge}`)}
+          <li key={badge} className="flex items-start gap-3">
+            <span aria-hidden="true" className="flex h-[1lh] items-center text-success">
+              <Check strokeWidth={2.5} className="size-5" />
+            </span>
+            <span className="min-w-0">{t(`verification.${badge}`)}</span>
           </li>
         ))}
       </ul>
-      <p className="text-sm text-muted-foreground">{t('verification.disclaimer')}</p>
+      <p className="mt-2 border-t border-success/30 pt-3 text-body-sm text-foreground-secondary">
+        {t('verification.disclaimer')}
+      </p>
     </section>
   )
 }
@@ -152,118 +226,125 @@ function VerificationBlock({ badges }: { badges: readonly BadgeCode[] }) {
 // Compatibility (block 3)
 // ---------------------------------------------------------------------------
 
-function Ring({ value, label }: { value: number; label: string }) {
-  const radius = 30
-  const circumference = 2 * Math.PI * radius
-  const clamped = Math.max(0, Math.min(100, Math.round(value)))
+function FitBar({
+  label,
+  value,
+  tone,
+}: {
+  label: string
+  value: number
+  tone: 'success' | 'primary'
+}) {
+  const labelId = useId()
   return (
-    <div className="relative size-20 shrink-0">
-      <svg viewBox="0 0 72 72" className="size-20 -rotate-90" aria-hidden="true">
-        <circle cx="36" cy="36" r={radius} fill="none" strokeWidth="7" className="stroke-muted" />
-        <circle
-          cx="36"
-          cy="36"
-          r={radius}
-          fill="none"
-          strokeWidth="7"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={circumference * (1 - clamped / 100)}
-          className="stroke-accent"
-        />
-      </svg>
-      <span className="absolute inset-0 flex items-center justify-center px-1 text-center text-sm font-semibold leading-tight">
-        {label}
-      </span>
-    </div>
-  )
-}
-
-function FitBar({ label, value }: { label: string; value: number }) {
-  const clamped = Math.max(0, Math.min(100, Math.round(value)))
-  return (
-    <div className="flex flex-col gap-1">
-      <p className="text-sm">{label}</p>
-      {/* biome-ignore lint/a11y/useSemanticElements: a native meter cannot take the design tokens */}
-      <div
-        role="meter"
-        aria-label={label}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={clamped}
-        className="h-2 overflow-hidden rounded-full bg-muted"
-      >
-        <div className="h-full rounded-full bg-accent" style={{ width: `${clamped}%` }} />
-      </div>
+    <div className="flex flex-col gap-2">
+      <p id={labelId} className="text-body-lg">
+        <Percent text={label} className={tone === 'success' ? 'text-success' : 'text-primary'} />
+      </p>
+      <Progress role="meter" tone={tone} aria-labelledby={labelId} value={Math.round(value)} />
     </div>
   )
 }
 
 function CompatibilityBlock({ detail }: { detail: ProfileDetail }) {
   const { t } = useTranslation('profile')
+  const { context } = useCandidate()
   const [open, setOpen] = useState(false)
-  const listId = useId()
+  const headingId = useId()
   const compatibility = detail.compatibility
   if (!compatibility) return null
   const name = detail.card.display_name
+  const percent = Math.round(compatibility.compat)
+  const ringLabel = t('compat.ring', { value: percent })
 
   return (
-    <SectionCard title={t('compat.title')}>
-      <div className="flex items-center gap-4">
-        <Ring
-          value={compatibility.compat}
-          label={t('compat.ring', { value: Math.round(compatibility.compat) })}
+    <section aria-labelledby={headingId} className="flex min-w-0 flex-col gap-6">
+      <div className="flex flex-wrap items-center gap-x-10 gap-y-6">
+        <ProgressRing
+          kind="match"
+          value={percent}
+          label={ringLabel}
+          // The ring's word is what the translation puts beside the number.
+          caption={ringLabel.replace(`${percent}%`, '').trim()}
         />
-        <ReasonChips reasons={compatibility.reasons} max={3} />
+        <div className="flex min-w-0 max-w-full flex-[1_1_320px] flex-col gap-4">
+          <SectionHeading id={headingId} title={t('compat.title')} ornament="none" />
+          <ReasonChips reasons={compatibility.reasons} max={3} className="gap-2 text-body-md" />
+          <FitBar
+            tone="success"
+            label={t('compat.viewer_fit', { name, value: compatibility.viewer_fit, context })}
+            value={compatibility.viewer_fit}
+          />
+          <FitBar
+            tone="primary"
+            label={t('compat.owner_fit', { name, value: compatibility.owner_fit, context })}
+            value={compatibility.owner_fit}
+          />
+        </div>
       </div>
-      <FitBar
-        label={t('compat.viewer_fit', { name, value: compatibility.viewer_fit })}
-        value={compatibility.viewer_fit}
-      />
-      <FitBar
-        label={t('compat.owner_fit', { name, value: compatibility.owner_fit })}
-        value={compatibility.owner_fit}
-      />
       {compatibility.dimensions.length > 0 ? (
-        <>
-          <Button
-            variant="ghost"
-            className="-ms-3 self-start text-primary"
-            aria-expanded={open}
-            aria-controls={listId}
-            onClick={() => setOpen((value) => !value)}
-          >
+        <Collapsible open={open} onOpenChange={setOpen} className="tonal rounded-lg px-[20px] py-1">
+          <CollapsibleTrigger>
             {open ? t('compat.details_hide') : t('compat.details_show')}
-          </Button>
-          <ul id={listId} hidden={!open} className="flex flex-col divide-y divide-border">
-            {compatibility.dimensions.map((dimension) => (
-              <li key={dimension.dimension} className="flex items-center gap-3 py-2">
-                <MatchIcon matched={dimension.matched} />
-                <span className="flex-1">{dimensionLabel(dimension.dimension)}</span>
-                {dimension.importance === 'must' ? (
-                  <Badge variant="outline">{t('compat.must')}</Badge>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        </>
+            <span
+              aria-hidden="true"
+              className="flex size-10 shrink-0 items-center justify-center rounded-pill bg-background"
+            >
+              <ChevronDown className="size-[1.125rem] transition-transform duration-(--duration-base) group-data-[state=open]/collapsible:rotate-180" />
+            </span>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <ul className="grid grid-cols-[repeat(auto-fit,minmax(min(290px,100%),1fr))] gap-x-8 pb-3">
+              {compatibility.dimensions.map((dimension) => (
+                <li
+                  key={dimension.dimension}
+                  className="flex min-h-[52px] flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-border py-[8px]"
+                >
+                  <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                    <span className="min-w-0">{dimensionLabel(dimension.dimension)}</span>
+                    {dimension.importance === 'must' ? (
+                      <Badge variant="tag">{t('compat.must')}</Badge>
+                    ) : null}
+                  </span>
+                  <MatchResult
+                    matched={dimension.matched}
+                    matchText={t('compat.matched')}
+                    differsText={t('compat.not_matched')}
+                  />
+                </li>
+              ))}
+            </ul>
+          </CollapsibleContent>
+        </Collapsible>
       ) : null}
-    </SectionCard>
+    </section>
   )
 }
 
-function MatchIcon({ matched }: { matched: boolean | null }) {
-  const { t } = useTranslation('profile')
+/** A tick or a cross, always with its words; a difference is never red (DESIGN.md 2.2). */
+function MatchResult({
+  matched,
+  matchText,
+  differsText,
+}: {
+  matched: boolean | null
+  matchText: string
+  differsText: string
+}) {
   if (matched === null) {
-    return <Minus aria-hidden="true" className="size-5 shrink-0 text-muted-foreground" />
+    return <Minus aria-hidden="true" className="size-[18px] text-muted-foreground" />
   }
-  return matched ? (
-    <span role="img" aria-label={t('compat.matched')} className="inline-flex text-success">
-      <Check aria-hidden="true" className="size-5 shrink-0" />
-    </span>
-  ) : (
-    <span role="img" aria-label={t('compat.not_matched')} className="inline-flex text-danger">
-      <X aria-hidden="true" className="size-5 shrink-0" />
+  const Icon = matched ? Check : X
+  return (
+    <span
+      data-match={matched}
+      className={cn(
+        'inline-flex max-w-full items-center gap-2 text-label-md font-bold',
+        matched ? 'text-success' : 'text-foreground-secondary',
+      )}
+    >
+      <Icon aria-hidden="true" strokeWidth={2.5} className="size-[18px]" />
+      {matched ? matchText : differsText}
     </span>
   )
 }
@@ -275,6 +356,8 @@ function MatchIcon({ matched }: { matched: boolean | null }) {
 type Row =
   | { key: string; label: string; value: ReactNode }
   | { key: string; label: string; locked: LockedGroup }
+
+type Group = { key: string; title: string; items: Row[]; more?: ReactNode }
 
 function value(text: string | null | undefined): string | null {
   return text ? text : null
@@ -289,47 +372,33 @@ function rows(list: (Row | null | false)[]): Row[] {
   })
 }
 
-function DetailList({ items, tier }: { items: Row[]; tier: Tier }) {
+function GroupBlock({ group, tier, split }: { group: Group; tier: Tier; split: boolean }) {
   return (
-    <dl className="flex flex-col divide-y divide-border">
-      {items.map((row) => (
-        <div
-          key={row.key}
-          data-row={row.key}
-          data-locked={'locked' in row ? row.locked : undefined}
-          className="grid grid-cols-1 gap-x-4 gap-y-0.5 py-2 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]"
-        >
-          <dt className="text-sm text-muted-foreground">{row.label}</dt>
-          <dd className="break-words">
-            {'locked' in row ? <LockedValue tier={tier} /> : row.value}
-          </dd>
-        </div>
-      ))}
-    </dl>
-  )
-}
-
-function Block({
-  title,
-  items,
-  tier,
-  children,
-}: {
-  title: string
-  items: Row[]
-  tier: Tier
-  children?: ReactNode
-}) {
-  if (items.length === 0 && !children) return null
-  return (
-    <SectionCard title={title}>
-      {items.length > 0 ? <DetailList items={items} tier={tier} /> : null}
-      {children}
+    <SectionCard title={group.title}>
+      {group.items.length > 0 ? (
+        <DefinitionList split={split}>
+          {group.items.map((row) => (
+            <DefinitionRow
+              key={row.key}
+              label={row.label}
+              data-row={row.key}
+              data-locked={'locked' in row ? row.locked : undefined}
+            >
+              {'locked' in row ? <LockedValue tier={tier} /> : row.value}
+            </DefinitionRow>
+          ))}
+        </DefinitionList>
+      ) : null}
+      {group.more}
     </SectionCard>
   )
 }
 
-function DetailBlocks({ detail }: { detail: ProfileDetail }) {
+/**
+ * Blocks 5 to 10 as bands: Basics with Religion and community, Location with Education and
+ * career, then Family and Faith and lifestyle on their own. A block with no rows is not shown.
+ */
+function useDetailBands(detail: ProfileDetail): { key: string; content: ReactNode }[] {
   const { t } = useTranslation(['profile', 'shared'])
   const label = useLabelOf()
   const tier = detail.relation.tier
@@ -630,20 +699,6 @@ function DetailBlocks({ detail }: { detail: ProfileDetail }) {
       label: r('jahez'),
       value: value(label('jahez_stance', lifestyle.jahez_stance)),
     },
-    {
-      key: 'hobbies',
-      label: r('hobbies'),
-      value:
-        lifestyle.hobby_codes.length > 0 ? (
-          <ul className="flex flex-wrap gap-1.5">
-            {lifestyle.hobby_codes.map((code) => (
-              <li key={code} className="rounded-full bg-muted px-2.5 py-0.5 text-sm">
-                {label('hobbies', code)}
-              </li>
-            ))}
-          </ul>
-        ) : null,
-    },
     ...(locked.has('health')
       ? [{ key: 'health', label: t('shared:locked.group.health'), locked: 'health' as const }]
       : [
@@ -656,31 +711,63 @@ function DetailBlocks({ detail }: { detail: ProfileDetail }) {
         ]),
   ])
 
-  return (
-    <>
-      <Block title={t('blocks.basics')} items={basicsRows} tier={tier} />
-      <Block title={t('blocks.community')} items={communityRows} tier={tier} />
-      <Block title={t('blocks.location')} items={locationRows} tier={tier} />
-      <Block title={t('blocks.education_career')} items={careerRows} tier={tier} />
-      {locked.has('family') ? (
-        <SectionCard title={t('blocks.family')}>
-          <div data-locked="family">
-            <LockedValue tier={tier} />
-          </div>
-        </SectionCard>
-      ) : (
-        <Block title={t('blocks.family')} items={familyRows} tier={tier}>
-          {detail.about_family ? (
-            <div className="flex flex-col gap-1">
-              <h3 className="font-semibold">{r('about_family')}</h3>
-              <PlainText text={detail.about_family} />
-            </div>
-          ) : null}
-        </Block>
-      )}
-      <Block title={t('blocks.lifestyle')} items={lifestyleRows} tier={tier} />
-    </>
-  )
+  let familyMore: ReactNode = null
+  if (locked.has('family')) {
+    familyMore = (
+      <div data-locked="family">
+        <LockedValue tier={tier} />
+      </div>
+    )
+  } else if (detail.about_family) {
+    familyMore = (
+      <div className="mt-2 flex flex-col gap-2">
+        <h3 className="text-emphasis">{r('about_family')}</h3>
+        <PlainText text={detail.about_family} className="max-w-measure text-body-lg" />
+      </div>
+    )
+  }
+
+  // Hobbies are chips under the rows: several values that do not read as one.
+  const hobbies =
+    lifestyle.hobby_codes.length > 0 ? (
+      <div data-row="hobbies" className="mt-2 flex flex-col gap-2">
+        <h3 className="text-body-sm font-normal text-muted-foreground">{r('hobbies')}</h3>
+        <ul className="flex flex-wrap gap-2">
+          {lifestyle.hobby_codes.map((code) => (
+            <li key={code} className="max-w-full">
+              <Chip>{label('hobbies', code)}</Chip>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ) : null
+
+  const layout: Group[][] = [
+    [
+      { key: 'basics', title: t('blocks.basics'), items: basicsRows },
+      { key: 'community', title: t('blocks.community'), items: communityRows },
+    ],
+    [
+      { key: 'location', title: t('blocks.location'), items: locationRows },
+      { key: 'education_career', title: t('blocks.education_career'), items: careerRows },
+    ],
+    [{ key: 'family', title: t('blocks.family'), items: familyRows, more: familyMore }],
+    [{ key: 'lifestyle', title: t('blocks.lifestyle'), items: lifestyleRows, more: hobbies }],
+  ]
+
+  return layout
+    .map((band) => band.filter((group) => group.items.length > 0 || Boolean(group.more)))
+    .filter((band) => band.length > 0)
+    .map((band) => ({
+      key: band.map((group) => group.key).join('-'),
+      content: (
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(340px,100%),1fr))] items-start gap-x-14 gap-y-10">
+          {band.map((group) => (
+            <GroupBlock key={group.key} group={group} tier={tier} split={band.length === 1} />
+          ))}
+        </div>
+      ),
+    }))
 }
 
 // ---------------------------------------------------------------------------
@@ -689,6 +776,7 @@ function DetailBlocks({ detail }: { detail: ProfileDetail }) {
 
 function LookingForBlock({ detail }: { detail: ProfileDetail }) {
   const { t } = useTranslation('profile')
+  const { context } = useCandidate()
   const label = useLabelOf()
   const reference = useReference()
   const queryClient = useQueryClient()
@@ -697,60 +785,48 @@ function LookingForBlock({ detail }: { detail: ProfileDetail }) {
   const { lines, matched, total } = detail.looking_for
 
   return (
-    <SectionCard title={t('looking_for.title', { name })}>
-      {detail.partner_notes ? <PlainText text={detail.partner_notes} /> : null}
+    <SectionCard title={t('looking_for.title', { name })} className="gap-4">
+      {lines.length > 0 ? (
+        <p className="rounded-lg bg-success-soft px-5 py-4 text-title-lg text-success tabular-nums">
+          {t('looking_for.summary', { matched, total, context })}
+        </p>
+      ) : null}
+      <PlainText text={detail.partner_notes} className="max-w-measure text-body-lg" />
       {lines.length === 0 ? (
         <p className="text-muted-foreground">{t('looking_for.none', { name })}</p>
       ) : (
-        <>
-          <ul className="flex flex-col divide-y divide-border">
-            {lines.map((line) => (
-              <li
-                key={line.dimension}
-                data-line={line.dimension}
-                className="flex items-start gap-3 py-2"
-              >
-                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <span className="text-sm text-muted-foreground">
-                    {dimensionLabel(line.dimension)}
-                  </span>
-                  <span className="break-words">
-                    {formatLookingForValues(line.dimension, line.summary_values, {
-                      label,
-                      reference,
-                      viewerGender,
-                    })}
-                  </span>
-                </div>
-                {line.importance === 'must' ? (
-                  <Badge variant="outline" className="shrink-0">
-                    {t('looking_for.must')}
-                  </Badge>
-                ) : null}
-                <span className="mt-0.5 shrink-0">
-                  {line.viewer_matches === null ? null : line.viewer_matches ? (
-                    <span
-                      role="img"
-                      aria-label={t('looking_for.you_match')}
-                      className="inline-flex text-success"
-                    >
-                      <Check aria-hidden="true" className="size-5" />
-                    </span>
-                  ) : (
-                    <span
-                      role="img"
-                      aria-label={t('looking_for.you_do_not_match')}
-                      className="inline-flex text-danger"
-                    >
-                      <X aria-hidden="true" className="size-5" />
-                    </span>
-                  )}
+        <ul className="grid grid-cols-[repeat(auto-fit,minmax(min(320px,100%),1fr))] gap-x-12">
+          {lines.map((line) => (
+            <li
+              key={line.dimension}
+              data-line={line.dimension}
+              className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 border-b border-border py-3"
+            >
+              <span className="flex min-w-0 max-w-full flex-[1_1_11rem] flex-col gap-1">
+                <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-body-sm text-muted-foreground">
+                  <span className="min-w-0">{dimensionLabel(line.dimension)}</span>
+                  {line.importance === 'must' ? (
+                    <Badge variant="tag">{t('looking_for.must')}</Badge>
+                  ) : null}
                 </span>
-              </li>
-            ))}
-          </ul>
-          <p className={cn('font-medium')}>{t('looking_for.summary', { matched, total })}</p>
-        </>
+                <span className="text-title-sm">
+                  {formatLookingForValues(line.dimension, line.summary_values, {
+                    label,
+                    reference,
+                    viewerGender,
+                  })}
+                </span>
+              </span>
+              {line.viewer_matches === null ? null : (
+                <MatchResult
+                  matched={line.viewer_matches}
+                  matchText={t('looking_for.you_match', { context })}
+                  differsText={t('looking_for.you_do_not_match', { context })}
+                />
+              )}
+            </li>
+          ))}
+        </ul>
       )}
     </SectionCard>
   )

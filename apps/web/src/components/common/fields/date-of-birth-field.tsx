@@ -4,11 +4,18 @@ import { Label } from '~/components/ui/label'
 import { NativeSelect, NativeSelectOption } from '~/components/ui/native-select'
 import { useFieldControl } from '~/lib/form-context'
 import { todayInKarachi } from '~/lib/format'
+import { cn } from '~/lib/utils'
 import { ariaFor, type BaseFieldProps, FieldShell, subId, useFieldDisabled } from './field-shell'
 
 type Parts = { day: string; month: string; year: string }
 
 const EMPTY: Parts = { day: '', month: '', year: '' }
+// One row on a 360 phone; each takes a line of its own at larger text.
+const BASIS: Record<keyof Parts, string> = {
+  day: 'flex-[1_1_4.75rem]',
+  month: 'flex-[2_1_7.5rem]',
+  year: 'flex-[1_1_6rem]',
+}
 
 function pad(value: number, length = 2): string {
   return String(value).padStart(length, '0')
@@ -139,12 +146,15 @@ export function DateOfBirthField({
       kind="fieldset"
       message={message}
     >
-      <div className="grid grid-cols-[minmax(0,5rem)_minmax(0,1fr)_minmax(0,6.5rem)] gap-2">
+      <div className="flex flex-wrap gap-2">
         {selects.map((select, index) => {
           const id = index === 0 ? control.inputId : subId(control, select.part)
           return (
-            <div key={select.part} className="grid gap-1">
-              <Label htmlFor={id} className="text-sm font-normal text-muted-foreground">
+            <div
+              key={select.part}
+              className={cn('grid min-w-0 max-w-full gap-1', BASIS[select.part])}
+            >
+              <Label htmlFor={id} variant="part">
                 {select.label}
               </Label>
               <NativeSelect
@@ -154,6 +164,7 @@ export function DateOfBirthField({
                 onChange={(event) => update(select.part, event.target.value)}
                 onBlur={control.onBlur}
                 disabled={isDisabled}
+                className="ps-3 pe-8"
                 {...aria}
               >
                 <NativeSelectOption value="">{select.label}</NativeSelectOption>

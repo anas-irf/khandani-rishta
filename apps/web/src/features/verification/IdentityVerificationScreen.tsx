@@ -1,12 +1,14 @@
 // ME-VERIFY-ID (16 section 6.23, 12 sections 3, 5 and 8.2)
 import { Link, useNavigate, useSearch } from '@tanstack/react-router'
-import { CircleCheck, Clock, ImagePlus } from 'lucide-react'
+import { CircleCheck, Clock, ImagePlus, type LucideIcon } from 'lucide-react'
 import { type ReactNode, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { ArchIcon, type ArchTone } from '~/components/common/Arch'
 import { ErrorState } from '~/components/common/ErrorState'
 import { FormSkeleton } from '~/components/common/FormSkeleton'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
+import { SectionHeading } from '~/components/common/SectionHeading'
 import { Button } from '~/components/ui/button'
 import { Progress } from '~/components/ui/progress'
 import { IdentityNumberForm } from '~/features/identity/IdentityNumberForm'
@@ -27,7 +29,14 @@ import {
 } from './queries'
 import { CapturedReview, LiveCamera, OpenCameraButton } from './SelfieCapture'
 import { GestureStep } from './SelfieVerificationScreen'
-import { ClosedNotice, failingField, imageErrorKey, isGestureMismatch, StepPanel } from './shared'
+import {
+  ClosedNotice,
+  FlowAlert,
+  failingField,
+  imageErrorKey,
+  isGestureMismatch,
+  StepPanel,
+} from './shared'
 import { newestRequest } from './VerificationCentreScreen'
 
 type Step = 'number' | 'front' | 'back' | 'gesture' | 'camera' | 'selfie_review' | 'submit' | 'done'
@@ -40,7 +49,6 @@ export function IdentityVerificationScreen({ captureMode }: { captureMode?: Capt
   const { t } = useTranslation('verification')
   const me = useCurrentMe()
   const verifications = useVerifications()
-  const header = <PageHeader title={t('identity.title')} showBack />
 
   let content: ReactNode
   if (me.profile.status === 'closed') content = <ClosedNotice />
@@ -56,10 +64,9 @@ export function IdentityVerificationScreen({ captureMode }: { captureMode?: Capt
   } else content = <IdentityFlow data={verifications.data} captureMode={captureMode} />
 
   return (
-    <div className="container-app flex max-w-2xl flex-col gap-4">
-      {header}
+    <Page title={t('identity.title')} showBack width="form">
       {content}
-    </div>
+    </Page>
   )
 }
 
@@ -98,17 +105,10 @@ function IdentityFlow({ data, captureMode }: { data: Verifications; captureMode?
   })
   const identity = data.identity
   if (blocked === 'verified') {
-    return (
-      <StateNotice
-        icon={<CircleCheck className="size-10 text-success" />}
-        text={t('identity.verified')}
-      />
-    )
+    return <StateNotice icon={CircleCheck} tone="solid" text={t('identity.verified')} />
   }
   if (blocked === 'pending') {
-    return (
-      <StateNotice icon={<Clock className="size-10 text-warning" />} text={t('identity.pending')} />
-    )
+    return <StateNotice icon={Clock} tone="warning" text={t('identity.pending')} />
   }
 
   const passport = identity?.document_type === 'passport'
@@ -216,11 +216,9 @@ function IdentityFlow({ data, captureMode }: { data: Verifications; captureMode?
     <>
       {step === 'number' ? (
         <section className="flex flex-col gap-4" aria-labelledby="identity-step-1">
-          <h2 id="identity-step-1" className="text-lg font-semibold">
-            {t('identity.step1')}
-          </h2>
+          <SectionHeading id="identity-step-1" title={t('identity.step1')} />
           {candidate.self ? null : (
-            <p className="font-medium">{t('identity.managed_note', { name: candidate.name })}</p>
+            <p className="text-title-sm">{t('identity.managed_note', { name: candidate.name })}</p>
           )}
           <IdentityNumberForm
             mode="me"
@@ -232,9 +230,7 @@ function IdentityFlow({ data, captureMode }: { data: Verifications; captureMode?
 
       {step === 'front' || step === 'back' ? (
         <section className="flex flex-col gap-4" aria-labelledby="identity-step-2">
-          <h2 id="identity-step-2" className="text-lg font-semibold">
-            {t('identity.step2')}
-          </h2>
+          <SectionHeading id="identity-step-2" title={t('identity.step2')} />
           {identity ? <NumberOnFile identity={identity} /> : null}
           <p>{t('identity.tips')}</p>
           <CardPhotoStep
@@ -265,9 +261,7 @@ function IdentityFlow({ data, captureMode }: { data: Verifications; captureMode?
 
       {step === 'gesture' || step === 'camera' || step === 'selfie_review' ? (
         <section className="flex flex-col gap-4" aria-labelledby="identity-step-3">
-          <h2 id="identity-step-3" className="text-lg font-semibold">
-            {t('identity.step3')}
-          </h2>
+          <SectionHeading id="identity-step-3" title={t('identity.step3')} />
           {step === 'gesture' ? (
             <GestureStep
               challenge={challenge}
@@ -319,13 +313,9 @@ function IdentityFlow({ data, captureMode }: { data: Verifications; captureMode?
 
       {step === 'submit' ? (
         <StepPanel>
-          {submitError ? (
-            <p role="alert" className="text-danger">
-              {submitError}
-            </p>
-          ) : null}
+          {submitError ? <FlowAlert>{submitError}</FlowAlert> : null}
           {progress ? (
-            <div className="flex w-full max-w-md flex-col gap-2">
+            <div className="flex w-full max-w-form flex-col gap-2">
               <p role="status">{t(`identity.slot.${progress.slot}`)}</p>
               <Progress
                 aria-label={t('identity.progress_label')}
@@ -339,7 +329,7 @@ function IdentityFlow({ data, captureMode }: { data: Verifications; captureMode?
               />
             </div>
           ) : null}
-          <Button onClick={() => void send()} loading={progress !== null}>
+          <Button size="lg" onClick={() => void send()} loading={progress !== null}>
             {submitError ? t('camera.try_again') : t('identity.submit')}
           </Button>
         </StepPanel>
@@ -347,8 +337,9 @@ function IdentityFlow({ data, captureMode }: { data: Verifications; captureMode?
 
       {step === 'done' ? (
         <StepPanel>
-          <CircleCheck aria-hidden="true" className="size-12 text-success" />
-          <p role="status" className="text-lg">
+          {/* Sent, not verified yet, so no tick (DESIGN.md 6.6). */}
+          <ArchIcon icon={Clock} size="lg" tone="warning" />
+          <p role="status" className="text-title-md">
             {t('identity.success')}
           </p>
           <Button asChild>
@@ -360,12 +351,12 @@ function IdentityFlow({ data, captureMode }: { data: Verifications; captureMode?
   )
 }
 
-function StateNotice({ icon, text }: { icon: ReactNode; text: string }) {
+function StateNotice({ icon, tone, text }: { icon: LucideIcon; tone: ArchTone; text: string }) {
   const { t } = useTranslation('verification')
   return (
     <StepPanel>
-      <span aria-hidden="true">{icon}</span>
-      <p className="text-lg">{text}</p>
+      <ArchIcon icon={icon} size="lg" tone={tone} />
+      <p className="text-title-md">{text}</p>
       <Button asChild variant="secondary">
         <Link to="/me/verification">{t('identity.back_to_centre')}</Link>
       </Button>
@@ -377,7 +368,7 @@ function NumberOnFile({ identity }: { identity: IdentitySummary }) {
   const { t } = useTranslation('verification')
   const label = useLabelOf()
   return (
-    <p className="text-muted-foreground">
+    <p className="text-body-sm text-muted-foreground tabular-nums">
       {t('identity.number_on_file', {
         type: label('document_type', identity.document_type),
         number: identity.number_masked,
@@ -423,7 +414,7 @@ function CardPhotoStep({
 
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="font-semibold">{title}</h3>
+      <h3 className="text-title-md font-bold">{title}</h3>
       {candidate ? (
         <CapturedReview
           blob={candidate}
@@ -432,14 +423,11 @@ function CardPhotoStep({
         />
       ) : (
         <>
-          {message ? (
-            <p role="alert" className="text-danger">
-              {message}
-            </p>
-          ) : null}
+          {message ? <FlowAlert>{message}</FlowAlert> : null}
           <Button
             variant="secondary"
-            className="self-start"
+            size="lg"
+            fill="phone"
             loading={preparing}
             onClick={() => inputRef.current?.click()}
           >

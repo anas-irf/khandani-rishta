@@ -24,8 +24,13 @@ export type ConfirmDialogProps = {
   /** Repeats the verb: "Block", "End connection". */
   confirmLabel: string
   cancelLabel?: string
-  /** Red confirm button for destructive actions. */
-  destructive?: boolean
+  /**
+   * The confirming button (DESIGN.md 6.1): `ink` for a negative choice that destroys nothing
+   * (decline, withdraw), `danger` for one that does (block, delete).
+   */
+  tone?: 'default' | 'ink' | 'danger'
+  /** `rail` takes the place of a profile's side rail on wide screens (DESIGN.md 6.13). */
+  placement?: 'center' | 'rail'
   /** A phrase the member must type before the confirm button is enabled (e.g. "DELETE"). */
   confirmPhrase?: string
   /** Label of the phrase field (default "Type {phrase} to confirm"). */
@@ -39,9 +44,11 @@ export type ConfirmDialogProps = {
   children?: ReactNode
 }
 
+const CONFIRM_VARIANT = { default: 'default', ink: 'ink', danger: 'destructive' } as const
+
 /**
- * The confirmation dialog of 16 rule G8, built on `AlertDialog` (focus starts on Cancel,
- * Escape closes, the overlay does not).
+ * The confirmation dialog of 16 rule G8, built on `AlertDialog` (focus starts on Cancel, Escape
+ * closes, the overlay does not): a bottom sheet on phones, with two equal buttons 56 tall.
  */
 export function ConfirmDialog({
   open,
@@ -50,7 +57,8 @@ export function ConfirmDialog({
   description,
   confirmLabel,
   cancelLabel,
-  destructive = false,
+  tone = 'default',
+  placement,
   confirmPhrase,
   phraseLabel,
   onConfirm,
@@ -87,13 +95,15 @@ export function ConfirmDialog({
   return (
     <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogContent
+        placement={placement}
         onEscapeKeyDown={(event) => {
           if (pending) event.preventDefault()
         }}
       >
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription className="text-base text-foreground">
+          {/* Empty without a consequence to name: the title already asks the whole question. */}
+          <AlertDialogDescription className={description ? 'text-foreground' : 'sr-only'}>
             {description}
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -121,7 +131,7 @@ export function ConfirmDialog({
             {cancelLabel ?? t('common:actions.cancel')}
           </AlertDialogCancel>
           <Button
-            variant={destructive ? 'destructive' : 'default'}
+            variant={CONFIRM_VARIANT[tone]}
             disabled={!phraseMatches || !online}
             loading={pending}
             onClick={() => void confirm()}

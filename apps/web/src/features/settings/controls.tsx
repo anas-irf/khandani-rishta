@@ -1,11 +1,14 @@
-import { Check, ChevronRight, Loader2 } from 'lucide-react'
+import { Check, Loader2 } from 'lucide-react'
 import { type ReactNode, useId } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Band } from '~/components/common/Band'
+import { RadioCard } from '~/components/common/RadioCard'
+import { SectionCard } from '~/components/common/SectionCard'
+import { SwitchRow } from '~/components/common/SwitchRow'
 import { Label } from '~/components/ui/label'
-import { NativeSelect } from '~/components/ui/native-select'
-import { RadioGroup, RadioGroupItem } from '~/components/ui/radio-group'
+import { NativeSelect, NativeSelectOption } from '~/components/ui/native-select'
+import { RadioGroup } from '~/components/ui/radio-group'
 import { Skeleton } from '~/components/ui/skeleton'
-import { Switch } from '~/components/ui/switch'
 import { cn } from '~/lib/utils'
 
 /**
@@ -16,14 +19,17 @@ import { cn } from '~/lib/utils'
 export type SaveState = 'idle' | 'saving' | 'saved'
 
 /** A polite live region: the spinner while saving, then "Saved" for a moment. */
-export function SaveIndicator({ state }: { state: SaveState }) {
+export function SaveIndicator({ state, className }: { state: SaveState; className?: string }) {
   const { t } = useTranslation('settings')
   return (
     <span
       role="status"
       aria-live="polite"
       data-save-state={state}
-      className="inline-flex min-h-5 min-w-5 shrink-0 items-center gap-1 text-sm text-muted-foreground"
+      className={cn(
+        'inline-flex min-h-[22px] min-w-[20px] shrink-0 items-center gap-1 text-caption text-muted-foreground',
+        className,
+      )}
     >
       {state === 'saving' ? (
         <>
@@ -41,14 +47,17 @@ export function SaveIndicator({ state }: { state: SaveState }) {
   )
 }
 
-/** A settings toggle: label and helper text at the start, the switch at the end. */
+/**
+ * A settings toggle: the whole row is the switch (DESIGN.md 6.11). A switch that saves on its own
+ * passes `state`; the line for "Saved" keeps its room, so the rows under it never move.
+ */
 export function SettingSwitch({
   label,
   help,
   checked,
   onCheckedChange,
   disabled,
-  state = 'idle',
+  state,
 }: {
   label: string
   help?: ReactNode
@@ -57,30 +66,16 @@ export function SettingSwitch({
   disabled?: boolean
   state?: SaveState
 }) {
-  const id = useId()
-  const helpId = `${id}-help`
   return (
-    <div className="flex min-h-11 items-center justify-between gap-4 py-1.5">
-      <div className="grid min-w-0 gap-0.5">
-        <Label htmlFor={id} className="block text-base font-medium leading-snug">
-          {label}
-        </Label>
-        {help ? (
-          <p id={helpId} className="text-sm text-muted-foreground">
-            {help}
-          </p>
-        ) : null}
-      </div>
-      <div className="flex shrink-0 items-center gap-2">
-        <SaveIndicator state={state} />
-        <Switch
-          id={id}
-          checked={checked}
-          onCheckedChange={onCheckedChange}
-          disabled={disabled || state === 'saving'}
-          aria-describedby={help ? helpId : undefined}
-        />
-      </div>
+    <div className="flex min-w-0 flex-col">
+      <SwitchRow
+        label={label}
+        help={help}
+        checked={checked}
+        onCheckedChange={onCheckedChange}
+        disabled={disabled || state === 'saving'}
+      />
+      {state ? <SaveIndicator state={state} className="-mb-2 ps-[20px]" /> : null}
     </div>
   )
 }
@@ -110,15 +105,13 @@ export function SettingSelect({
   const helpId = `${id}-help`
   const captionId = `${id}-caption`
   return (
-    <div className="grid gap-1.5 py-1.5">
-      <div className="flex items-center justify-between gap-3">
-        <Label htmlFor={id} className="text-base font-medium leading-snug">
-          {label}
-        </Label>
+    <div className="flex min-w-0 flex-col gap-2 py-[8px]">
+      <div className="flex flex-wrap items-center justify-between gap-x-3">
+        <Label htmlFor={id}>{label}</Label>
         <SaveIndicator state={state} />
       </div>
       {help ? (
-        <p id={helpId} className="text-sm text-muted-foreground">
+        <p id={helpId} className="text-caption text-muted-foreground">
           {help}
         </p>
       ) : null}
@@ -132,13 +125,13 @@ export function SettingSelect({
         onChange={(event) => onChange(event.target.value)}
       >
         {options.map((option) => (
-          <option key={option.value} value={option.value} disabled={option.disabled}>
+          <NativeSelectOption key={option.value} value={option.value} disabled={option.disabled}>
             {option.label}
-          </option>
+          </NativeSelectOption>
         ))}
       </NativeSelect>
       {caption ? (
-        <p id={captionId} className="text-sm text-muted-foreground">
+        <p id={captionId} className="text-caption text-muted-foreground">
           {caption}
         </p>
       ) : null}
@@ -178,9 +171,9 @@ export function SettingRadioCards({
   const id = useId()
   const titleId = `${id}-title`
   return (
-    <div className="grid gap-2 py-1.5">
-      <div className="flex items-center justify-between gap-3">
-        <p id={titleId} className="text-base font-medium leading-snug">
+    <div className="flex min-w-0 flex-col gap-3 py-[8px]">
+      <div className="flex flex-wrap items-center justify-between gap-x-3">
+        <p id={titleId} className="max-w-full text-title-md font-bold">
           {title}
         </p>
         <SaveIndicator state={state} />
@@ -192,52 +185,33 @@ export function SettingRadioCards({
           if (next && next !== value) onChange(next)
         }}
         disabled={state === 'saving'}
-        className="gap-2"
       >
-        {options.map((option) => {
-          const optionId = `${id}-${option.value}`
-          const helpId = option.help ? `${optionId}-help` : undefined
-          return (
-            <div key={option.value} className="grid gap-1">
-              <label
-                htmlFor={optionId}
-                className={cn(
-                  'flex min-h-11 cursor-pointer items-start gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-3 transition-colors hover:bg-muted',
-                  'has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary-soft',
-                  'has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60',
-                )}
-              >
-                <RadioGroupItem
-                  id={optionId}
-                  value={option.value}
-                  aria-describedby={helpId}
-                  className="mt-0.5"
-                />
-                <span className="grid gap-0.5">
-                  <span className="text-base font-medium leading-snug">{option.label}</span>
-                  {option.help ? (
-                    <span id={helpId} className="text-sm text-muted-foreground">
-                      {option.help}
-                    </span>
-                  ) : null}
-                </span>
-              </label>
-              {option.extra ? <div className="ps-3">{option.extra}</div> : null}
-            </div>
-          )
-        })}
+        {options.map((option) => (
+          <div key={option.value} className="flex min-w-0 flex-col items-start">
+            <RadioCard
+              id={`${id}-${option.value}`}
+              value={option.value}
+              label={option.label}
+              description={option.help}
+              className="w-full"
+            />
+            {option.extra ? <div className="max-w-full ps-[16px]">{option.extra}</div> : null}
+          </div>
+        ))}
       </RadioGroup>
-      {note ? <p className="text-sm text-muted-foreground">{note}</p> : null}
+      {note ? <p className="text-caption text-muted-foreground">{note}</p> : null}
     </div>
   )
 }
 
-/** A settings screen's column: header above, groups below. */
-export function SettingsPage({ children }: { children: ReactNode }) {
+/** One group of a settings screen: a band with its ornamented title (DESIGN.md 6.10). */
+export function SettingsGroup({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="container-app">
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 pb-6">{children}</div>
-    </div>
+    <Band as="div" tone="auto" width="column">
+      <SectionCard title={title} className="gap-4">
+        {children}
+      </SectionCard>
+    </Band>
   )
 }
 
@@ -252,23 +226,13 @@ export function SettingsSkeleton({ groups = 3 }: { groups?: number }) {
           // biome-ignore lint/suspicious/noArrayIndexKey: placeholders have no identity.
           key={index}
           aria-hidden="true"
-          className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-4"
+          className="flex flex-col gap-4 pb-4"
         >
-          <Skeleton className="h-6 w-40" />
-          <Skeleton className="h-11 w-full rounded-[var(--radius-input)]" />
-          <Skeleton className="h-11 w-full rounded-[var(--radius-input)]" />
+          <Skeleton className="h-6 w-[min(100%,10rem)]" />
+          <Skeleton className="min-h-touch w-full rounded-row" />
+          <Skeleton className="min-h-touch w-full rounded-row" />
         </div>
       ))}
     </div>
-  )
-}
-
-/** The arrow at the end of a menu row; it points the other way in right-to-left layouts. */
-export function RowChevron({ className }: { className?: string }) {
-  return (
-    <ChevronRight
-      aria-hidden="true"
-      className={cn('size-5 shrink-0 text-muted-foreground rtl:-scale-x-100', className)}
-    />
   )
 }

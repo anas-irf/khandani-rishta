@@ -14,7 +14,7 @@ import {
 } from '../queries'
 import { lockedFieldsSchema, requestChangesSchema, textRejectSchema } from '../schemas'
 import type { AdminProfile, AdminTextField } from '../types'
-import { ActionDialog } from './ActionDialog'
+import { ActionDialog, DialogNote } from './ActionDialog'
 import { CountedTextarea, FormField, PresetButtons } from './FormField'
 import { ErrorSummary, useDialogErrors } from './useDialogErrors'
 
@@ -266,7 +266,7 @@ export function LockedFieldsDialog({
       error={<ErrorSummary messages={form.rest} />}
     >
       {profile.profile.verification.id_verified ? (
-        <p className="rounded-md bg-warning-soft p-2 text-sm">{t('profile.locked.id_reminder')}</p>
+        <DialogNote>{t('profile.locked.id_reminder')}</DialogNote>
       ) : null}
       <div className="grid grid-cols-2 gap-3">
         <FormField label={t('profile.field.first_name')} error={form.errors.first_name}>

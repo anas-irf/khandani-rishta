@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { EmptyState } from '~/components/common/EmptyState'
 import { InfiniteList } from '~/components/common/InfiniteList'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
 import { PlainText } from '~/components/common/PlainText'
 import {
   AlertDialog,
@@ -41,43 +41,39 @@ export function NotificationsScreen() {
   }
 
   return (
-    <div className="container-app">
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-2 pb-6">
-        <PageHeader
-          title={t('title')}
-          actions={
-            <Button
-              variant="ghost"
-              className="text-primary"
-              disabled={!canMarkAll || !online}
-              loading={
-                markRead.isPending &&
-                markRead.variables !== undefined &&
-                'all' in markRead.variables
-              }
-              onClick={() => markRead.mutate({ all: true })}
-            >
-              {t('mark_all_read')}
-            </Button>
+    <Page
+      title={t('title')}
+      width="column"
+      actions={
+        <Button
+          variant="link"
+          disabled={!canMarkAll || !online}
+          loading={
+            markRead.isPending && markRead.variables !== undefined && 'all' in markRead.variables
           }
-        />
-        <InfiniteList
-          query={feed}
-          label={t('list_label')}
-          getKey={(item) => item.id}
-          renderItem={(item) => (
-            <NotificationRow
-              item={item}
-              onRead={readItem}
-              onOpenWarning={(reason) => setWarning({ reason })}
-            />
-          )}
-          empty={<EmptyState icon={Bell} title={t('empty')} />}
-          listClassName="gap-0 divide-y divide-border overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface"
-        />
-      </div>
+          onClick={() => markRead.mutate({ all: true })}
+        >
+          {t('mark_all_read')}
+        </Button>
+      }
+    >
+      <InfiniteList
+        query={feed}
+        label={t('list_label')}
+        getKey={(item) => item.id}
+        renderItem={(item) => (
+          <NotificationRow
+            item={item}
+            onRead={readItem}
+            onOpenWarning={(reason) => setWarning({ reason })}
+          />
+        )}
+        empty={<EmptyState icon={Bell} title={t('empty')} />}
+        // The rows reach 12 into the gutters, so their hover fill has room around the content.
+        listClassName="-mx-[12px] flex flex-col"
+      />
       <WarningDialog warning={warning} onClose={() => setWarning(null)} />
-    </div>
+    </Page>
   )
 }
 
@@ -101,7 +97,7 @@ function WarningDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>{t('warning.title')}</AlertDialogTitle>
           <AlertDialogDescription asChild>
-            <div className="text-base text-foreground">
+            <div className="text-foreground">
               <PlainText text={warning?.reason} />
             </div>
           </AlertDialogDescription>
@@ -111,7 +107,7 @@ function WarningDialog({
             href="/community-guidelines"
             target="_blank"
             rel="noopener noreferrer"
-            className={cn(buttonVariants({ variant: 'outline' }))}
+            className={cn(buttonVariants({ variant: 'secondary' }))}
           >
             {t('warning.guidelines')}
           </a>

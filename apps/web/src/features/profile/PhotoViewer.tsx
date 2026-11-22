@@ -3,13 +3,15 @@ import { useNavigate } from '@tanstack/react-router'
 import { ChevronLeft, ChevronRight, Flag, X } from 'lucide-react'
 import { type KeyboardEvent, type PointerEvent, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ArchFrame, ArchInlay, Monogram } from '~/components/common/Arch'
+import { Band } from '~/components/common/Band'
 import { ErrorState } from '~/components/common/ErrorState'
-import { Silhouette } from '~/components/common/MemberPhoto'
 import { NoLongerAvailable } from '~/components/common/NoLongerAvailable'
 import { useGoBack } from '~/components/common/PageHeader'
 import { ReportDialog } from '~/components/common/ReportDialog'
 import { ScreenAccess } from '~/components/common/ScreenAccess'
 import { Button } from '~/components/ui/button'
+import { Dialog, DialogClose, DialogContent, DialogTitle } from '~/components/ui/dialog'
 import { Spinner } from '~/components/ui/spinner'
 import { isApiError } from '~/lib/api'
 import type { ProfileDetail } from '~/lib/api-types'
@@ -43,31 +45,32 @@ export function PhotoViewer({ profileId, index = 0 }: { profileId: string; index
   }
   if (code === 'not_found') {
     return (
-      <div className="container-app">
+      <Band as="div" className="flex-1">
         <NoLongerAvailable />
-      </div>
+      </Band>
     )
   }
   if (profile.isError) {
     return (
-      <div className="container-app">
-        <ScreenAccess screen="APP-PHOTOS">
+      <ScreenAccess screen="APP-PHOTOS">
+        <Band as="div" className="flex-1">
           <ErrorState
             error={profile.error}
             onRetry={() => void profile.refetch()}
             retrying={profile.isFetching}
           />
-        </ScreenAccess>
-      </div>
+        </Band>
+      </ScreenAccess>
     )
   }
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
-      <Spinner label={t('list.loading')} className="text-white" />
+    <div className="band-inverse fixed inset-0 z-50 flex items-center justify-center">
+      <Spinner label={t('list.loading')} />
     </div>
   )
 }
 
+/** One photo at a time on the inverse surface, as a modal dialog. */
 function Viewer({
   detail,
   index,
@@ -90,10 +93,6 @@ function Viewer({
   const frame = useRef<HTMLDivElement | null>(null)
   const rtl = i18n.dir() === 'rtl'
 
-  useEffect(() => {
-    frame.current?.focus()
-  }, [])
-
   // The open photo is kept in the URL (`index`), without adding history entries.
   useEffect(() => {
     if (current === index || total === 0) return
@@ -111,10 +110,7 @@ function Viewer({
   }
 
   const onKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      event.preventDefault()
-      goBack()
-    } else if (event.key === 'ArrowRight') {
+    if (event.key === 'ArrowRight') {
       event.preventDefault()
       go(rtl ? -1 : 1)
     } else if (event.key === 'ArrowLeft') {
@@ -142,120 +138,130 @@ function Viewer({
   const locked = detail.locked.includes('photos') && photo?.is_blurred
 
   return (
-    <div
-      ref={frame}
-      role="dialog"
-      aria-modal="true"
-      aria-label={t('photos.title', { name: card.display_name })}
-      tabIndex={-1}
-      onKeyDown={onKeyDown}
-      className="fixed inset-0 z-50 flex flex-col bg-black text-white outline-none"
-    >
-      <div className="flex items-center justify-between gap-2 p-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-white hover:bg-white/10"
-          aria-label={t('photos.close')}
-          onClick={goBack}
-        >
-          <X aria-hidden="true" className="size-6" />
-        </Button>
-        {total > 0 ? (
-          <p aria-live="polite" data-viewer-position="">
-            {t('photos.position', { current: current + 1, total })}
-          </p>
-        ) : null}
-        {photo ? (
-          <Button
-            variant="ghost"
-            className="text-white hover:bg-white/10"
-            onClick={() => setReporting(true)}
-          >
-            <Flag aria-hidden="true" />
-            {t('photos.report')}
-          </Button>
-        ) : (
-          <span className="size-11" />
-        )}
-      </div>
-
-      {/* biome-ignore lint/a11y/noStaticElementInteractions: the swipe repeats the previous and next buttons and the arrow keys */}
-      <div
-        className="relative flex flex-1 touch-pan-y items-center justify-center overflow-hidden select-none"
-        onPointerDown={onPointerDown}
-        onPointerUp={onPointerUp}
-        onContextMenu={(event) => event.preventDefault()}
+    <>
+      <Dialog
+        open
+        onOpenChange={(open) => {
+          if (!open) goBack()
+        }}
       >
-        {!photo || showFailure ? (
-          <div className="flex flex-col items-center gap-3 p-4 text-center">
-            <div className="h-60 w-48 overflow-hidden rounded-[var(--radius-card)]">
-              <Silhouette gender={card.gender} label={t('gallery.none')} />
-            </div>
-            {showFailure ? (
-              <>
-                <p role="alert">{t('photos.failed')}</p>
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    setFailed(null)
-                    void refetch()
-                  }}
-                >
-                  {t('photos.retry')}
-                </Button>
-              </>
+        <DialogContent
+          ref={frame}
+          placement="full"
+          showCloseButton={false}
+          aria-describedby={undefined}
+          onKeyDown={onKeyDown}
+          // The arrow keys work at once, before a button is chosen.
+          onOpenAutoFocus={(event) => {
+            event.preventDefault()
+            frame.current?.focus()
+          }}
+        >
+          <DialogTitle className="sr-only">
+            {t('photos.title', { name: card.display_name })}
+          </DialogTitle>
+          <div className="flex flex-wrap items-center justify-between gap-2 p-2">
+            <DialogClose asChild>
+              <Button variant="ghost-inverse" size="icon" aria-label={t('photos.close')}>
+                <X aria-hidden="true" className="size-6" />
+              </Button>
+            </DialogClose>
+            {total > 0 ? (
+              <p aria-live="polite" data-viewer-position="" className="tabular-nums">
+                {t('photos.position', { current: current + 1, total })}
+              </p>
+            ) : null}
+            {photo ? (
+              <Button variant="ghost-inverse" size="compact" onClick={() => setReporting(true)}>
+                <Flag aria-hidden="true" />
+                {t('photos.report')}
+              </Button>
             ) : (
-              <p>{t('gallery.none')}</p>
+              <span className="size-touch" />
             )}
           </div>
-        ) : (
-          <img
-            key={photo.id}
-            src={url ?? undefined}
-            alt={t('gallery.position', { current: current + 1, total })}
-            draggable={false}
-            onDragStart={(event) => event.preventDefault()}
-            onContextMenu={(event) => event.preventDefault()}
-            onError={() => setFailed(url)}
-            data-viewer-photo={photo.is_blurred ? 'blurred' : 'clear'}
-            className="max-h-full max-w-full object-contain"
-          />
-        )}
-        {photo && locked && !showFailure ? (
-          <PhotoAccessOverlay
-            profileId={card.id}
-            name={card.display_name}
-            state={detail.relation.photo_access}
-            className="bg-black/40"
-          />
-        ) : null}
-        {total > 1 ? (
-          <>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute start-2 top-1/2 -translate-y-1/2 rounded-full bg-black/40 text-white hover:bg-black/60"
-              aria-label={t('photos.previous')}
-              disabled={current === 0}
-              onClick={() => go(-1)}
-            >
-              <ChevronLeft aria-hidden="true" className="size-6 rtl:-scale-x-100" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute end-2 top-1/2 -translate-y-1/2 rounded-full bg-black/40 text-white hover:bg-black/60"
-              aria-label={t('photos.next')}
-              disabled={current === total - 1}
-              onClick={() => go(1)}
-            >
-              <ChevronRight aria-hidden="true" className="size-6 rtl:-scale-x-100" />
-            </Button>
-          </>
-        ) : null}
-      </div>
 
+          {/* biome-ignore lint/a11y/noStaticElementInteractions: the swipe repeats the previous and next buttons and the arrow keys */}
+          <div
+            className="relative flex min-h-0 flex-1 shrink touch-pan-y items-center justify-center overflow-hidden select-none"
+            onPointerDown={onPointerDown}
+            onPointerUp={onPointerUp}
+            onContextMenu={(event) => event.preventDefault()}
+          >
+            {!photo || showFailure ? (
+              <div className="flex max-h-full flex-col items-center gap-3 overflow-y-auto p-4 text-center">
+                <ArchFrame className="lattice flex h-[240px] w-[192px] shrink-0 items-center justify-center">
+                  <ArchInlay />
+                  <Monogram name={card.display_name} size="card" />
+                </ArchFrame>
+                {showFailure ? (
+                  <>
+                    <p role="alert">{t('photos.failed')}</p>
+                    <Button
+                      variant="inverse"
+                      onClick={() => {
+                        setFailed(null)
+                        void refetch()
+                      }}
+                    >
+                      {t('photos.retry')}
+                    </Button>
+                  </>
+                ) : (
+                  <p>{t('gallery.none')}</p>
+                )}
+              </div>
+            ) : (
+              <img
+                key={photo.id}
+                src={url ?? undefined}
+                alt={t('gallery.position', { current: current + 1, total })}
+                draggable={false}
+                onDragStart={(event) => event.preventDefault()}
+                onContextMenu={(event) => event.preventDefault()}
+                onError={() => setFailed(url)}
+                data-member-photo=""
+                data-viewer-photo={photo.is_blurred ? 'blurred' : 'clear'}
+                className="max-h-full max-w-full object-contain"
+              />
+            )}
+            {photo && locked && !showFailure ? (
+              <PhotoAccessOverlay
+                profileId={card.id}
+                name={card.display_name}
+                state={detail.relation.photo_access}
+                className="absolute inset-0"
+              />
+            ) : null}
+            {total > 1 ? (
+              <>
+                <Button
+                  variant="ghost-inverse"
+                  size="icon"
+                  className="absolute start-2 top-1/2 -translate-y-1/2 bg-inverse/80"
+                  aria-label={t('photos.previous')}
+                  disabled={current === 0}
+                  onClick={() => go(-1)}
+                >
+                  <ChevronLeft aria-hidden="true" className="size-6 rtl:-scale-x-100" />
+                </Button>
+                <Button
+                  variant="ghost-inverse"
+                  size="icon"
+                  className="absolute end-2 top-1/2 -translate-y-1/2 bg-inverse/80"
+                  aria-label={t('photos.next')}
+                  disabled={current === total - 1}
+                  onClick={() => go(1)}
+                >
+                  <ChevronRight aria-hidden="true" className="size-6 rtl:-scale-x-100" />
+                </Button>
+              </>
+            ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Outside the viewer, so its arrow keys do not move the photos. */}
       {photo ? (
         <ReportDialog
           open={reporting}
@@ -266,6 +272,6 @@ function Viewer({
           onBlocked={() => void navigate({ to: '/home' })}
         />
       ) : null}
-    </div>
+    </>
   )
 }

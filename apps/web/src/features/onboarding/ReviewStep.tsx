@@ -5,10 +5,13 @@ import { Lock, Pencil, Plus, TriangleAlert } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { ArchFrame } from '~/components/common/Arch'
+import { DefinitionList, DefinitionRow } from '~/components/common/DefinitionList'
 import { ErrorState } from '~/components/common/ErrorState'
 import { FormSkeleton } from '~/components/common/FormSkeleton'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
 import { PlainText } from '~/components/common/PlainText'
+import { SectionCard } from '~/components/common/SectionCard'
 import { Alert, AlertDescription } from '~/components/ui/alert'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
@@ -291,7 +294,7 @@ function Review({
         submit: finish,
       }}
     >
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-8">
         <ReviewCard step="account_for" title={t('onboarding:review.cards.account_for')}>
           <Rows
             rows={[
@@ -444,24 +447,23 @@ function Review({
           description={t(`onboarding:photos.visibility.${privacy.photo_visibility}`)}
         >
           {photos.length > 0 ? (
-            <ul className="grid grid-cols-3 gap-2">
+            <ul className="arch-grid">
               {photos.map((photo) => (
-                <li
-                  key={photo.id}
-                  className="relative aspect-square overflow-hidden rounded-[var(--radius-input)] bg-muted"
-                >
-                  {photo.thumb_url ? (
-                    <img
-                      src={photo.thumb_url}
-                      alt=""
-                      width={120}
-                      height={120}
-                      draggable={false}
-                      className="size-full object-cover"
-                    />
-                  ) : null}
+                <li key={photo.id} className="flex min-w-0 flex-col items-center gap-2">
+                  <ArchFrame className="aspect-[4/5] w-full">
+                    {photo.thumb_url ? (
+                      <img
+                        src={photo.thumb_url}
+                        alt=""
+                        width={120}
+                        height={150}
+                        draggable={false}
+                        className="size-full object-cover"
+                      />
+                    ) : null}
+                  </ArchFrame>
                   {photo.status !== 'approved' || photo.is_primary ? (
-                    <span className="absolute inset-x-0 bottom-0 bg-foreground/75 px-1.5 py-0.5 text-center text-xs text-background">
+                    <span className="max-w-full text-center text-caption text-muted-foreground">
                       {photo.status === 'approved'
                         ? t('photos:status.main')
                         : t(`photos:status.${photo.status}`)}
@@ -475,13 +477,11 @@ function Review({
           )}
         </ReviewCard>
         <ReviewCard step="preferences" title={t('onboarding:review.cards.preferences')}>
-          <ul className="flex flex-col gap-1.5">
+          <ul className="flex flex-col gap-2">
             {lookingFor.map((line) => (
               <li key={line.key} className="flex flex-wrap items-center gap-2">
                 <span dir="auto">{line.text}</span>
-                {line.must ? (
-                  <Badge variant="secondary">{t('onboarding:review.must')}</Badge>
-                ) : null}
+                {line.must ? <Badge variant="tag">{t('onboarding:review.must')}</Badge> : null}
               </li>
             ))}
           </ul>
@@ -517,7 +517,8 @@ function Review({
         <div className="flex flex-col gap-3">
           <Button
             type="button"
-            className="w-full md:w-auto md:self-start"
+            size="lg"
+            fill="phone"
             loading={complete.isPending}
             disabled={!online}
             onClick={() => void finish()}
@@ -550,16 +551,11 @@ function ReviewCard({
 }) {
   const { t } = useTranslation('onboarding')
   return (
-    <section
-      aria-label={title}
-      className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-4"
-    >
-      <header className="flex items-start justify-between gap-3">
-        <div className="flex flex-col gap-0.5">
-          <h2 className="text-lg font-semibold">{title}</h2>
-          {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
-        </div>
-        <Button asChild variant="ghost" className="-me-2 text-primary">
+    <SectionCard
+      title={title}
+      description={description}
+      action={
+        <Button asChild variant="link">
           <Link
             to="/onboarding/$step"
             params={{ step: toSlug(step) }}
@@ -574,9 +570,10 @@ function ReviewCard({
             {empty ? t('review.add') : t('review.edit')}
           </Link>
         </Button>
-      </header>
+      }
+    >
       {children}
-    </section>
+    </SectionCard>
   )
 }
 
@@ -588,27 +585,26 @@ function Rows({ rows }: { rows: Row[] }) {
   const { t } = useTranslation('onboarding')
   const shown = rows.filter((row) => row.value != null && row.value !== '')
   return (
-    <dl className="grid gap-2 sm:grid-cols-[minmax(0,12rem)_1fr] sm:gap-x-4">
+    <DefinitionList>
       {shown.map((row) => (
-        <div key={row.label} className="contents">
-          <dt className="text-sm text-muted-foreground">{row.label}</dt>
-          <dd className="flex items-start gap-1.5">
-            <PlainText as="span" text={row.value} />
+        <DefinitionRow key={row.label} label={row.label}>
+          <span className="flex items-start gap-2">
+            <PlainText as="span" text={row.value} className="min-w-0" />
             {row.private ? (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="inline-flex items-center pt-1 text-muted-foreground">
-                    <Lock aria-hidden="true" className="size-3.5" />
+                  <span className="inline-flex h-[1lh] items-center text-muted-foreground">
+                    <Lock aria-hidden="true" className="size-4" />
                     <span className="sr-only">{t('review.private')}</span>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>{t('review.private')}</TooltipContent>
               </Tooltip>
             ) : null}
-          </dd>
-        </div>
+          </span>
+        </DefinitionRow>
       ))}
-    </dl>
+    </DefinitionList>
   )
 }
 

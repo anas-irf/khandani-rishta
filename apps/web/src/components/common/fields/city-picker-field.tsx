@@ -4,6 +4,7 @@ import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { NativeSelect, NativeSelectOption } from '~/components/ui/native-select'
+import { Popover, PopoverAnchor, PopoverContent } from '~/components/ui/popover'
 import type { CityRef, LocationSection } from '~/lib/api-types'
 import { useFieldControl } from '~/lib/form-context'
 import { useCitySearch, useOptions, useRegions } from '~/lib/reference'
@@ -235,7 +236,7 @@ export function CityPickerField({
   const hasRegions = regionList.length > 0
   const typedTooShort = query.trim().length > 0 && query.trim().length < MIN_QUERY_LENGTH
   const optionClass =
-    'flex min-h-11 cursor-pointer select-none flex-col justify-center rounded-[var(--radius-input)] px-3 py-1.5 text-base data-[active=true]:bg-muted'
+    'flex min-h-touch cursor-pointer select-none flex-col justify-center rounded-item px-3 py-[8px] text-body-md data-[active=true]:bg-muted'
 
   return (
     <FieldShell
@@ -247,9 +248,9 @@ export function CityPickerField({
       kind="fieldset"
       labelHidden={legendHidden}
     >
-      <div className="grid gap-4">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
         {hideCountry ? null : (
-          <div className="grid gap-1.5">
+          <div className="field-stack">
             <Label htmlFor={countryId}>{countryLabel ?? t('fields:city.country')}</Label>
             <SearchSelectControl
               id={countryId}
@@ -266,7 +267,7 @@ export function CityPickerField({
         )}
 
         {value.country_code && hasRegions ? (
-          <div className="grid gap-1.5">
+          <div className="field-stack">
             <Label htmlFor={regionId}>{regionLabel ?? t('fields:city.region')}</Label>
             <NativeSelect
               id={regionId}
@@ -292,54 +293,63 @@ export function CityPickerField({
         ) : null}
 
         {value.country_code && !otherMode ? (
-          <div className="grid gap-1.5">
+          <div className="field-stack">
             <Label htmlFor={cityInputId}>{cityLabel ?? t('fields:city.city')}</Label>
-            <div className="relative">
-              <Input
-                ref={cityInputRef}
-                id={cityInputId}
-                name={control.name}
-                role="combobox"
-                aria-autocomplete="list"
-                aria-expanded={open}
-                aria-controls={listId}
-                aria-activedescendant={open ? `${optionPrefix}-${activeIndex}` : undefined}
-                autoComplete="off"
-                autoCorrect="off"
-                spellCheck={false}
-                dir="auto"
-                placeholder={t('fields:city.city_placeholder')}
-                value={query}
-                disabled={isDisabled}
-                onChange={(event) => {
-                  setQuery(event.target.value)
-                  setActive(0)
-                  setOpen(true)
-                  if (value.city_id != null) update({ city_id: null, city: null })
-                }}
-                onFocus={() => setOpen(true)}
-                onClick={() => setOpen(true)}
-                onBlur={() => {
-                  setOpen(false)
-                  control.onBlur()
-                }}
-                onKeyDown={onCityKeyDown}
-                {...aria}
-                aria-required={required || undefined}
-                aria-describedby={
-                  [aria['aria-describedby'], typedTooShort ? hintId : null]
-                    .filter(Boolean)
-                    .join(' ') || undefined
-                }
-              />
-              <div
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverAnchor asChild>
+                <Input
+                  ref={cityInputRef}
+                  id={cityInputId}
+                  name={control.name}
+                  role="combobox"
+                  aria-autocomplete="list"
+                  aria-expanded={open}
+                  aria-controls={open ? listId : undefined}
+                  aria-activedescendant={open ? `${optionPrefix}-${activeIndex}` : undefined}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  dir="auto"
+                  placeholder={t('fields:city.city_placeholder')}
+                  value={query}
+                  disabled={isDisabled}
+                  onChange={(event) => {
+                    setQuery(event.target.value)
+                    setActive(0)
+                    setOpen(true)
+                    if (value.city_id != null) update({ city_id: null, city: null })
+                  }}
+                  onFocus={() => setOpen(true)}
+                  onClick={() => setOpen(true)}
+                  onBlur={() => {
+                    setOpen(false)
+                    control.onBlur()
+                  }}
+                  onKeyDown={onCityKeyDown}
+                  {...aria}
+                  aria-required={required || undefined}
+                  aria-describedby={
+                    [aria['aria-describedby'], typedTooShort ? hintId : null]
+                      .filter(Boolean)
+                      .join(' ') || undefined
+                  }
+                />
+              </PopoverAnchor>
+              <PopoverContent
                 id={listId}
                 role="listbox"
                 aria-label={t('fields:city.results_label')}
-                className={cn(
-                  'absolute inset-x-0 top-full z-50 mt-1 max-h-72 overflow-y-auto rounded-[var(--radius-card)] border border-border bg-surface p-1 shadow-md',
-                  !open && 'hidden',
-                )}
+                align="start"
+                sideOffset={4}
+                // Focus stays in the input: the options are reached with aria-activedescendant.
+                onOpenAutoFocus={(event) => event.preventDefault()}
+                onCloseAutoFocus={(event) => event.preventDefault()}
+                onMouseDown={(event) => event.preventDefault()}
+                // The input is the anchor, not a trigger, so Radix counts it as outside.
+                onInteractOutside={(event) => {
+                  if (cityInputRef.current?.contains(event.target as Node)) event.preventDefault()
+                }}
+                className="max-h-[min(18rem,var(--radix-popover-content-available-height))] w-(--radix-popover-trigger-width) overflow-y-auto p-2"
               >
                 {results.map((city, index) => (
                   // biome-ignore lint/a11y/useKeyWithClickEvents: options are chosen by keyboard on the combobox input (aria-activedescendant)
@@ -357,7 +367,7 @@ export function CityPickerField({
                   >
                     <span dir="auto">{city.name}</span>
                     {city.region_name ? (
-                      <span className="text-sm text-muted-foreground">{city.region_name}</span>
+                      <span className="text-body-sm text-muted-foreground">{city.region_name}</span>
                     ) : null}
                   </div>
                 ))}
@@ -368,28 +378,28 @@ export function CityPickerField({
                   tabIndex={-1}
                   aria-selected={false}
                   data-active={results.length === activeIndex}
-                  className={cn(optionClass, 'font-medium text-primary')}
+                  className={cn(optionClass, 'font-semibold text-primary')}
                   onMouseDown={(event) => event.preventDefault()}
                   onMouseMove={() => setActive(results.length)}
                   onClick={chooseNotListed}
                 >
                   {t('fields:city.not_listed')}
                 </div>
-              </div>
-              {open && (search.isFetching || (results.length === 0 && search.isSuccess)) ? (
-                <p role="status" className="sr-only">
-                  {search.isFetching ? t('fields:city.searching') : t('fields:city.no_results')}
-                </p>
-              ) : null}
-            </div>
+              </PopoverContent>
+            </Popover>
+            {open && (search.isFetching || (results.length === 0 && search.isSuccess)) ? (
+              <p role="status" className="sr-only">
+                {search.isFetching ? t('fields:city.searching') : t('fields:city.no_results')}
+              </p>
+            ) : null}
             {typedTooShort ? (
-              <p id={hintId} className="text-sm text-muted-foreground">
+              <p id={hintId} className="text-caption text-muted-foreground">
                 {t('fields:city.city_hint')}
               </p>
             ) : null}
             <Button
               variant="link"
-              className="h-11 w-fit px-0"
+              className="w-fit"
               disabled={isDisabled}
               onClick={chooseNotListed}
             >
@@ -399,7 +409,7 @@ export function CityPickerField({
         ) : null}
 
         {value.country_code && otherMode ? (
-          <div className="grid gap-1.5">
+          <div className="field-stack">
             <Label htmlFor={otherInputId}>{cityOtherLabel ?? t('fields:city.city_name')}</Label>
             <Input
               ref={otherInputRef}
@@ -415,12 +425,7 @@ export function CityPickerField({
               {...aria}
               aria-required={required || undefined}
             />
-            <Button
-              variant="link"
-              className="h-11 w-fit px-0"
-              disabled={isDisabled}
-              onClick={backToList}
-            >
+            <Button variant="link" className="w-fit" disabled={isDisabled} onClick={backToList}>
               {t('fields:city.back_to_list')}
             </Button>
           </div>

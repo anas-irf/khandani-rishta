@@ -1,9 +1,10 @@
-import { Plus, X } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '~/components/ui/button'
 import { useFieldControl } from '~/lib/form-context'
 import { fallbackLabel } from '~/lib/reference'
+import { RemovableChip } from '../Chip'
 import { ariaFor, type BaseFieldProps, FieldShell, subId, useFieldDisabled } from './field-shell'
 import { OptionSearch, type SearchOption } from './option-search'
 import { useFieldOptions } from './search-select-field'
@@ -71,25 +72,19 @@ export function MultiSelectField({
           className="flex flex-wrap gap-2"
         >
           {value.map((code) => (
-            <li
-              key={code}
-              className="inline-flex h-11 items-center rounded-full border border-border bg-primary-soft ps-3 text-sm font-medium text-foreground"
-            >
-              <span dir="auto">{labelOf(code)}</span>
-              <button
-                type="button"
-                aria-label={t('fields:multi_select.remove', { item: labelOf(code) })}
+            <li key={code} className="max-w-full">
+              <RemovableChip
+                removeLabel={t('fields:multi_select.remove', { item: labelOf(code) })}
                 disabled={isDisabled}
-                onClick={() => remove(code)}
-                className="inline-flex size-11 items-center justify-center rounded-full text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                onRemove={() => remove(code)}
               >
-                <X aria-hidden="true" className="size-4" />
-              </button>
+                {labelOf(code)}
+              </RemovableChip>
             </li>
           ))}
         </ul>
       ) : emptyLabel ? (
-        <p className="text-sm text-muted-foreground">{emptyLabel}</p>
+        <p className="text-body-sm text-muted-foreground">{emptyLabel}</p>
       ) : null}
       <OptionSearch
         label={label}
@@ -109,7 +104,7 @@ export function MultiSelectField({
           <Button
             id={control.inputId}
             name={control.name}
-            variant="outline"
+            variant="secondary"
             className="w-fit"
             aria-label={t('fields:multi_select.add_label', { label })}
             aria-haspopup="listbox"
@@ -128,7 +123,7 @@ export function MultiSelectField({
         }
       />
       {reached ? (
-        <p id={maxId} role="status" className="text-sm text-muted-foreground">
+        <p id={maxId} role="status" className="text-caption text-muted-foreground">
           {t('fields:multi_select.max_reached', { max })}
         </p>
       ) : null}

@@ -1,6 +1,7 @@
 import { SignIn } from '@clerk/tanstack-react-start'
 import { Link, Navigate, useNavigate } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
+import { Wordmark } from '~/components/layout/Logo'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card'
 import { clerkEnabled, isMockMode } from '~/lib/env'
@@ -19,18 +20,15 @@ export function SignInPage({ redirectUrl }: { redirectUrl?: string }) {
   if (session.isLoaded && session.isSignedIn) return <Navigate to={target} replace />
 
   return (
-    <div className="flex min-h-dvh flex-col items-center bg-background px-4 py-8">
+    <div className="band-page flex min-h-dvh flex-col items-center px-gutter py-8">
       <Link
         to="/"
-        className="mb-8 flex min-h-11 items-center gap-2 text-xl font-bold text-primary"
+        className="mb-8 flex min-h-touch max-w-full items-center rounded-sm"
         aria-label={t('back_home')}
       >
-        <span className="flex size-10 items-center justify-center rounded-xl bg-primary text-base text-primary-foreground">
-          KR
-        </span>
-        {t('common:app_name')}
+        <Wordmark />
       </Link>
-      <main id="main" className="flex w-full max-w-md flex-col items-center gap-6">
+      <main id="main" className="flex w-full max-w-[28rem] flex-col items-center gap-6">
         <h1 className="sr-only">{t('title')}</h1>
         {isMockMode ? (
           <MockSignIn target={target} />
@@ -52,7 +50,7 @@ export function SignInPage({ redirectUrl }: { redirectUrl?: string }) {
             </CardHeader>
           </Card>
         )}
-        <p className="text-center text-sm text-muted-foreground">{t('privacy_note')}</p>
+        <p className="text-center text-caption text-muted-foreground">{t('privacy_note')}</p>
       </main>
     </div>
   )

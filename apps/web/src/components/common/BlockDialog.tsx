@@ -35,7 +35,7 @@ export function BlockDialog({ open, onOpenChange, profileId, name, onBlocked }: 
       title={t('block.title', { name })}
       description={t('block.text')}
       confirmLabel={t('block.confirm')}
-      destructive
+      tone="danger"
       onConfirm={async () => {
         await block.mutateAsync(profileId)
         toast.success(t('block.success'))

@@ -117,7 +117,7 @@ export function IdentityNumberField({
         }}
         onBlur={control.onBlur}
         disabled={isDisabled}
-        className="tabular-nums tracking-wide"
+        className="tabular-nums"
         {...ariaFor(control, { required, hasHelp: Boolean(helpText) })}
       />
     </FieldShell>

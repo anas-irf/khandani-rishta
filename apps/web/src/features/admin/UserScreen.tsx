@@ -5,18 +5,18 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '~/components/common/ConfirmDialog'
-import { ErrorState } from '~/components/common/ErrorState'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
 import { RelativeTime } from '~/components/common/RelativeTime'
 import { StatusBanner } from '~/components/common/StatusBanner'
 import { Button } from '~/components/ui/button'
 import { NativeSelect, NativeSelectOption } from '~/components/ui/native-select'
-import { Skeleton } from '~/components/ui/skeleton'
 import { formatDate, formatPhone } from '~/lib/format'
 import { useCurrentMe } from '~/lib/me'
 import { useIsAdmin } from './access'
 import { ActionDialog } from './components/ActionDialog'
+import { ActionToolbar } from './components/ActionToolbar'
 import { DataTable } from './components/DataTable'
+import { DetailState } from './components/DetailState'
 import { Facts, Panel } from './components/Facts'
 import { FormField } from './components/FormField'
 import { SanctionDialog, type SanctionKind } from './components/SanctionDialog'
@@ -35,22 +35,10 @@ type Dialog =
   | null
 
 export function UserScreen() {
-  const { t } = useTranslation('admin')
   const userId = useRouteId('userId')
   const query = useAdminUser(userId)
 
-  if (query.isPending) {
-    return (
-      <div role="status" aria-busy="true" className="flex flex-col gap-3">
-        <span className="sr-only">{t('list.loading')}</span>
-        <Skeleton className="h-12 w-1/2" />
-        <Skeleton className="h-64 w-full" />
-      </div>
-    )
-  }
-  if (query.isError) {
-    return <ErrorState error={query.error} onRetry={() => void query.refetch()} />
-  }
+  if (query.isPending || query.isError) return <DetailState query={query} />
   return <UserView data={query.data} />
 }
 
@@ -74,20 +62,18 @@ function UserView({ data }: { data: AdminUser }) {
   const sanctionKinds = (kind: SanctionKind): SanctionKind[] => [kind]
 
   return (
-    <div className="flex flex-col gap-4">
-      <PageHeader
-        title={data.email ?? name}
-        description={t('user.subtitle', { name, code: data.public_code })}
-        backTo="/admin/users"
-        backLabel={t('user.back')}
-        actions={
-          <>
-            <StatusBadge status={data.role} />
-            <StatusBadge status={data.status} />
-          </>
-        }
-      />
-
+    <Page
+      title={data.email ?? name}
+      description={t('user.subtitle', { name, code: data.public_code })}
+      backTo="/admin/users"
+      backLabel={t('user.back')}
+      actions={
+        <>
+          <StatusBadge status={data.role} />
+          <StatusBadge status={data.status} />
+        </>
+      }
+    >
       {data.status_reason ? (
         <StatusBanner variant="warning" title={t('user.status_reason')}>
           {data.status_reason}
@@ -114,11 +100,7 @@ function UserView({ data }: { data: AdminUser }) {
         <StatusBanner variant="info">{t('user.staff_target')}</StatusBanner>
       ) : null}
 
-      <div
-        role="toolbar"
-        aria-label={t('user.actions')}
-        className="sticky top-0 z-10 flex flex-wrap items-center gap-2 border-b border-border bg-background py-2"
-      >
+      <ActionToolbar label={t('user.actions')}>
         <Button
           variant="secondary"
           disabled={!canWarn}
@@ -170,12 +152,12 @@ function UserView({ data }: { data: AdminUser }) {
             </Button>
           </>
         ) : null}
-        <Button asChild variant="ghost" className="ms-auto">
+        <Button asChild variant="link" className="ms-auto">
           <Link to="/admin/profiles/$profileId" params={{ profileId: data.profile_id }}>
             {t('user.view_profile')}
           </Link>
         </Button>
-      </div>
+      </ActionToolbar>
 
       <div className="grid grid-cols-2 gap-4">
         <Facts
@@ -234,7 +216,7 @@ function UserView({ data }: { data: AdminUser }) {
               },
             ]}
           />
-          <p className="text-sm text-muted-foreground">
+          <p className="text-body-sm text-muted-foreground">
             {t('user.reports_filed', data.reports_filed)}
           </p>
         </div>
@@ -245,7 +227,7 @@ function UserView({ data }: { data: AdminUser }) {
       </Panel>
       <Panel title={t('user.devices')}>
         {data.devices.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t('user.no_devices')}</p>
+          <p className="text-body-sm text-muted-foreground">{t('user.no_devices')}</p>
         ) : (
           <DataTable
             caption={t('user.devices')}
@@ -274,7 +256,7 @@ function UserView({ data }: { data: AdminUser }) {
       </Panel>
       <Panel title={t('user.consents')}>
         {data.consents.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t('user.no_consents')}</p>
+          <p className="text-body-sm text-muted-foreground">{t('user.no_consents')}</p>
         ) : (
           <DataTable
             caption={t('user.consents')}
@@ -343,7 +325,7 @@ function UserView({ data }: { data: AdminUser }) {
         />
       ) : null}
       {dialog?.kind === 'role' ? <RoleDialog user={data} onClose={() => setDialog(null)} /> : null}
-    </div>
+    </Page>
   )
 }
 

@@ -126,13 +126,15 @@ export function PhoneField({
       className={className}
       kind="fieldset"
     >
-      <div className="grid grid-cols-[minmax(0,9rem)_minmax(0,1fr)] gap-2">
-        <div className="grid gap-1">
-          <Label htmlFor={dialId} className="text-sm font-normal text-muted-foreground">
+      <div className="flex flex-wrap gap-[8px]">
+        {/* As wide as the chosen country, which then shares the line with the number or not. */}
+        <div className="grid min-w-0 max-w-full flex-[1_1_auto] gap-1">
+          <Label htmlFor={dialId} variant="part">
             {t('fields:phone.dial_code')}
           </Label>
           <NativeSelect
             id={dialId}
+            className="field-sizing-content min-w-full"
             value={state.country}
             onChange={(event) => update({ ...state, country: event.target.value })}
             onBlur={control.onBlur}
@@ -146,8 +148,8 @@ export function PhoneField({
             ))}
           </NativeSelect>
         </div>
-        <div className="grid gap-1">
-          <Label htmlFor={control.inputId} className="text-sm font-normal text-muted-foreground">
+        <div className="grid min-w-0 max-w-full flex-[4_1_9rem] gap-1">
+          <Label htmlFor={control.inputId} variant="part">
             {t('fields:phone.number')}
           </Label>
           <Input

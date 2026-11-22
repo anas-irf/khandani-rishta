@@ -17,12 +17,12 @@ afterEach(() => {
 })
 
 describe('PublicHeader', () => {
-  it('shows "Sign in" and "Create profile" to a visitor', async () => {
+  it('shows "Sign in" and "Create a free profile" to a visitor', async () => {
     renderWithProviders(() => <PublicHeader />)
 
     const banner = await screen.findByRole('banner')
     const signIn = within(banner).getByRole('link', { name: 'Sign in' })
-    const create = within(banner).getByRole('link', { name: 'Create profile' })
+    const create = within(banner).getByRole('link', { name: 'Create a free profile' })
     expect(signIn.getAttribute('href')).toMatch(/^\/sign-in\/?$/)
     expect(create.getAttribute('href')).toMatch(/^\/sign-in\/?$/)
     expect(within(banner).queryByRole('link', { name: 'Open the app' })).not.toBeInTheDocument()
@@ -38,7 +38,9 @@ describe('PublicHeader', () => {
       '/home',
     )
     expect(within(banner).queryByRole('link', { name: 'Sign in' })).not.toBeInTheDocument()
-    expect(within(banner).queryByRole('link', { name: 'Create profile' })).not.toBeInTheDocument()
+    expect(
+      within(banner).queryByRole('link', { name: 'Create a free profile' }),
+    ).not.toBeInTheDocument()
   })
 
   it('links the logo to the landing page and lists the main pages', async () => {
@@ -53,7 +55,8 @@ describe('PublicHeader', () => {
     const hrefs = within(nav)
       .getAllByRole('link')
       .map((link) => link.getAttribute('href'))
-    expect(hrefs).toEqual(['/how-it-works', '/safety', '/nikah-guide', '/faq', '/download'])
+    // Three links in the bar (16 section 6.31); the phone menu and the footer have the rest.
+    expect(hrefs).toEqual(['/how-it-works', '/safety', '/download'])
   })
 
   it('opens a menu sheet with every link and the account buttons', async () => {
@@ -64,10 +67,10 @@ describe('PublicHeader', () => {
 
     const dialog = await screen.findByRole('dialog', { name: 'Menu' })
     const menu = within(dialog)
-    for (const name of ['How it works', 'Safety', 'Nikah guide', 'FAQ', 'Download']) {
+    for (const name of ['How it works', 'Safety', 'Nikah guide', 'FAQ', 'Download the app']) {
       expect(menu.getByRole('link', { name })).toBeInTheDocument()
     }
-    expect(menu.getByRole('link', { name: 'Create profile' })).toBeInTheDocument()
+    expect(menu.getByRole('link', { name: 'Create a free profile' })).toBeInTheDocument()
     expect(menu.getByRole('link', { name: 'Sign in' })).toBeInTheDocument()
     expect(menu.getByRole('button', { name: 'Close menu' })).toBeInTheDocument()
   })

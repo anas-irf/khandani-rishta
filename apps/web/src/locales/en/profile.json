@@ -40,7 +40,11 @@
     "title": "Compatibility",
     "ring": "{{value}}% match",
     "viewer_fit": "{{name}} fits {{value}}% of what you are looking for",
+    "viewer_fit_male": "{{name}} fits {{value}}% of what he is looking for",
+    "viewer_fit_female": "{{name}} fits {{value}}% of what she is looking for",
     "owner_fit": "You fit {{value}}% of what {{name}} is looking for",
+    "owner_fit_male": "He fits {{value}}% of what {{name}} is looking for",
+    "owner_fit_female": "She fits {{value}}% of what {{name}} is looking for",
     "details_show": "See details",
     "details_hide": "Hide details",
     "must": "Must have",
@@ -126,6 +130,8 @@
   "looking_for": {
     "title": "What {{name}} is looking for",
     "summary": "You match {{matched}} of {{total}}.",
+    "summary_male": "He matches {{matched}} of {{total}}.",
+    "summary_female": "She matches {{matched}} of {{total}}.",
     "none": "{{name}} has not set any preferences.",
     "must": "Must have",
     "age": "{{min}} to {{max}} years",
@@ -133,7 +139,11 @@
     "at_least": "At least {{value}}",
     "up_to": "Up to {{value}}",
     "you_match": "You match",
-    "you_do_not_match": "You do not match"
+    "you_match_male": "He matches",
+    "you_match_female": "She matches",
+    "you_do_not_match": "You do not match",
+    "you_do_not_match_male": "He does not match",
+    "you_do_not_match_female": "She does not match"
   },
   "safety": {
     "report": "Report this profile",
@@ -155,12 +165,18 @@
     "report": "Report",
     "block": "Block",
     "let_see_photos": "Let {{name}} see my photos",
+    "let_see_photos_male": "Let {{name}} see his photos",
+    "let_see_photos_female": "Let {{name}} see her photos",
     "photos_granted": "{{name}} can now see your photos.",
+    "photos_granted_male": "{{name}} can now see his photos.",
+    "photos_granted_female": "{{name}} can now see her photos.",
     "shortlisted": "Added to your shortlist.",
     "add_note": "Add a note"
   },
   "received": {
     "text": "{{name}} is interested in you",
+    "text_male": "{{name}} is interested in him",
+    "text_female": "{{name}} is interested in her",
     "expires": "Expires {{date}}"
   },
   "cannot_send": {

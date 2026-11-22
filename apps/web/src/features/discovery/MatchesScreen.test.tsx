@@ -71,9 +71,9 @@ describe('APP-MATCHES', () => {
         'You have seen everyone who fits your must-haves. Loosen one to see more.',
       ),
     ).toBeInTheDocument()
-    expect(
-      screen.getByText('Changing your must-have for Location would show 3 more profiles.'),
-    ).toBeInTheDocument()
+    expect(document.querySelector('[data-exhausted="end"]')).toHaveTextContent(
+      'Changing your must-have for Location would show 3 more profiles.',
+    )
   })
 
   it('uses the empty texts of the home row', async () => {
@@ -144,7 +144,7 @@ describe('APP-MATCHES', () => {
     expect(within(list).getByRole('link', { name })).toBeInTheDocument()
   })
 
-  it('passes a card and removes it from the list', async () => {
+  it('passes a card and keeps a panel with Undo in its place', async () => {
     const user = userEvent.setup()
     server.use(http.put(apiUrl('/v1/passes/:id'), () => noContent()))
     renderMatches()
@@ -154,6 +154,11 @@ describe('APP-MATCHES', () => {
     await user.click(within(first).getByRole('button', { name: /More actions for/ }))
     await user.click(await screen.findByRole('menuitem', { name: 'Not interested' }))
     await waitFor(() => expect(within(list).queryByRole('link', { name })).toBeNull())
+    const inPlace = within(list).getAllByRole('article')[0] as HTMLElement
+    expect(inPlace).toHaveTextContent('is hidden from your matches.')
+    expect(inPlace).toHaveTextContent('You will not see this profile for 6 months.')
+    expect(within(inPlace).getByRole('button', { name: 'Undo' })).toBeEnabled()
+    expect(within(list).getAllByRole('article')).toHaveLength(20)
   })
 
   it('shows the screen error', async () => {

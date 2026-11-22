@@ -1,14 +1,20 @@
 import { Link } from '@tanstack/react-router'
-import { ChevronDown } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { Plus } from 'lucide-react'
+import { type ReactNode, useId } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Band } from '~/components/common/Band'
+import { DisplayHeading } from '~/components/common/DisplayHeading'
+import { OrnamentRule } from '~/components/common/Ornament'
+import { SectionHeading } from '~/components/common/SectionHeading'
+import { inlineLinkClass, TextLink } from '~/components/common/TextLink'
 import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert'
-import { Button } from '~/components/ui/button'
+import { Button, type ButtonProps } from '~/components/ui/button'
 import { cn } from '~/lib/utils'
 import { signInLink } from './config'
 
 /**
- * Building blocks shared by the public pages. Text always comes from `locales/en/public.json`;
+ * Building blocks shared by the public pages (DESIGN.md 3.2 and 5): a serif title on sand, then
+ * one reading column with diamond headings. Text always comes from `locales/en/public.json`;
  * long pages keep their sections as arrays in that file (see `ContentBlock`).
  */
 
@@ -56,9 +62,7 @@ export function useList<T>(key: string, values?: Record<string, string>): T[] {
   return Array.isArray(value) ? (value as T[]) : []
 }
 
-const linkClass = 'font-medium text-primary underline underline-offset-4 hover:text-primary-hover'
-
-/** Opening of a page: the one `<h1>` and a short lead. */
+/** Opening of a page: the one `<h1>` and a short lead, on sand. */
 export function PageHero({
   title,
   lead,
@@ -69,28 +73,41 @@ export function PageHero({
   children?: ReactNode
 }) {
   return (
-    <div className="border-b border-border bg-primary-soft">
-      <div className="container-app py-10 md:py-14">
-        <div className="max-w-3xl">
-          <h1 className="text-3xl font-bold leading-tight md:text-4xl">{title}</h1>
-          {lead ? <p className="mt-3 text-lg text-foreground">{lead}</p> : null}
-          {children}
-        </div>
-      </div>
-    </div>
+    <Band
+      as="div"
+      tone="sand"
+      width="column"
+      space="none"
+      innerClassName="flex flex-col items-start gap-4 pt-[clamp(32px,5vw,72px)] pb-[clamp(28px,4vw,56px)]"
+    >
+      <OrnamentRule />
+      <DisplayHeading as="h1">{title}</DisplayHeading>
+      {lead ? <p className="max-w-measure text-body-lg text-foreground-secondary">{lead}</p> : null}
+      {children}
+    </Band>
   )
 }
 
 /** The reading column of a content page. */
 export function Prose({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cn('container-app py-10 md:py-12', className)}>{children}</div>
+  return (
+    <Band
+      as="div"
+      width="column"
+      className="flex-1"
+      innerClassName={cn('flex flex-col gap-10', className)}
+    >
+      {children}
+    </Band>
+  )
 }
 
+/** Full width in a column that starts its children at the side, so a long address wraps. */
 export function Paragraphs({ items, className }: { items: readonly string[]; className?: string }) {
   return (
     <>
       {items.map((text) => (
-        <p key={text} className={cn('leading-relaxed', className)}>
+        <p key={text} className={cn('w-full max-w-measure text-body-lg', className)}>
           {text}
         </p>
       ))}
@@ -100,7 +117,7 @@ export function Paragraphs({ items, className }: { items: readonly string[]; cla
 
 export function BulletList({ items }: { items: readonly string[] }) {
   return (
-    <ul className="list-disc space-y-2 ps-6 leading-relaxed marker:text-primary">
+    <ul className="w-full max-w-measure list-disc space-y-2 ps-6 text-body-lg marker:text-muted-foreground">
       {items.map((text) => (
         <li key={text}>{text}</li>
       ))}
@@ -113,15 +130,12 @@ export function SeeAlso({ pages }: { pages: readonly SeeKey[] }) {
   const { t } = useTranslation('public')
   if (pages.length === 0) return null
   return (
-    <p className="text-sm text-muted-foreground">
-      {t('cta.see_also')}:{' '}
-      {pages.map((page, index) => (
-        <span key={page}>
-          {index > 0 ? ', ' : null}
-          <Link to={SEE_PATHS[page]} className={linkClass}>
-            {t(`links.${page}`)}
-          </Link>
-        </span>
+    <p className="flex flex-wrap items-center gap-x-4 text-body-sm text-muted-foreground">
+      <span>{t('cta.see_also')}:</span>
+      {pages.map((page) => (
+        <TextLink key={page} to={SEE_PATHS[page]}>
+          {t(`links.${page}`)}
+        </TextLink>
       ))}
     </p>
   )
@@ -139,19 +153,21 @@ export function ContentSection({
   /** Extra content under the text, for example a link made in code. */
   children?: ReactNode
 }) {
+  const titleId = `${block.id}-title`
   return (
-    <section aria-labelledby={`${block.id}-title`} className="scroll-mt-20 space-y-3">
-      <h2 id={`${block.id}-title`} className="text-2xl font-semibold leading-snug">
-        {number ? `${number}. ` : null}
-        {block.title}
-      </h2>
+    <section aria-labelledby={titleId} className="flex min-w-0 flex-col items-start gap-3">
+      <SectionHeading
+        id={titleId}
+        title={number ? `${number}. ${block.title}` : block.title}
+        className="w-full"
+      />
       {block.paragraphs ? <Paragraphs items={block.paragraphs} /> : null}
       {block.items ? <BulletList items={block.items} /> : null}
       {block.details ? (
-        <ul className="space-y-2 leading-relaxed">
+        <ul className="w-full max-w-measure space-y-2 text-body-lg">
           {block.details.map((detail) => (
             <li key={detail.term}>
-              <strong className="font-semibold">{detail.term}.</strong> {detail.text}
+              <strong className="font-bold">{detail.term}.</strong> {detail.text}
             </li>
           ))}
         </ul>
@@ -173,14 +189,11 @@ export function TableOfContents({
 }) {
   const { t } = useTranslation('public')
   return (
-    <nav
-      aria-label={t('cta.on_this_page')}
-      className="rounded-[var(--radius-card)] border border-border bg-surface p-5"
-    >
-      <p className="font-semibold">{t('cta.on_this_page')}</p>
+    <nav aria-label={t('cta.on_this_page')} className="tonal rounded-lg px-5 py-4">
+      <p className="text-emphasis">{t('cta.on_this_page')}</p>
       <ol
         className={cn(
-          'mt-2 grid gap-x-8 sm:grid-cols-2',
+          'mt-1 grid grid-cols-[repeat(auto-fit,minmax(min(240px,100%),1fr))] gap-x-8',
           numbered ? 'list-decimal ps-6' : 'list-none',
         )}
       >
@@ -188,7 +201,10 @@ export function TableOfContents({
           <li key={block.id}>
             <a
               href={`#${block.id}-title`}
-              className="inline-flex min-h-11 items-center text-primary underline-offset-4 hover:underline"
+              className={cn(
+                inlineLinkClass,
+                'inline-flex min-h-touch min-w-touch max-w-full items-center py-1 align-middle',
+              )}
             >
               {block.title}
             </a>
@@ -207,24 +223,32 @@ export function LegalReviewNotice() {
       <AlertTitle>{t('legal.review_title')}</AlertTitle>
       <AlertDescription>
         <p>{t('legal.review_body')}</p>
-        <p className="font-medium">{t('legal.version')}</p>
+        <p className="font-semibold">{t('legal.version')}</p>
       </AlertDescription>
     </Alert>
   )
 }
 
-/** A question that opens to its answer. Plain `<details>`, so it works without JavaScript. */
+/**
+ * A question that opens to its answer. Plain `<details>`, so it works without JavaScript
+ * (17 section 13). The plus turns into a cross.
+ */
 export function FaqItem({ question, answer }: { question: string; answer: string }) {
   return (
-    <details className="group rounded-[var(--radius-card)] border border-border bg-surface">
-      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-[var(--radius-card)] px-4 py-3 font-medium [&::-webkit-details-marker]:hidden">
-        <span>{question}</span>
-        <ChevronDown
+    <details className="group tonal rounded-xl">
+      <summary className="flex min-h-[72px] list-none flex-wrap items-center gap-x-[12px] rounded-xl py-[12px] ps-[24px] pe-[12px] text-title-md font-bold wide:text-title-lg [&::-webkit-details-marker]:hidden">
+        {/* At large text the plus moves under a word that needs the whole line. */}
+        <span className="min-w-0 flex-[1_1_min-content]">{question}</span>
+        <span
           aria-hidden="true"
-          className="size-5 shrink-0 text-primary transition-transform group-open:rotate-180"
-        />
+          className="ms-auto flex size-touch shrink-0 items-center justify-center rounded-pill bg-(--band,var(--color-background)) text-primary transition-transform duration-(--duration-base) group-open:rotate-45"
+        >
+          <Plus className="size-[18px]" />
+        </span>
       </summary>
-      <p className="px-4 pb-4 leading-relaxed text-muted-foreground">{answer}</p>
+      <p className="max-w-measure px-[24px] pb-6 text-body-lg text-foreground-secondary">
+        {answer}
+      </p>
     </details>
   )
 }
@@ -234,11 +258,7 @@ export function CreateProfileButton({
   size = 'lg',
   variant,
   className,
-}: {
-  size?: 'default' | 'lg'
-  variant?: 'default' | 'secondary' | 'outline'
-  className?: string
-}) {
+}: Pick<ButtonProps, 'size' | 'variant' | 'className'>) {
   const { t } = useTranslation('public')
   return (
     <Button asChild size={size} variant={variant} className={className}>
@@ -247,22 +267,22 @@ export function CreateProfileButton({
   )
 }
 
-/** A closing call to action. */
-export function CtaBand({ title, body }: { title: string; body?: string }) {
+/** A closing call to action on a primary band: serif, and the one inverse button. */
+export function CtaBand({ title, body }: { title: ReactNode; body?: string }) {
+  const titleId = useId()
   return (
-    <section className="bg-primary text-primary-foreground">
-      <div className="container-app flex flex-col items-start gap-4 py-10 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold">{title}</h2>
-          {body ? <p className="mt-1 text-primary-foreground">{body}</p> : null}
-        </div>
-        <CreateProfileButton variant="secondary" />
-      </div>
-    </section>
+    <Band
+      aria-labelledby={titleId}
+      tone="primary"
+      space="lg"
+      innerClassName="flex flex-col items-center gap-6 text-center"
+    >
+      <DisplayHeading id={titleId}>{title}</DisplayHeading>
+      <CreateProfileButton variant="inverse" />
+      {body ? <p className="max-w-full text-primary-soft">{body}</p> : null}
+    </Band>
   )
 }
-
-export { linkClass }
 
 /** Reads one section object (title, paragraphs, items...) from `public.json`. */
 export function useBlock(key: string, id: string, values?: Record<string, string>): ContentBlock {

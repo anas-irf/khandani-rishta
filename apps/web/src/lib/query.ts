@@ -83,6 +83,11 @@ export type AppMutationMeta = {
   handles?: readonly string[]
   /** i18n key of the text of the limit dialog for this action (16 gives one per action). */
   limitText?: string
+  /**
+   * i18n key of the action's own failure toast ("Could not update the shortlist."), in place of
+   * the generic one. An error with a message of its own keeps it.
+   */
+  errorText?: string
 }
 
 export type AppQueryMeta = {
@@ -138,16 +143,23 @@ export function errorMessage(error: unknown): string {
   return i18n.t(`errors:code.${error.code}`, { defaultValue: error.message })
 }
 
-function showErrorToast(error: unknown) {
+function showErrorToast(error: unknown, errorText?: string) {
   const requestId = isApiError(error) ? error.requestId : null
-  toast.error(errorMessage(error), {
+  const message = errorMessage(error)
+  const generic = message === i18n.t('errors:generic.action')
+  toast.error(generic && errorText ? i18n.t(errorText) : message, {
     description: requestId ? i18n.t('errors:reference', { id: requestId }) : undefined,
   })
 }
 
 export function handleApiError(
   error: unknown,
-  context: { kind: 'query' | 'mutation'; handles?: readonly string[]; limitText?: string },
+  context: {
+    kind: 'query' | 'mutation'
+    handles?: readonly string[]
+    limitText?: string
+    errorText?: string
+  },
 ) {
   const code = isApiError(error) ? error.code : 'internal_error'
 
@@ -172,7 +184,7 @@ export function handleApiError(
     showLimitDialog({ textKey: context.limitText ?? null, details: error.details })
     return
   }
-  showErrorToast(error)
+  showErrorToast(error, context.errorText)
 }
 
 function shouldRetry(failureCount: number, error: unknown) {
@@ -193,6 +205,7 @@ export function createQueryClient() {
           kind: 'mutation',
           handles: mutation.meta?.handles,
           limitText: mutation.meta?.limitText,
+          errorText: mutation.meta?.errorText,
         }),
     }),
     defaultOptions: {

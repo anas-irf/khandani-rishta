@@ -2,6 +2,7 @@
 import { ExternalLink } from 'lucide-react'
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { CheckboxLine } from '~/components/common/CheckboxLine'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
 import {
   AlertDialog,
@@ -13,8 +14,6 @@ import {
   AlertDialogTitle,
 } from '~/components/ui/alert-dialog'
 import { Button } from '~/components/ui/button'
-import { Checkbox } from '~/components/ui/checkbox'
-import { Label } from '~/components/ui/label'
 import { DeleteAccountDialog } from '~/features/settings/DeleteAccountDialog'
 import type { ConsentDocument } from '~/lib/api-types'
 import { useCurrentMe } from '~/lib/me'
@@ -46,46 +45,46 @@ export function ConsentScreen() {
 
   return (
     <GateLayout title={t('consent.title')} helpLink={false}>
-      <ul aria-label={t('consent.list_label')} className="flex flex-col divide-y divide-border">
+      <ul aria-label={t('consent.list_label')} className="flex flex-col">
         {documents.map((document) => {
           const page = DOCUMENT_PAGES[document]
           const name = page ? t(`consent.documents.${document}`) : fallbackLabel(document)
           return (
-            <li key={document} className="flex min-h-11 items-center justify-between gap-3 py-1">
+            <li
+              key={document}
+              className="flex min-h-touch-lg items-center border-b border-border py-1"
+            >
               {page ? (
                 <PublicPageLink to={page}>
                   {name}
-                  <ExternalLink aria-hidden="true" className="ms-1.5 size-4" />
+                  <ExternalLink aria-hidden="true" />
                 </PublicPageLink>
               ) : (
-                <span className="font-medium">{name}</span>
+                <span className="font-semibold">{name}</span>
               )}
             </li>
           )
         })}
       </ul>
 
-      <div className="flex min-h-11 items-start gap-3">
-        <Checkbox
-          id={checkId}
-          checked={agreed}
-          onCheckedChange={(checked) => setAgreed(checked === true)}
-          className="mt-0.5"
-        />
-        <Label htmlFor={checkId} className="text-base font-normal leading-snug">
-          {t('consent.agree')}
-        </Label>
-      </div>
+      <CheckboxLine
+        id={checkId}
+        checked={agreed}
+        onCheckedChange={(checked) => setAgreed(checked === true)}
+        label={t('consent.agree')}
+      />
 
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex flex-wrap gap-3">
         <Button
+          size="lg"
+          fill="row"
           disabled={!agreed || !online}
           loading={accept.isPending}
           onClick={() => accept.mutate(documents)}
         >
           {t('consent.accept')}
         </Button>
-        <Button variant="outline" onClick={() => setDisagreeing(true)}>
+        <Button variant="secondary" size="lg" fill="row" onClick={() => setDisagreeing(true)}>
           {t('consent.disagree')}
         </Button>
       </div>
@@ -94,7 +93,7 @@ export function ConsentScreen() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('consent.disagree_dialog.title')}</AlertDialogTitle>
-            <AlertDialogDescription className="text-base text-foreground">
+            <AlertDialogDescription className="text-foreground">
               {t('consent.disagree_dialog.text')}
             </AlertDialogDescription>
           </AlertDialogHeader>

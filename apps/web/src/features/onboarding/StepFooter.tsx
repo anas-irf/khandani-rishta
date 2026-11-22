@@ -61,7 +61,7 @@ export function StepFooter({
           <Button
             type="button"
             variant="secondary"
-            className="w-full md:w-auto md:self-start"
+            fill="phone"
             disabled={busy || !online}
             loading={skipping}
             onClick={() => {
@@ -71,15 +71,15 @@ export function StepFooter({
           >
             {t('actions.skip')}
           </Button>
-          {skipNote ? <p className="text-sm text-muted-foreground">{skipNote}</p> : null}
+          {skipNote ? <p className="text-caption text-muted-foreground">{skipNote}</p> : null}
         </div>
       ) : null}
       {extra}
       {showBack ? (
         <Button
           type="button"
-          variant="ghost"
-          className="w-full md:w-auto md:self-start"
+          variant="quiet"
+          fill="phone"
           disabled={busy}
           onClick={() => flow.back()}
         >

@@ -1,15 +1,19 @@
-import { BookmarkPlus, SearchX, X } from 'lucide-react'
+import { BookmarkPlus, SearchX } from 'lucide-react'
 import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
+import { RemovableChip } from '~/components/common/Chip'
 import { EmptyState } from '~/components/common/EmptyState'
 import { InfiniteList, type InfiniteListQuery } from '~/components/common/InfiniteList'
 import { ListSkeleton } from '~/components/common/ListSkeleton'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
+import { profileCardCellClass } from '~/components/common/ProfileCard'
 import { Button } from '~/components/ui/button'
 import { Label } from '~/components/ui/label'
 import { NativeSelect, NativeSelectOption } from '~/components/ui/native-select'
 import type { ProfileCard, SearchFilters, SearchPage, SearchSort } from '~/lib/api-types'
+import { cn } from '~/lib/utils'
 import { DiscoveryCard } from '../components/DiscoveryCard'
+import { usePassInPlace } from '../components/usePassInPlace'
 import { SEARCH_SORTS, type SearchState } from '../search-params'
 import { useFilterChips } from './useFilterChips'
 
@@ -36,61 +40,49 @@ export function SearchResults({
   const { t } = useTranslation('discovery')
   const online = useOnlineStatus()
   const chips = useFilterChips(state.filters)
+  const passing = usePassInPlace(JSON.stringify(state))
   const sortId = useId()
   const first = query.data?.pages[0]
 
   return (
     <section aria-label={t('search.results.label')} className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="flex flex-col gap-1">
-          {first ? (
-            <p className="text-lg font-semibold" role="status" data-total="">
-              {first.total_estimate === null
-                ? t('search.results.many')
-                : t('search.results.count', { count: first.total_estimate })}
-            </p>
-          ) : null}
+      {first ? (
+        <p className="text-title-lg tabular-nums" role="status" data-total="">
+          {first.total_estimate === null
+            ? t('search.results.many')
+            : t('search.results.count', { count: first.total_estimate })}
+        </p>
+      ) : null}
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="flex min-w-0 max-w-[20rem] flex-[1_1_12rem] flex-col gap-2">
+          <Label htmlFor={sortId}>{t('search.sort.label')}</Label>
+          <NativeSelect
+            id={sortId}
+            value={state.sort}
+            onChange={(event) => onSortChange(event.target.value as SearchSort)}
+          >
+            {SEARCH_SORTS.map((sort) => (
+              <NativeSelectOption key={sort} value={sort}>
+                {t(`search.sort.${sort}`)}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
         </div>
-        <div className="flex flex-wrap items-end gap-2">
-          <div className="flex flex-col gap-1">
-            <Label htmlFor={sortId} className="text-sm text-muted-foreground">
-              {t('search.sort.label')}
-            </Label>
-            <NativeSelect
-              id={sortId}
-              value={state.sort}
-              onChange={(event) => onSortChange(event.target.value as SearchSort)}
-              wrapperClassName="w-auto"
-            >
-              {SEARCH_SORTS.map((sort) => (
-                <NativeSelectOption key={sort} value={sort}>
-                  {t(`search.sort.${sort}`)}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
-          </div>
-          <Button variant="secondary" onClick={onSave} disabled={!online}>
-            <BookmarkPlus aria-hidden="true" />
-            {t('search.actions.save')}
-          </Button>
-        </div>
+        <Button variant="quiet" onClick={onSave} disabled={!online}>
+          <BookmarkPlus aria-hidden="true" />
+          {t('search.actions.save')}
+        </Button>
       </div>
       {chips.length > 0 ? (
-        <ul aria-label={t('search.results.active_filters')} className="flex flex-wrap gap-2">
+        <ul aria-label={t('search.results.active_filters')} className="flex flex-wrap gap-2 pb-2">
           {chips.map((chip) => (
-            <li
-              key={chip.keys.join('-')}
-              className="inline-flex min-h-11 max-w-full items-center rounded-full border border-border bg-surface ps-3 text-sm"
-            >
-              <span className="truncate">{chip.label}</span>
-              <button
-                type="button"
-                aria-label={t('search.results.remove_filter', { label: chip.label })}
-                onClick={() => onRemoveFilter(chip.keys)}
-                className="inline-flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            <li key={chip.keys.join('-')} className="max-w-full">
+              <RemovableChip
+                removeLabel={t('search.results.remove_filter', { label: chip.label })}
+                onRemove={() => onRemoveFilter(chip.keys)}
               >
-                <X aria-hidden="true" className="size-4" />
-              </button>
+                {chip.label}
+              </RemovableChip>
             </li>
           ))}
         </ul>
@@ -100,9 +92,13 @@ export function SearchResults({
         getKey={(card) => card.id}
         label={t('search.results.label')}
         refreshable={false}
-        listClassName="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
+        arrange={passing.arrange}
+        listClassName="card-grid"
+        itemClassName={cn(profileCardCellClass, 'wide:mb-10')}
         skeleton={<ListSkeleton size="full" count={6} />}
-        renderItem={(card) => <DiscoveryCard card={card} headingLevel="h2" className="h-full" />}
+        renderItem={(card, index) => (
+          <DiscoveryCard card={card} index={index} passing={passing} headingLevel="h2" />
+        )}
         empty={
           <EmptyState
             icon={SearchX}

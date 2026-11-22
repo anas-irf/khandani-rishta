@@ -4,6 +4,7 @@ import { type ReactNode, useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '~/components/ui/button'
 import { cn } from '~/lib/utils'
+import { SectionHeading } from './SectionHeading'
 
 export type SectionCardProps = {
   title: string
@@ -21,10 +22,14 @@ export type SectionCardProps = {
   className?: string
 }
 
-/** A titled card with an optional "Edit" action (17 section 10). */
+/**
+ * A titled group with an optional "Edit" action (17 section 10, DESIGN.md 6.10): the diamond
+ * heading and what belongs to it, with no box and no shadow. The band it sits in separates it
+ * from the next group, so give groups `Band`s or a `BandStack`.
+ */
 export function SectionCard({
   title,
-  titleAs: Heading = 'h2',
+  titleAs,
   description,
   editTo,
   onEdit,
@@ -39,7 +44,7 @@ export function SectionCard({
   let headerAction: ReactNode = action ?? null
   if (!headerAction && editTo) {
     headerAction = (
-      <Button asChild variant="ghost" className="-me-2 text-primary">
+      <Button asChild variant="link">
         <Link to={editTo} aria-label={editLabel}>
           <Pencil aria-hidden="true" />
           {t('section.edit')}
@@ -48,12 +53,7 @@ export function SectionCard({
     )
   } else if (!headerAction && onEdit) {
     headerAction = (
-      <Button
-        variant="ghost"
-        className="-me-2 text-primary"
-        onClick={onEdit}
-        aria-label={editLabel}
-      >
+      <Button variant="link" onClick={onEdit} aria-label={editLabel}>
         <Pencil aria-hidden="true" />
         {t('section.edit')}
       </Button>
@@ -63,20 +63,16 @@ export function SectionCard({
   return (
     <section
       aria-labelledby={headingId}
-      className={cn(
-        'flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-4 shadow-sm md:p-5',
-        className,
-      )}
+      data-slot="section-card"
+      className={cn('flex min-w-0 flex-col gap-3', className)}
     >
-      <header className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-col gap-0.5">
-          <Heading id={headingId} className="text-lg font-semibold leading-snug">
-            {title}
-          </Heading>
-          {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
-        </div>
-        {headerAction}
-      </header>
+      <SectionHeading
+        id={headingId}
+        as={titleAs}
+        title={title}
+        description={description}
+        action={headerAction}
+      />
       {children}
     </section>
   )

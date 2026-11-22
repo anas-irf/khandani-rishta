@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
+import { DiamondTitle } from '~/components/common/Ornament'
 import { cn } from '~/lib/utils'
 
 export type Fact = { label: string; value: ReactNode }
@@ -20,29 +21,31 @@ export function Facts({
 }) {
   const { t } = useTranslation('admin')
   return (
-    <section
-      className={cn(
-        'flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-4',
-        className,
-      )}
-    >
+    <section className={cn('tonal panel min-w-0 gap-3', className)}>
       {title || action ? (
-        <header className="flex items-center justify-between gap-3">
-          {title ? <h2 className="text-base font-semibold">{title}</h2> : <span />}
+        <header className="flex flex-wrap items-center justify-between gap-3">
+          {title ? (
+            <h2 className="text-title-md font-bold">
+              <DiamondTitle>{title}</DiamondTitle>
+            </h2>
+          ) : (
+            <span />
+          )}
           {action}
         </header>
       ) : null}
       <dl
         className={cn(
-          'grid gap-x-6 gap-y-2 text-sm',
-          columns === 2 && 'grid-cols-2',
-          columns === 3 && 'grid-cols-3',
+          'grid gap-x-4 gap-y-3 text-body-sm',
+          // A column that would break words gives way: the count is the most there will be.
+          columns === 2 && 'grid-cols-[repeat(auto-fit,minmax(max(6.5rem,40%),1fr))]',
+          columns === 3 && 'grid-cols-[repeat(auto-fit,minmax(max(6.5rem,28%),1fr))]',
         )}
       >
         {facts.map((fact) => (
           <div key={fact.label} className="flex min-w-0 flex-col">
-            <dt className="text-muted-foreground">{fact.label}</dt>
-            <dd className="break-words font-medium">
+            <dt className="text-caption text-muted-foreground">{fact.label}</dt>
+            <dd className="font-semibold wrap-anywhere tabular-nums">
               {fact.value === null || fact.value === undefined || fact.value === '' ? (
                 <>
                   <span aria-hidden="true">-</span>
@@ -72,14 +75,11 @@ export function Panel({
   className?: string
 }) {
   return (
-    <section
-      className={cn(
-        'flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-4',
-        className,
-      )}
-    >
-      <header className="flex items-center justify-between gap-3">
-        <h2 className="text-base font-semibold">{title}</h2>
+    <section className={cn('tonal panel min-w-0 gap-3', className)}>
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-title-md font-bold">
+          <DiamondTitle>{title}</DiamondTitle>
+        </h2>
         {action}
       </header>
       {children}

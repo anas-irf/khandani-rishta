@@ -1,12 +1,13 @@
 // The identity number form of ONB-10 (07 section 13) and ME-VERIFY-ID step 1 (16 section 6.23).
 import { useStore } from '@tanstack/react-form'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import { CircleAlert, ShieldCheck } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { ErrorState } from '~/components/common/ErrorState'
 import { FormSkeleton } from '~/components/common/FormSkeleton'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
+import { inlineLinkClass, TextLink } from '~/components/common/TextLink'
 import { Alert, AlertDescription } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
 import {
@@ -156,16 +157,16 @@ function SavedIdentity({
       value={{ mode: 'onboarding', isDirty: false, isSubmitting: running, submit: run }}
     >
       <div className="flex flex-col gap-6">
-        <div className="grid gap-1.5">
-          <span className="text-sm font-medium">{t('saved_label')}</span>
-          <div className="flex min-h-11 flex-wrap items-center justify-between gap-2 rounded-[var(--radius-input)] border border-border bg-muted px-3">
-            <span dir="ltr">
+        <div className="field-stack">
+          <span className="text-label-lg">{t('saved_label')}</span>
+          <div className="tonal flex min-h-touch-lg flex-wrap items-center justify-between gap-x-4 rounded-input px-4 py-1">
+            <span dir="ltr" className="max-w-full py-1 tabular-nums">
               {t('saved_value', {
                 document: labelOf('document_type', summary.document_type),
                 number: summary.number_masked,
               })}
             </span>
-            <Button type="button" variant="link" className="h-11 px-0" onClick={onChange}>
+            <Button type="button" variant="link" onClick={onChange}>
               {t('change')}
             </Button>
           </div>
@@ -183,7 +184,8 @@ function SavedIdentity({
             type="button"
             loading={running}
             disabled={!online}
-            className="w-full md:w-auto md:self-start"
+            size="lg"
+            fill="phone"
             onClick={() => void run()}
           >
             {label}
@@ -310,16 +312,18 @@ function NumberForm({
           )}
         </form.AppField>
 
-        <section
-          aria-labelledby="identity-consent-title"
-          className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-border bg-surface p-4"
-        >
-          <h3 id="identity-consent-title" className="flex items-center gap-2 font-semibold">
-            <ShieldCheck aria-hidden="true" className="size-5 text-primary" />
-            {t('consent.title')}
+        <section aria-labelledby="identity-consent-title" className="tonal panel gap-3">
+          <h3
+            id="identity-consent-title"
+            className="flex items-start gap-3 text-title-md font-bold"
+          >
+            <span aria-hidden="true" className="flex h-[1lh] items-center">
+              <ShieldCheck className="size-5 text-primary" />
+            </span>
+            <span className="min-w-0">{t('consent.title')}</span>
           </h3>
           <p>{t('consent.body')}</p>
-          <ul className="list-disc ps-5">
+          <ul className="bullet-list">
             <li>{t('consent.point_hidden')}</li>
             <li>{t('consent.point_encrypted')}</li>
             <li>{t('consent.point_not_shared')}</li>
@@ -328,7 +332,7 @@ function NumberForm({
         </section>
 
         {mode === 'onboarding' && subject !== 'self' ? (
-          <p className="font-medium">
+          <p className="font-semibold">
             {profile.basics.first_name
               ? t('managed_note', { name: profile.basics.first_name })
               : t('managed_note_unnamed')}
@@ -349,13 +353,9 @@ function NumberForm({
           )}
         </form.Subscribe>
         {mismatch && draft ? (
-          <Link
-            to="/onboarding/$step"
-            params={{ step: 'basics' }}
-            className="-mt-4 inline-flex min-h-11 w-fit items-center font-medium text-primary underline underline-offset-4"
-          >
+          <TextLink to="/onboarding/$step" params={{ step: 'basics' }} className="-mt-4 self-start">
             {t('go_basics')}
-          </Link>
+          </TextLink>
         ) : null}
       </FormShell>
 
@@ -363,7 +363,7 @@ function NumberForm({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('registered.title')}</DialogTitle>
-            <DialogDescription className="text-base text-foreground">
+            <DialogDescription className="text-foreground">
               {t('registered.body')}
             </DialogDescription>
           </DialogHeader>
@@ -375,10 +375,7 @@ function NumberForm({
               components={{
                 mail: (
                   // biome-ignore lint/a11y/useAnchorContent: Trans puts the address inside.
-                  <a
-                    href={`mailto:${me.config.support_email}`}
-                    className="font-medium text-primary underline underline-offset-4"
-                  />
+                  <a href={`mailto:${me.config.support_email}`} className={inlineLinkClass} />
                 ),
               }}
             />

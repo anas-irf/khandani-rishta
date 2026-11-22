@@ -1,19 +1,24 @@
 // ONB-DONE (07 section 15): the profile is live; three things that make a difference.
-import { Link, useNavigate } from '@tanstack/react-router'
-import {
-  ChevronRight,
-  ImagePlus,
-  type LucideIcon,
-  ShieldCheck,
-  SlidersHorizontal,
-} from 'lucide-react'
+import { useNavigate } from '@tanstack/react-router'
+import { Camera, IdCard, type LucideIcon, SlidersHorizontal } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import type { ArchTone } from '~/components/common/Arch'
 import { CardSkeleton } from '~/components/common/CardSkeleton'
+import { DisplayHeading } from '~/components/common/DisplayHeading'
 import { ErrorState } from '~/components/common/ErrorState'
+import { NudgeCard } from '~/components/common/LinkRow'
+import { OrnamentRule } from '~/components/common/Ornament'
 import { Button } from '~/components/ui/button'
 import { useOwnProfile } from '~/features/profile-sections/queries'
 
-type ActionCard = { key: string; to: string; icon: LucideIcon; title: string; text: string }
+type NextStep = {
+  key: string
+  to: string
+  icon: LucideIcon
+  tone?: ArchTone
+  title: string
+  text: string
+}
 
 export function DoneScreen() {
   const { t } = useTranslation('onboarding')
@@ -30,31 +35,32 @@ export function DoneScreen() {
     )
   }
 
-  const cards: ActionCard[] = []
+  const steps: NextStep[] = []
   if (profile.data) {
     const { photos, verification } = profile.data
     const hasPhoto = photos.some(
       (photo) => photo.status !== 'rejected' && photo.status !== 'failed',
     )
     if (!hasPhoto) {
-      cards.push({
+      steps.push({
         key: 'photo',
         to: '/me/photos',
-        icon: ImagePlus,
+        icon: Camera,
         title: t('done.photo_title'),
         text: t('done.photo_text'),
       })
     }
     if (!verification.id_verified && !verification.pending.id_document) {
-      cards.push({
+      steps.push({
         key: 'verify',
         to: '/me/verification',
-        icon: ShieldCheck,
+        icon: IdCard,
+        tone: 'success',
         title: t('done.verify_title'),
         text: t('done.verify_text'),
       })
     }
-    cards.push({
+    steps.push({
       key: 'privacy',
       to: '/settings/privacy',
       icon: SlidersHorizontal,
@@ -65,36 +71,32 @@ export function DoneScreen() {
 
   return (
     <div className="flex flex-col gap-6" data-screen="ONB-DONE">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold">{t('done.title')}</h1>
-        <p className="text-muted-foreground">{t('done.subtitle')}</p>
+      <div className="flex flex-col items-center gap-4 pt-4 text-center">
+        <OrnamentRule centered />
+        <DisplayHeading as="h1">{t('done.title')}</DisplayHeading>
+        <p className="max-w-measure text-body-lg text-foreground-secondary">{t('done.subtitle')}</p>
       </div>
       {profile.isPending ? (
-        <CardSkeleton />
+        <CardSkeleton size="compact" />
       ) : (
         <ul className="flex flex-col gap-3">
-          {cards.map((card) => (
-            <li key={card.key}>
-              <Link
-                to={card.to}
-                className="flex min-h-11 items-center gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-4 transition-colors hover:bg-muted"
-              >
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary">
-                  <card.icon aria-hidden="true" className="size-5" />
-                </span>
-                <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="font-medium">{card.title}</span>
-                  <span className="text-sm text-muted-foreground">{card.text}</span>
-                </span>
-                <ChevronRight aria-hidden="true" className="size-5 shrink-0 rtl:-scale-x-100" />
-              </Link>
+          {steps.map((step) => (
+            <li key={step.key}>
+              <NudgeCard
+                to={step.to}
+                icon={step.icon}
+                tone={step.tone}
+                label={step.title}
+                description={step.text}
+              />
             </li>
           ))}
         </ul>
       )}
       <Button
         type="button"
-        className="w-full md:w-auto md:self-start"
+        size="lg"
+        fill="phone"
         onClick={() => void navigate({ to: '/home', replace: true })}
       >
         {t('done.matches')}

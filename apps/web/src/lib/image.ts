@@ -128,7 +128,7 @@ export async function prepareImage(
     const context = canvas.getContext('2d')
     if (context) {
       // JPEG has no transparency: composite transparent pixels over white (08 section 5.3).
-      context.fillStyle = '#ffffff'
+      context.fillStyle = 'white'
       context.fillRect(0, 0, size.width, size.height)
       context.drawImage(bitmap, 0, 0, size.width, size.height)
       blob = await canvasToJpeg(canvas)

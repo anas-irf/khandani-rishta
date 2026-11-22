@@ -57,7 +57,7 @@ describe('SET-ACCOUNT: sign-in and security', () => {
 
     const card = await group('Sign-in and security')
     expect(await screen.findByText('Email: member@example.com')).toBeInTheDocument()
-    expect(card.getByRole('img', { name: 'Email verified' })).toBeInTheDocument()
+    expect(card.getByText('Email verified').querySelector('svg')).toBeInTheDocument()
     expect(card.getByText('Phone: +92 300 1234567')).toBeInTheDocument()
   })
 
@@ -71,7 +71,7 @@ describe('SET-ACCOUNT: sign-in and security', () => {
 
     const card = await group('Sign-in and security')
     expect(await screen.findByText('Email: member@example.com')).toBeInTheDocument()
-    expect(card.queryByRole('img', { name: 'Email verified' })).not.toBeInTheDocument()
+    expect(card.queryByText('Email verified')).not.toBeInTheDocument()
     expect(card.queryByText(/^Phone:/)).not.toBeInTheDocument()
   })
 

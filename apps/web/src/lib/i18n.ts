@@ -5,8 +5,9 @@ import { initReactI18next } from 'react-i18next'
  * Translations (17 section 12). Every string a member reads comes from `src/locales`.
  *
  * - One JSON file per namespace and language: `locales/<lng>/<namespace>.json`.
- * - `common`, `errors` and `public` are bundled, so public pages render on the Worker
- *   without waiting. Every other namespace is loaded on first use with a dynamic import,
+ * - `common`, `errors`, `public` and `shared` (the landing page shows the photo and badge
+ *   words of the product) are bundled, so public pages render on the Worker without waiting.
+ *   Every other namespace is loaded on first use with a dynamic import,
  *   which keeps the landing page small; `useTranslation('<namespace>')` suspends until then.
  * - Keys are stable descriptive paths (`chat.composer.placeholder`), never English sentences.
  * - Enumeration labels come from the API (lib/reference.ts), not from these files.
@@ -15,7 +16,12 @@ import { initReactI18next } from 'react-i18next'
 type LocaleModule = { default: ResourceKey }
 
 const bundled = import.meta.glob<LocaleModule>(
-  ['../locales/en/common.json', '../locales/en/errors.json', '../locales/en/public.json'],
+  [
+    '../locales/en/common.json',
+    '../locales/en/errors.json',
+    '../locales/en/public.json',
+    '../locales/en/shared.json',
+  ],
   { eager: true },
 )
 const lazy = import.meta.glob<LocaleModule>('../locales/*/*.json')
@@ -64,7 +70,7 @@ void i18n
     lng: 'en',
     fallbackLng: 'en',
     supportedLngs: SUPPORTED_LANGUAGES.length > 0 ? SUPPORTED_LANGUAGES : ['en'],
-    ns: ['common', 'errors', 'public'],
+    ns: ['common', 'errors', 'public', 'shared'],
     defaultNS: 'common',
     fallbackNS: 'common',
     initAsync: false,

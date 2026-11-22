@@ -131,9 +131,9 @@ function PhotosForm({
             />
           )}
         </form.AppField>
-        <p className="text-sm text-muted-foreground">{t('photos.visibility_note')}</p>
+        <p className="text-caption text-muted-foreground">{t('photos.visibility_note')}</p>
         {usable.length === 0 && me.config.photo_required ? (
-          <p className="text-sm text-muted-foreground">{t('photos.required')}</p>
+          <p className="text-caption text-muted-foreground">{t('photos.required')}</p>
         ) : null}
       </FormShell>
     </div>
@@ -151,7 +151,7 @@ function AddLater() {
       <Button
         type="button"
         variant="secondary"
-        className="w-full md:w-auto md:self-start"
+        fill="phone"
         disabled={controls.isSubmitting || !online}
         onClick={() => setOpen(true)}
       >
@@ -161,7 +161,7 @@ function AddLater() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('photos.skip_dialog.title')}</DialogTitle>
-            <DialogDescription className="text-base text-foreground">
+            <DialogDescription className="text-foreground">
               {t('photos.skip_dialog.body')}
             </DialogDescription>
           </DialogHeader>

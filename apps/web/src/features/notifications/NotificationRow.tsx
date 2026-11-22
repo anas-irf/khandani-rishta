@@ -2,17 +2,19 @@ import { useRouter } from '@tanstack/react-router'
 import { ExternalLink } from 'lucide-react'
 import type { MouseEvent, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { MemberPhoto } from '~/components/common/MemberPhoto'
+import { MemberAvatar } from '~/components/common/MemberAvatar'
 import { PlainText } from '~/components/common/PlainText'
 import { RelativeTime } from '~/components/common/RelativeTime'
+import { UnreadDot } from '~/components/common/UnreadDot'
 import { LogoMark } from '~/components/layout/Logo'
+import { avatarVariants } from '~/components/ui/avatar'
 import type { NotificationItem } from '~/lib/api-types'
 import { useLabelOf } from '~/lib/reference'
 import { cn } from '~/lib/utils'
 import { describeNotification } from './describe'
 
 const rowClass =
-  'flex w-full items-start gap-3 px-4 py-3 text-start transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring'
+  'flex min-h-[76px] w-full items-start gap-[12px] rounded-row px-[12px] py-3 text-start text-foreground transition-colors hover:tonal'
 
 function isPlainLeftClick(event: MouseEvent) {
   return event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey
@@ -47,27 +49,25 @@ export function NotificationRow({
   const content = (
     <>
       <Avatar item={item} />
-      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className={cn('text-base leading-snug', !item.is_read && 'font-semibold')}>
+      <span className="flex min-w-0 flex-1 flex-col gap-1">
+        <span className={cn('text-body-md', !item.is_read && 'font-bold')}>
           {text}
           {target?.kind === 'external' ? (
             <>
-              <ExternalLink aria-hidden="true" className="ms-1 inline size-3.5 align-baseline" />
+              <ExternalLink
+                aria-hidden="true"
+                className="ms-1 inline size-[0.85em] align-baseline"
+              />
               <span className="sr-only">{t('announcement.opens_in_new_tab')}</span>
             </>
           ) : null}
         </span>
         {note ? (
-          <PlainText as="span" text={note} className="text-sm text-muted-foreground" />
+          <PlainText as="span" text={note} className="text-body-sm text-muted-foreground" />
         ) : null}
-        <RelativeTime value={item.created_at} className="text-sm text-muted-foreground" />
+        <RelativeTime value={item.created_at} className="text-caption text-muted-foreground" />
       </span>
-      {item.is_read ? null : (
-        <span className="mt-1.5 flex shrink-0 items-center" data-unread-dot="">
-          <span aria-hidden="true" className="size-2.5 rounded-full bg-primary" />
-          <span className="sr-only">{t('unread')}</span>
-        </span>
-      )}
+      {item.is_read ? null : <UnreadDot label={t('unread')} data-unread-dot="" className="mt-2" />}
     </>
   )
 
@@ -132,40 +132,29 @@ export function NotificationRow({
   )
 }
 
-/** The actor's photo, the brand mark for system notifications, or the actor's initial. */
+/** The actor's arch (photo or monogram), or the brand mark for system notifications. */
 function Avatar({ item }: { item: NotificationItem }) {
   const { t } = useTranslation('notifications')
   const actor = item.actor
-  if (actor?.photo) {
-    return (
-      <MemberPhoto
-        photo={actor.photo}
-        name={actor.display_name}
-        gender="female"
-        size="thumb"
-        width={48}
-        height={48}
-        className="size-12 shrink-0 rounded-full"
-      />
-    )
-  }
   if (actor) {
     return (
-      <span
-        aria-hidden="true"
-        className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary-soft font-semibold text-primary"
-      >
-        {actor.display_name.slice(0, 1).toUpperCase()}
-      </span>
+      <MemberAvatar
+        photo={actor.photo}
+        name={actor.display_name}
+        // The feed carries no gender. It is only for the silhouette, which a name makes unnecessary.
+        gender="female"
+        // Without a photo the monogram only repeats the name the text starts with.
+        decorative={!actor.photo}
+      />
     )
   }
   return (
     <span
-      className="flex size-12 shrink-0 items-center justify-center"
+      className={cn(avatarVariants({ size: 'sm' }), 'tonal items-center justify-center')}
       role="img"
       aria-label={t('app_icon')}
     >
-      <LogoMark className="size-10" />
+      <LogoMark className="size-[26px]" />
     </span>
   )
 }

@@ -1,4 +1,8 @@
+import { TriangleAlert } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { Band } from '~/components/common/Band'
+import { EmptyState } from '~/components/common/EmptyState'
+import { Wordmark } from '~/components/layout/Logo'
 import { Button } from '~/components/ui/button'
 import { isApiError } from '~/lib/api'
 
@@ -7,13 +11,21 @@ export function FullScreenError({ error, onRetry }: { error: unknown; onRetry: (
   const { t } = useTranslation('errors')
   const requestId = isApiError(error) ? error.requestId : null
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-4 p-6 text-center">
-      <h1 className="text-2xl font-semibold">{t('generic.screen_title')}</h1>
-      <p className="max-w-md text-muted-foreground">{t('generic.screen_text')}</p>
-      <Button onClick={onRetry}>{t('generic.try_again')}</Button>
-      {requestId ? (
-        <p className="text-sm text-muted-foreground">{t('reference', { id: requestId })}</p>
-      ) : null}
+    <main className="flex min-h-dvh flex-col">
+      <div className="container-app flex min-h-[64px] items-center border-b border-border py-2 wide:min-h-[80px]">
+        <Wordmark />
+      </div>
+      <Band as="div" width="column" className="flex-1">
+        <EmptyState
+          icon={TriangleAlert}
+          tone="danger"
+          titleAs="h1"
+          title={t('generic.screen_title')}
+          text={t('generic.screen_text')}
+          action={<Button onClick={onRetry}>{t('generic.try_again')}</Button>}
+          footnote={requestId ? t('reference', { id: requestId }) : null}
+        />
+      </Band>
     </main>
   )
 }

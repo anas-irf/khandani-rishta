@@ -1,13 +1,12 @@
 // APP-PROFILE (16 section 6.7)
 import { useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, ShieldCheck } from 'lucide-react'
+import { Ban, Flag, TriangleAlert } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BlockDialog } from '~/components/common/BlockDialog'
+import { Band } from '~/components/common/Band'
 import { ErrorState } from '~/components/common/ErrorState'
 import { NoLongerAvailable } from '~/components/common/NoLongerAvailable'
 import { useGoBack } from '~/components/common/PageHeader'
-import { ReportDialog } from '~/components/common/ReportDialog'
 import { ScreenAccess } from '~/components/common/ScreenAccess'
 import {
   AlertDialog,
@@ -22,8 +21,12 @@ import { Button } from '~/components/ui/button'
 import { Skeleton } from '~/components/ui/skeleton'
 import { isApiError } from '~/lib/api'
 import type { ProfileDetail, Tier } from '~/lib/api-types'
-import { ActionBar } from './components/ActionBar'
-import { ProfileDetailView } from './ProfileDetailView'
+import { useIsWide } from '~/lib/media'
+import { ActionBar, ActionRail, TopBarActions } from './components/ActionBar'
+import { useProfileActions } from './components/actions'
+import { ProfileActionsProvider } from './components/ProfileActionsProvider'
+import { ProfileBackButton, ProfileTopBar } from './components/ProfileTopBar'
+import { ProfileDetailView, profileColumnsClass } from './ProfileDetailView'
 import { forgetProfile, useProfile } from './queries'
 
 /** A connection or an interest counterpart stays open while the own profile is paused or closed. */
@@ -39,98 +42,113 @@ export function ProfileScreen({ profileId }: { profileId: string }) {
   let content: ReactNode
   if (profile.data) {
     content = (
-      <ScreenAccess screen="APP-PROFILE" allowed={isRelated(profile.data.relation.tier)}>
+      <ScreenAccess
+        screen="APP-PROFILE"
+        allowed={isRelated(profile.data.relation.tier)}
+        header={<ProfileTopBar />}
+      >
         <ProfileContent detail={profile.data} />
       </ScreenAccess>
     )
   } else if (code === 'not_found') {
-    content = <NotFound profileId={profileId} />
+    content = (
+      <ProfileStateLayout>
+        <NotFound profileId={profileId} />
+      </ProfileStateLayout>
+    )
   } else if (code === 'limit_reached') {
-    content = <ViewLimitDialog />
+    content = (
+      <ProfileStateLayout>
+        <ViewLimitDialog />
+      </ProfileStateLayout>
+    )
   } else if (profile.isError) {
     // `profile_not_active`: Me is refetched by the global handler; the status panel follows.
     content = (
-      <ScreenAccess screen="APP-PROFILE">
-        <ErrorState
-          error={error}
-          onRetry={() => void profile.refetch()}
-          retrying={profile.isFetching}
-        />
+      <ScreenAccess screen="APP-PROFILE" header={<ProfileTopBar />}>
+        <ProfileStateLayout>
+          <ErrorState
+            error={error}
+            onRetry={() => void profile.refetch()}
+            retrying={profile.isFetching}
+          />
+        </ProfileStateLayout>
       </ScreenAccess>
     )
   } else {
-    content = <ProfileSkeleton />
+    content = (
+      <ProfileStateLayout>
+        <ProfileSkeleton />
+      </ProfileStateLayout>
+    )
   }
 
+  // `clip` and not `hidden`: the bands bleed to both edges and the bars inside stay sticky.
+  return <div className="flex min-w-0 flex-1 flex-col overflow-x-clip">{content}</div>
+}
+
+/** Loading and the errors: the back row, then the state on the page. */
+export function ProfileStateLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="container-app flex flex-col gap-2 pt-2">
-      <BackRow />
-      {content}
-    </div>
+    <>
+      <ProfileTopBar />
+      <Band as="div" space="sm" className="flex-1">
+        {children}
+      </Band>
+    </>
   )
 }
 
-function BackRow() {
-  const { t } = useTranslation('shared')
-  const goBack = useGoBack()
-  return (
-    <div>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="-ms-2"
-        aria-label={t('header.back')}
-        onClick={goBack}
-      >
-        <ArrowLeft aria-hidden="true" className="size-5 rtl:-scale-x-100" />
-      </Button>
-    </div>
-  )
-}
-
+/**
+ * Phones: the top bar, the article, and the action bar at the bottom. From 768 the actions are
+ * a rail beside the article, and the bands still reach both edges of the window.
+ */
 function ProfileContent({ detail }: { detail: ProfileDetail }) {
+  const wide = useIsWide()
   return (
-    <div className="pb-48 md:pb-0">
-      <ProfileDetailView
-        detail={detail}
-        aside={<ActionBar detail={detail} />}
-        footer={<SafetyFooter detail={detail} />}
-      />
-    </div>
+    <ProfileActionsProvider detail={detail}>
+      {wide ? null : (
+        <ProfileTopBar name={detail.card.display_name}>
+          <TopBarActions />
+        </ProfileTopBar>
+      )}
+      <div className="container-app flex flex-1 gap-8 xl:gap-12">
+        <ProfileDetailView
+          detail={detail}
+          lead={wide ? <ProfileBackButton className="-ms-3 mb-[8px]" /> : null}
+          footer={<SafetyFooter />}
+        />
+        {wide ? (
+          <div className="w-[320px] shrink-0 py-10 xl:w-[340px]">
+            <ActionRail />
+          </div>
+        ) : null}
+      </div>
+      {wide ? null : <ActionBar />}
+    </ProfileActionsProvider>
   )
 }
 
 /** Block 12: "Report this profile", "Block" and the money warning. */
-function SafetyFooter({ detail }: { detail: ProfileDetail }) {
+function SafetyFooter() {
   const { t } = useTranslation('profile')
-  const [open, setOpen] = useState<'report' | 'block' | null>(null)
-  const { card } = detail
+  const { openReport, openBlock } = useProfileActions()
   return (
-    <footer className="flex flex-col gap-2 px-1 py-2">
-      <div className="flex flex-wrap gap-x-4">
-        <Button variant="link" className="px-0" onClick={() => setOpen('report')}>
+    <footer className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
+      <div className="flex max-w-full flex-wrap gap-3">
+        <Button variant="secondary" onClick={openReport}>
+          <Flag aria-hidden="true" />
           {t('safety.report')}
         </Button>
-        <Button variant="link" className="px-0" onClick={() => setOpen('block')}>
+        <Button variant="secondary" onClick={openBlock}>
+          <Ban aria-hidden="true" />
           {t('safety.block')}
         </Button>
       </div>
-      <p className="flex items-start gap-2 text-sm text-muted-foreground">
-        <ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-        {t('safety.money')}
+      <p className="flex max-w-full items-center gap-3 text-foreground-secondary">
+        <TriangleAlert aria-hidden="true" className="size-5 text-primary" />
+        <span className="min-w-0">{t('safety.money')}</span>
       </p>
-      <ReportDialog
-        open={open === 'report'}
-        onOpenChange={(next) => setOpen(next ? 'report' : null)}
-        profileId={card.id}
-        name={card.display_name}
-      />
-      <BlockDialog
-        open={open === 'block'}
-        onOpenChange={(next) => setOpen(next ? 'block' : null)}
-        profileId={card.id}
-        name={card.display_name}
-      />
     </footer>
   )
 }
@@ -162,7 +180,7 @@ function ViewLimitDialog() {
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{t('load.view_limit_title')}</AlertDialogTitle>
-          <AlertDialogDescription className="text-base text-foreground">
+          <AlertDialogDescription className="text-foreground">
             {t('load.view_limit')}
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -185,30 +203,26 @@ function ViewLimitDialog() {
 export function ProfileSkeleton() {
   const { t } = useTranslation('shared')
   return (
-    <div
-      role="status"
-      aria-busy="true"
-      className="flex flex-col gap-4 md:grid md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:gap-6"
-    >
+    <div role="status" aria-busy="true" className="flex flex-col gap-10">
       <span className="sr-only">{t('list.loading')}</span>
-      <div aria-hidden="true" className="flex flex-col gap-3">
-        <Skeleton className="aspect-[4/5] w-full rounded-[var(--radius-card)]" />
-        <Skeleton className="h-7 w-2/3" />
-        <Skeleton className="h-5 w-1/3" />
+      <div aria-hidden="true" className={profileColumnsClass}>
+        <div className="mx-auto min-w-0 max-w-[clamp(260px,80vw,380px)] flex-[1_1_300px]">
+          <Skeleton className="aspect-[4/5] w-full rounded-arch-lg" />
+        </div>
+        <div className="flex min-w-0 flex-[1_1_340px] flex-col gap-4">
+          <Skeleton className="h-10 w-2/3" />
+          <Skeleton className="h-7 w-1/3 rounded-pill" />
+          <Skeleton className="h-5 w-4/5" />
+        </div>
       </div>
-      <div aria-hidden="true" className="flex flex-col gap-4">
-        {[0, 1, 2].map((index) => (
-          <div
-            key={index}
-            className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-border bg-surface p-4"
-          >
-            <Skeleton className="h-6 w-40" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-5/6" />
-            <Skeleton className="h-4 w-2/3" />
-          </div>
-        ))}
-      </div>
+      {[0, 1, 2].map((index) => (
+        <div key={index} aria-hidden="true" className="flex flex-col gap-3">
+          <Skeleton className="h-7 w-2/5" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-5/6" />
+          <Skeleton className="h-4 w-2/3" />
+        </div>
+      ))}
     </div>
   )
 }

@@ -2,7 +2,10 @@ import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ConfirmDialog } from '~/components/common/ConfirmDialog'
+import { displayHeadingVariants } from '~/components/common/DisplayHeading'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
+import { OrnamentRule } from '~/components/common/Ornament'
+import { RadioCard } from '~/components/common/RadioCard'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -21,7 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '~/components/ui/dialog'
-import { RadioGroup, RadioGroupItem } from '~/components/ui/radio-group'
+import { RadioGroup } from '~/components/ui/radio-group'
 import type { CloseReason } from '~/lib/api-types'
 import { useCurrentMe } from '~/lib/me'
 import { useOptions } from '~/lib/reference'
@@ -89,6 +92,7 @@ function PauseDialog({ open, onClose }: { open: boolean; onClose: () => void }) 
       title={t('account.status.pause.title')}
       description={t('account.status.pause.body')}
       confirmLabel={t('account.status.pause.confirm')}
+      tone="ink"
       onConfirm={() => pause.mutateAsync()}
     />
   )
@@ -138,33 +142,25 @@ function CloseDialog({
           <DialogTitle>{t('account.status.close.title')}</DialogTitle>
           <DialogDescription>{t('account.status.close.body')}</DialogDescription>
         </DialogHeader>
-        <fieldset className="grid gap-2">
-          <legend className="mb-1 text-base font-medium">
-            {t('account.status.close.reason_label')}
-          </legend>
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-2 text-label-lg">{t('account.status.close.reason_label')}</legend>
           <RadioGroup
             aria-label={t('account.status.close.reason_label')}
             value={reason}
             onValueChange={(next) => setReason(next as CloseReason)}
-            className="gap-2"
           >
-            {reasons.map((option) => {
-              const id = `close-reason-${option.code}`
-              return (
-                <label
-                  key={option.code}
-                  htmlFor={id}
-                  className="flex min-h-11 cursor-pointer items-center gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-3 transition-colors hover:bg-muted has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary-soft"
-                >
-                  <RadioGroupItem id={id} value={option.code} />
-                  <span className="text-base">{option.label}</span>
-                </label>
-              )
-            })}
+            {reasons.map((option) => (
+              <RadioCard
+                key={option.code}
+                id={`close-reason-${option.code}`}
+                value={option.code}
+                label={option.label}
+              />
+            ))}
           </RadioGroup>
         </fieldset>
         <DialogFooter>
-          <Button variant="outline" disabled={closeProfile.isPending} onClick={onClose}>
+          <Button variant="secondary" disabled={closeProfile.isPending} onClick={onClose}>
             {t('common:actions.cancel')}
           </Button>
           <Button
@@ -224,8 +220,11 @@ function MubarakDialog({ open, onClose }: { open: boolean; onClose: () => void }
     >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{t('account.status.close.mubarak_title')}</AlertDialogTitle>
-          <AlertDialogDescription className="text-base text-foreground">
+          <OrnamentRule />
+          <AlertDialogTitle className={displayHeadingVariants({ size: 'sm' })}>
+            {t('account.status.close.mubarak_title')}
+          </AlertDialogTitle>
+          <AlertDialogDescription className="text-foreground">
             {t('account.status.close.mubarak')}
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -271,7 +270,7 @@ function GentleDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{t('account.delete.gentle.title')}</AlertDialogTitle>
-          <AlertDialogDescription className="text-base text-foreground">
+          <AlertDialogDescription className="text-foreground">
             {t('account.delete.gentle.text')}
           </AlertDialogDescription>
         </AlertDialogHeader>

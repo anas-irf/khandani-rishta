@@ -1,6 +1,7 @@
-import { RadioGroup, RadioGroupItem } from '~/components/ui/radio-group'
+import { RadioGroup } from '~/components/ui/radio-group'
 import { ToggleGroup, ToggleGroupItem } from '~/components/ui/toggle-group'
 import { cn } from '~/lib/utils'
+import { RadioCard } from '../RadioCard'
 import { type AriaProps, useNameRef } from './field-shell'
 
 /**
@@ -60,17 +61,14 @@ export function SegmentedChoice({
       }}
       onBlur={onBlur}
       disabled={disabled}
-      className={cn('flex w-full', className)}
+      className={cn('w-full', className)}
     >
       {options.map((option) => (
         <ToggleGroupItem
           key={option.code}
           value={option.code}
           name={option.code === focusCode ? name : undefined}
-          className={cn(
-            'h-auto min-h-11 whitespace-normal px-2 py-1.5 text-center leading-tight',
-            itemClassName,
-          )}
+          className={itemClassName}
         >
           {option.label}
         </ToggleGroupItem>
@@ -101,10 +99,10 @@ export function RadioCardList({
       onValueChange={(next) => onChange(next || null)}
       onBlur={onBlur}
       disabled={disabled}
-      className={cn('gap-2', className)}
+      className={className}
     >
       {options.map((option) => (
-        <RadioCard
+        <FocusableRadioCard
           key={option.code}
           id={`${idPrefix}-${option.code}`}
           option={option}
@@ -115,7 +113,7 @@ export function RadioCardList({
   )
 }
 
-function RadioCard({
+function FocusableRadioCard({
   id,
   option,
   name,
@@ -125,31 +123,13 @@ function RadioCard({
   name: string | undefined
 }) {
   const nameRef = useNameRef(name)
-  const titleId = `${id}-title`
-  const descriptionId = option.description ? `${id}-description` : undefined
   return (
-    <label
-      htmlFor={id}
-      className="flex min-h-11 cursor-pointer items-start gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-3 transition-colors hover:bg-muted has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary-soft has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60"
-    >
-      <RadioGroupItem
-        id={id}
-        ref={nameRef}
-        value={option.code}
-        aria-labelledby={titleId}
-        aria-describedby={descriptionId}
-        className="mt-0.5"
-      />
-      <span className="grid gap-0.5">
-        <span id={titleId} className="text-base font-medium leading-snug">
-          {option.label}
-        </span>
-        {option.description ? (
-          <span id={descriptionId} className="text-sm text-muted-foreground">
-            {option.description}
-          </span>
-        ) : null}
-      </span>
-    </label>
+    <RadioCard
+      id={id}
+      ref={nameRef}
+      value={option.code}
+      label={option.label}
+      description={option.description}
+    />
   )
 }

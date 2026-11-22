@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { HttpResponse, http } from 'msw'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { LimitDialog } from '~/components/common/LimitDialog'
 import type { Home, ProfileDetail } from '~/lib/api-types'
 import { closeLimitDialog } from '~/lib/dialogs'
@@ -23,7 +23,25 @@ import { ProfileScreen } from './ProfileScreen'
 const ID = '10000000-0000-4000-8000-0000000000aa'
 
 // The limit dialog's store outlives a test.
-afterEach(() => closeLimitDialog())
+afterEach(() => {
+  closeLimitDialog()
+  vi.restoreAllMocks()
+})
+
+/** Under 768 the actions move from the side rail to the top bar and the bottom bar. */
+function usePhoneWidth() {
+  const matchMedia = window.matchMedia.bind(window)
+  vi.spyOn(window, 'matchMedia').mockImplementation((query) =>
+    query === '(min-width: 768px)'
+      ? ({
+          matches: false,
+          media: query,
+          addEventListener: () => {},
+          removeEventListener: () => {},
+        } as unknown as MediaQueryList)
+      : matchMedia(query),
+  )
+}
 
 function detailWith(
   overrides: Parameters<typeof makeProfileDetail>[0] = {},
@@ -104,7 +122,7 @@ describe('APP-PROFILE content', () => {
     expect(await screen.findByRole('status')).toHaveAttribute('aria-busy', 'true')
 
     expect(
-      await screen.findByRole('heading', { level: 1, name: /Ahmed R\., 29/ }),
+      await screen.findByRole('heading', { level: 1, name: /Ahmed R\.,\s29/ }),
     ).toBeInTheDocument()
     expect(screen.getByText('About Ahmed R.')).toBeInTheDocument()
     expect(screen.getByText('I value honesty and family.')).toHaveAttribute('dir', 'auto')
@@ -115,7 +133,9 @@ describe('APP-PROFILE content', () => {
     const lookingFor = screen.getByRole('region', { name: 'What Ahmed R. is looking for' })
     expect(within(lookingFor).getByText('24 to 30 years')).toBeInTheDocument()
     expect(within(lookingFor).getByText('Must have')).toBeInTheDocument()
-    expect(within(lookingFor).getByRole('img', { name: 'You do not match' })).toBeInTheDocument()
+    // Words beside the cross, so the result is never colour or a symbol alone.
+    expect(within(lookingFor).getByText('You do not match')).toBeVisible()
+    expect(within(lookingFor).getAllByText('You match')).toHaveLength(2)
     expect(within(lookingFor).getByText('You match 2 of 3.')).toBeInTheDocument()
   })
 
@@ -140,15 +160,26 @@ describe('APP-PROFILE content', () => {
         },
       }),
     )
-    expect(await screen.findByText('92% match')).toBeInTheDocument()
-    expect(screen.getByText('Ahmed R. fits 97% of what you are looking for')).toBeInTheDocument()
-    expect(screen.getByText('You fit 96% of what Ahmed R. is looking for')).toBeInTheDocument()
+    expect(await screen.findByRole('img', { name: '92% match' })).toBeInTheDocument()
+    const viewerFit = screen.getByRole('meter', {
+      name: 'Ahmed R. fits 97% of what you are looking for',
+    })
+    expect(viewerFit).toHaveAttribute('aria-valuenow', '97')
+    const ownerFit = screen.getByRole('meter', {
+      name: 'You fit 96% of what Ahmed R. is looking for',
+    })
+    expect(ownerFit).toHaveAttribute('aria-valuenow', '96')
     expect(screen.getByText('Same sect')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'See details' }))
-    const list = screen.getByText('Location', { selector: 'span' }).closest('ul') as HTMLElement
-    expect(within(list).getByRole('img', { name: 'Matches' })).toBeInTheDocument()
-    expect(within(list).getByRole('img', { name: 'Does not match' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Hide details' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
+    const compatibility = screen.getByRole('region', { name: 'Compatibility' })
+    const list = within(compatibility).getByText('Location').closest('ul') as HTMLElement
+    expect(within(list).getByText('Matches')).toBeVisible()
+    expect(within(list).getByText('Does not match')).toBeVisible()
     expect(within(list).getByText('Must have')).toBeInTheDocument()
   })
 
@@ -659,7 +690,7 @@ describe('APP-PROFILE other actions', () => {
     await waitFor(() => expect(undone).toBe(true))
   })
 
-  it('the heart adds to the shortlist and offers "Add a note"', async () => {
+  it('Shortlist adds to the shortlist and offers "Add a note"', async () => {
     const user = userEvent.setup()
     const bodies: unknown[] = []
     server.use(
@@ -669,7 +700,7 @@ describe('APP-PROFILE other actions', () => {
       }),
     )
     renderProfile(detailWith())
-    await user.click(await screen.findByRole('button', { name: 'Add Ahmed R. to shortlist' }))
+    await user.click(await screen.findByRole('button', { name: 'Shortlist' }))
     expect(await screen.findByText('Added to your shortlist.')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Add a note' }))
     const dialog = await screen.findByRole('dialog')
@@ -695,6 +726,66 @@ describe('APP-PROFILE other actions', () => {
     expect(await screen.findByText('Blocked.')).toBeInTheDocument()
     expect(blocked).toBe(true)
     await waitFor(() => expect(router.state.location.pathname).toBe('/home'))
+  })
+})
+
+describe('APP-PROFILE layout', () => {
+  it('wide: every action is in the rail', async () => {
+    renderProfile(detailWith())
+    await screen.findByRole('heading', { level: 1 })
+    const rail = within(actionBar())
+    for (const name of ['Send interest', 'Shortlist', 'Not interested', /^More actions/]) {
+      expect(rail.getByRole('button', { name })).toBeInTheDocument()
+    }
+    expect(rail.getByText('8 of 10 interests left today.')).toBeInTheDocument()
+    expect(document.querySelector('[data-slot="profile-top-bar"]')).toBeNull()
+  })
+
+  it('phone: one primary at the bottom, Shortlist and More in the top bar', async () => {
+    usePhoneWidth()
+    const user = userEvent.setup()
+    renderProfile(detailWith())
+    await screen.findByRole('heading', { level: 1 })
+
+    const bar = within(actionBar())
+    expect(bar.getAllByRole('button').map((button) => button.textContent)).toEqual([
+      'Send interest',
+    ])
+    expect(bar.getByText('8 of 10 interests left today.')).toBeInTheDocument()
+
+    const top = within(document.querySelector('[data-slot="profile-top-bar"]') as HTMLElement)
+    expect(top.getByRole('button', { name: 'Back' })).toBeInTheDocument()
+    expect(top.getByRole('button', { name: 'Shortlist' })).toBeInTheDocument()
+    await user.click(top.getByRole('button', { name: 'More actions for Ahmed R.' }))
+    expect(await screen.findByRole('menuitem', { name: 'Not interested' })).toBeInTheDocument()
+  })
+
+  it('phone, received: the banner and Decline before Accept in the bar', async () => {
+    usePhoneWidth()
+    renderProfile(
+      detailWith({
+        relation: { tier: 'interest_from_owner', interest: pendingInterest('received', 'Salam!') },
+      }),
+    )
+    await screen.findByRole('heading', { level: 1 })
+    const bar = within(actionBar())
+    expect(bar.getByText('Ahmed R. is interested in you')).toBeInTheDocument()
+    expect(bar.getByText('Salam!')).toBeInTheDocument()
+    expect(bar.getAllByRole('button').map((button) => button.textContent)).toEqual([
+      'Decline',
+      'Accept',
+    ])
+  })
+
+  it('gives focus back to "More" after a dialog opened from its menu', async () => {
+    const user = userEvent.setup()
+    renderProfile(detailWith())
+    const more = await screen.findByRole('button', { name: 'More actions for Ahmed R.' })
+    await user.click(more)
+    await user.click(await screen.findByRole('menuitem', { name: 'Report' }))
+    const dialog = await screen.findByRole('dialog')
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+    await waitFor(() => expect(more).toHaveFocus())
   })
 })
 
@@ -797,7 +888,8 @@ describe('ProfileDetailView preview', () => {
     renderWithProviders(() => <ProfileDetailView detail={detail} preview />, { me: db.me })
     expect(await screen.findByText("Ahmed R.'s photos are private")).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Request photos' })).toBeNull()
-    expect(screen.queryByText('90% match')).toBeNull()
+    expect(screen.queryByRole('img', { name: '90% match' })).toBeNull()
+    expect(screen.queryByRole('meter')).toBeNull()
     expect(screen.queryByRole('region', { name: 'Actions' })).toBeNull()
     expect(screen.queryByRole('link', { name: /Open photo/ })).toBeNull()
   })

@@ -7,6 +7,8 @@ import { Button } from '~/components/ui/button'
 import { http } from '~/lib/api'
 import { setMe } from '~/lib/query'
 import { cn } from '~/lib/utils'
+import { Band } from './Band'
+import { EmptyState } from './EmptyState'
 import { useOnlineStatus } from './OfflineBanner'
 
 /** Query keys that do not belong to a screen: `Me` and the reference data. */
@@ -32,43 +34,50 @@ export function useResumeProfile() {
 
 /**
  * Shown in place of a screen whose access level the own profile status does not meet
- * (16 section 1.4, 17 section 4.3). Use `ScreenAccess` rather than rendering it per screen.
+ * (16 section 1.4, 17 section 4.3). It brings its own band, so it can replace a whole screen.
+ * Use `ScreenAccess` rather than rendering it per screen.
  */
 export function StatusPanel({
   status,
+  titleAs = 'h1',
   className,
 }: {
   status: 'paused' | 'closed'
+  /** `h1` in place of a whole screen; `h2` under a header that stays. */
+  titleAs?: 'h1' | 'h2'
   className?: string
 }) {
   const { t } = useTranslation('shared')
   const resume = useResumeProfile()
   const online = useOnlineStatus()
-  const Icon = status === 'paused' ? CirclePause : CircleX
   const titleId = useId()
 
   return (
-    <section
+    <Band
+      width="column"
       aria-labelledby={titleId}
       data-status-panel={status}
-      className={cn('flex flex-col items-center gap-3 px-4 py-12 text-center', className)}
+      className={cn('flex-1', className)}
     >
-      <span className="flex size-14 items-center justify-center rounded-full bg-warning-soft text-warning">
-        <Icon aria-hidden="true" className="size-7" />
-      </span>
-      <h2 id={titleId} className="text-lg font-semibold">
-        {t(`status_panel.${status}.title`)}
-      </h2>
-      <p className="max-w-md text-muted-foreground">{t(`status_panel.${status}.text`)}</p>
-      {status === 'paused' ? (
-        <Button onClick={() => resume.mutate()} loading={resume.isPending} disabled={!online}>
-          {t('status_panel.paused.action')}
-        </Button>
-      ) : (
-        <Button asChild>
-          <Link to="/settings/account">{t('status_panel.closed.action')}</Link>
-        </Button>
-      )}
-    </section>
+      <EmptyState
+        icon={status === 'paused' ? CirclePause : CircleX}
+        tone="warning"
+        titleId={titleId}
+        titleAs={titleAs}
+        title={t(`status_panel.${status}.title`)}
+        text={t(`status_panel.${status}.text`)}
+        action={
+          status === 'paused' ? (
+            <Button onClick={() => resume.mutate()} loading={resume.isPending} disabled={!online}>
+              {t('status_panel.paused.action')}
+            </Button>
+          ) : (
+            <Button asChild>
+              <Link to="/settings/account">{t('status_panel.closed.action')}</Link>
+            </Button>
+          )
+        }
+      />
+    </Band>
   )
 }

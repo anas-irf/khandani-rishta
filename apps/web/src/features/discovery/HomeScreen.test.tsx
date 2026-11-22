@@ -78,7 +78,8 @@ describe('APP-HOME', () => {
       '/interests?box=received&status=pending',
     )
 
-    const nudges = screen.getByRole('region', { name: 'Suggestions for your profile' })
+    // The callout follows `Me.counters`, so it is there before GET /v1/home answers.
+    const nudges = await screen.findByRole('region', { name: 'Suggestions for your profile' })
     expect(within(nudges).getByRole('link', { name: /Verify your identity/ })).toHaveAttribute(
       'href',
       '/me/verification',
@@ -119,9 +120,14 @@ describe('APP-HOME', () => {
         'You have seen everyone who fits your must-haves. Loosen one to see more.',
       ),
     ).toBeInTheDocument()
-    expect(
-      screen.getByText('Changing your must-have for Caste would show 12 more profiles.'),
-    ).toBeInTheDocument()
+    const end = document.querySelector('[data-exhausted="end"]') as HTMLElement
+    expect(end).toHaveTextContent('Changing your must-have for Caste would show 12 more profiles.')
+    // DESIGN.md 6.15: the dimension and the count, and the copy itself has no markup.
+    expect(within(end).getByText('Caste').tagName).toBe('STRONG')
+    expect(within(end).getByText('12').tagName).toBe('STRONG')
+    expect(end.textContent).not.toMatch(/[<>\u2063]/)
+    // It closes the row rather than following it.
+    expect(end.closest('ul')).toContainElement(screen.getAllByRole('article')[0] as HTMLElement)
     expect(await screen.findByText('Widening your age range may also help.')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Review preferences' })).toHaveAttribute(
       'href',
@@ -174,8 +180,9 @@ describe('APP-HOME', () => {
     expect(loads).toBe(4)
   })
 
-  it('hides a card with "Not interested" and offers "Undo" for 5 seconds', async () => {
-    const user = userEvent.setup()
+  it('puts a panel with "Undo" in the place of a card, with no time limit', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     let undone = false
     server.use(
       http.delete(apiUrl('/v1/passes/:id'), () => {
@@ -185,14 +192,52 @@ describe('APP-HOME', () => {
     )
     renderHome()
     const row = await screen.findByRole('region', { name: 'Your matches' })
+    const second = within(row).getAllByRole('article')[1] as HTMLElement
+    const name = within(second).getAllByRole('link')[0]?.textContent ?? ''
+    await user.click(within(second).getByRole('button', { name: /More actions for/ }))
+    await user.click(await screen.findByRole('menuitem', { name: 'Not interested' }))
+
+    const panel = await screen.findByRole('article', { name: /is hidden from your matches\.$/ })
+    expect(within(row).getAllByRole('article')[1]).toBe(panel)
+    expect(panel).toHaveTextContent('You will not see this profile for 6 months.')
+    expect(within(row).queryByRole('link', { name })).toBeNull()
+    const undo = within(panel).getByRole('button', { name: 'Undo' })
+    await waitFor(() => expect(undo).toHaveFocus())
+
+    // No timer: it waits for as long as the member stays on the screen.
+    await act(() => vi.advanceTimersByTimeAsync(20_000))
+    expect(panel).toBeInTheDocument()
+    expect(undone).toBe(false)
+
+    await user.click(undo)
+    await waitFor(() => expect(undone).toBe(true))
+    const link = await within(row).findByRole('link', { name })
+    await waitFor(() => expect(link).toHaveFocus())
+    expect(screen.queryByText(/is hidden from your matches/)).toBeNull()
+  })
+
+  it('brings the card back when "Not interested" fails', async () => {
+    const user = userEvent.setup()
+    server.use(http.put(apiUrl('/v1/passes/:id'), () => apiError(500, 'internal_error', 'Boom')))
+    renderHome()
+    const row = await screen.findByRole('region', { name: 'Your matches' })
     const first = within(row).getAllByRole('article')[0] as HTMLElement
     const name = within(first).getAllByRole('link')[0]?.textContent ?? ''
     await user.click(within(first).getByRole('button', { name: /More actions for/ }))
     await user.click(await screen.findByRole('menuitem', { name: 'Not interested' }))
-    expect(await screen.findByText('Hidden.')).toBeInTheDocument()
-    await waitFor(() => expect(within(row).queryByRole('link', { name })).toBeNull())
-    await user.click(screen.getByRole('button', { name: 'Undo' }))
-    await waitFor(() => expect(undone).toBe(true))
+    expect(await screen.findByText('Something went wrong. Please try again.')).toBeInTheDocument()
+    await waitFor(() => expect(within(row).getByRole('link', { name })).toBeInTheDocument())
+    expect(screen.queryByText(/is hidden from your matches/)).toBeNull()
+  })
+
+  it('words the headings and the callout for a managed profile', async () => {
+    db.me.profile.managed_by = 'parent'
+    db.me.profile.gender = 'female'
+    renderHome()
+    expect(await screen.findByRole('region', { name: "Ayesha's matches" })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Near Ayesha' })).toBeInTheDocument()
+    expect(screen.getByText('They fit her, and she fits them')).toBeInTheDocument()
+    expect(screen.getByText('2 members are interested in her')).toBeInTheDocument()
   })
 
   it('dismisses the first-run tip on this device', async () => {

@@ -2,7 +2,7 @@ import type { InfiniteData } from '@tanstack/react-query'
 import { useQueryClient } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { ArrowDown, Clock, MoreHorizontal, ShieldAlert } from 'lucide-react'
+import { ArrowDown, Clock, MoreHorizontal, RotateCcw, ShieldAlert } from 'lucide-react'
 import {
   type ReactNode,
   useCallback,
@@ -15,6 +15,7 @@ import {
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { inlineLinkClass } from '~/components/common/TextLink'
 import { Button } from '~/components/ui/button'
 import {
   DropdownMenu,
@@ -297,7 +298,7 @@ export function MessageArea({
       <div
         ref={scrollRef}
         onScroll={onScroll}
-        className="h-full overflow-y-auto px-3 py-2 md:px-4"
+        className="h-full overflow-y-auto px-[16px] py-3 wide:px-6"
         data-virtualized={virtual || undefined}
       >
         {top}
@@ -306,7 +307,7 @@ export function MessageArea({
             {isFetchingNextPage ? (
               <Spinner label={t('chat.loading_older')} />
             ) : (
-              <Button variant="ghost" size="sm" className="h-11" onClick={loadOlder}>
+              <Button variant="quiet" onClick={loadOlder}>
                 {query.isFetchNextPageError ? t('chat.older_failed') : t('chat.load_older')}
               </Button>
             )}
@@ -339,8 +340,7 @@ export function MessageArea({
       </div>
       {newPill ? (
         <Button
-          size="sm"
-          className="absolute bottom-3 start-1/2 h-11 -translate-x-1/2 rounded-full shadow-md rtl:translate-x-1/2"
+          className="absolute start-1/2 bottom-3 -translate-x-1/2 rtl:translate-x-1/2"
           onClick={scrollToBottom}
         >
           <ArrowDown aria-hidden="true" />
@@ -369,10 +369,7 @@ function RowView({
   const { t } = useTranslation('chat')
   if (row.kind === 'day') {
     return (
-      <p
-        className="py-2 text-center text-sm font-medium text-muted-foreground"
-        data-row-key={row.key}
-      >
+      <p className="py-3 text-center text-label-sm text-muted-foreground" data-row-key={row.key}>
         {row.label}
       </p>
     )
@@ -380,9 +377,11 @@ function RowView({
   if (row.kind === 'unread') {
     return (
       <div className="my-2 flex items-center gap-2" data-row-key="unread">
-        <span className="h-px flex-1 bg-primary/50" />
-        <span className="text-sm font-medium text-primary">{t('chat.unread_divider')}</span>
-        <span className="h-px flex-1 bg-primary/50" />
+        <span className="h-px flex-1 bg-primary" />
+        <span className="text-center text-label-sm font-bold text-primary">
+          {t('chat.unread_divider')}
+        </span>
+        <span className="h-px flex-1 bg-primary" />
       </div>
     )
   }
@@ -393,14 +392,14 @@ function RowView({
     const linkToDetails = message.system_event === 'contact_shared' && actor !== ownProfileId
     return (
       <p
-        className="mx-auto my-2 w-fit max-w-md rounded-full bg-muted px-3 py-1 text-center text-sm text-muted-foreground"
+        className="tonal mx-auto my-2 w-fit max-w-[min(100%,28rem)] rounded-lg px-4 py-[8px] text-center text-caption text-foreground-secondary"
         data-system-event={message.system_event}
       >
         {linkToDetails ? (
           <Link
             to="/chats/$connectionId/details"
             params={{ connectionId: connection.id }}
-            className="font-medium text-primary underline"
+            className={cn(inlineLinkClass, 'inline-flex min-h-touch min-w-touch items-center')}
           >
             {text}
           </Link>
@@ -467,7 +466,7 @@ function MessageBubble({
           variant="ghost"
           size="icon"
           aria-label={t('message.options')}
-          className="shrink-0 text-muted-foreground md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100"
+          className="text-muted-foreground aria-expanded:opacity-100 wide:pointer-fine:opacity-0 wide:pointer-fine:group-focus-within:opacity-100 wide:pointer-fine:group-hover:opacity-100 wide:pointer-fine:aria-expanded:opacity-100"
         >
           <MoreHorizontal aria-hidden="true" />
         </Button>
@@ -498,33 +497,41 @@ function MessageBubble({
 
   return (
     <div
-      className={cn('group flex flex-col py-0.5', mine ? 'items-end' : 'items-start')}
+      className={cn('group flex flex-col py-1', mine ? 'items-end' : 'items-start')}
       data-message-id={message.id}
       data-sender={message.sender}
     >
-      <div className={cn('flex max-w-[88%] items-center gap-1', mine && 'flex-row-reverse')}>
+      <div
+        className={cn(
+          'flex max-w-[min(100%,36rem)] items-center gap-[4px]',
+          mine && 'flex-row-reverse',
+        )}
+      >
         <div
           className={cn(
-            'min-w-0 rounded-2xl px-3 py-2',
+            'min-w-0 rounded-row px-[12px] py-2',
             message.is_deleted
-              ? 'bg-muted text-muted-foreground'
-              : mine
-                ? 'rounded-ee-sm bg-primary text-primary-foreground'
-                : 'rounded-es-sm border border-border bg-surface text-foreground',
-            failed && 'opacity-80',
+              ? 'border border-border text-muted-foreground'
+              : failed
+                ? 'rounded-ee-sm border-[1.5px] border-danger bg-danger-soft text-foreground'
+                : mine
+                  ? 'rounded-ee-sm bg-primary text-primary-foreground'
+                  : 'tonal rounded-es-sm text-foreground',
           )}
         >
           {message.is_deleted ? (
-            <p className="text-base italic">{t('message.removed')}</p>
+            <p className="text-body-md italic">{t('message.removed')}</p>
           ) : (
-            <p dir="auto" className="whitespace-pre-line break-words text-base">
+            <p dir="auto" className="whitespace-pre-line break-words text-body-md">
               {message.body}
             </p>
           )}
           <p
             className={cn(
-              'mt-0.5 flex items-center justify-end gap-1 text-sm',
-              mine && !message.is_deleted ? 'text-primary-foreground/80' : 'text-muted-foreground',
+              'mt-1 flex items-center justify-end gap-1 text-caption tabular-nums',
+              mine && !message.is_deleted && !failed
+                ? 'text-primary-foreground'
+                : 'text-muted-foreground',
             )}
           >
             {sending ? (
@@ -539,17 +546,23 @@ function MessageBubble({
         {hasMenu ? menu : null}
       </div>
       {failed ? (
-        <button
-          type="button"
+        <Button
+          variant="link"
           onClick={() => actions.retry(message)}
-          className="min-h-11 px-1 text-sm font-medium text-danger underline-offset-2 hover:underline"
+          className="text-end text-label-sm text-danger hover:text-danger-hover"
         >
-          {message.local?.error ? `${message.local.error}. ` : ''}
-          {t('message.failed')}
-        </button>
+          <RotateCcw aria-hidden="true" className="size-4" />
+          <span className="min-w-0">
+            {message.local?.error ? `${message.local.error}. ` : ''}
+            {t('message.failed')}
+          </span>
+        </Button>
       ) : null}
       {status && !message.local ? (
-        <p className="px-1 text-sm text-muted-foreground" data-delivery={read ? 'read' : 'sent'}>
+        <p
+          className="px-1 text-caption text-muted-foreground"
+          data-delivery={read ? 'read' : 'sent'}
+        >
           {read ? t('message.read') : t('message.sent')}
         </p>
       ) : null}
@@ -572,25 +585,20 @@ function SafetyNoticeRow({ flag, onReport }: { flag: string; onReport?: () => vo
   const { t } = useTranslation('chat')
   return (
     <div
-      className="mt-1 flex max-w-[88%] items-start gap-2 rounded-[var(--radius-input)] bg-muted px-3 py-2 text-sm text-muted-foreground"
+      className="tonal mt-1 flex max-w-[min(100%,36rem)] items-start gap-2 rounded-md px-3 py-2 text-caption text-foreground-secondary"
       data-safety-notice={flag}
     >
-      <ShieldAlert aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-      <p className="flex-1">
-        {t(`notice.${flag}`)}
+      <span aria-hidden="true" className="flex h-[1lh] items-center">
+        <ShieldAlert className="size-4" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p>{t(`notice.${flag}`)}</p>
         {onReport ? (
-          <>
-            {' '}
-            <button
-              type="button"
-              onClick={onReport}
-              className="inline-flex min-h-11 items-center font-medium text-primary underline"
-            >
-              {t('notice.report')}
-            </button>
-          </>
+          <Button variant="link" onClick={onReport} className="text-label-sm">
+            {t('notice.report')}
+          </Button>
         ) : null}
-      </p>
+      </div>
     </div>
   )
 }

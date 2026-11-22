@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { EmptyState } from '~/components/common/EmptyState'
 import { InfiniteList } from '~/components/common/InfiniteList'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
 import { ProfileCard } from '~/components/common/ProfileCard'
 import { ScreenAccess } from '~/components/common/ScreenAccess'
 import { Button } from '~/components/ui/button'
@@ -18,11 +18,9 @@ type Tab = 'viewed_me' | 'i_viewed'
 
 export function VisitorsScreen() {
   return (
-    <div className="container-app">
-      <ScreenAccess screen="APP-VISITORS">
-        <VisitorsContent />
-      </ScreenAccess>
-    </div>
+    <ScreenAccess screen="APP-VISITORS">
+      <VisitorsContent />
+    </ScreenAccess>
   )
 }
 
@@ -31,21 +29,29 @@ function VisitorsContent() {
   const [tab, setTab] = useState<Tab>('viewed_me')
 
   return (
-    <div className="flex flex-col gap-4">
-      <PageHeader title={t('visitors.title')} />
-      <Tabs value={tab} onValueChange={(value) => setTab(value as Tab)}>
-        <TabsList aria-label={t('visitors.tabs_label')}>
-          <TabsTrigger value="viewed_me">{t('visitors.viewed_me')}</TabsTrigger>
-          <TabsTrigger value="i_viewed">{t('visitors.i_viewed')}</TabsTrigger>
-        </TabsList>
-        <TabsContent value="viewed_me" className="pt-4">
+    <Tabs
+      value={tab}
+      onValueChange={(value) => setTab(value as Tab)}
+      className="min-w-0 flex-1 gap-0"
+    >
+      <Page
+        title={t('visitors.title')}
+        width="column"
+        header={
+          <TabsList aria-label={t('visitors.tabs_label')}>
+            <TabsTrigger value="viewed_me">{t('visitors.viewed_me')}</TabsTrigger>
+            <TabsTrigger value="i_viewed">{t('visitors.i_viewed')}</TabsTrigger>
+          </TabsList>
+        }
+      >
+        <TabsContent value="viewed_me">
           <ViewedMe />
         </TabsContent>
-        <TabsContent value="i_viewed" className="pt-4">
+        <TabsContent value="i_viewed">
           <IViewed />
         </TabsContent>
-      </Tabs>
-    </div>
+      </Page>
+    </Tabs>
   )
 }
 
@@ -104,7 +110,7 @@ function VisitRow({ visit }: { visit: Visit }) {
       card={visit.profile}
       size="compact"
       actions={
-        <p className="text-sm text-muted-foreground">
+        <p className="text-caption text-muted-foreground tabular-nums">
           {t('visitors.viewed_at', { time: formatRelative(visit.last_viewed_at) })}
           {visit.view_count > 1 ? ` · ${t('visitors.times', { count: visit.view_count })}` : null}
         </p>

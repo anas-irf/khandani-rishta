@@ -22,6 +22,7 @@ import {
   TextAreaField,
   TextField,
 } from '~/components/common/fields'
+import { revealAndFocus } from './focus'
 import { fieldContext, formContext } from './form-context'
 
 /**
@@ -85,7 +86,6 @@ export function focusFirstInvalid({ formApi }: { formApi: AnyFormApi }) {
       .sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1))
     const first = elements[0]
     if (!first) return
-    first.scrollIntoView({ block: 'center', behavior: 'smooth' })
-    first.focus({ preventScroll: true })
+    revealAndFocus(first)
   })
 }

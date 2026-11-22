@@ -1,16 +1,20 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { ChevronDown, Plus, X } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { type ReactNode, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { RemovableChip } from '~/components/common/Chip'
+import { Disclosure } from '~/components/common/Disclosure'
+import { FieldError } from '~/components/common/fields/field-shell'
 import { OptionSearch, type SearchOption } from '~/components/common/fields/option-search'
+import { SwitchRow } from '~/components/common/SwitchRow'
 import { Button } from '~/components/ui/button'
+import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { NativeSelect, NativeSelectOption } from '~/components/ui/native-select'
-import { Switch } from '~/components/ui/switch'
+import { Toggle } from '~/components/ui/toggle'
 import type { CityRef, OwnProfile } from '~/lib/api-types'
 import { qk } from '~/lib/query'
 import { type Option, useCitySearch, useLabelOf, useRegions } from '~/lib/reference'
-import { cn } from '~/lib/utils'
 import type { NumberOption } from './filter-options'
 
 /**
@@ -19,58 +23,37 @@ import type { NumberOption } from './filter-options'
  * Every control has a visible label; chips are toggle buttons with `aria-pressed`.
  */
 
-function FieldError({ id, message }: { id: string; message?: string }) {
-  if (!message) return null
-  return (
-    <p id={id} className="text-sm text-danger" data-field-error="">
-      {message}
-    </p>
-  )
-}
-
-/** A collapsible group with its count of active filters in the heading. */
+const legendClass = 'mb-2 max-w-full text-label-lg'
+/**
+ * A collapsible group with its count of active filters in the heading. Its controls stay
+ * mounted while it is closed, and a refused value inside opens it.
+ */
 export function FilterGroup({
   title,
   count,
   defaultOpen,
+  hasError,
   children,
 }: {
   title: string
   count: number
   defaultOpen: boolean
+  hasError?: boolean
   children: ReactNode
 }) {
   const { t } = useTranslation('discovery')
-  const [open, setOpen] = useState(defaultOpen)
-  const panelId = useId()
   return (
-    <section className="border-b border-border last:border-b-0">
-      <h3>
-        <button
-          type="button"
-          aria-expanded={open}
-          aria-controls={panelId}
-          onClick={() => setOpen((value) => !value)}
-          className="flex min-h-12 w-full items-center justify-between gap-2 py-2 text-start font-semibold"
-        >
-          <span>
-            {title}
-            {count > 0 ? (
-              <span className="ms-2 text-sm font-normal text-muted-foreground">
-                {t('search.group_count', { count })}
-              </span>
-            ) : null}
-          </span>
-          <ChevronDown
-            aria-hidden="true"
-            className={cn('size-5 shrink-0 transition-transform', open && 'rotate-180')}
-          />
-        </button>
-      </h3>
-      <div id={panelId} hidden={!open} className="flex flex-col gap-5 pb-5">
-        {children}
-      </div>
-    </section>
+    <Disclosure
+      as="h2"
+      title={title}
+      note={count > 0 ? t('search.group_count', { count }) : undefined}
+      defaultOpen={defaultOpen}
+      forceOpen={hasError}
+      keepMounted
+      className="border-b border-border"
+    >
+      {children}
+    </Disclosure>
   )
 }
 
@@ -96,25 +79,14 @@ export function ChipsField<T extends string>({
     )
   return (
     <fieldset className="flex flex-col gap-2" aria-describedby={error ? errorId : undefined}>
-      <legend className="mb-2 text-sm font-medium">{label}</legend>
+      <legend className={legendClass}>{label}</legend>
       <div className="flex flex-wrap gap-2">
         {options.map((option) => {
           const pressed = selected.includes(option.code)
           return (
-            <button
-              key={option.code}
-              type="button"
-              aria-pressed={pressed}
-              onClick={() => toggle(option.code)}
-              className={cn(
-                'inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                pressed
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-input bg-surface text-foreground hover:bg-muted',
-              )}
-            >
+            <Toggle key={option.code} pressed={pressed} onPressedChange={() => toggle(option.code)}>
               {option.label}
-            </button>
+            </Toggle>
           )
         })}
       </div>
@@ -138,19 +110,13 @@ function SelectedChips({
   return (
     <ul aria-label={t('search.selected', { label })} className="flex flex-wrap gap-2">
       {items.map((item) => (
-        <li
-          key={item.key}
-          className="inline-flex min-h-11 items-center rounded-full border border-border bg-primary-soft ps-3 text-sm font-medium"
-        >
-          <span dir="auto">{item.label}</span>
-          <button
-            type="button"
-            onClick={() => onRemove(item.key)}
-            aria-label={t('search.remove_value', { value: item.label })}
-            className="inline-flex size-11 items-center justify-center rounded-full hover:bg-primary-soft/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        <li key={item.key} className="max-w-full">
+          <RemovableChip
+            removeLabel={t('search.remove_value', { value: item.label })}
+            onRemove={() => onRemove(item.key)}
           >
-            <X aria-hidden="true" className="size-4" />
-          </button>
+            {item.label}
+          </RemovableChip>
         </li>
       ))}
     </ul>
@@ -181,7 +147,7 @@ export function SearchMultiField({
 
   return (
     <fieldset aria-describedby={error ? errorId : undefined} className="flex flex-col gap-2">
-      <legend className="mb-2 text-sm font-medium">{label}</legend>
+      <legend className={legendClass}>{label}</legend>
       <SelectedChips
         label={label}
         items={selected.map((code) => ({ key: code, label: labelOf(code) }))}
@@ -201,7 +167,7 @@ export function SearchMultiField({
         trigger={
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             className="self-start"
             aria-haspopup="listbox"
             aria-expanded={open}
@@ -287,10 +253,10 @@ export function RangeField({
   const current = { min: min ?? undefined, max: max ?? undefined }
   return (
     <fieldset className="flex flex-col gap-2" aria-describedby={error ? errorId : undefined}>
-      <legend className="mb-2 text-sm font-medium">{label}</legend>
-      <div className="grid grid-cols-2 gap-3">
+      <legend className={legendClass}>{label}</legend>
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,6.5rem),1fr))] gap-3">
         <div className="flex flex-col gap-1">
-          <Label htmlFor={fromId} className="text-sm text-muted-foreground">
+          <Label htmlFor={fromId} variant="part">
             {t('search.from')}
           </Label>
           <NativeSelect
@@ -309,7 +275,7 @@ export function RangeField({
           </NativeSelect>
         </div>
         <div className="flex flex-col gap-1">
-          <Label htmlFor={toId} className="text-sm text-muted-foreground">
+          <Label htmlFor={toId} variant="part">
             {t('search.to')}
           </Label>
           <NativeSelect
@@ -342,15 +308,7 @@ export function SwitchField({
   checked: boolean
   onChange: (next: boolean) => void
 }) {
-  const id = useId()
-  return (
-    <div className="flex min-h-11 items-center justify-between gap-3">
-      <Label htmlFor={id} className="text-base font-normal">
-        {label}
-      </Label>
-      <Switch id={id} checked={checked} onCheckedChange={(next) => onChange(next === true)} />
-    </div>
-  )
+  return <SwitchRow label={label} checked={checked} onCheckedChange={onChange} />
 }
 
 /** "Province or state": regions of the chosen countries, as chips (one list per country). */
@@ -368,7 +326,7 @@ export function RegionsField({
   if (countries.length === 0) return null
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="mb-2 text-sm font-medium">{label}</legend>
+      <legend className={legendClass}>{label}</legend>
       {countries.map((country) => (
         <CountryRegions key={country} country={country} value={value ?? []} onChange={onChange} />
       ))}
@@ -392,22 +350,15 @@ function CountryRegions({
       {regions.data.map((region) => {
         const pressed = value.includes(region.id)
         return (
-          <button
+          <Toggle
             key={region.id}
-            type="button"
-            aria-pressed={pressed}
-            onClick={() =>
+            pressed={pressed}
+            onPressedChange={() =>
               onChange(pressed ? value.filter((id) => id !== region.id) : [...value, region.id])
             }
-            className={cn(
-              'inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-              pressed
-                ? 'border-primary bg-primary text-primary-foreground'
-                : 'border-input bg-surface text-foreground hover:bg-muted',
-            )}
           >
             {region.name}
-          </button>
+          </Toggle>
         )
       })}
     </div>
@@ -462,7 +413,7 @@ export function CityField({
 
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="mb-2 text-sm font-medium">{label}</legend>
+      <legend className={legendClass}>{label}</legend>
       <SelectedChips
         label={label}
         items={selected.map((id) => ({
@@ -471,10 +422,10 @@ export function CityField({
         }))}
         onRemove={(key) => onChange(selected.filter((id) => String(id) !== key))}
       />
-      <div className="grid gap-2 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,11rem),1fr))] gap-3">
         {choices.length > 1 ? (
           <div className="flex flex-col gap-1">
-            <Label htmlFor={countryId} className="text-sm text-muted-foreground">
+            <Label htmlFor={countryId} variant="part">
               {t('search.city_country')}
             </Label>
             <NativeSelect
@@ -490,17 +441,16 @@ export function CityField({
             </NativeSelect>
           </div>
         ) : null}
-        <div className={cn('flex flex-col gap-1', choices.length <= 1 && 'sm:col-span-2')}>
-          <Label htmlFor={inputId} className="text-sm text-muted-foreground">
+        <div className="flex flex-col gap-1">
+          <Label htmlFor={inputId} variant="part">
             {t('search.city_search')}
           </Label>
-          <input
+          <Input
             id={inputId}
             type="search"
             value={query}
             autoComplete="off"
             onChange={(event) => setQuery(event.target.value)}
-            className="h-11 w-full rounded-[var(--radius-input)] border border-input bg-surface px-3 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           />
         </div>
       </div>
@@ -512,7 +462,7 @@ export function CityField({
               <li key={city.id}>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   onClick={() => {
                     onChange([...selected, city.id])
                     setQuery('')
@@ -524,11 +474,11 @@ export function CityField({
               </li>
             ))}
           {search.data && search.data.length === 0 ? (
-            <li className="text-sm text-muted-foreground">{t('search.no_results')}</li>
+            <li className="text-caption text-muted-foreground">{t('search.no_results')}</li>
           ) : null}
         </ul>
       ) : (
-        <p className="text-sm text-muted-foreground">{t('search.city_search_hint')}</p>
+        <p className="text-caption text-muted-foreground">{t('search.city_search_hint')}</p>
       )}
     </fieldset>
   )

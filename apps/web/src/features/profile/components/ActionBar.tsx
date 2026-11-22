@@ -1,27 +1,18 @@
-import { useQueryClient } from '@tanstack/react-query'
-import { Link, useNavigate } from '@tanstack/react-router'
-import { Heart, MessageCircle, MoreVertical } from 'lucide-react'
-import { type ReactNode, useState } from 'react'
+import { Link } from '@tanstack/react-router'
+import { Ellipsis, MessageSquare } from 'lucide-react'
+import { type ReactNode, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { BlockDialog } from '~/components/common/BlockDialog'
-import { ConfirmDialog } from '~/components/common/ConfirmDialog'
-import { useOnlineStatus } from '~/components/common/OfflineBanner'
-import { useGoBack } from '~/components/common/PageHeader'
-import { PlainText } from '~/components/common/PlainText'
-import { ReportDialog } from '~/components/common/ReportDialog'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '~/components/ui/alert-dialog'
+import { MonogramArch } from '~/components/common/Arch'
+import { CompatBadge } from '~/components/common/CompatBadge'
+import { ExpiryNote } from '~/components/common/ExpiryNote'
+import { MemberPhoto } from '~/components/common/MemberPhoto'
+import { NameAge } from '~/components/common/NameAge'
+import { QuoteBlock } from '~/components/common/QuoteBlock'
+import { ShortlistButton } from '~/components/common/ShortlistButton'
+import { StickyActionBar } from '~/components/common/StickyActionBar'
+import { TextLink } from '~/components/common/TextLink'
 import { Button } from '~/components/ui/button'
-import { Checkbox } from '~/components/ui/checkbox'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,403 +20,283 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
-import { Label } from '~/components/ui/label'
-import { NoteDialog, type NoteTarget } from '~/features/discovery/components/NoteDialog'
-import { usePassWithUndo } from '~/features/discovery/components/usePassWithUndo'
-import {
-  useAcceptInterest,
-  useDeclineInterest,
-  useWithdrawInterest,
-} from '~/features/interests/queries'
 import { usePrivacy } from '~/features/me/queries'
-import { useShortlistToggle } from '~/features/relations/queries'
-import { isApiError } from '~/lib/api'
-import type { ProfileDetail, Relation } from '~/lib/api-types'
-import { showLimitDialog } from '~/lib/dialogs'
+import { useCandidate } from '~/features/profile-sections/useCandidate'
+import type { Relation } from '~/lib/api-types'
 import { formatDate } from '~/lib/format'
 import { useCurrentMe } from '~/lib/me'
-import { qk } from '~/lib/query'
 import { cn } from '~/lib/utils'
 import { useGrantPhotosTo } from '../queries'
-import { SendInterestDialog, type SendOutcome } from './SendInterestDialog'
+import { cannotSendButtonKey, useProfileActions } from './actions'
 
-/** Which row of the action bar table of 16 section 6.7 applies, top to bottom. */
-export type ActionBarState = 'connection' | 'received' | 'sent' | 'can_send' | 'cannot_send'
-
-export function actionBarState(relation: Relation): ActionBarState {
-  if (relation.tier === 'connection') return 'connection'
-  if (relation.tier === 'interest_from_owner') return 'received'
-  if (relation.tier === 'interest_to_owner') return 'sent'
-  return relation.can_send_interest ? 'can_send' : 'cannot_send'
-}
-
-/** The button text for a `cannot_send_reason` (16 section 6.7, row 5). */
-export function cannotSendButtonKey(reason: Relation['cannot_send_reason']): string {
-  if (reason === 'already_pending') return 'actions.interest_sent'
-  if (reason === 'already_connected') return 'actions.connected'
-  return 'actions.send_interest'
-}
-
-type Dialogs =
-  | 'send'
-  | 'withdraw'
-  | 'decline'
-  | 'report'
-  | 'block'
-  | 'note'
-  | 'open_interest'
-  | 'mutual'
-  | 'not_permitted'
-  | null
-
-/**
- * The action bar of `APP-PROFILE` (16 section 6.7), decided by `relation`: "Open chat" for a
- * connection; "Accept" and "Decline" for a received interest; "Interest sent" and "Withdraw" for
- * a sent one; "Send interest" or the disabled button with its reason otherwise. The heart, "Not
- * interested" and the menu (connection details, "Let {name} see my photos", report, block)
- * follow the table. Fixed to the bottom on narrow screens, in the side column on wide ones.
+/*
+ * The actions of `APP-PROFILE` (16 section 6.7, decided by `relation`) in their three places:
+ *
+ * - phones: the one primary and a line at the bottom (DESIGN.md 6.14), Shortlist and More in the
+ *   top bar, so the primary stays large;
+ * - wide screens: all of them in the side rail.
  */
-export function ActionBar({ detail }: { detail: ProfileDetail }) {
+
+/** Shortlist and More as icon-and-label buttons, for the phone top bar (DESIGN.md 6.16). */
+export function TopBarActions() {
+  const { detail, state, shortlisted } = useProfileActions()
+  return (
+    <>
+      {state === 'connection' ? null : (
+        <ShortlistButton
+          profileId={detail.card.id}
+          shortlisted={detail.relation.is_shortlisted}
+          onAdded={shortlisted}
+          variant="ghost"
+          size="bar"
+          className="shrink-0 [&_svg]:size-[22px]"
+        />
+      )}
+      <MoreMenu inBar />
+    </>
+  )
+}
+
+/** The phone action bar: one primary button, and at most one line under it. */
+export function ActionBar() {
   const { t } = useTranslation('profile')
-  const navigate = useNavigate()
-  const goBack = useGoBack()
-  const online = useOnlineStatus()
-  const queryClient = useQueryClient()
-  const { card, relation } = detail
-  const name = card.display_name
-  const profileId = card.id
-  const state = actionBarState(relation)
-  const [dialog, setDialog] = useState<Dialogs>(null)
-  const [mutualConnection, setMutualConnection] = useState<string | null>(null)
-  const [notPermitted, setNotPermitted] = useState<'verified_only' | 'preference_match'>(
-    'verified_only',
-  )
-  const [alsoBlock, setAlsoBlock] = useState(false)
-  const [note, setNote] = useState<NoteTarget | null>(null)
+  const { state, online, openWithdraw, openDecline } = useProfileActions()
+  const received = state === 'received'
 
-  const accept = useAcceptInterest({ limitText: 'profile:accept.limit_you' })
-  const decline = useDeclineInterest()
-  const withdraw = useWithdrawInterest()
-  const pass = usePassWithUndo()
-
-  const refetchProfile = () => queryClient.invalidateQueries({ queryKey: qk.profile(profileId) })
-  const close = () => setDialog(null)
-
-  const onSendOutcome = (outcome: SendOutcome) => {
-    if (outcome.kind === 'connected') {
-      setMutualConnection(outcome.connectionId)
-      setDialog('mutual')
-    } else if (outcome.kind === 'not_permitted') {
-      setNotPermitted(outcome.reason)
-      setDialog('not_permitted')
-    }
-  }
-
-  const doAccept = () => {
-    if (!relation.interest) return
-    accept.mutate(
-      { id: relation.interest.id, profileId },
-      {
-        onSuccess: (result) => {
-          toast.success(t('accept.done'))
-          void navigate({
-            to: '/chats/$connectionId',
-            params: { connectionId: result.connection.id },
-          })
-        },
-        onError: (error) => {
-          if (!isApiError(error)) return
-          if (error.code === 'limit_reached' && error.details.side === 'them') {
-            showLimitDialog({ textKey: 'profile:accept.limit_them', details: error.details })
-          }
-          if (error.code === 'invalid_state') void refetchProfile()
-        },
-      },
-    )
-  }
-
-  const doPass = () => {
-    pass(profileId, { message: t('pass.done') })
-    if (relation.interest?.direction === 'sent') setDialog('open_interest')
-    else goBack()
-  }
-
-  const heart = (
-    <ShortlistButton
-      detail={detail}
-      onAddNote={() => setNote({ profileId, note: relation.shortlist_note, name })}
-    />
-  )
-  const notInterested = (
-    <Button variant="ghost" disabled={!online} onClick={doPass}>
-      {t('actions.not_interested')}
-    </Button>
-  )
-  const menu = (
-    <ProfileMenu
-      detail={detail}
-      state={state}
-      onReport={() => setDialog('report')}
-      onBlock={() => setDialog('block')}
-    />
-  )
-
-  let primary: ReactNode
-  let secondary: ReactNode
-  let above: ReactNode = null
-  let below: ReactNode = null
-
-  switch (state) {
-    case 'connection':
-      primary = (
-        <Button asChild className="flex-1">
-          <Link
-            to="/chats/$connectionId"
-            params={{ connectionId: relation.connection_id ?? card.relation.connection_id ?? '' }}
-          >
-            <MessageCircle aria-hidden="true" />
-            {t('actions.open_chat')}
-          </Link>
-        </Button>
-      )
-      secondary = menu
-      break
-    case 'received':
-      above = relation.interest ? (
-        <div className="flex flex-col gap-1" data-received-interest="">
-          <p className="font-medium">{t('received.text', { name })}</p>
-          <PlainText text={relation.interest.message} className="text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            {t('received.expires', { date: formatDate(relation.interest.expires_at) })}
-          </p>
-        </div>
-      ) : null
-      primary = (
-        <Button className="flex-1" onClick={doAccept} loading={accept.isPending} disabled={!online}>
-          {t('actions.accept')}
-        </Button>
-      )
-      secondary = (
+  return (
+    <StickyActionBar
+      aria-label={t('actions.label')}
+      data-action-bar={state}
+      className={cn(received && 'overflow-hidden')}
+    >
+      {received ? (
         <>
-          <Button variant="secondary" disabled={!online} onClick={() => setDialog('decline')}>
-            {t('actions.decline')}
-          </Button>
-          {heart}
-          {menu}
+          <ReceivedBanner size="xs" />
+          <div className="flex shrink-0 flex-wrap gap-[12px]">
+            <Button
+              variant="secondary"
+              size="lg"
+              className="min-w-min flex-[1_1_0] px-[12px]"
+              disabled={!online}
+              onClick={openDecline}
+            >
+              {t('actions.decline')}
+            </Button>
+            <Primary className="min-w-min flex-[1.4_1_0] px-[12px]" />
+          </div>
         </>
-      )
-      break
-    case 'sent':
-      primary = (
-        <Button className="flex-1" disabled>
-          {t('actions.interest_sent')}
-        </Button>
-      )
-      secondary = (
-        <>
-          <Button variant="secondary" disabled={!online} onClick={() => setDialog('withdraw')}>
+      ) : state === 'sent' ? (
+        <div className="flex flex-wrap gap-3">
+          <Primary className="flex-[1_1_auto] px-[12px]" />
+          <Button
+            variant="secondary"
+            size="lg"
+            className="grow px-5"
+            disabled={!online}
+            onClick={openWithdraw}
+          >
             {t('actions.withdraw')}
           </Button>
-          {heart}
-          {menu}
-        </>
-      )
-      break
-    case 'can_send':
-      primary = (
-        <Button className="flex-1" disabled={!online} onClick={() => setDialog('send')}>
-          <Heart aria-hidden="true" />
-          {t('actions.send_interest')}
-        </Button>
-      )
-      secondary = (
-        <>
-          {heart}
-          {notInterested}
-          {menu}
-        </>
-      )
-      break
-    default:
-      primary = (
-        <Button className="flex-1" disabled data-cannot-send={relation.cannot_send_reason ?? ''}>
-          {t(cannotSendButtonKey(relation.cannot_send_reason))}
-        </Button>
-      )
-      secondary = (
-        <>
-          {heart}
-          {notInterested}
-          {menu}
-        </>
-      )
-      below = <CannotSendLine relation={relation} />
-      break
-  }
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2">
+          <Primary className="w-full" />
+          <UnderPrimary />
+        </div>
+      )}
+    </StickyActionBar>
+  )
+}
+
+/** The side rail of wide screens (16 section 6.7, "Platform differences"; DESIGN.md 5.3). */
+export function ActionRail() {
+  const { t } = useTranslation('profile')
+  const { detail, state, online, shortlisted, pass, openDecline, openWithdraw } =
+    useProfileActions()
+  const { card, relation } = detail
+  const canPass = state === 'can_send' || state === 'cannot_send'
 
   return (
     <section
       aria-label={t('actions.label')}
+      data-slot="action-rail"
       data-action-bar={state}
-      className="fixed inset-x-0 bottom-0 z-20 flex flex-col gap-3 border-t border-border bg-surface p-3 shadow-[0_-4px_12px_rgba(0,0,0,0.06)] md:static md:rounded-[var(--radius-card)] md:border md:p-4 md:shadow-sm"
+      className="sticky top-[calc(var(--app-bar,80px)+24px)] z-10 flex max-h-[calc(100dvh-var(--app-bar,80px)-48px)] flex-col gap-4 overflow-y-auto rounded-xl border border-border bg-surface p-6 shadow-panel [--tonal:var(--color-muted)] *:shrink-0"
     >
-      {above}
-      <div className="flex flex-wrap items-center gap-2">
-        {primary}
-        <div className="flex items-center gap-1">{secondary}</div>
-      </div>
-      {below}
-
-      <SendInterestDialog
-        open={dialog === 'send'}
-        onOpenChange={(open) => setDialog(open ? 'send' : null)}
-        profileId={profileId}
-        name={name}
-        onOutcome={onSendOutcome}
-      />
-      <ConfirmDialog
-        open={dialog === 'withdraw'}
-        onOpenChange={(open) => setDialog(open ? 'withdraw' : null)}
-        title={t('withdraw.title')}
-        description={t('withdraw.text')}
-        confirmLabel={t('withdraw.confirm')}
-        onConfirm={async () => {
-          if (!relation.interest) return
-          try {
-            await withdraw.mutateAsync({ id: relation.interest.id, profileId })
-            toast.success(t('withdraw.done'))
-          } catch (error) {
-            if (isApiError(error) && error.code === 'invalid_state') void refetchProfile()
-            throw error
-          }
-        }}
-      />
-      <ConfirmDialog
-        open={dialog === 'decline'}
-        onOpenChange={(open) => {
-          setDialog(open ? 'decline' : null)
-          if (!open) setAlsoBlock(false)
-        }}
-        title={t('decline.title')}
-        description={t('decline.text', { name })}
-        confirmLabel={t('decline.confirm')}
-        destructive
-        onConfirm={async () => {
-          if (!relation.interest) return
-          try {
-            await decline.mutateAsync({ id: relation.interest.id, profileId, alsoBlock })
-            toast.success(t('decline.done'))
-            setDialog(null)
-            goBack()
-          } catch (error) {
-            if (isApiError(error) && error.code === 'invalid_state') void refetchProfile()
-            throw error
-          }
-        }}
-      >
-        <div className="flex items-center gap-3">
-          <Checkbox
-            id={`decline-block-${profileId}`}
-            checked={alsoBlock}
-            onCheckedChange={(checked) => setAlsoBlock(checked === true)}
+      {state === 'received' ? (
+        <ReceivedBanner size="sm" />
+      ) : (
+        <div className="flex items-center gap-4">
+          <MemberPhoto
+            photo={card.photo}
+            name={card.display_name}
+            gender={card.gender}
+            size="thumb"
+            width={46}
+            height={58}
+            decorative
+            className="h-[58px] w-[46px]"
           />
-          <Label htmlFor={`decline-block-${profileId}`} className="text-base font-normal">
-            {t('decline.also_block', { name })}
-          </Label>
+          <div className="flex min-w-0 flex-col items-start gap-2">
+            <p className="max-w-full text-figure">
+              <NameAge name={card.display_name} age={card.age} />
+            </p>
+            <CompatBadge compat={card.compat} size="compact" />
+          </div>
         </div>
-      </ConfirmDialog>
-      <ConfirmDialog
-        open={dialog === 'open_interest'}
-        onOpenChange={(open) => {
-          if (!open) {
-            close()
-            goBack()
-          }
-        }}
-        title={t('pass.open_interest', { name })}
-        description=""
-        confirmLabel={t('pass.withdraw')}
-        cancelLabel={t('pass.keep')}
-        onConfirm={async () => {
-          if (relation.interest) {
-            await withdraw.mutateAsync({ id: relation.interest.id, profileId })
-            toast.success(t('withdraw.done'))
-          }
-        }}
-      />
-      <AlertDialog open={dialog === 'mutual'} onOpenChange={(open) => (open ? null : close())}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('send.mutual_title')}</AlertDialogTitle>
-            <AlertDialogDescription>{t('send.mutual_text')}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('send.later')}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                if (mutualConnection) {
-                  void navigate({
-                    to: '/chats/$connectionId',
-                    params: { connectionId: mutualConnection },
-                  })
-                }
-              }}
-            >
-              {t('send.start_chatting')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      <AlertDialog
-        open={dialog === 'not_permitted'}
-        onOpenChange={(open) => (open ? null : close())}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t(`cannot_send.${notPermitted}`)}</AlertDialogTitle>
-            <AlertDialogDescription className="sr-only">
-              {t(`cannot_send.${notPermitted}`)}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('load.ok')}</AlertDialogCancel>
-            {notPermitted === 'verified_only' ? (
-              <AlertDialogAction onClick={() => void navigate({ to: '/me/verification' })}>
-                {t('send.verify_now')}
-              </AlertDialogAction>
-            ) : null}
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      <ReportDialog
-        open={dialog === 'report'}
-        onOpenChange={(open) => setDialog(open ? 'report' : null)}
-        profileId={profileId}
-        name={name}
-      />
-      <BlockDialog
-        open={dialog === 'block'}
-        onOpenChange={(open) => setDialog(open ? 'block' : null)}
-        profileId={profileId}
-        name={name}
-      />
-      <NoteDialog entry={note} onClose={() => setNote(null)} />
+      )}
+
+      <Primary className="w-full" />
+      {state === 'received' ? (
+        <Button
+          variant="secondary"
+          size="lg"
+          className="w-full"
+          disabled={!online}
+          onClick={openDecline}
+        >
+          {t('actions.decline')}
+        </Button>
+      ) : null}
+      {state === 'sent' ? (
+        <Button variant="secondary" className="w-full" disabled={!online} onClick={openWithdraw}>
+          {t('actions.withdraw')}
+        </Button>
+      ) : null}
+      <UnderPrimary meter />
+
+      <div className="flex flex-wrap gap-3">
+        {state === 'connection' ? null : (
+          <ShortlistButton
+            profileId={card.id}
+            shortlisted={relation.is_shortlisted}
+            onAdded={shortlisted}
+            size="compact"
+            variant={state === 'received' ? 'quiet' : 'secondary'}
+            className="flex-[1_1_auto]"
+          />
+        )}
+        {canPass ? (
+          <Button
+            variant="quiet"
+            size="compact"
+            className="flex-[1_1_auto]"
+            disabled={!online}
+            onClick={pass}
+          >
+            {t('actions.not_interested')}
+          </Button>
+        ) : null}
+        <MoreMenu className={canPass ? 'basis-full' : 'flex-[1_1_auto]'} />
+      </div>
     </section>
   )
 }
 
+/** The one main button of the row of 16 section 6.7 that applies. */
+function Primary({ className }: { className?: string }) {
+  const { t } = useTranslation('profile')
+  const { detail, state, online, accept, accepting, openSend } = useProfileActions()
+  const { card, relation } = detail
+
+  switch (state) {
+    case 'connection':
+      return (
+        <Button asChild size="lg" className={className}>
+          <Link
+            to="/chats/$connectionId"
+            params={{ connectionId: relation.connection_id ?? card.relation.connection_id ?? '' }}
+          >
+            <MessageSquare aria-hidden="true" />
+            {t('actions.open_chat')}
+          </Link>
+        </Button>
+      )
+    case 'received':
+      return (
+        <Button
+          size="lg"
+          className={className}
+          loading={accepting}
+          disabled={!online}
+          onClick={accept}
+        >
+          {t('actions.accept')}
+        </Button>
+      )
+    case 'sent':
+      return (
+        <Button size="lg" className={className} disabled>
+          {t('actions.interest_sent')}
+        </Button>
+      )
+    case 'can_send':
+      return (
+        <Button size="lg" className={className} disabled={!online} onClick={openSend}>
+          {t('actions.send_interest')}
+        </Button>
+      )
+    default:
+      return (
+        <Button
+          size="lg"
+          className={className}
+          disabled
+          data-cannot-send={relation.cannot_send_reason ?? ''}
+        >
+          {t(cannotSendButtonKey(relation.cannot_send_reason))}
+        </Button>
+      )
+  }
+}
+
+/** The line under the primary: the interests left today, or why none can be sent. */
+function UnderPrimary({ meter = false }: { meter?: boolean }) {
+  const { detail, state } = useProfileActions()
+  if (state === 'can_send') return <InterestsLeft meter={meter} />
+  if (state === 'cannot_send') return <CannotSendLine relation={detail.relation} />
+  return null
+}
+
+/** Up to this many, the day's interests also show as small arches. */
+const METER_MAX = 10
+
+function InterestsLeft({ meter }: { meter: boolean }) {
+  const { t } = useTranslation('profile')
+  const me = useCurrentMe()
+  const total = me.usage.interests_per_day
+  const left = Math.max(0, total - me.usage.interests_sent_today)
+  return (
+    <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-caption text-muted-foreground tabular-nums">
+      {meter && total > 0 && total <= METER_MAX ? (
+        <span aria-hidden="true" className="flex gap-1">
+          {Array.from({ length: total }, (_, index) => (
+            <span
+              // biome-ignore lint/suspicious/noArrayIndexKey: the marks have no identity.
+              key={index}
+              className={cn(
+                'h-[14px] w-[11px] rounded-t-pill border-[1.5px] border-primary',
+                index < left && 'bg-primary',
+              )}
+            />
+          ))}
+        </span>
+      ) : null}
+      <span className="min-w-0">{t('send.left', { left, total })}</span>
+    </p>
+  )
+}
+
 /** The line under the disabled button (16 section 6.7, "Text for cannot_send_reason"). */
-export function CannotSendLine({ relation }: { relation: Relation }) {
+function CannotSendLine({ relation }: { relation: Relation }) {
   const { t } = useTranslation('profile')
   const me = useCurrentMe()
   const verified =
     me.profile.badges.includes('id_verified') || me.profile.badges.includes('photo_verified')
-  const linkClass =
-    'inline-flex min-h-11 items-center self-start font-medium text-primary underline-offset-4 hover:underline'
   const verifyLink = (label: string) => (
-    <Link to="/me/verification" className={linkClass}>
+    <TextLink to="/me/verification" className="text-label-md">
       {label}
-    </Link>
+    </TextLink>
   )
 
   let text: string | null = null
@@ -443,9 +314,13 @@ export function CannotSendLine({ relation }: { relation: Relation }) {
     case 'pending_limit':
       text = t('cannot_send.pending_limit')
       action = (
-        <Link to="/interests" search={{ box: 'sent', status: 'pending' }} className={linkClass}>
+        <TextLink
+          to="/interests"
+          search={{ box: 'sent', status: 'pending' }}
+          className="text-label-md"
+        >
           {t('cannot_send.view_sent')}
-        </Link>
+        </TextLink>
       )
       break
     case 'connection_limit':
@@ -467,72 +342,63 @@ export function CannotSendLine({ relation }: { relation: Relation }) {
   }
   if (!text) return null
   return (
-    <div className="flex flex-col gap-0.5 text-sm" data-cannot-send-line="">
-      <p className="text-muted-foreground">{text}</p>
+    <div data-cannot-send-line="" className="flex flex-col items-center text-center text-caption">
+      <p className="max-w-full text-muted-foreground">{text}</p>
       {action}
     </div>
   )
 }
 
 /**
- * The heart on the profile (16 section 6.7): optimistic `PUT`/`DELETE /v1/shortlist/{id}`. After
- * adding, a toast offers "Add a note".
+ * The interest banner of DESIGN.md 6.12, on top of the buttons as one unit. In the phone bar it
+ * scrolls inside when it is long, so Decline and Accept stay on the screen.
  */
-function ShortlistButton({ detail, onAddNote }: { detail: ProfileDetail; onAddNote: () => void }) {
-  const { t } = useTranslation(['profile', 'shared'])
-  const toggle = useShortlistToggle()
-  const online = useOnlineStatus()
-  const { card } = detail
-  const shortlisted = toggle.isPending
-    ? toggle.variables.shortlisted
-    : detail.relation.is_shortlisted
+function ReceivedBanner({ size }: { size: 'xs' | 'sm' }) {
+  const { t } = useTranslation('profile')
+  const { context } = useCandidate()
+  const { detail } = useProfileActions()
+  const titleId = useId()
+  const { interest } = detail.relation
+  if (!interest) return null
+  const name = detail.card.display_name
+  const inBar = size === 'xs'
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      aria-pressed={shortlisted}
-      disabled={!online}
-      aria-label={
-        shortlisted
-          ? t('shared:card.shortlist_remove', { name: card.display_name })
-          : t('shared:card.shortlist_add', { name: card.display_name })
-      }
-      onClick={() =>
-        toggle.mutate(
-          { profileId: card.id, shortlisted: !shortlisted },
-          {
-            onSuccess: (_data, variables) => {
-              if (!variables.shortlisted) return
-              toast(t('profile:actions.shortlisted'), {
-                action: { label: t('profile:actions.add_note'), onClick: onAddNote },
-              })
-            },
-          },
-        )
-      }
+    <section
+      aria-labelledby={titleId}
+      data-received-interest=""
+      // It scrolls inside the phone bar, so the keyboard has to reach it.
+      tabIndex={inBar ? 0 : undefined}
+      className={cn(
+        'flex flex-col gap-3',
+        inBar && 'min-h-0 overflow-y-auto rounded-sm -outline-offset-3',
+      )}
     >
-      <Heart
-        aria-hidden="true"
-        className={cn('size-5 text-danger', shortlisted ? 'fill-danger' : 'fill-transparent')}
-      />
-    </Button>
+      <div className="flex shrink-0 items-start gap-3">
+        <MonogramArch name={name} size={size} />
+        <div className="flex min-w-0 flex-col gap-1">
+          <p id={titleId} className="max-w-full text-title-md font-bold">
+            {t('received.text', { name, context })}
+          </p>
+          <ExpiryNote
+            expiresAt={interest.expires_at}
+            text={t('received.expires', { date: formatDate(interest.expires_at) })}
+          />
+        </div>
+      </div>
+      <QuoteBlock text={interest.message} className="shrink-0" />
+    </section>
   )
 }
 
-/** The "more" menu: connection details, "Let {name} see my photos", report and block. */
-function ProfileMenu({
-  detail,
-  state,
-  onReport,
-  onBlock,
-}: {
-  detail: ProfileDetail
-  state: ActionBarState
-  onReport: () => void
-  onBlock: () => void
-}) {
-  const { t } = useTranslation('profile')
+/**
+ * More: connection details, "Let {name} see my photos", "Not interested" on phones (the rail has
+ * a button for it), report and block.
+ */
+function MoreMenu({ inBar = false, className }: { inBar?: boolean; className?: string }) {
+  const { t } = useTranslation(['profile', 'shared'])
+  const { context } = useCandidate()
+  const { detail, state, online, pass, openReport, openBlock } = useProfileActions()
   const [open, setOpen] = useState(false)
   const grant = useGrantPhotosTo()
   const { card, relation } = detail
@@ -540,7 +406,8 @@ function ProfileMenu({
   // The mutation lives here, not in the menu item, so its toast survives the menu closing.
   const grantPhotos = () =>
     grant.mutate(card.id, {
-      onSuccess: () => toast.success(t('actions.photos_granted', { name: card.display_name })),
+      onSuccess: () =>
+        toast.success(t('actions.photos_granted', { name: card.display_name, context })),
     })
   const connectionId = relation.connection_id ?? card.relation.connection_id
 
@@ -548,11 +415,13 @@ function ProfileMenu({
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="ghost"
-          size="icon"
+          variant={inBar ? 'ghost' : 'quiet'}
+          size={inBar ? 'bar' : 'compact'}
+          className={cn(inBar && 'shrink-0 [&_svg]:size-[22px]', className)}
           aria-label={t('actions.menu', { name: card.display_name })}
         >
-          <MoreVertical aria-hidden="true" className="size-5" />
+          <Ellipsis aria-hidden="true" />
+          {t('shared:card.more')}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -566,9 +435,14 @@ function ProfileMenu({
         {related && open ? (
           <LetSeePhotosItem name={card.display_name} onSelect={grantPhotos} />
         ) : null}
-        {state === 'connection' || related ? <DropdownMenuSeparator /> : null}
-        <DropdownMenuItem onSelect={onReport}>{t('actions.report')}</DropdownMenuItem>
-        <DropdownMenuItem onSelect={onBlock}>{t('actions.block')}</DropdownMenuItem>
+        {inBar && !related ? (
+          <DropdownMenuItem disabled={!online} onSelect={pass}>
+            {t('actions.not_interested')}
+          </DropdownMenuItem>
+        ) : null}
+        {related || inBar ? <DropdownMenuSeparator /> : null}
+        <DropdownMenuItem onSelect={openReport}>{t('actions.report')}</DropdownMenuItem>
+        <DropdownMenuItem onSelect={openBlock}>{t('actions.block')}</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
@@ -577,9 +451,12 @@ function ProfileMenu({
 /** Shown when the viewer's own `photo_visibility` is not `members` (16 section 6.7). */
 function LetSeePhotosItem({ name, onSelect }: { name: string; onSelect: () => void }) {
   const { t } = useTranslation('profile')
+  const { context } = useCandidate()
   const privacy = usePrivacy()
   if (!privacy.data || privacy.data.photo_visibility === 'members') return null
   return (
-    <DropdownMenuItem onSelect={onSelect}>{t('actions.let_see_photos', { name })}</DropdownMenuItem>
+    <DropdownMenuItem onSelect={onSelect}>
+      {t('actions.let_see_photos', { name, context })}
+    </DropdownMenuItem>
   )
 }

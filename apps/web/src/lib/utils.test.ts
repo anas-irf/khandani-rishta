@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { directionOf } from './i18n'
 import { isPublicPagePath, securityHeaders } from './security-headers'
-import { badgeCount, cn, fromSlug, safeRedirectPath, toSlug } from './utils'
+import { badgeCount, cn, fromSlug, initialsOf, safeRedirectPath, toSlug } from './utils'
 
 describe('slugs (17 section 3.3)', () => {
   it('converts step and section keys both ways', () => {
@@ -40,6 +40,33 @@ describe('safeRedirectPath (17 section 14)', () => {
 describe('cn', () => {
   it('merges conflicting Tailwind classes', () => {
     expect(cn('px-2', false, 'px-4')).toBe('px-4')
+  })
+
+  it.each([
+    ['text-body-md text-muted-foreground', 'text-body-md text-muted-foreground'],
+    ['text-body-md text-caption', 'text-caption'],
+    ['text-foreground text-primary', 'text-primary'],
+    ['rounded-card rounded-pill', 'rounded-pill'],
+    ['shadow-menu shadow-none', 'shadow-none'],
+    ['min-h-touch min-h-touch-lg', 'min-h-touch-lg'],
+    ['max-w-column max-w-form', 'max-w-form'],
+    ['band-page band-sand', 'band-sand'],
+  ])('knows the design tokens: "%s" -> "%s"', (input, expected) => {
+    expect(cn(input)).toBe(expected)
+  })
+})
+
+describe('initialsOf (DESIGN.md 6.8)', () => {
+  it.each([
+    ['Muhammad Abdul Rehman S.', 'MS'],
+    ['Ayesha K.', 'AK'],
+    ['A. K.', 'AK'],
+    ['Ayesha', 'A'],
+    ['KR7F3K2QX9', 'K'],
+    ['', ''],
+    [null, ''],
+  ])('%s -> "%s"', (name, initials) => {
+    expect(initialsOf(name)).toBe(initials)
   })
 })
 

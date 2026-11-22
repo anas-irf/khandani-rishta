@@ -16,9 +16,9 @@ const LABELLED: ReadonlySet<string> = new Set<LabelledGroup>([
 ])
 
 /**
- * The placeholder row for a group listed in `locked` (16 section 6.7, 09 section 5.5): a lock
- * icon and "Visible after you connect", or "Hidden by this member" at the tier `connection`.
- * Never rendered as empty fields.
+ * The placeholder for a group listed in `locked` (16 section 6.7, 09 section 5.5, DESIGN.md
+ * 6.10): an outlined pill with a lock and "Visible after you connect", or "Hidden by this member"
+ * at the tier `connection`. Never rendered as empty fields.
  */
 export function LockedValue({
   tier,
@@ -43,12 +43,12 @@ export function LockedValue({
   return (
     <div
       data-locked-group={group}
-      className={cn('flex flex-wrap items-baseline gap-x-3 gap-y-0.5', className)}
+      className={cn('flex max-w-full flex-wrap items-baseline gap-x-3 gap-y-1', className)}
     >
-      {rowLabel ? <span className="text-sm text-muted-foreground">{rowLabel}</span> : null}
-      <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-        <Lock aria-hidden="true" className="size-4 shrink-0 self-center" />
-        {text}
+      {rowLabel ? <span className="text-body-sm text-muted-foreground">{rowLabel}</span> : null}
+      <span className="inline-flex max-w-full items-center gap-2 rounded-lg border border-input px-3 py-1 text-label-sm text-foreground-secondary">
+        <Lock aria-hidden="true" strokeWidth={2.2} className="size-[1em]" />
+        <span className="min-w-0">{text}</span>
       </span>
     </div>
   )

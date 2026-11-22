@@ -151,7 +151,7 @@ export function AccountForForm({
       </form.Subscribe>
 
       {mode === 'onboarding' ? (
-        <p className="text-sm text-muted-foreground">{t('account_for.marriage_only')}</p>
+        <p className="text-caption text-muted-foreground">{t('account_for.marriage_only')}</p>
       ) : null}
     </FormShell>
   )

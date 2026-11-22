@@ -1,7 +1,9 @@
 import { Link } from '@tanstack/react-router'
-import { CircleX } from 'lucide-react'
+import { CircleX, TriangleAlert } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ArchIcon } from '~/components/common/Arch'
+import { Alert, AlertDescription } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
 import { type ApiError, isApiError } from '~/lib/api'
 import type { ImageError } from '~/lib/image'
@@ -12,7 +14,7 @@ export function StepPanel({ children, className }: { children: ReactNode; classN
   return (
     <div
       className={cn(
-        'flex flex-col items-center gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-5 text-center',
+        'tonal flex flex-col items-center gap-4 rounded-xl px-[20px] py-8 text-center',
         className,
       )}
     >
@@ -26,12 +28,30 @@ export function ClosedNotice() {
   const { t } = useTranslation('verification')
   return (
     <StepPanel>
-      <CircleX aria-hidden="true" className="size-10 text-muted-foreground" />
+      <ArchIcon icon={CircleX} size="lg" tone="tonal" />
       <p>{t('centre.closed')}</p>
       <Button asChild variant="secondary">
         <Link to="/settings/account">{t('centre.closed_action')}</Link>
       </Button>
     </StepPanel>
+  )
+}
+
+/** What went wrong, or changed, in a step: read out at once, with an icon beside the words. */
+export function FlowAlert({
+  tone = 'danger',
+  children,
+}: {
+  tone?: 'warning' | 'danger'
+  children: ReactNode
+}) {
+  return (
+    <Alert variant={tone} role="alert" className="text-start">
+      <TriangleAlert aria-hidden="true" />
+      <AlertDescription className="text-body-md">
+        <span>{children}</span>
+      </AlertDescription>
+    </Alert>
   )
 }
 

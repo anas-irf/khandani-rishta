@@ -13,8 +13,11 @@ import {
 import { type ChangeEvent, type DragEvent, useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { ArchFrame } from '~/components/common/Arch'
 import { ConfirmDialog } from '~/components/common/ConfirmDialog'
 import { ErrorState } from '~/components/common/ErrorState'
+import { DiamondTitle } from '~/components/common/Ornament'
+import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import {
   Dialog,
@@ -169,7 +172,7 @@ export function PhotoManager({ context }: PhotoManagerProps) {
       <ul
         aria-label={t('grid.label')}
         aria-busy={reorder.isPending || undefined}
-        className="grid grid-cols-3 gap-3"
+        className="arch-grid"
       >
         {photos.map((photo, index) => {
           const actions = slotActions(photo, index)
@@ -189,57 +192,60 @@ export function PhotoManager({ context }: PhotoManagerProps) {
               }}
               onDrop={(event) => onDrop(event, photo)}
               className={cn(
-                'relative aspect-square overflow-hidden rounded-[var(--radius-input)] border border-border bg-muted',
-                dragId === photo.id && 'opacity-50',
+                'flex min-w-0 flex-col items-center gap-2',
+                dragId === photo.id && 'opacity-70',
               )}
             >
-              <button
-                type="button"
-                className="block size-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
-                aria-label={t('grid.open', { position: index + 1 })}
-                onClick={() => setViewerId(photo.id)}
-              >
-                <OwnPhotoImage photo={photo} position={index + 1} />
-              </button>
-              <StatusLabel photo={photo} />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="secondary"
-                    size="icon"
-                    className="absolute end-1 top-1 size-11 rounded-full bg-surface/90"
-                    aria-label={t('grid.options', { position: index + 1 })}
+              <div className="relative w-full">
+                <ArchFrame asChild className="block aspect-[4/5] w-full">
+                  <button
+                    type="button"
+                    aria-label={t('grid.open', { position: index + 1 })}
+                    onClick={() => setViewerId(photo.id)}
                   >
-                    <MoreVertical aria-hidden="true" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onSelect={() => setViewerId(photo.id)}>
-                    {t('actions.view')}
-                  </DropdownMenuItem>
-                  {actions.canMakeMain ? (
-                    <DropdownMenuItem onSelect={() => requestPrimary(photo)}>
-                      {t('actions.make_main')}
+                    <OwnPhotoImage photo={photo} position={index + 1} />
+                  </button>
+                </ArchFrame>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="absolute end-1 bottom-1 bg-surface"
+                      aria-label={t('grid.options', { position: index + 1 })}
+                    >
+                      <MoreVertical aria-hidden="true" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={() => setViewerId(photo.id)}>
+                      {t('actions.view')}
                     </DropdownMenuItem>
-                  ) : null}
-                  <DropdownMenuItem
-                    disabled={!actions.canMoveEarlier}
-                    onSelect={() => move(photo, -1)}
-                  >
-                    {t('actions.move_earlier')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    disabled={!actions.canMoveLater}
-                    onSelect={() => move(photo, 1)}
-                  >
-                    {t('actions.move_later')}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem variant="destructive" onSelect={() => requestRemove(photo)}>
-                    {t('actions.remove')}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    {actions.canMakeMain ? (
+                      <DropdownMenuItem onSelect={() => requestPrimary(photo)}>
+                        {t('actions.make_main')}
+                      </DropdownMenuItem>
+                    ) : null}
+                    <DropdownMenuItem
+                      disabled={!actions.canMoveEarlier}
+                      onSelect={() => move(photo, -1)}
+                    >
+                      {t('actions.move_earlier')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      disabled={!actions.canMoveLater}
+                      onSelect={() => move(photo, 1)}
+                    >
+                      {t('actions.move_later')}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem variant="destructive" onSelect={() => requestRemove(photo)}>
+                      {t('actions.remove')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              <StatusLabel photo={photo} />
             </li>
           )
         })}
@@ -248,7 +254,7 @@ export function PhotoManager({ context }: PhotoManagerProps) {
           <li
             key={slot.id}
             data-upload-state={slot.state}
-            className="relative aspect-square overflow-hidden rounded-[var(--radius-input)] border border-border bg-muted"
+            className="flex min-w-0 flex-col items-center gap-2"
           >
             <UploadSlotView
               slot={slot}
@@ -263,16 +269,16 @@ export function PhotoManager({ context }: PhotoManagerProps) {
           const position = photos.length + uploads.slots.length + index
           return (
             // biome-ignore lint/suspicious/noArrayIndexKey: empty slots have no identity.
-            <li key={`empty-${index}`} className="aspect-square">
+            <li key={`empty-${index}`} className="min-w-0">
               <button
                 type="button"
                 onClick={openPicker}
                 aria-label={t('grid.add_named', { count: freeSlots, max: photosMax })}
-                className="flex size-full flex-col items-center justify-center gap-1 rounded-[var(--radius-input)] border-2 border-dashed border-border bg-surface text-muted-foreground hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex aspect-[4/5] w-full flex-col items-center justify-center gap-1 rounded-arch border-[1.5px] border-dashed border-input text-primary transition-colors hover:bg-primary-soft"
               >
                 <Plus aria-hidden="true" className="size-7" />
                 {position === 0 ? (
-                  <span className="text-sm font-medium">{t('status.main')}</span>
+                  <span className="px-2 text-label-sm">{t('status.main')}</span>
                 ) : null}
               </button>
             </li>
@@ -293,7 +299,7 @@ export function PhotoManager({ context }: PhotoManagerProps) {
       />
 
       {atLimit ? (
-        <p className="text-sm text-muted-foreground" role="status">
+        <p className="text-caption text-muted-foreground" role="status">
           {t('grid.limit', { max: photosMax })}
         </p>
       ) : (
@@ -304,29 +310,35 @@ export function PhotoManager({ context }: PhotoManagerProps) {
       )}
 
       {photos.length > 1 ? (
-        <p className="hidden text-sm text-muted-foreground md:block">{t('grid.drag_hint')}</p>
+        <p className="hidden text-caption text-muted-foreground wide:block">
+          {t('grid.drag_hint')}
+        </p>
       ) : null}
 
       {problems.length > 0 ? (
         <section aria-labelledby={`${rulesId}-problems`} className="flex flex-col gap-3">
-          <h2 id={`${rulesId}-problems`} className="font-semibold">
-            {t('rejections.title')}
+          <h2 id={`${rulesId}-problems`} className="text-title-md font-bold">
+            <DiamondTitle>{t('rejections.title')}</DiamondTitle>
           </h2>
           <ul className="flex flex-col gap-3">
             {problems.map((photo) => (
               <li
                 key={photo.id}
-                className="flex flex-col gap-2 rounded-[var(--radius-input)] border border-danger/40 bg-danger-soft p-3"
+                className="flex flex-col gap-2 rounded-lg bg-danger-soft px-5 py-4"
               >
-                <p>{rejectionText(t, photo)}</p>
-                <div className="flex flex-wrap gap-2">
+                <p className="flex items-start gap-3">
+                  <span aria-hidden="true" className="flex h-[1lh] items-center">
+                    <CircleX className="size-5 text-danger" />
+                  </span>
+                  <span className="min-w-0">{rejectionText(t, photo)}</span>
+                </p>
+                <div className="flex flex-wrap gap-x-4 gap-y-2">
                   {photo.status === 'rejected' ? (
                     <Button
                       variant="link"
-                      className="h-11 px-0"
                       onClick={() => {
                         const rules = document.getElementById(rulesId)
-                        rules?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                        rules?.scrollIntoView({ block: 'start' })
                         rules?.focus({ preventScroll: true })
                       }}
                     >
@@ -385,7 +397,7 @@ export function PhotoManager({ context }: PhotoManagerProps) {
         description={t('remove_dialog.description')}
         confirmLabel={t('remove_dialog.confirm')}
         cancelLabel={t('remove_dialog.cancel')}
-        destructive
+        tone="danger"
         onConfirm={async () => {
           if (!removeTarget) return
           await deletePhoto.mutateAsync(removeTarget.id)
@@ -414,33 +426,27 @@ const STATUS_ICONS: Record<OwnPhoto['status'], LucideIcon | null> = {
   failed: ImageOff,
 }
 
-/** The label over a slot (08 section 5.5): status, or "Main photo" on the primary one. */
+const STATUS_BADGES = {
+  processing: 'secondary',
+  pending_review: 'warning',
+  approved: 'default',
+  rejected: 'danger',
+  failed: 'danger',
+} as const
+
+/** The label of a slot (08 section 5.5): status, or "Main photo" on the primary one. */
 function StatusLabel({ photo }: { photo: OwnPhoto }) {
   const { t } = useTranslation('photos')
   if (photo.status === 'approved' && !photo.is_primary) return null
   const Icon = photo.status === 'approved' ? Star : STATUS_ICONS[photo.status]
   const text = photo.status === 'approved' ? t('status.main') : t(`status.${photo.status}`)
-  const tone =
-    photo.status === 'rejected' || photo.status === 'failed'
-      ? 'bg-danger text-danger-foreground'
-      : photo.status === 'approved'
-        ? 'bg-primary text-primary-foreground'
-        : 'bg-foreground/80 text-background'
   return (
-    <span
-      className={cn(
-        'pointer-events-none absolute inset-x-1 bottom-1 inline-flex items-center justify-center gap-1 truncate rounded-full px-2 py-1 text-sm font-medium',
-        tone,
-      )}
-    >
+    <Badge variant={STATUS_BADGES[photo.status]} className="gap-1 rounded-md px-2 text-center">
       {Icon ? (
-        <Icon
-          aria-hidden="true"
-          className={cn('size-3.5 shrink-0', photo.status === 'processing' && 'animate-spin')}
-        />
+        <Icon aria-hidden="true" className={cn(photo.status === 'processing' && 'animate-spin')} />
       ) : null}
-      <span className="truncate">{text}</span>
-    </span>
+      <span className="min-w-0">{text}</span>
+    </Badge>
   )
 }
 
@@ -481,7 +487,9 @@ function OwnPhotoImage({
       decoding="async"
       className={cn(
         'select-none',
-        variant === 'large' ? 'max-h-[70dvh] w-full object-contain' : 'size-full object-cover',
+        variant === 'large'
+          ? 'max-h-[max(180px,min(70dvh,100dvh-20rem))] w-full object-contain'
+          : 'size-full object-cover',
       )}
     />
   )
@@ -510,41 +518,48 @@ function UploadSlotView({
 
   return (
     <>
-      {slot.previewUrl ? (
-        <img
-          src={slot.previewUrl}
-          alt={t('grid.upload_alt')}
-          width={320}
-          height={320}
-          draggable={false}
-          className={cn('size-full object-cover', slot.state !== 'failed' && 'opacity-60')}
-        />
-      ) : null}
-      <div className="absolute inset-x-1 bottom-1 flex flex-col gap-1">
-        <span
-          role="status"
-          className={cn(
-            'inline-flex items-center justify-center gap-1 truncate rounded-full px-2 py-1 text-sm font-medium',
-            slot.state === 'failed'
-              ? 'bg-danger text-danger-foreground'
-              : 'bg-foreground/80 text-background',
-          )}
-        >
-          {slot.state === 'failed' ? null : (
-            <Loader2 aria-hidden="true" className="size-3.5 shrink-0 animate-spin" />
-          )}
-          <span className="truncate">{label}</span>
-        </span>
+      <div className="relative w-full">
+        <ArchFrame className="aspect-[4/5] w-full">
+          {slot.previewUrl ? (
+            <img
+              src={slot.previewUrl}
+              alt={t('grid.upload_alt')}
+              width={320}
+              height={400}
+              draggable={false}
+              className={cn('size-full object-cover', slot.state !== 'failed' && 'opacity-60')}
+            />
+          ) : null}
+        </ArchFrame>
         {slot.state === 'uploading' ? (
           <Progress
             value={Math.round(slot.progress * 100)}
             aria-label={t('status.progress')}
-            className="bg-surface/80"
+            className="absolute inset-x-2 top-1/2 w-auto"
           />
         ) : null}
+        {slot.state === 'waiting' || slot.state === 'uploading' ? (
+          <Button
+            variant="secondary"
+            size="icon"
+            className="absolute end-1 bottom-1 bg-surface"
+            aria-label={t('actions.cancel_upload')}
+            onClick={onCancel}
+          >
+            <X aria-hidden="true" />
+          </Button>
+        ) : null}
       </div>
+      <Badge
+        role="status"
+        variant={slot.state === 'failed' ? 'danger' : 'secondary'}
+        className="rounded-md px-2 text-center"
+      >
+        {slot.state === 'failed' ? null : <Loader2 aria-hidden="true" className="animate-spin" />}
+        <span className="min-w-0">{label}</span>
+      </Badge>
       {slot.state === 'failed' ? (
-        <div className="absolute inset-0 flex items-center justify-center gap-1 bg-surface/60">
+        <div className="flex flex-wrap justify-center gap-2">
           <Button size="icon" variant="secondary" aria-label={t('actions.retry')} onClick={onRetry}>
             <RotateCcw aria-hidden="true" />
           </Button>
@@ -557,16 +572,6 @@ function UploadSlotView({
             <X aria-hidden="true" />
           </Button>
         </div>
-      ) : slot.state !== 'confirming' ? (
-        <Button
-          variant="secondary"
-          size="icon"
-          className="absolute end-1 top-1 rounded-full bg-surface/90"
-          aria-label={t('actions.cancel_upload')}
-          onClick={onCancel}
-        >
-          <X aria-hidden="true" />
-        </Button>
       ) : null}
     </>
   )
@@ -595,18 +600,20 @@ function PhotoViewer({
   const { t } = useTranslation('photos')
   return (
     <Dialog open={photo !== null} onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent closeLabel={t('actions.close')} className="max-w-2xl">
+      <DialogContent closeLabel={t('actions.close')} className="wide:max-w-2xl">
         {photo ? (
           <>
             <DialogHeader>
               <DialogTitle>{t('viewer.title', { position })}</DialogTitle>
               <DialogDescription>{t('viewer.description')}</DialogDescription>
             </DialogHeader>
-            <div className="relative overflow-hidden rounded-[var(--radius-input)] bg-muted">
-              <OwnPhotoImage photo={photo} position={position} variant="large" />
+            <div className="flex flex-col items-center gap-2">
+              <div className="tonal w-full overflow-hidden rounded-lg">
+                <OwnPhotoImage photo={photo} position={position} variant="large" />
+              </div>
               <StatusLabel photo={photo} />
             </div>
-            <DialogFooter className="flex-wrap">
+            <DialogFooter>
               {photo.status === 'approved' && !photo.is_primary ? (
                 <Button onClick={() => onMakeMain(photo)}>{t('actions.make_main')}</Button>
               ) : null}
@@ -645,23 +652,23 @@ export function PhotoRules({ id, context }: { id?: string; context: 'onboarding'
       id={id}
       tabIndex={-1}
       aria-labelledby={id ? `${id}-title` : undefined}
-      className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-4 outline-none"
+      className="tonal panel"
     >
-      <h2 id={id ? `${id}-title` : undefined} className="font-semibold">
+      <h2 id={id ? `${id}-title` : undefined} className="text-title-lg">
         {t('rules.title')}
       </h2>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-4">
         <div>
-          <h3 className="mb-1 text-sm font-semibold text-success">{t('rules.do_title')}</h3>
-          <ul className="list-disc ps-5">
+          <h3 className="mb-1 text-label-md font-bold text-success">{t('rules.do_title')}</h3>
+          <ul className="bullet-list text-body-sm">
             {dos.map((rule) => (
               <li key={rule}>{rule}</li>
             ))}
           </ul>
         </div>
         <div>
-          <h3 className="mb-1 text-sm font-semibold text-danger">{t('rules.dont_title')}</h3>
-          <ul className="list-disc ps-5">
+          <h3 className="mb-1 text-label-md font-bold text-danger">{t('rules.dont_title')}</h3>
+          <ul className="bullet-list text-body-sm">
             {donts.map((rule) => (
               <li key={rule}>{rule}</li>
             ))}
@@ -669,7 +676,7 @@ export function PhotoRules({ id, context }: { id?: string; context: 'onboarding'
         </div>
       </div>
       {context === 'onboarding' ? (
-        <p className="text-sm text-muted-foreground">{t('rules.reviewed')}</p>
+        <p className="text-caption text-muted-foreground">{t('rules.reviewed')}</p>
       ) : null}
     </section>
   )
@@ -678,11 +685,11 @@ export function PhotoRules({ id, context }: { id?: string; context: 'onboarding'
 function GridSkeleton({ slots }: { slots: number }) {
   const { t } = useTranslation('shared')
   return (
-    <div role="status" aria-busy="true" className="grid grid-cols-3 gap-3">
+    <div role="status" aria-busy="true" className="arch-grid">
       <span className="sr-only">{t('list.loading')}</span>
       {Array.from({ length: slots }, (_, index) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: placeholders have no identity.
-        <Skeleton key={index} className="aspect-square rounded-[var(--radius-input)]" />
+        <Skeleton key={index} className="aspect-[4/5] rounded-arch" />
       ))}
     </div>
   )

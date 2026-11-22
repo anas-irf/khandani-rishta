@@ -38,9 +38,9 @@ export function ZoomableImage({
   const showImage = src !== null && failed !== src
 
   return (
-    <figure className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-border bg-surface p-3">
+    <figure className="tonal flex flex-col gap-2 rounded-xl p-4">
       <figcaption className="flex flex-wrap items-center justify-between gap-2">
-        <span className="font-medium">{label}</span>
+        <span className="text-title-sm">{label}</span>
         {showImage ? (
           <span
             className="flex items-center gap-1"
@@ -84,7 +84,7 @@ export function ZoomableImage({
           </span>
         ) : null}
       </figcaption>
-      <div className="flex h-80 items-center justify-center overflow-auto rounded-md bg-muted">
+      <div className="flex h-80 items-center justify-center overflow-auto rounded-md bg-muted-strong">
         {showImage ? (
           <img
             src={src}

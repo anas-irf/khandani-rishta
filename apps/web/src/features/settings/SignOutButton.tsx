@@ -33,6 +33,7 @@ export function SignOutButton({
         title={t('sign_out_dialog.title')}
         description={t('sign_out_dialog.body')}
         confirmLabel={t('actions.sign_out')}
+        tone="ink"
         onConfirm={() => signOut()}
       />
     </>

@@ -18,7 +18,7 @@ import { isApiError } from '~/lib/api'
 import { isOneOf, REPORT_REASONS } from '~/lib/api-enums'
 import type { ReportBody } from '~/lib/api-types'
 import { optionsIn, useOptions } from '~/lib/reference'
-import { cn } from '~/lib/utils'
+import { CharCount, FieldError, OptionalMark } from './fields/field-shell'
 import { useOnlineStatus } from './OfflineBanner'
 import { useGoBack } from './PageHeader'
 
@@ -136,7 +136,7 @@ function ReportForm({
 
   return (
     <DialogContent closeLabel={t('common:actions.close')} aria-describedby={undefined}>
-      <form onSubmit={(event) => void submit(event)} className="grid gap-4" noValidate>
+      <form onSubmit={(event) => void submit(event)} className="grid gap-5" noValidate>
         <DialogHeader>
           <DialogTitle>{t('shared:report.title', { name })}</DialogTitle>
         </DialogHeader>
@@ -145,7 +145,7 @@ function ReportForm({
           className="grid gap-1"
           aria-describedby={errors.reason ? ids.reasonError : undefined}
         >
-          <legend id={ids.legend} className="mb-1 text-sm font-medium">
+          <legend id={ids.legend} className="mb-1 text-label-lg">
             {t('shared:report.reason_label')}
           </legend>
           <RadioGroup
@@ -162,24 +162,20 @@ function ReportForm({
             {reasons.map((option) => (
               <Label
                 key={option.code}
-                className="min-h-11 cursor-pointer gap-3 rounded-[var(--radius-input)] px-1 font-normal text-base hover:bg-muted"
+                variant="option"
+                className="rounded-input px-1 py-1 hover:tonal"
               >
                 <RadioGroupItem value={option.code} />
-                {option.label}
+                <span className="min-w-0">{option.label}</span>
               </Label>
             ))}
           </RadioGroup>
-          {errors.reason ? (
-            <p id={ids.reasonError} className="text-sm text-danger">
-              {errors.reason}
-            </p>
-          ) : null}
+          <FieldError id={ids.reasonError} message={errors.reason ?? undefined} />
         </fieldset>
 
         <div className="grid gap-2">
-          <Label htmlFor={ids.details}>
-            {t('shared:report.details_label')}{' '}
-            <span className="font-normal text-muted-foreground">{t('common:optional')}</span>
+          <Label htmlFor={ids.details} className="flex-wrap">
+            {t('shared:report.details_label')} <OptionalMark />
           </Label>
           <Textarea
             id={ids.details}
@@ -190,31 +186,25 @@ function ReportForm({
             aria-invalid={errors.details ? true : undefined}
             onChange={(event) => setDetails(event.target.value)}
           />
-          <p
-            id={ids.count}
-            className={cn(
-              'text-end text-sm',
-              errors.details ? 'text-danger' : 'text-muted-foreground',
-            )}
-          >
+          <CharCount id={ids.count} over={Boolean(errors.details)}>
             {errors.details ??
               t('shared:report.details_count', {
                 count: details.length,
                 max: DETAILS_MAX,
               })}
-          </p>
+          </CharCount>
         </div>
 
-        <Label className="min-h-11 cursor-pointer gap-3 font-normal text-base">
+        <Label variant="option">
           <Checkbox
             checked={alsoBlock}
             onCheckedChange={(checked) => setAlsoBlock(checked === true)}
           />
-          {t('shared:report.also_block')}
+          <span className="min-w-0">{t('shared:report.also_block')}</span>
         </Label>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={report.isPending}>
+          <Button variant="secondary" onClick={onClose} disabled={report.isPending}>
             {t('common:actions.cancel')}
           </Button>
           <Button type="submit" loading={report.isPending} disabled={!online}>

@@ -11,9 +11,15 @@
     "pending": {
       "text_one": "1 member is interested in you",
       "text_other": "{{count}} members are interested in you",
+      "text_male_one": "1 member is interested in him",
+      "text_male_other": "{{count}} members are interested in him",
+      "text_female_one": "1 member is interested in her",
+      "text_female_other": "{{count}} members are interested in her",
       "view": "View"
     },
     "nudges_label": "Suggestions for your profile",
+    "nudges_label_male": "Suggestions for his profile",
+    "nudges_label_female": "Suggestions for her profile",
     "nudge": {
       "add_photo": {
         "title": "Add a photo",
@@ -21,19 +27,30 @@
       },
       "verify_identity": {
         "title": "Verify your identity",
+        "title_male": "Verify his identity",
+        "title_female": "Verify her identity",
         "text": "Verified profiles are trusted more and can send more interests each day."
       },
       "add_about_me": {
         "title": "Write about yourself",
+        "title_named": "Write about {{name}}",
         "text": "A few honest lines help families decide."
       },
       "set_preferences": {
         "title": "Set your partner preferences",
-        "text": "Tell us who you are looking for."
+        "title_male": "Set his partner preferences",
+        "title_female": "Set her partner preferences",
+        "text": "Tell us who you are looking for.",
+        "text_male": "Tell us who he is looking for.",
+        "text_female": "Tell us who she is looking for."
       },
       "verify_photo": {
         "title": "Verify your photo",
-        "text": "A quick selfie shows that the photos are really you."
+        "title_male": "Verify his photo",
+        "title_female": "Verify her photo",
+        "text": "A quick selfie shows that the photos are really you.",
+        "text_male": "A quick selfie shows that the photos are really him.",
+        "text_female": "A quick selfie shows that the photos are really her."
       },
       "add_contact_details": {
         "title": "Add contact details",
@@ -46,22 +63,31 @@
     },
     "rows": {
       "matches": "Your matches",
+      "matches_named": "{{name}}'s matches",
+      "matches_fit": "They fit you, and you fit them",
+      "matches_fit_male": "They fit him, and he fits them",
+      "matches_fit_female": "They fit her, and she fits them",
       "new_members": "New members",
       "nearby": "Near you",
+      "nearby_named": "Near {{name}}",
       "see_all": "See all",
       "see_all_named": "See all: {{title}}"
     },
     "visitors": {
       "title": "Viewed your profile",
+      "title_named": "Viewed {{name}}'s profile",
       "text_one": "1 member viewed the profile this week",
       "text_other": "{{count}} members viewed the profile this week",
       "see_all": "See all",
-      "see_all_label": "See all members who viewed your profile"
+      "see_all_label": "See all members who viewed your profile",
+      "see_all_label_named": "See all members who viewed {{name}}'s profile"
     },
     "completeness": {
       "ring": "Profile {{value}}% complete",
       "text": "Complete profiles receive more interest.",
-      "action": "Improve my profile"
+      "action": "Improve my profile",
+      "action_male": "Improve his profile",
+      "action_female": "Improve her profile"
     },
     "safety": {
       "text": "Never send money to anyone you meet here.",
@@ -70,29 +96,45 @@
   },
   "matches_state": {
     "finding": "Finding your matches...",
+    "finding_male": "Finding his matches...",
+    "finding_female": "Finding her matches...",
     "none_title": "No matches yet.",
     "none_text": "Try the search, or check back later.",
     "search": "Search",
     "exhausted_empty": "No more members fit all your must-haves right now.",
+    "exhausted_empty_male": "No more members fit all his must-haves right now.",
+    "exhausted_empty_female": "No more members fit all her must-haves right now.",
     "exhausted_end": "You have seen everyone who fits your must-haves. Loosen one to see more.",
+    "exhausted_end_male": "You have seen everyone who fits his must-haves. Loosen one to see more.",
+    "exhausted_end_female": "You have seen everyone who fits her must-haves. Loosen one to see more.",
     "review_preferences": "Review preferences",
     "hint": "Changing your must-have for {{dimension}} would show {{count}} more profiles.",
-    "age_hint": "Widening your age range may also help."
+    "hint_male": "Changing his must-have for {{dimension}} would show {{count}} more profiles.",
+    "hint_female": "Changing her must-have for {{dimension}} would show {{count}} more profiles.",
+    "age_hint": "Widening your age range may also help.",
+    "age_hint_male": "Widening his age range may also help.",
+    "age_hint_female": "Widening her age range may also help."
   },
   "matches": {
     "title": "Your matches",
+    "title_named": "{{name}}'s matches",
     "updated": "Updated {{time}}",
     "refresh": "Refresh",
     "preferences": "Preferences",
     "refreshing": "Finding new matches...",
     "rate_limited": "Matches were refreshed a few minutes ago.",
     "end": "That is everyone for now. New members join every day.",
-    "list_label": "Your matches"
+    "list_label": "Your matches",
+    "list_label_named": "{{name}}'s matches"
   },
   "card": {
     "more": "More actions for {{name}}",
     "not_interested": "Not interested",
     "hidden": "Hidden.",
+    "hidden_from": "{{name}} is hidden from your matches.",
+    "hidden_from_male": "{{name}} is hidden from his matches.",
+    "hidden_from_female": "{{name}} is hidden from her matches.",
+    "hidden_for": "You will not see this profile for 6 months.",
     "undo": "Undo"
   },
   "dimension": {
@@ -258,8 +300,10 @@
     "removed": "Removed.",
     "undo": "Undo",
     "empty_title": "No saved profiles yet.",
-    "empty_text": "Tap the heart on a profile to save it for later.",
-    "see_matches": "See my matches"
+    "empty_text": "Tap Shortlist on a profile to save it for later.",
+    "see_matches": "See my matches",
+    "see_matches_male": "See his matches",
+    "see_matches_female": "See her matches"
   },
   "visitors": {
     "title": "Who viewed me",

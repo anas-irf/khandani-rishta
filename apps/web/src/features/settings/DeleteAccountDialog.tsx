@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { FieldError } from '~/components/common/fields/field-shell'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
 import {
   AlertDialog,
@@ -95,7 +96,7 @@ export function DeleteAccountDialog({
           <AlertDialogDescription asChild>
             <ul
               aria-label={t('account.delete.confirm.list_label')}
-              className="list-disc space-y-1.5 ps-5 text-base text-foreground"
+              className="bullet-list gap-2 text-foreground"
             >
               <li>{t('account.delete.confirm.hidden')}</li>
               <li>{t('account.delete.confirm.days', { days: graceDays })}</li>
@@ -118,9 +119,9 @@ export function DeleteAccountDialog({
             onChange={(event) => setReason(event.target.value)}
           />
           {fieldErrors.reason ? (
-            <p role="alert" className="text-sm font-medium text-danger">
-              {fieldErrors.reason}
-            </p>
+            <div role="alert">
+              <FieldError id={`${reasonId}-error`} message={fieldErrors.reason} />
+            </div>
           ) : null}
         </div>
 
@@ -139,9 +140,9 @@ export function DeleteAccountDialog({
             }}
           />
           {fieldErrors.confirm ? (
-            <p role="alert" className="text-sm font-medium text-danger">
-              {fieldErrors.confirm}
-            </p>
+            <div role="alert">
+              <FieldError id={`${phraseId}-error`} message={fieldErrors.confirm} />
+            </div>
           ) : null}
         </div>
 

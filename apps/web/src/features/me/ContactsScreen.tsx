@@ -1,14 +1,17 @@
 // SET-CONTACTS (16 section 6.28, 08 section 3)
 import { useStore } from '@tanstack/react-form'
 import { useBlocker, useNavigate, useSearch } from '@tanstack/react-router'
-import { Plus, TriangleAlert } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '~/components/common/ConfirmDialog'
 import { ErrorState } from '~/components/common/ErrorState'
 import { FormSkeleton } from '~/components/common/FormSkeleton'
-import { PageHeader, useGoBack } from '~/components/common/PageHeader'
+import { DiamondTitle } from '~/components/common/Ornament'
+import { Page } from '~/components/common/Page'
+import { useGoBack } from '~/components/common/PageHeader'
+import { StatusBanner } from '~/components/common/StatusBanner'
 import { Button } from '~/components/ui/button'
 import { useOwnProfile } from '~/features/profile-sections/queries'
 import { type ClientFieldError, isApiError } from '~/lib/api'
@@ -39,8 +42,7 @@ export function ContactsScreen() {
   const profile = useOwnProfile()
 
   return (
-    <div className="container-app flex max-w-xl flex-col gap-4">
-      <PageHeader title={t('contacts.title')} showBack />
+    <Page title={t('contacts.title')} showBack width="form">
       {profile.isPending ? (
         <div role="status" aria-label={t('contacts.loading')}>
           <FormSkeleton fields={5} />
@@ -54,7 +56,7 @@ export function ContactsScreen() {
       ) : (
         <ContactsForm profile={profile.data} />
       )}
-    </div>
+    </Page>
   )
 }
 
@@ -144,14 +146,14 @@ function ContactsForm({ profile }: { profile: OwnProfile }) {
   return (
     <form
       noValidate
-      className="flex flex-col gap-5"
+      className="flex flex-col gap-6"
       onSubmit={(event) => {
         event.preventDefault()
         event.stopPropagation()
         void form.handleSubmit()
       }}
     >
-      <p>{t('contacts.intro')}</p>
+      <p className="text-foreground-secondary">{t('contacts.intro')}</p>
       <form.AppForm>
         <form.FormErrorSummary serverErrors={serverErrors} />
       </form.AppForm>
@@ -164,7 +166,7 @@ function ContactsForm({ profile }: { profile: OwnProfile }) {
           <Button
             type="button"
             variant="link"
-            className="self-start px-0"
+            className="self-start"
             onClick={() => form.setFieldValue('phone_e164', suggestPhone)}
           >
             {t('contacts.use_verified_phone', { phone: formatPhone(suggestPhone) })}
@@ -216,9 +218,13 @@ function ContactsForm({ profile }: { profile: OwnProfile }) {
       </form.AppField>
 
       {showGuardian ? (
-        <fieldset className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-border p-4">
-          <legend className="px-1 font-semibold">{t('contacts.guardian_group')}</legend>
-          {managing ? <p className="text-muted-foreground">{t('contacts.managing_hint')}</p> : null}
+        <fieldset className="flex flex-col gap-5 pt-2">
+          <legend className="mb-5 max-w-full text-title-md font-bold">
+            <DiamondTitle>{t('contacts.guardian_group')}</DiamondTitle>
+          </legend>
+          {managing ? (
+            <p className="text-caption text-muted-foreground">{t('contacts.managing_hint')}</p>
+          ) : null}
           <form.AppField name="guardian_name">
             {(field) => (
               <field.TextField
@@ -248,7 +254,7 @@ function ContactsForm({ profile }: { profile: OwnProfile }) {
         <Button
           type="button"
           variant="link"
-          className="self-start px-0"
+          className="self-start"
           onClick={() => {
             setGuardianOpen(true)
             focusField(GUARDIAN_FIELDS[0])
@@ -270,29 +276,27 @@ function ContactsForm({ profile }: { profile: OwnProfile }) {
       </form.AppField>
 
       {sharing && dirty ? (
-        <p
-          role="status"
-          className="flex items-start gap-2 rounded-[var(--radius-input)] bg-warning-soft p-3"
-        >
-          <TriangleAlert aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-warning" />
-          {t('contacts.shared_warning')}
-        </p>
+        <StatusBanner variant="warning">{t('contacts.shared_warning')}</StatusBanner>
       ) : null}
 
       {failed ? (
-        <div role="alert" className="flex flex-wrap items-center gap-3 text-danger">
-          <span>{t('contacts.failed')}</span>
-          <Button type="button" variant="secondary" onClick={() => void form.handleSubmit()}>
-            {t('contacts.retry')}
-          </Button>
-        </div>
+        <StatusBanner
+          variant="danger"
+          action={
+            <Button type="button" variant="secondary" onClick={() => void form.handleSubmit()}>
+              {t('contacts.retry')}
+            </Button>
+          }
+        >
+          {t('contacts.failed')}
+        </StatusBanner>
       ) : null}
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-col gap-3">
         <form.AppForm>
-          <form.SubmitButton label={t('contacts.save')} />
+          <form.SubmitButton label={t('contacts.save')} size="lg" fill="phone" />
         </form.AppForm>
-        <Button type="button" variant="secondary" onClick={goBack}>
+        <Button type="button" variant="quiet" fill="phone" onClick={goBack}>
           {t('contacts.cancel')}
         </Button>
       </div>
@@ -306,7 +310,7 @@ function ContactsForm({ profile }: { profile: OwnProfile }) {
         description={t('discard.body')}
         confirmLabel={t('discard.discard')}
         cancelLabel={t('discard.keep')}
-        destructive
+        tone="danger"
         onConfirm={() => {
           if (blocker.status === 'blocked') blocker.proceed()
         }}

@@ -17,9 +17,8 @@ function RadioGroup({
 }
 
 /*
- * Touch target note: the visible circle is 20px (size-5); the `after:` pseudo-element extends
- * the clickable area to 44px by 44px. Wrap the item and its text in one `<label>` with
- * `min-h-11` so tapping the text selects it too.
+ * The checkbox's twin: a 26 circle with the control border and a 48 by 48 hit area. Wrap the
+ * item and its text in one `<label>` with `min-h-touch` so tapping the text selects it too.
  */
 function RadioGroupItem({
   className,
@@ -29,7 +28,7 @@ function RadioGroupItem({
     <RadioGroupPrimitive.Item
       data-slot="radio-group-item"
       className={cn(
-        "relative inline-flex aspect-square size-5 shrink-0 items-center justify-center rounded-full border border-muted-foreground bg-surface text-primary transition-colors after:absolute after:-inset-3 after:content-[''] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-danger aria-invalid:focus-visible:ring-danger data-[state=checked]:border-primary",
+        'tap-target inline-flex size-[26px] shrink-0 items-center justify-center rounded-pill border-[1.5px] border-input bg-surface text-primary transition-colors disabled:cursor-not-allowed disabled:bg-muted-strong aria-invalid:border-danger data-[state=checked]:border-primary',
         className,
       )}
       {...props}
@@ -38,7 +37,7 @@ function RadioGroupItem({
         data-slot="radio-group-indicator"
         className="flex items-center justify-center"
       >
-        <span className="block size-2.5 rounded-full bg-primary" />
+        <span className="block size-[14px] rounded-pill bg-primary" />
       </RadioGroupPrimitive.Indicator>
     </RadioGroupPrimitive.Item>
   )

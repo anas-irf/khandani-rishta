@@ -42,7 +42,8 @@ export function organizationJsonLd(): LdObject {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: i18n.t('common:app_name'),
-    slogan: i18n.t('public:home.hero.title'),
+    // The headline marks one word for italics; structured data is plain text.
+    slogan: i18n.t('public:home.hero.title').replace(/<\/?em>/g, ''),
     description: i18n.t('public:meta.default_description'),
     areaServed: 'PK',
     // The production origin, never the build machine's: prerendered pages bake this in.

@@ -21,17 +21,16 @@ export function ListSkeleton({
     <div
       role="status"
       aria-busy="true"
-      className={cn(
-        size === 'full'
-          ? 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'
-          : 'flex flex-col gap-3',
-        className,
-      )}
+      className={cn(size === 'full' ? 'card-grid' : 'flex flex-col', className)}
     >
       <span className="sr-only">{t('list.loading')}</span>
       {Array.from({ length: count }, (_, index) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: placeholders have no identity.
-        <CardSkeleton key={index} size={size} />
+        <CardSkeleton
+          // biome-ignore lint/suspicious/noArrayIndexKey: placeholders have no identity.
+          key={index}
+          size={size}
+          className={size === 'full' ? 'wide:mb-10' : undefined}
+        />
       ))}
     </div>
   )

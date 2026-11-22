@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 import { ConfirmDialog } from '~/components/common/ConfirmDialog'
 import { EmptyState } from '~/components/common/EmptyState'
 import { ErrorState } from '~/components/common/ErrorState'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
 import { RelativeTime } from '~/components/common/RelativeTime'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
@@ -38,8 +38,12 @@ export function CastesScreen() {
   const parents = useCastes().map((caste) => ({ code: caste.code, name: caste.name }))
 
   return (
-    <div className="flex flex-col gap-4">
-      <PageHeader
+    <Tabs
+      value={filters.tab}
+      onValueChange={(tab) => setFilters({ tab: tab as 'suggestions' | 'castes' })}
+      className="min-w-0 flex-1 gap-0"
+    >
+      <Page
         title={t('castes.title')}
         description={t('castes.description')}
         actions={
@@ -50,15 +54,13 @@ export function CastesScreen() {
             </Button>
           ) : undefined
         }
-      />
-      <Tabs
-        value={filters.tab}
-        onValueChange={(tab) => setFilters({ tab: tab as 'suggestions' | 'castes' })}
+        header={
+          <TabsList aria-label={t('castes.tabs')}>
+            <TabsTrigger value="suggestions">{t('castes.tab_suggestions')}</TabsTrigger>
+            <TabsTrigger value="castes">{t('castes.tab_castes')}</TabsTrigger>
+          </TabsList>
+        }
       >
-        <TabsList aria-label={t('castes.tabs')}>
-          <TabsTrigger value="suggestions">{t('castes.tab_suggestions')}</TabsTrigger>
-          <TabsTrigger value="castes">{t('castes.tab_castes')}</TabsTrigger>
-        </TabsList>
         <TabsContent value="suggestions">
           <Suggestions
             isAdmin={isAdmin}
@@ -69,7 +71,7 @@ export function CastesScreen() {
         <TabsContent value="castes">
           <CasteList isAdmin={isAdmin} onEdit={(caste) => setDialog({ kind: 'edit', caste })} />
         </TabsContent>
-      </Tabs>
+      </Page>
 
       {dialog?.kind === 'promote' ? (
         <PromoteDialog
@@ -91,14 +93,14 @@ export function CastesScreen() {
           title={t('castes.reject_title', { name: dialog.suggestion.name })}
           description={t('castes.reject_text')}
           confirmLabel={t('castes.reject')}
-          destructive
+          tone="ink"
           onConfirm={async () => {
             await reject.mutateAsync(dialog.suggestion.id)
             toast.success(t('castes.rejected'))
           }}
         />
       ) : null}
-    </div>
+    </Tabs>
   )
 }
 
@@ -120,8 +122,8 @@ function Suggestions({
       header: t('castes.col.name'),
       cell: (item) => (
         <>
-          <span className="font-medium">{item.name}</span>
-          <span className="block text-xs text-muted-foreground">{item.normalized_name}</span>
+          <span className="font-semibold">{item.name}</span>
+          <span className="block text-caption text-muted-foreground">{item.normalized_name}</span>
         </>
       ),
     },
@@ -152,14 +154,14 @@ function Suggestions({
       id: 'actions',
       header: t('castes.col.actions'),
       cell: (item) => (
-        <span className="flex gap-2">
+        <span className="flex flex-wrap gap-2">
           {isAdmin ? (
-            <Button size="sm" onClick={() => onPromote(item)}>
+            <Button onClick={() => onPromote(item)}>
               {t('castes.promote')}
               <span className="sr-only"> {item.name}</span>
             </Button>
           ) : null}
-          <Button size="sm" variant="secondary" onClick={() => onReject(item)}>
+          <Button variant="secondary" onClick={() => onReject(item)}>
             {t('castes.reject')}
             <span className="sr-only"> {item.name}</span>
           </Button>
@@ -221,7 +223,7 @@ function CasteList({ isAdmin, onEdit }: { isAdmin: boolean; onEdit: (caste: Admi
       id: 'name',
       header: t('castes.col.name'),
       cell: (caste) => (
-        <span className={caste.parent_code ? 'ps-6' : 'font-medium'}>
+        <span className={caste.parent_code ? 'ps-6' : 'font-semibold'}>
           {caste.name}
           {caste.name_ur ? (
             <span dir="rtl" className="ms-2 text-muted-foreground">
@@ -234,7 +236,7 @@ function CasteList({ isAdmin, onEdit }: { isAdmin: boolean; onEdit: (caste: Admi
     {
       id: 'code',
       header: t('castes.col.code'),
-      cell: (caste) => <code className="text-xs">{caste.code}</code>,
+      cell: (caste) => <code className="text-caption">{caste.code}</code>,
     },
     {
       id: 'aliases',
@@ -257,7 +259,7 @@ function CasteList({ isAdmin, onEdit }: { isAdmin: boolean; onEdit: (caste: Admi
       id: 'actions',
       header: t('castes.col.actions'),
       cell: (caste) => (
-        <Button size="sm" variant="secondary" onClick={() => onEdit(caste)}>
+        <Button variant="secondary" onClick={() => onEdit(caste)}>
           {t('actions.edit')}
           <span className="sr-only"> {caste.name}</span>
         </Button>

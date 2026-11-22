@@ -4,7 +4,7 @@ import { Megaphone } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ConfirmDialog } from '~/components/common/ConfirmDialog'
-import { PageHeader } from '~/components/common/PageHeader'
+import { Page } from '~/components/common/Page'
 import { StatusBanner } from '~/components/common/StatusBanner'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
@@ -32,11 +32,10 @@ export function AnnouncementsScreen() {
 function Announcements() {
   const { t } = useTranslation('admin')
   return (
-    <div className="flex flex-col gap-6">
-      <PageHeader title={t('announce.title')} description={t('announce.description')} />
+    <Page title={t('announce.title')} description={t('announce.description')} width="column">
       <BannerPanel />
       <NotificationPanel />
-    </div>
+    </Page>
   )
 }
 
@@ -56,13 +55,13 @@ function BannerPanel() {
         </Button>
       }
     >
-      <p className="text-sm text-muted-foreground">{t('announce.banner_text')}</p>
+      <p className="text-body-sm text-muted-foreground">{t('announce.banner_text')}</p>
       {banner ? (
         <StatusBanner variant="info" icon={Megaphone} title={t('announce.banner_current')}>
           {banner}
         </StatusBanner>
       ) : settings.isSuccess ? (
-        <p className="text-sm">{t('announce.banner_none')}</p>
+        <p className="text-body-sm">{t('announce.banner_none')}</p>
       ) : null}
     </Panel>
   )
@@ -115,7 +114,7 @@ function NotificationPanel() {
 
   return (
     <Panel title={t('announce.notification_title')}>
-      <p className="text-sm text-muted-foreground">{t('announce.notification_text')}</p>
+      <p className="text-body-sm text-muted-foreground">{t('announce.notification_text')}</p>
       {sent !== null ? (
         <StatusBanner variant="success">{t('announce.sent', { count: sent })}</StatusBanner>
       ) : null}
@@ -152,7 +151,7 @@ function NotificationPanel() {
             />
           )}
         </FormField>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-body-sm text-muted-foreground">
           {estimate === null
             ? t('announce.estimate_unknown')
             : t('announce.estimate', { count: estimate })}
@@ -169,7 +168,7 @@ function NotificationPanel() {
           description={t('announce.confirm_text', { count: estimate ?? 0 })}
           confirmLabel={t('announce.send')}
           confirmPhrase={ANNOUNCEMENT_CONFIRM_PHRASE}
-          destructive
+          tone="danger"
           onConfirm={() => doSend(confirming)}
         />
       ) : null}

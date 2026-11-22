@@ -1,11 +1,15 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { Check, PartyPopper } from 'lucide-react'
+import { CircleAlert, PartyPopper } from 'lucide-react'
 import { type ReactNode, useEffect, useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { ArchIcon } from '~/components/common/Arch'
 import { ConfirmDialog } from '~/components/common/ConfirmDialog'
+import { displayHeadingVariants } from '~/components/common/DisplayHeading'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
+import { Diamond, OrnamentRule } from '~/components/common/Ornament'
+import { RadioCard } from '~/components/common/RadioCard'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,8 +29,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '~/components/ui/dialog'
-import { Label } from '~/components/ui/label'
-import { RadioGroup, RadioGroupItem } from '~/components/ui/radio-group'
+import { RadioGroup } from '~/components/ui/radio-group'
 import { usePauseProfile } from '~/features/settings/queries'
 import type { Connection, OwnProfile, ProposableStage } from '~/lib/api-types'
 import { invalidateMe, qk } from '~/lib/query'
@@ -76,18 +79,21 @@ export function ProposalBanner({ connection }: { connection: Connection }) {
   return (
     <div
       role="status"
-      className="flex flex-wrap items-center gap-2 border-b border-border bg-warning-soft px-4 py-2 text-sm"
+      className="flex max-h-[35dvh] flex-wrap items-center gap-2 overflow-y-auto border-b border-border bg-warning-soft px-[16px] py-2 text-body-sm [--tonal:var(--color-background)]"
     >
-      <p className="min-w-0 flex-1">
-        {proposal.proposed_by === 'them'
-          ? t('stage.they_suggest', { name, stage })
-          : t('stage.you_suggested_short', { name, stage })}
+      <p className="flex min-w-[min(100%,14rem)] flex-1 items-start gap-2">
+        <span aria-hidden="true" className="flex h-[1lh] items-center">
+          <CircleAlert className="size-4 text-warning" />
+        </span>
+        <span className="min-w-0">
+          {proposal.proposed_by === 'them'
+            ? t('stage.they_suggest', { name, stage })
+            : t('stage.you_suggested_short', { name, stage })}
+        </span>
       </p>
       {proposal.proposed_by === 'them' ? (
-        <div className="flex gap-2">
+        <div className="flex max-w-full flex-wrap gap-2">
           <Button
-            size="sm"
-            className="h-11"
             loading={busy && action.variables?.kind === 'confirm'}
             disabled={busy || !online}
             onClick={() =>
@@ -97,9 +103,7 @@ export function ProposalBanner({ connection }: { connection: Connection }) {
             {t('stage.confirm')}
           </Button>
           <Button
-            size="sm"
             variant="secondary"
-            className="h-11"
             loading={busy && action.variables?.kind === 'decline'}
             disabled={busy || !online}
             onClick={() =>
@@ -111,9 +115,7 @@ export function ProposalBanner({ connection }: { connection: Connection }) {
         </div>
       ) : (
         <Button
-          size="sm"
           variant="secondary"
-          className="h-11"
           loading={busy}
           disabled={!online}
           onClick={() =>
@@ -149,9 +151,13 @@ export function StageBlock({
   let controls: ReactNode = null
   if (connection.stage === 'nikah_done') {
     controls = (
-      <p className="flex items-center gap-2 font-medium">
-        <PartyPopper aria-hidden="true" className="size-5 text-accent" />
-        {t('stage.done', { stage: stageName(t, connection.stage) })}
+      <p className="flex items-start gap-2 text-title-sm">
+        <span aria-hidden="true" className="flex h-[1lh] items-center">
+          <PartyPopper className="size-5 text-primary" />
+        </span>
+        <span className="min-w-0">
+          {t('stage.done', { stage: stageName(t, connection.stage) })}
+        </span>
       </p>
     )
   } else if (proposal?.proposed_by === 'me') {
@@ -217,26 +223,30 @@ export function StageBlock({
 
   return (
     <div className="flex flex-col gap-4">
-      <ol aria-label={t('stage.tracker_label')} className="grid grid-cols-4 gap-1">
+      <ol
+        aria-label={t('stage.tracker_label')}
+        className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,4.5rem),1fr))] gap-x-[8px] gap-y-3"
+      >
         {STAGES.map((stage, index) => {
           const reached = index <= current
           return (
-            <li key={stage} className="flex flex-col items-center gap-1 text-center">
+            <li key={stage} className="flex flex-col items-center gap-2 text-center">
+              {/* An arch per step, filled once reached. No tick: that means verified (6.6). */}
               <span
                 aria-hidden="true"
                 className={cn(
-                  'flex size-8 items-center justify-center rounded-full border-2 text-sm font-semibold',
+                  'flex h-[44px] w-[36px] items-center justify-center rounded-arch-sm border-[1.5px] text-label-md tabular-nums',
                   reached
                     ? 'border-primary bg-primary text-primary-foreground'
-                    : 'border-border bg-surface text-muted-foreground',
+                    : 'border-input text-muted-foreground',
                 )}
               >
-                {reached ? <Check className="size-4" /> : index + 1}
+                {reached ? <Diamond className="bg-primary-foreground" /> : index + 1}
               </span>
               <span
                 className={cn(
-                  'text-sm leading-tight',
-                  reached ? 'font-medium' : 'text-muted-foreground',
+                  'max-w-full text-caption',
+                  reached ? 'font-bold' : 'text-muted-foreground',
                 )}
               >
                 <span className="sr-only">
@@ -296,28 +306,22 @@ function SuggestStageDialog({
             if (picked) setStage(picked)
           }}
           aria-labelledby={legend}
-          className="gap-1"
         >
           <span id={legend} className="sr-only">
             {t('chat:stage.choose_label')}
           </span>
           {options.map((option) => (
-            <Label
+            <RadioCard
               key={option}
-              className="min-h-11 cursor-pointer items-start gap-3 rounded-[var(--radius-input)] p-2 font-normal hover:bg-muted"
-            >
-              <RadioGroupItem value={option} className="mt-1" />
-              <span className="flex flex-col gap-0.5">
-                <span className="text-base font-medium">{stageName(t, option)}</span>
-                <span className="text-sm text-muted-foreground">
-                  {t(`chat:stage.explain.${option}`)}
-                </span>
-              </span>
-            </Label>
+              id={`${legend}-${option}`}
+              value={option}
+              label={stageName(t, option)}
+              description={t(`chat:stage.explain.${option}`)}
+            />
           ))}
         </RadioGroup>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={action.isPending}>
+          <Button variant="secondary" onClick={onClose} disabled={action.isPending}>
             {t('common:actions.cancel')}
           </Button>
           <Button
@@ -381,13 +385,14 @@ export function StageFollowUps({ connection }: { connection: Connection }) {
         open={dialog === 'nikah'}
         onOpenChange={(open) => setDialog(open ? 'nikah' : null)}
       >
-        <AlertDialogContent className="max-md:h-dvh max-md:max-w-none max-md:rounded-none">
-          <AlertDialogHeader className="items-center text-center">
-            <PartyPopper aria-hidden="true" className="size-12 text-accent" />
-            <AlertDialogTitle className="text-2xl">
+        <AlertDialogContent className="max-wide:h-dvh max-wide:max-h-none max-wide:justify-center max-wide:rounded-none">
+          <AlertDialogHeader className="items-center gap-4 text-center">
+            <ArchIcon icon={PartyPopper} size="lg" tone="outline" />
+            <OrnamentRule centered />
+            <AlertDialogTitle className={displayHeadingVariants({ size: 'sm' })}>
               {muslim ? t('stage.nikah_title') : t('stage.nikah_title_other')}
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-base text-foreground">
+            <AlertDialogDescription className="text-foreground">
               {t('stage.nikah_text')}
             </AlertDialogDescription>
           </AlertDialogHeader>

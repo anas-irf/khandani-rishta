@@ -2,6 +2,7 @@ import { createFormHookContexts } from '@tanstack/react-form'
 import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { ApiError, ClientFieldError } from './api'
+import { revealAndFocus } from './focus'
 import { i18n } from './i18n'
 
 /**
@@ -132,7 +133,6 @@ export function focusField(name: string) {
   if (typeof document === 'undefined') return
   requestAnimationFrame(() => {
     const element = document.querySelector<HTMLElement>(`[name="${CSS.escape(name)}"]`)
-    element?.scrollIntoView({ block: 'center', behavior: 'smooth' })
-    element?.focus({ preventScroll: true })
+    if (element) revealAndFocus(element)
   })
 }

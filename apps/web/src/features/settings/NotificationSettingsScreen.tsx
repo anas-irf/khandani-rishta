@@ -1,9 +1,8 @@
 // SET-NOTIFS (16 section 6.26, 14 section 6)
-import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ErrorState } from '~/components/common/ErrorState'
-import { PageHeader } from '~/components/common/PageHeader'
-import { SectionCard } from '~/components/common/SectionCard'
+import { Page } from '~/components/common/Page'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { EMAIL_MATCH_DIGESTS, isOneOf } from '~/lib/api-enums'
@@ -13,7 +12,7 @@ import {
   type SaveState,
   SettingSelect,
   SettingSwitch,
-  SettingsPage,
+  SettingsGroup,
   SettingsSkeleton,
 } from './controls'
 import {
@@ -99,28 +98,49 @@ function usePreferencesDraft(saved: NotificationPreferences) {
 }
 
 export function NotificationSettingsScreen() {
-  const { t } = useTranslation('settings')
   const query = useNotificationPreferences()
 
+  if (query.isSuccess) return <LoadedSettings saved={query.data} />
   return (
-    <SettingsPage>
-      <PageHeader title={t('notifications.title')} backTo="/settings" />
+    <SettingsFrame>
       {query.isPending ? (
         <SettingsSkeleton groups={3} />
-      ) : query.isError ? (
+      ) : (
         <ErrorState
           error={query.error}
           onRetry={() => void query.refetch()}
           retrying={query.isFetching}
         />
-      ) : (
-        <PreferenceGroups saved={query.data} />
       )}
-    </SettingsPage>
+    </SettingsFrame>
   )
 }
 
-function PreferenceGroups({ saved }: { saved: NotificationPreferences }) {
+function SettingsFrame({
+  layout,
+  header,
+  children,
+}: {
+  layout?: 'bands'
+  header?: ReactNode
+  children: ReactNode
+}) {
+  const { t } = useTranslation('settings')
+  return (
+    <Page
+      title={t('notifications.title')}
+      description={t('notifications.intro')}
+      backTo="/settings"
+      width="column"
+      layout={layout}
+      header={header}
+    >
+      {children}
+    </Page>
+  )
+}
+
+function LoadedSettings({ saved }: { saved: NotificationPreferences }) {
   const { t } = useTranslation('settings')
   const digestOptions = useOptions('email_match_digest')
   const { preferences, change, state } = usePreferencesDraft(saved)
@@ -139,20 +159,17 @@ function PreferenceGroups({ saved }: { saved: NotificationPreferences }) {
   const end = toTimeValue(preferences.quiet_hours_end) ?? ''
 
   return (
-    <>
-      <p className="text-muted-foreground">{t('notifications.intro')}</p>
-      <SaveStatusLine state={state} />
-
-      <SectionCard title={t('notifications.push.title')}>
-        <p className="text-sm text-muted-foreground">{t('notifications.push.web_note')}</p>
+    <SettingsFrame layout="bands" header={<SaveStatusLine state={state} />}>
+      <SettingsGroup title={t('notifications.push.title')}>
+        <p className="text-caption text-muted-foreground">{t('notifications.push.web_note')}</p>
         {toggle('push_interests', t('notifications.push.interests'))}
         {toggle('push_messages', t('notifications.push.messages'))}
         {toggle('push_photo_requests', t('notifications.push.photo_requests'))}
         {toggle('push_matches', t('notifications.push.matches'))}
         {toggle('push_profile_views', t('notifications.push.profile_views'))}
-      </SectionCard>
+      </SettingsGroup>
 
-      <SectionCard title={t('notifications.email.title')}>
+      <SettingsGroup title={t('notifications.email.title')}>
         {toggle('email_interests', t('notifications.email.interests'))}
         {toggle('email_messages', t('notifications.email.messages'))}
         <SettingSelect
@@ -164,17 +181,17 @@ function PreferenceGroups({ saved }: { saved: NotificationPreferences }) {
           }}
         />
         {toggle('email_announcements', t('notifications.email.announcements'))}
-        <p className="text-sm text-muted-foreground">{t('notifications.email.note')}</p>
-      </SectionCard>
+        <p className="text-caption text-muted-foreground">{t('notifications.email.note')}</p>
+      </SettingsGroup>
 
-      <SectionCard title={t('notifications.quiet.title')}>
+      <SettingsGroup title={t('notifications.quiet.title')}>
         <SettingSwitch
           label={t('notifications.quiet.switch')}
           checked={quietOn}
           onCheckedChange={(checked) => change(quietHoursToggle(checked))}
         />
         {quietOn ? (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,8rem),1fr))] gap-3">
             <TimeField
               label={t('notifications.quiet.from')}
               value={start}
@@ -187,9 +204,9 @@ function PreferenceGroups({ saved }: { saved: NotificationPreferences }) {
             />
           </div>
         ) : null}
-        <p className="text-sm text-muted-foreground">{t('notifications.quiet.help')}</p>
-      </SectionCard>
-    </>
+        <p className="text-caption text-muted-foreground">{t('notifications.quiet.help')}</p>
+      </SettingsGroup>
+    </SettingsFrame>
   )
 }
 
@@ -201,7 +218,7 @@ function SaveStatusLine({ state }: { state: SaveState }) {
       role="status"
       aria-live="polite"
       data-save-state={state}
-      className="min-h-5 text-sm text-muted-foreground"
+      className="min-h-[22px] text-caption text-muted-foreground"
     >
       {state === 'saving' ? t('saving.working') : null}
       {state === 'saved' ? t('saving.saved') : null}
@@ -220,7 +237,7 @@ function TimeField({
 }) {
   const id = useId()
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex min-w-0 flex-col gap-2">
       <Label htmlFor={id}>{label}</Label>
       <Input
         id={id}

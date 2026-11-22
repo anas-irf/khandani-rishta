@@ -2,6 +2,7 @@ import { ChevronsUpDown, X } from 'lucide-react'
 import { type KeyboardEvent, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '~/components/ui/button'
+import { controlVariants } from '~/components/ui/input'
 import { useFieldControl } from '~/lib/form-context'
 import { fallbackLabel, type Option, useOptions } from '~/lib/reference'
 import { cn } from '~/lib/utils'
@@ -113,12 +114,15 @@ export function SearchSelectControl({
             {...aria}
             disabled={disabled}
             onKeyDown={onTriggerKeyDown}
-            className="flex h-11 w-full min-w-0 items-center justify-between gap-2 rounded-[var(--radius-input)] border border-input bg-surface ps-3 pe-3 text-start text-base text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-60 aria-invalid:border-danger aria-invalid:focus-visible:ring-danger"
+            className={cn(
+              controlVariants({ control: 'input' }),
+              'items-center justify-between gap-2 pe-3 text-start',
+            )}
           >
-            <span dir="auto" className={cn('truncate', !text && 'text-muted-foreground')}>
+            <span dir="auto" className={cn('min-w-0', !text && 'text-muted-foreground')}>
               {text || placeholder || t('fields:search_select.placeholder')}
             </span>
-            <ChevronsUpDown aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+            <ChevronsUpDown aria-hidden="true" className="size-5 text-muted-foreground" />
           </button>
         }
       />

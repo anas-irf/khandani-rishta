@@ -69,9 +69,7 @@ function LimitDialogContent({ state }: { state: LimitDialogState }) {
     <AlertDialogContent>
       <AlertDialogHeader>
         <AlertDialogTitle>{t('errors:limit.title')}</AlertDialogTitle>
-        <AlertDialogDescription className="text-base text-foreground">
-          {text}
-        </AlertDialogDescription>
+        <AlertDialogDescription className="text-foreground">{text}</AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
         <AlertDialogAction onClick={closeLimitDialog}>{t('errors:limit.ok')}</AlertDialogAction>

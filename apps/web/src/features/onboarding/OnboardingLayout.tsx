@@ -1,10 +1,12 @@
 import { Outlet, useParams } from '@tanstack/react-router'
-import { MoreVertical } from 'lucide-react'
+import { EllipsisVertical } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Band } from '~/components/common/Band'
 import { ConfirmDialog } from '~/components/common/ConfirmDialog'
 import { OfflineBanner } from '~/components/common/OfflineBanner'
-import { LogoMark } from '~/components/layout/Logo'
+import { SkipLink } from '~/components/common/SkipLink'
+import { Wordmark } from '~/components/layout/Logo'
 import { Button } from '~/components/ui/button'
 import {
   DropdownMenu,
@@ -23,7 +25,8 @@ import { ProgressHeader } from './ProgressHeader'
 /**
  * The onboarding layout (17 section 3.3, 07 sections 2.3 and 2.6): the progress header with
  * the four groups and "Step N of 11", an overflow menu with "Sign out", no app navigation, and
- * one column that sits in a centred card at most 560 px wide on wide screens.
+ * one column that sits in a centred card at most 560 px wide on wide screens: on sand there,
+ * straight on the page on phones.
  */
 export function OnboardingLayout() {
   const { t } = useTranslation(['onboarding', 'common'])
@@ -36,34 +39,41 @@ export function OnboardingLayout() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-background">
+      <SkipLink label={t('common:nav.skip_to_content')} />
       <OfflineBanner />
-      <header className="border-b border-border bg-surface">
-        <div className="mx-auto flex w-full max-w-[560px] flex-col gap-3 px-4 py-3">
-          <div className="flex items-center justify-between gap-3">
-            <span className="flex min-h-11 items-center gap-2 font-bold text-primary">
-              <LogoMark />
-              <span className="text-lg">{t('common:app_name')}</span>
-            </span>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label={t('onboarding:menu.label')}>
-                  <MoreVertical aria-hidden="true" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onSelect={() => setConfirmSignOut(true)}>
-                  {t('onboarding:menu.sign_out')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          {me && step && isOnboardingStep(step) ? (
-            <ProgressHeader step={step} currentStep={me.profile.onboarding_step} />
-          ) : null}
+      <Band
+        as="header"
+        width="form"
+        space="none"
+        className="border-b border-border"
+        innerClassName="flex flex-col gap-2 py-2"
+      >
+        <div className="flex min-h-touch items-center justify-between gap-3">
+          <Wordmark />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="-me-[12px]"
+                aria-label={t('onboarding:menu.label')}
+              >
+                <EllipsisVertical aria-hidden="true" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={() => setConfirmSignOut(true)}>
+                {t('onboarding:menu.sign_out')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-      </header>
-      <main id="main" className="flex-1 md:py-8">
-        <div className="mx-auto w-full max-w-[560px] px-4 py-6 md:rounded-[var(--radius-card)] md:border md:border-border md:bg-surface md:px-8 md:py-8 md:shadow-sm">
+        {me && step && isOnboardingStep(step) ? (
+          <ProgressHeader step={step} currentStep={me.profile.onboarding_step} />
+        ) : null}
+      </Band>
+      <main id="main" tabIndex={-1} className="band-page flex flex-1 flex-col wide:band-sand">
+        <div className="mx-auto w-full max-w-form px-gutter pt-6 pb-10 wide:band-page wide:my-10 wide:w-[calc(100%-48px)] wide:rounded-xl wide:px-8 wide:py-8">
           <Outlet />
         </div>
       </main>
@@ -73,6 +83,7 @@ export function OnboardingLayout() {
         title={t('common:sign_out_dialog.title')}
         description={t('common:sign_out_dialog.body')}
         confirmLabel={t('common:actions.sign_out')}
+        tone="ink"
         onConfirm={async () => {
           if (step) trackSignedOut(step)
           // Sign-out drops unsent events, so the funnel event goes out first.

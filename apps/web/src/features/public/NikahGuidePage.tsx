@@ -1,11 +1,10 @@
-import { Link } from '@tanstack/react-router'
 import { Info } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { TextLink } from '~/components/common/TextLink'
 import { Alert, AlertDescription } from '~/components/ui/alert'
 import {
   type ContentBlock,
   ContentSection,
-  linkClass,
   PageHero,
   Prose,
   TableOfContents,
@@ -24,23 +23,17 @@ export function NikahGuidePage() {
     <>
       <PageHero title={t('nikah.title')} lead={t('nikah.lead')} />
       <Prose>
-        <div className="max-w-3xl space-y-10">
-          <Notice />
-          <TableOfContents blocks={sections} numbered />
-          {sections.map((block, index) => (
-            <ContentSection key={block.id} block={block} number={index + 1} />
-          ))}
-          <Notice />
-          <p className="leading-relaxed">{t('nikah.closing')}</p>
-          <p className="flex flex-wrap gap-x-6">
-            <Link to="/safety" className={`${linkClass} inline-flex min-h-11 items-center`}>
-              {t('links.safety')}
-            </Link>
-            <Link to="/faq" className={`${linkClass} inline-flex min-h-11 items-center`}>
-              {t('links.faq')}
-            </Link>
-          </p>
-        </div>
+        <Notice />
+        <TableOfContents blocks={sections} numbered />
+        {sections.map((block, index) => (
+          <ContentSection key={block.id} block={block} number={index + 1} />
+        ))}
+        <Notice />
+        <p className="max-w-measure text-body-lg">{t('nikah.closing')}</p>
+        <p className="flex flex-wrap gap-x-6">
+          <TextLink to="/safety">{t('links.safety')}</TextLink>
+          <TextLink to="/faq">{t('links.faq')}</TextLink>
+        </p>
       </Prose>
     </>
   )
@@ -54,7 +47,7 @@ function Notice() {
       <Info aria-hidden="true" />
       <AlertDescription>
         <p>{t('nikah.notice')}</p>
-        <p className="font-medium">{t('nikah.notice_platform')}</p>
+        <p className="font-semibold">{t('nikah.notice_platform')}</p>
       </AlertDescription>
     </Alert>
   )

@@ -10,6 +10,15 @@ import {
   DialogTitle,
 } from '~/components/ui/dialog'
 
+/** What staff should weigh before they confirm. */
+export function DialogNote({ children }: { children: ReactNode }) {
+  return (
+    <p role="note" className="rounded-md bg-warning-soft px-4 py-3 text-body-sm">
+      {children}
+    </p>
+  )
+}
+
 export type ActionDialogProps = {
   title: string
   description?: ReactNode
@@ -70,7 +79,7 @@ export function ActionDialog({
       }}
     >
       <DialogContent closeLabel={t('actions.close')} className={className}>
-        <form onSubmit={(event) => void submit(event)} noValidate className="grid gap-4">
+        <form onSubmit={(event) => void submit(event)} noValidate className="flex flex-col gap-4">
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
             {description ? (

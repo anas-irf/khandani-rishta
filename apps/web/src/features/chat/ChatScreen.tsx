@@ -1,17 +1,19 @@
 // APP-CHAT (16 section 6.11)
 import { useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { ArrowLeft, MoreVertical } from 'lucide-react'
+import { MoreVertical } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BlockDialog } from '~/components/common/BlockDialog'
 import { ConfirmDialog } from '~/components/common/ConfirmDialog'
 import { ErrorState } from '~/components/common/ErrorState'
-import { MemberPhoto, Silhouette } from '~/components/common/MemberPhoto'
 import { NoLongerAvailable } from '~/components/common/NoLongerAvailable'
 import { useOnlineStatus } from '~/components/common/OfflineBanner'
+import { Page } from '~/components/common/Page'
+import { BackArrow } from '~/components/common/PageHeader'
 import { ReportDialog } from '~/components/common/ReportDialog'
 import { ScreenAccess } from '~/components/common/ScreenAccess'
+import { avatarVariants } from '~/components/ui/avatar'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import {
@@ -26,7 +28,8 @@ import type { Connection } from '~/lib/api-types'
 import { useCurrentMe } from '~/lib/me'
 import { qk } from '~/lib/query'
 import { subscribeConversation, usePresence, useTyping } from '~/lib/realtime'
-import { otherGender } from './ChatsScreen'
+import { cn } from '~/lib/utils'
+import { OtherAvatar } from './ChatsScreen'
 import { Composer, ComposerDisabled, composerBlock } from './Composer'
 import { type ChatMessage, catchUpMessages, flattenMessages } from './cache'
 import { EndConnectionDialog } from './EndConnectionDialog'
@@ -52,6 +55,7 @@ export function ChatScreen({ connectionId }: { connectionId: string }) {
 }
 
 function Chat({ connectionId }: { connectionId: string }) {
+  const { t } = useTranslation('chat')
   const queryClient = useQueryClient()
   const connection = useConnection(connectionId)
   const messages = useMessages(connectionId)
@@ -71,16 +75,19 @@ function Chat({ connectionId }: { connectionId: string }) {
   }, [notFound, queryClient, connectionId])
 
   if (connection.isPending) return <ChatSkeleton />
-  if (notFound) return <NoLongerAvailable />
-  if (!connection.data) {
+  if (notFound || !connection.data) {
     return (
-      <div className="container-app py-6">
-        <ErrorState
-          error={connection.error}
-          onRetry={() => void connection.refetch()}
-          retrying={connection.isFetching}
-        />
-      </div>
+      <Page title={t('chats.title')} backTo="/chats" width="column">
+        {notFound ? (
+          <NoLongerAvailable />
+        ) : (
+          <ErrorState
+            error={connection.error}
+            onRetry={() => void connection.refetch()}
+            retrying={connection.isFetching}
+          />
+        )}
+      </Page>
     )
   }
   return <Conversation connection={connection.data} messages={messages} />
@@ -89,11 +96,16 @@ function Chat({ connectionId }: { connectionId: string }) {
 function ChatSkeleton() {
   const { t } = useTranslation('shared')
   return (
-    <div role="status" aria-busy="true" className="flex flex-col gap-3 p-4">
+    <div
+      role="status"
+      aria-busy="true"
+      data-conversation=""
+      className="flex min-h-0 flex-1 flex-col overflow-hidden"
+    >
       <span className="sr-only">{t('list.loading')}</span>
-      <div className="flex items-center gap-3">
-        <div className="skeleton size-10 rounded-full" />
-        <div className="skeleton h-5 w-40" />
+      <div className="flex min-h-[64px] items-center gap-3 border-b border-border px-[16px] py-[8px] wide:min-h-[80px]">
+        <div className={cn(avatarVariants({ size: 'xs' }), 'skeleton rounded-arch')} />
+        <div className="skeleton h-5 w-[min(100%,10rem)]" />
       </div>
       <BubblesSkeleton />
     </div>
@@ -103,10 +115,14 @@ function ChatSkeleton() {
 function BubblesSkeleton() {
   const { t } = useTranslation('shared')
   return (
-    <div role="status" aria-busy="true" className="flex flex-1 flex-col gap-3 p-4">
+    <div
+      role="status"
+      aria-busy="true"
+      className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden p-4"
+    >
       <span className="sr-only">{t('list.loading')}</span>
       {['w-2/3', 'w-1/2 self-end', 'w-3/5', 'w-2/5 self-end', 'w-1/2'].map((width) => (
-        <div key={width} className={`skeleton h-12 rounded-2xl ${width}`} />
+        <div key={width} className={cn('skeleton h-12 shrink-0 rounded-row', width)} />
       ))}
     </div>
   )
@@ -149,13 +165,13 @@ function Conversation({
   const starters =
     noTextYet && !block ? (
       <div className="flex flex-col items-center gap-2 py-3">
-        <p className="text-sm text-muted-foreground">{t('chat:chat.start_label')}</p>
+        <p className="text-caption text-muted-foreground">{t('chat:chat.start_label')}</p>
         <div className="flex flex-wrap justify-center gap-2">
           {(['chip_salaam', 'chip_family'] as const).map((key) => (
             <Button
               key={key}
-              variant="soft"
-              className="h-auto min-h-11 whitespace-normal rounded-full text-start"
+              variant="quiet"
+              className="rounded-lg text-start"
               onClick={() => setDraft(t(`chat:chat.${key}`))}
             >
               {t(`chat:chat.${key}`)}
@@ -166,7 +182,7 @@ function Conversation({
     ) : null
 
   return (
-    <div className="-mb-10 flex h-dvh flex-col md:h-[calc(100dvh-4rem)]">
+    <div data-conversation="" className="flex min-h-0 flex-1 flex-col">
       <ChatHeader
         connection={connection}
         name={name}
@@ -222,7 +238,7 @@ function Conversation({
         title={t('chat:message.remove_title')}
         description={null}
         confirmLabel={t('chat:message.remove_confirm')}
-        destructive
+        tone="danger"
         onConfirm={async () => {
           if (!removeTarget) return
           try {
@@ -284,7 +300,6 @@ function ChatHeader({
   onEnd: () => void
 }) {
   const { t } = useTranslation(['chat', 'shared'])
-  const me = useCurrentMe()
   const patch = usePatchConnection()
   const online = useOnlineStatus()
   const typing = useTyping(connection.id)
@@ -302,51 +317,41 @@ function ChatHeader({
   }
 
   return (
-    <header className="flex items-center gap-1 border-b border-border bg-surface px-2 py-2">
-      <Button asChild variant="ghost" size="icon" className="shrink-0 md:hidden">
+    <header className="flex min-h-[64px] items-center gap-[4px] border-b border-border bg-background px-[8px] py-[8px] wide:min-h-[80px] wide:px-[16px]">
+      <Button asChild variant="ghost" size="icon" className="wide:hidden">
         <Link to="/chats" aria-label={t('shared:header.back')}>
-          <ArrowLeft aria-hidden="true" className="size-5 rtl:-scale-x-100" />
+          <BackArrow />
         </Link>
       </Button>
-      <Link
-        to="/chats/$connectionId/details"
-        params={{ connectionId: connection.id }}
-        aria-label={t('chat:chat.open_details', { name })}
-        className="flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-[var(--radius-input)] px-1 hover:bg-muted"
-      >
-        {other ? (
-          <MemberPhoto
-            photo={other.photo}
-            name={other.display_name}
-            gender={other.gender}
-            size="thumb"
-            width={40}
-            height={40}
-            className="size-10 shrink-0 rounded-full"
-          />
-        ) : (
-          <Silhouette
-            gender={otherGender(me.profile.gender)}
-            label={name}
-            width={40}
-            height={40}
-            className="size-10 shrink-0 rounded-full"
-          />
-        )}
+      <h1 className="sr-only">{name}</h1>
+      {/* The link is the name, stretched over the block: stage and activity stay their own text. */}
+      <div className="relative flex min-h-touch min-w-0 flex-1 items-center gap-[12px] rounded-row px-[4px] py-1 text-foreground transition-colors hover:tonal">
+        <span aria-hidden="true" className="contents">
+          <OtherAvatar connection={connection} size="xs" />
+        </span>
         <span className="flex min-w-0 flex-col">
-          <span className="flex min-w-0 items-center gap-2">
-            <span className="truncate text-base font-semibold" aria-hidden="true">
-              {name}
-            </span>
+          <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+            <Link
+              to="/chats/$connectionId/details"
+              params={{ connectionId: connection.id }}
+              aria-label={t('chat:chat.open_details', { name })}
+              className="stretched-link flex max-w-full min-w-0 text-foreground after:z-[1] after:rounded-row"
+            >
+              {/* The phone top bar is the one place a name is cut (DESIGN.md 6.16). */}
+              <span
+                className="max-w-full min-w-0 text-title-md font-bold max-wide:truncate"
+                aria-hidden="true"
+              >
+                {name}
+              </span>
+            </Link>
             {connection.stage !== 'chatting' ? (
-              <Badge variant="secondary" className="hidden sm:inline-flex">
-                {stageName(t, connection.stage)}
-              </Badge>
+              <Badge variant="success">{stageName(t, connection.stage)}</Badge>
             ) : null}
           </span>
           {subtitle ? (
             <span
-              className="truncate text-sm text-muted-foreground"
+              className="text-caption text-muted-foreground"
               aria-live="polite"
               data-subtitle=""
             >
@@ -354,7 +359,7 @@ function ChatHeader({
             </span>
           ) : null}
         </span>
-      </Link>
+      </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" aria-label={t('chat:chat.menu')} className="shrink-0">
@@ -401,7 +406,7 @@ function ChatHeader({
             </>
           ) : null}
           {active ? (
-            <DropdownMenuItem onSelect={onEnd} className="text-danger">
+            <DropdownMenuItem variant="destructive" onSelect={onEnd}>
               {t('chat:chat.end')}
             </DropdownMenuItem>
           ) : null}

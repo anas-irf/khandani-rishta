@@ -218,7 +218,7 @@ export function FamilyForm({
         <form.AppField name="home_type">
           {(field) => <field.SelectField label={t('family.home_type_label')} list="home_type" />}
         </form.AppField>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,8.5rem),1fr))] gap-3">
           <form.AppField
             name="home_size_value"
             listeners={{
@@ -266,7 +266,7 @@ export function FamilyForm({
         </form.AppField>
         <TextStatusNote status={profile.text_status.about_family} />
         {mode === 'edit' ? (
-          <p className="text-sm text-muted-foreground">{t('form.review_note')}</p>
+          <p className="text-caption text-muted-foreground">{t('form.review_note')}</p>
         ) : null}
       </div>
     </FormShell>

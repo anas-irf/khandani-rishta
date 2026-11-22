@@ -1,9 +1,9 @@
 import type { ComponentProps, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Checkbox } from '~/components/ui/checkbox'
-import { Label } from '~/components/ui/label'
 import { useFieldControl } from '~/lib/form-context'
 import { cn } from '~/lib/utils'
+import { CheckboxLine } from '../CheckboxLine'
+import { inlineLinkClass } from '../TextLink'
 import {
   ariaFor,
   type BaseFieldProps,
@@ -32,28 +32,27 @@ function CheckboxRow({
   const nameRef = useNameRef(control.name)
   return (
     <div className={cn('grid gap-1', className)}>
-      <div className="flex min-h-11 items-start gap-3 py-2.5">
-        <Checkbox
-          id={control.inputId}
-          ref={nameRef}
-          checked={control.value === true}
-          onCheckedChange={(checked) => control.setValue(checked === true)}
-          onBlur={control.onBlur}
-          disabled={isDisabled}
-          className="mt-0.5"
-          {...ariaFor(control, { required, hasHelp: Boolean(helpText) })}
-        />
-        <Label htmlFor={control.inputId} className="block text-base font-normal leading-snug">
-          {label}
-          {showOptional ? (
-            <>
-              {' '}
-              <OptionalMark required={required} />
-            </>
-          ) : null}
-        </Label>
-      </div>
-      <div className="grid gap-1 ps-8">
+      <CheckboxLine
+        id={control.inputId}
+        ref={nameRef}
+        checked={control.value === true}
+        onCheckedChange={(checked) => control.setValue(checked === true)}
+        onBlur={control.onBlur}
+        disabled={isDisabled}
+        {...ariaFor(control, { required, hasHelp: Boolean(helpText) })}
+        label={
+          <>
+            {label}
+            {showOptional ? (
+              <>
+                {' '}
+                <OptionalMark required={required} />
+              </>
+            ) : null}
+          </>
+        }
+      />
+      <div className="grid gap-1 ps-[calc(26px+0.75rem)]">
         {helpText ? <FieldHelp id={control.helpId}>{helpText}</FieldHelp> : null}
         <FieldError id={control.errorId} message={control.message} />
       </div>
@@ -94,7 +93,7 @@ export function ConsentLink({
       {...props}
       target="_blank"
       rel="noopener noreferrer"
-      className={cn('font-medium text-primary underline underline-offset-4', className)}
+      className={cn(inlineLinkClass, className)}
     >
       {children}
       <span className="sr-only"> {t('fields:new_tab')}</span>

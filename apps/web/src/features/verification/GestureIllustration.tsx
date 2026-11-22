@@ -50,7 +50,7 @@ export function GestureIllustration({
       aria-label={t('gesture.illustration', { instruction })}
       viewBox="0 0 170 190"
       data-gesture={gesture}
-      className={cn('h-40 w-auto text-primary', className)}
+      className={cn('h-auto w-[144px] max-w-full text-primary', className)}
       fill="none"
       stroke="currentColor"
       strokeWidth={3}

@@ -166,7 +166,7 @@ export function OptionSearch({
 
   const activeIndex = rows === 0 ? -1 : Math.min(active, rows - 1)
   const optionClass =
-    'flex min-h-11 cursor-pointer select-none items-center gap-2 rounded-[var(--radius-input)] px-3 py-2 text-base data-[active=true]:bg-muted'
+    'flex min-h-touch cursor-pointer select-none items-center gap-2 rounded-item px-3 py-2 text-body-md data-[active=true]:bg-muted'
 
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
@@ -174,7 +174,7 @@ export function OptionSearch({
       <PopoverContent
         align="start"
         aria-label={label}
-        className="flex w-(--radix-popover-trigger-width) min-w-72 flex-col p-0"
+        className="flex w-(--radix-popover-trigger-width) min-w-[min(18rem,calc(100vw-16px))] flex-col p-0"
       >
         <div className="border-b border-border p-2">
           <Input
@@ -203,7 +203,7 @@ export function OptionSearch({
           id={listId}
           role="listbox"
           aria-label={t('fields:search_select.options_label', { label })}
-          className="max-h-72 overflow-y-auto p-1"
+          className="max-h-[min(18rem,40dvh)] overflow-y-auto p-2"
         >
           {visible.map((option, index) => (
             // biome-ignore lint/a11y/useKeyWithClickEvents: options are chosen by keyboard on the combobox input (aria-activedescendant)
@@ -227,7 +227,9 @@ export function OptionSearch({
                   !selectedSet.has(option.code) && 'invisible',
                 )}
               />
-              <span dir="auto">{option.label}</span>
+              <span dir="auto" className="min-w-0">
+                {option.label}
+              </span>
             </div>
           ))}
           {otherOption ? (
@@ -238,7 +240,7 @@ export function OptionSearch({
               tabIndex={-1}
               aria-selected={false}
               data-active={visible.length === activeIndex}
-              className={cn(optionClass, 'font-medium text-primary')}
+              className={cn(optionClass, 'font-semibold text-primary')}
               onMouseDown={(event) => event.preventDefault()}
               onMouseMove={() => setActive(visible.length)}
               onClick={() => choose(visible.length)}
@@ -249,14 +251,14 @@ export function OptionSearch({
           ) : null}
         </div>
         {visible.length === 0 ? (
-          <p role="status" className="px-3 pb-3 text-sm text-muted-foreground">
+          <p role="status" className="px-5 pb-3 text-body-sm text-muted-foreground">
             {t('fields:search_select.no_results')}
           </p>
         ) : null}
         {truncated ? (
           <p
             role="status"
-            className="border-t border-border px-3 py-2 text-sm text-muted-foreground"
+            className="border-t border-border px-5 py-2 text-caption text-muted-foreground"
           >
             {t('fields:search_select.more_results', { shown: visible.length })}
           </p>

@@ -326,10 +326,11 @@ private fun GroupBlock(
         if (group.hobbies.isNotEmpty()) {
             // Chips, because several values do not read as one.
             Column(Modifier.padding(top = Spacing.s16), verticalArrangement = Arrangement.spacedBy(Spacing.s8)) {
+                // A heading like "About family" above it, for the eye and for TalkBack.
                 Text(
                     text = stringResource(R.string.profile_rows_hobbies),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = KrType.emphasis,
+                    modifier = Modifier.semantics { heading() },
                 )
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(Spacing.s8),

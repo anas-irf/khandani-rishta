@@ -159,7 +159,7 @@ private fun ShareItems(
             ShareItem.entries.forEach { item ->
                 val value = contactValue(profile.contacts, item)
                 val label = stringResource(item.label)
-                AdaptiveRow(spacing = Spacing.s8, lineSpacing = 0.dp) {
+                AdaptiveRow(spacing = Spacing.s8, lineSpacing = Spacing.s8) {
                     CheckboxRow(
                         checked = selection.isOn(item),
                         onCheckedChange = { on -> onChange(selection.with(item, on)) },

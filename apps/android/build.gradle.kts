@@ -20,7 +20,7 @@ val ktlintSettings =
         // App-wide values provided once by the root composable (ui/KhandaniApp.kt) and the theme.
         "compose_allowed_composition_locals" to
             "LocalNavigator,LocalReference,LocalMe,LocalViewerCountry,LocalAppViewModel,LocalExtendedColors," +
-            "LocalTonalColor,LocalOnline,LocalToasts",
+            "LocalTonalColor,LocalOnline,LocalToasts,LocalActionBarRoom",
     )
 
 // Formatting and style for all Kotlin and Gradle Kotlin DSL files, with ktlint and the

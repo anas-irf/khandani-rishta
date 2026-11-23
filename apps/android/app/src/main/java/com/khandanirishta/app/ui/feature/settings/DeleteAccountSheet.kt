@@ -112,8 +112,8 @@ internal fun DeleteAccountSheet(
                 onConfirm = { viewModel.submit(reason) },
                 onCancel = onDismiss,
                 variant = KrButtonVariant.DANGER,
-                // Exactly DELETE, as typed (specs/16 section 6.27).
-                enabled = phrase == DELETE_PHRASE,
+                // Exactly DELETE (specs/16 section 6.27); a space the keyboard adds does not count.
+                enabled = phrase.trim() == DELETE_PHRASE,
                 busy = state.busy,
             )
         },

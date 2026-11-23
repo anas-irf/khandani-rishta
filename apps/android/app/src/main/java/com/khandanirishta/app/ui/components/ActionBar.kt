@@ -18,11 +18,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -33,6 +39,32 @@ import com.khandanirishta.app.ui.theme.SheetShape
 import com.khandanirishta.app.ui.theme.Sizes
 import com.khandanirishta.app.ui.theme.Spacing
 import com.khandanirishta.app.ui.theme.Strokes
+
+/**
+ * How tall the action bars on screen are, so the root's toasts sit above them instead of over the
+ * main button or the composer. During a transition two screens may each have one: the taller counts.
+ */
+@Stable
+class ActionBarRoom {
+    private val bars = mutableStateMapOf<Any, Int>()
+
+    /** In pixels, 0 when no action bar shows. */
+    val height: Int get() = bars.values.maxOrNull() ?: 0
+
+    internal fun report(
+        owner: Any,
+        height: Int,
+    ) {
+        bars[owner] = height
+    }
+
+    internal fun remove(owner: Any) {
+        bars.remove(owner)
+    }
+}
+
+/** The app's [ActionBarRoom]; `null` where no toast host needs it (previews, tests). */
+val LocalActionBarRoom = staticCompositionLocalOf<ActionBarRoom?> { null }
 
 /**
  * The bar at the bottom of a screen (DESIGN.md section 6.14): surface, the sheet radius, a
@@ -54,12 +86,15 @@ fun KrActionBar(
     val hairline = colors.outlineVariant
     val insets = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
     val barLimit = LocalWindowInfo.current.containerDpSize.height * BAR_SHARE
+    val room = LocalActionBarRoom.current
+    val owner = remember { Any() }
+    DisposableEffect(room, owner) { onDispose { room?.remove(owner) } }
     Surface(
         color = KrTheme.colors.card,
         contentColor = colors.onSurface,
         shape = SheetShape,
         shadowElevation = Elevation.bar,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().onSizeChanged { room?.report(owner, it.height) },
     ) {
         CompositionLocalProvider(LocalTonalColor provides colors.surfaceContainer) {
             Column(

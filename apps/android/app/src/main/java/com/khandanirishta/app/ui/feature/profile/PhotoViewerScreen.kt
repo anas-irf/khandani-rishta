@@ -451,7 +451,9 @@ private fun ViewerPhoto(
         if (photo.isBlurred) {
             stringResource(R.string.a11y_private_photo)
         } else {
-            text(R.string.profile_gallery_position, "current" to position, "total" to total)
+            // "Photo of {name}" (specs/22 section 12), then where it is in the gallery.
+            val position = text(R.string.profile_gallery_position, "current" to position, "total" to total)
+            if (name.isNullOrBlank()) position else text(R.string.shared_photo_alt, "name" to name) + ", " + position
         }
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         if (!loaded) LoadingArch()

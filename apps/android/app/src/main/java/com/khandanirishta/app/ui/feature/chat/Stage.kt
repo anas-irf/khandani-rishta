@@ -43,7 +43,7 @@ import com.khandanirishta.app.core.network.generated.model.ConnectionStage
 import com.khandanirishta.app.core.network.generated.model.ConnectionStatus
 import com.khandanirishta.app.core.network.generated.model.Party
 import com.khandanirishta.app.core.network.generated.model.ProposableStage
-import com.khandanirishta.app.ui.components.AdaptiveRow
+import com.khandanirishta.app.ui.components.AnswerRow
 import com.khandanirishta.app.ui.components.Diamond
 import com.khandanirishta.app.ui.components.IconText
 import com.khandanirishta.app.ui.components.KrButton
@@ -133,25 +133,30 @@ private fun ProposalAnswers(
 ) {
     val enabled = busy == null && online
     if (fromThem) {
-        AdaptiveRow(Modifier.fillMaxWidth()) {
-            KrButton(
-                text = stringResource(R.string.chat_stage_confirm),
-                onClick = { onAction(StageAction.Confirm(proposalId)) },
-                size = size,
-                enabled = enabled,
-                loading = busy == ConnectionAction.CONFIRM,
-                modifier = Modifier.grow(),
-            )
-            KrButton(
-                text = stringResource(R.string.chat_stage_not_yet),
-                onClick = { onAction(StageAction.Decline(proposalId)) },
-                variant = KrButtonVariant.SECONDARY,
-                size = size,
-                enabled = enabled,
-                loading = busy == ConnectionAction.DECLINE,
-                modifier = Modifier.grow(),
-            )
-        }
+        // The same order and widths as Decline and Accept elsewhere (DESIGN.md section 6.12).
+        AnswerRow(
+            secondary = { answer ->
+                KrButton(
+                    text = stringResource(R.string.chat_stage_not_yet),
+                    onClick = { onAction(StageAction.Decline(proposalId)) },
+                    variant = KrButtonVariant.SECONDARY,
+                    size = size,
+                    enabled = enabled,
+                    loading = busy == ConnectionAction.DECLINE,
+                    modifier = answer,
+                )
+            },
+            primary = { answer ->
+                KrButton(
+                    text = stringResource(R.string.chat_stage_confirm),
+                    onClick = { onAction(StageAction.Confirm(proposalId)) },
+                    size = size,
+                    enabled = enabled,
+                    loading = busy == ConnectionAction.CONFIRM,
+                    modifier = answer,
+                )
+            },
+        )
     } else {
         KrButton(
             text = stringResource(R.string.chat_stage_withdraw),

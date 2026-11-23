@@ -35,6 +35,7 @@ import com.khandanirishta.app.ui.components.BandTone
 import com.khandanirishta.app.ui.components.CaptionText
 import com.khandanirishta.app.ui.components.ConfirmDialog
 import com.khandanirishta.app.ui.components.ErrorState
+import com.khandanirishta.app.ui.components.KrButtonVariant
 import com.khandanirishta.app.ui.components.KrTextLink
 import com.khandanirishta.app.ui.components.NavRow
 import com.khandanirishta.app.ui.components.RowDivider
@@ -300,6 +301,8 @@ internal fun PrivacyGroups(
                     )
                 },
                 onDismiss = { confirmHidden = false },
+                // A negative choice that is not destructive, like Pause (DESIGN.md section 6.1).
+                variant = KrButtonVariant.INK,
             )
         }
     }

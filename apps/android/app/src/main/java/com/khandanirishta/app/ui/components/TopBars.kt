@@ -10,14 +10,13 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.NotificationsNone
@@ -133,7 +132,8 @@ fun DetailTopBar(
                 if (subtitle != null) CaptionText(subtitle)
             }
             Row(
-                horizontalArrangement = Arrangement.spacedBy(Spacing.s4),
+                // 8 between the 48 targets (DESIGN.md section 8).
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
                 verticalAlignment = Alignment.CenterVertically,
                 content = actions,
             )
@@ -166,7 +166,8 @@ fun TabTopBar(
                         .semantics { heading() },
             )
             Row(
-                horizontalArrangement = Arrangement.spacedBy(Spacing.s4),
+                // 8 between the 48 targets (DESIGN.md section 8).
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
                 verticalAlignment = Alignment.CenterVertically,
                 content = actions,
             )
@@ -181,14 +182,16 @@ fun HomeTopBar(
     onNotifications: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // The badge grows upwards from the bell, so the bar makes room rather than reach the status bar.
+    // The badge grows upwards and outwards from the bell, so the bar makes room above and at the
+    // end rather than let it reach the status bar or the screen edge.
     val room = (countLineHeight() - (Sizes.touch - Sizes.iconBar) + Spacing.s4).coerceAtLeast(Spacing.s4)
+    val endRoom = Spacing.s8 + (countLineHeight() - Sizes.countBadgeSmall).coerceAtLeast(0.dp)
     KrTopBar(modifier) {
         Row(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .padding(start = Spacing.s16, top = room, end = Spacing.s8, bottom = Spacing.s4),
+                    .padding(start = Spacing.s16, top = room, end = endRoom, bottom = Spacing.s4),
             horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -224,12 +227,13 @@ fun NotificationBell(
             tone = CountTone.INVERSE,
             small = true,
             decorative = true,
+            // Its start is fixed at the bell's top corner and it grows up and to the end, so at
+            // larger text it does not spread over the bell (DESIGN.md section 6.16).
             modifier =
                 Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(bottom = Sizes.iconBar)
-                    .wrapContentHeight(align = Alignment.Bottom, unbounded = true)
-                    .offset(x = BadgeOverhang),
+                    .align(Alignment.BottomStart)
+                    .padding(start = BadgeStart, bottom = Sizes.iconBar)
+                    .wrapContentSize(align = Alignment.BottomStart, unbounded = true),
         )
     }
 }
@@ -252,8 +256,8 @@ fun ProfileTopBar(
                 Modifier
                     .fillMaxWidth()
                     .padding(horizontal = Spacing.s4, vertical = Spacing.s4),
-            spacing = Spacing.s4,
-            lineSpacing = Spacing.s4,
+            spacing = Spacing.s8,
+            lineSpacing = Spacing.s8,
         ) {
             Row(
                 modifier = Modifier.grow(basis = BarNameBasis),
@@ -353,7 +357,8 @@ fun Wordmark(
     }
 }
 
-private val BadgeOverhang = 4.dp
+// Where a one-digit badge starts at the default size: it ends 4 past the 48 target.
+private val BadgeStart = Sizes.touch + 4.dp - Sizes.countBadgeSmall
 private val BarNameBasis = 120.dp
 private val BarActionIcon = 22.dp
 private val DefaultMark = 36.dp

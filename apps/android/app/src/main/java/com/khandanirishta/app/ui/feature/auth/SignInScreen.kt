@@ -1,5 +1,6 @@
 package com.khandanirishta.app.ui.feature.auth
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -73,6 +74,8 @@ import com.khandanirishta.app.ui.theme.rememberClerkTheme
 @Composable
 fun SignInScreen(onSignedIn: () -> Unit) {
     var started by rememberSaveable { mutableStateOf(false) }
+    // Back from Clerk's step returns to the welcome rather than leaving the app.
+    BackHandler(enabled = started) { started = false }
     AnimatedContent(targetState = started, transitionSpec = {
         fadeIn(Motion.base()) togetherWith fadeOut(Motion.fast())
     }, label = "sign-in") { showAuth ->

@@ -97,10 +97,14 @@ fun DiscoveryCard(
     onUndo: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // The card's height, so the panel does not pull the list up under the reader.
-    var height by rememberSaveable { mutableIntStateOf(0) }
+    // The card's height, so the panel does not pull the list up under the reader. Saved under the
+    // text size: after a font scale change the old height no longer fits the card.
+    val density = LocalDensity.current
+    var height by rememberSaveable(density.fontScale, key = "card-height:${density.fontScale}") {
+        mutableIntStateOf(0)
+    }
     if (passed) {
-        val minHeight = with(LocalDensity.current) { height.toDp() }
+        val minHeight = with(density) { height.toDp() }
         PassedCard(name = card.displayName, onUndo = onUndo, minHeight = minHeight, modifier = modifier)
     } else {
         ProfileCardView(

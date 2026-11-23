@@ -411,7 +411,9 @@ fun ProfileRow(
                 Modifier
                     .fillMaxWidth()
                     .tappable(shape = MaterialTheme.shapes.small, onClick = onOpen, onClickLabel = openLabel)
-                    .padding(vertical = Spacing.s12),
+                    // With buttons under it, 8 of the 12 go outside the row's target, so a tap
+                    // that falls short of Decline or Remove does not open the profile instead.
+                    .padding(top = Spacing.s12, bottom = if (actions != null) Spacing.s4 else Spacing.s12),
             verticalArrangement = Arrangement.spacedBy(Spacing.s12),
         ) {
             Row(
@@ -449,7 +451,7 @@ fun ProfileRow(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .padding(bottom = Spacing.s12),
+                        .padding(top = Spacing.s8, bottom = Spacing.s12),
                 verticalArrangement = Arrangement.spacedBy(Spacing.s12),
                 content = actions,
             )

@@ -188,7 +188,11 @@ private fun Destination(
     )
 }
 
-/** Equal widths while every label fits its share, then its own width, then another line. */
+/**
+ * Equal widths while every label fits its share, then its own width while each still has room
+ * around it, then another line. At the largest text five labels on one line would nearly touch and
+ * push the count badges over their icons, so they wrap instead (DESIGN.md section 6.17).
+ */
 @Composable
 private fun WrappingDestinations(content: @Composable () -> Unit) {
     val policy = remember { WrappingPolicy() }
@@ -253,6 +257,7 @@ private class WrappingPolicy : MeasurePolicy {
         width: Int,
     ): List<Line> {
         val gap = LabelGap.roundToPx()
+        val roomy = RoomyGap.roundToPx() - gap
         val wanted = IntArray(measurables.size) { measurables[it].maxIntrinsicWidth(Constraints.Infinity) + gap }
         // The fewest lines whose items fit, split as evenly as five allows: 5, then 3 and 2.
         for (count in 1..measurables.size) {
@@ -261,7 +266,11 @@ private class WrappingPolicy : MeasurePolicy {
                 val size = minOf(perLine, measurables.size - first)
                 Line(first, size, IntArray(size) { wanted[first + it] })
             }
-            if (perLine > 1 && lines.any { it.widths.sum() > width }) continue
+            val crowded =
+                lines.any { line ->
+                    line.widths.any { it > width / line.size } && line.widths.sum() + roomy * line.size > width
+                }
+            if (perLine > 1 && crowded) continue
             return lines.map { it.filling(width) }
         }
         return emptyList()
@@ -313,5 +322,8 @@ private fun Tab.selectedIcon(): ImageVector =
 
 private const val ATTENTION_BELOW = 70
 private val LabelGap = 6.dp
+
+// What each label needs around it to share a line at its own width.
+private val RoomyGap = 16.dp
 private val AttentionRoom = 16.dp
 private val BadgeShift = 8.dp

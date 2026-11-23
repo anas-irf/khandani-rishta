@@ -95,9 +95,12 @@ internal fun MatchesRow(
 ) {
     val cardWidth = matchCardWidth()
     val density = LocalDensity.current
-    var tallest by rememberSaveable(density.fontScale, cardWidth.value) { mutableIntStateOf(0) }
+    // Saved under the text size and card width: a font scale change recreates the activity, and a
+    // height restored from the old size would leave an empty band under the row.
+    val size = "${density.fontScale}:${cardWidth.value}"
+    var tallest by rememberSaveable(size, key = "matches-row:$size") { mutableIntStateOf(0) }
     // Of the members' cards alone: the closing card would otherwise grow by its own rounding, frame after frame.
-    var tallestCard by rememberSaveable(density.fontScale, cardWidth.value) { mutableIntStateOf(0) }
+    var tallestCard by rememberSaveable(size, key = "matches-cards:$size") { mutableIntStateOf(0) }
     val minHeight = with(density) { tallest.toDp() }
     val endHeight = with(density) { tallestCard.toDp() }
     LazyRow(

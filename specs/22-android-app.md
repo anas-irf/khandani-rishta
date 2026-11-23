@@ -296,7 +296,7 @@ The Android equivalents of the web components in 17 section 10, with the same na
 | Controls | `KrButton` (primary, secondary, quiet, inverse, ink, danger), `KrTextLink`, `KrIconButton`, `KrChoiceChip`, `KrTabs` (chips that wrap where a label would break inside a word), `NavRow`, `NudgeCard`, `SwitchRow`, `CheckboxRow`, `RadioRow`, `RadioCardRow`, `KrMenu` |
 | Bars | `HomeTopBar`, `TabTopBar`, `DetailTopBar` (the title wraps), `ProfileTopBar` (the one place a name is cut), `KrActionBar` with `AnswerRow` |
 | States | `EmptyState`, `ErrorState`, `NoLongerAvailable`, `StatusPanel`, `StatusBanner`, `DismissibleBanner`, `OfflineBanner`, `StatusPill`, `PagedList`, skeletons for cards, rows and forms |
-| Layers | `KrSheet`, `KrDialog`, `ConfirmDialog`, `LimitDialog`, `DeclineDialog`, `ReportDialog`, `BlockDialog`, `NoteDialog`, `KrSnackbarHost` (4 seconds, 5 with Undo; an open sheet repeats the toasts that come while it covers them) |
+| Layers | `KrSheet`, `KrDialog`, `ConfirmDialog`, `LimitDialog`, `DeclineDialog`, `ReportDialog`, `BlockDialog`, `NoteDialog`, `KrSnackbarHost` (4 seconds, 5 with Undo; above the screen's action bar, never over its main button or the composer; an open sheet repeats the toasts that come while it covers them) |
 | Effects | `SecureScreen` (section 10), `LightSystemBarIcons` (the inverse screens: photo viewer and camera) |
 
 Where Android has a better affordance than the web, it is used: sheets for decline, report, notes and sending an interest, dialogs for short decisions, pull to refresh, the system Back, and Material pickers.

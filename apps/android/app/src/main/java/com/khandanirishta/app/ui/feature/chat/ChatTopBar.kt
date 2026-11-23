@@ -112,7 +112,8 @@ internal fun ChatTopBar(
                 Modifier
                     .fillMaxWidth()
                     .padding(Spacing.s4),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.s4),
+            // 8 between Back, the name and More (DESIGN.md section 8).
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             ChatBack(actions.back)
@@ -282,7 +283,8 @@ internal fun ChatTopBarSkeleton(
                 Modifier
                     .fillMaxWidth()
                     .padding(Spacing.s4),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.s4),
+            // 8 between Back, the name and More (DESIGN.md section 8).
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             ChatBack(onBack)

@@ -35,9 +35,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalAccessibilityManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -50,8 +52,10 @@ import com.khandanirishta.app.core.data.ProfileRepository
 import com.khandanirishta.app.core.network.generated.model.Gate
 import com.khandanirishta.app.core.network.generated.model.Me
 import com.khandanirishta.app.core.realtime.ConnectivityObserver
+import com.khandanirishta.app.ui.components.ActionBarRoom
 import com.khandanirishta.app.ui.components.KrSnackbarHost
 import com.khandanirishta.app.ui.components.LimitDialog
+import com.khandanirishta.app.ui.components.LocalActionBarRoom
 import com.khandanirishta.app.ui.components.LocalOnline
 import com.khandanirishta.app.ui.components.LocalToasts
 import com.khandanirishta.app.ui.components.OfflineBanner
@@ -317,12 +321,22 @@ private fun GateHost(
     // A screen comes from the end edge, so from the other side in right-to-left layouts.
     val slide = if (LocalLayoutDirection.current == LayoutDirection.Ltr) SLIDE_SHARE else -SLIDE_SHARE
 
-    CompositionLocalProvider(LocalNavigator provides navigator) {
+    val barRoom = remember { ActionBarRoom() }
+    CompositionLocalProvider(LocalNavigator provides navigator, LocalActionBarRoom provides barRoom) {
         Scaffold(
             snackbarHost = {
-                // Without the destinations below it, a toast keeps clear of the system's bar and the keyboard.
+                // A toast sits above the screen's action bar (Send interest, Accept, the composer), which
+                // already keeps clear of the system's bar and the keyboard. Without one it keeps clear of
+                // those itself, unless the destinations are below it.
+                val lifted = with(LocalDensity.current) { barRoom.height.toDp() }
                 val below = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom)
-                KrSnackbarHost(snackbar, if (showBar) Modifier else Modifier.windowInsetsPadding(below))
+                val place =
+                    when {
+                        lifted > 0.dp -> Modifier.padding(bottom = lifted)
+                        showBar -> Modifier
+                        else -> Modifier.windowInsetsPadding(below)
+                    }
+                KrSnackbarHost(snackbar, place)
             },
             bottomBar = { if (showBar) AppBottomBar(navigator = navigator, me = me) },
             containerColor = MaterialTheme.colorScheme.background,

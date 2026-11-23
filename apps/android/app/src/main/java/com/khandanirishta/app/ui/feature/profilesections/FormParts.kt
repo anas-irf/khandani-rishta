@@ -37,6 +37,8 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -97,28 +99,34 @@ val FieldSpacing = Spacing.s20
 internal val GroupSpace = Spacing.s12
 
 /**
- * Finds a field on screen, so a failed submit can scroll to the first invalid one (07 section 2.4
- * step 3, 17 section 8.3).
+ * Finds a field on screen, so a failed submit can scroll to the first invalid one and focus it
+ * (07 section 2.4 step 3, 17 section 8.3): TalkBack then reads that field and its error instead of
+ * staying on Save.
  */
 @Stable
 class FieldLocator {
     private val requesters = HashMap<String, BringIntoViewRequester>()
+    private val focus = HashMap<String, FocusRequester>()
 
     fun requester(field: String): BringIntoViewRequester = requesters.getOrPut(field) { BringIntoViewRequester() }
 
+    fun focusRequester(field: String): FocusRequester = focus.getOrPut(field) { FocusRequester() }
+
     suspend fun reveal(field: String) {
         runCatching { requesters[field]?.bringIntoView() }
+        // A group of chips has nothing that takes focus in touch mode: then it is only scrolled to.
+        runCatching { focus[field]?.requestFocus() }
     }
 }
 
 @Composable
 fun rememberFieldLocator(): FieldLocator = remember { FieldLocator() }
 
-/** Marks the field [field] so it can be scrolled into view. */
+/** Marks the field [field] so it can be scrolled into view and focused. */
 fun Modifier.locate(
     field: String,
     locator: FieldLocator,
-): Modifier = bringIntoViewRequester(locator.requester(field))
+): Modifier = bringIntoViewRequester(locator.requester(field)).focusRequester(locator.focusRequester(field))
 
 /** Scrolls to the field of each new [reveal] request, after collapsed groups had a frame to open. */
 @Composable

@@ -193,7 +193,9 @@ private fun ResultsHeader(
                             text = label,
                             removeLabel = text(R.string.discovery_search_results_remove_filter, "label" to label),
                             onRemove = { onRemove(control) },
-                            // Removing a filter searches again.
+                            // Removing a filter searches again, so only the close control does
+                            // that; the chip itself opens the filters.
+                            onClick = onEditFilters,
                             enabled = online,
                         )
                     }

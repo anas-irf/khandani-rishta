@@ -35,9 +35,9 @@ import com.khandanirishta.app.core.network.apiError
 import com.khandanirishta.app.core.network.generated.model.ProfileCard
 import com.khandanirishta.app.core.network.generated.model.RelaxationHint
 import com.khandanirishta.app.core.util.Formatters
+import com.khandanirishta.app.ui.components.BarAction
 import com.khandanirishta.app.ui.components.CardSkeleton
 import com.khandanirishta.app.ui.components.DetailTopBar
-import com.khandanirishta.app.ui.components.KrIconButton
 import com.khandanirishta.app.ui.components.LocalOnline
 import com.khandanirishta.app.ui.components.PagedList
 import com.khandanirishta.app.ui.components.StatusBanner
@@ -254,16 +254,17 @@ fun MatchesScreen(
                         text(R.string.discovery_matches_updated, "time" to Formatters.relative(res, it, now))
                     },
                 onBack = { navigator.back() },
+                // Words under the icons: the sliders icon alone does not say "Preferences".
                 actions = {
-                    KrIconButton(
+                    BarAction(
                         icon = Icons.Outlined.Refresh,
-                        contentDescription = stringResource(R.string.discovery_matches_refresh),
+                        label = stringResource(R.string.discovery_matches_refresh),
                         onClick = viewModel::refreshMatches,
                         enabled = online,
                     )
-                    KrIconButton(
+                    BarAction(
                         icon = Icons.Outlined.Tune,
-                        contentDescription = stringResource(R.string.discovery_matches_preferences),
+                        label = stringResource(R.string.discovery_matches_preferences),
                         onClick = { navigator.push(MyPreferences) },
                     )
                 },

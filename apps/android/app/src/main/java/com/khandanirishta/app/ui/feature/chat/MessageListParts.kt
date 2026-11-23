@@ -43,6 +43,7 @@ import com.khandanirishta.app.R
 import com.khandanirishta.app.core.util.Formatters
 import com.khandanirishta.app.ui.components.CaptionText
 import com.khandanirishta.app.ui.components.Diamond
+import com.khandanirishta.app.ui.components.FirstLineMark
 import com.khandanirishta.app.ui.components.IconText
 import com.khandanirishta.app.ui.components.IconTextLine
 import com.khandanirishta.app.ui.components.KrButton
@@ -110,7 +111,10 @@ internal fun UnreadDivider(modifier: Modifier = Modifier) {
     }
 }
 
-/** A system message as a centred caption on sand (11 section 6.8). */
+/**
+ * A system message as a centred caption (11 section 6.8): a gold diamond and the words in a
+ * hairline outline with no fill, so it never reads as the other family's sand bubble.
+ */
 @Composable
 internal fun SystemLine(
     row: SystemRow,
@@ -135,20 +139,24 @@ internal fun SystemLine(
         contentAlignment = Alignment.Center,
     ) {
         Surface(
-            color = KrTheme.tonal,
+            color = Color.Transparent,
             contentColor = if (linked) MaterialTheme.colorScheme.primary else KrTheme.colors.textSecondary,
             shape = shape,
+            border = BorderStroke(Strokes.hairline, MaterialTheme.colorScheme.outlineVariant),
             modifier = Modifier.widthIn(max = SystemLineWidth),
         ) {
-            Box(
+            Row(
                 link.padding(horizontal = Spacing.s16, vertical = Spacing.s8),
-                contentAlignment = Alignment.Center,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s8, Alignment.CenterHorizontally),
             ) {
+                // On the first line when the words wrap, as in a heading.
+                FirstLineMark(KrType.caption) { Diamond() }
                 Text(
                     text = row.text,
                     style = KrType.caption,
                     textAlign = TextAlign.Center,
                     textDecoration = if (linked) TextDecoration.Underline else null,
+                    modifier = Modifier.weight(1f, fill = false),
                 )
             }
         }

@@ -97,12 +97,12 @@ internal fun MyContactSection(
                 }
             } else {
                 Text(text(R.string.chat_connection_my_contact_none, "name" to name))
-                if (canEngage) {
+                // While the suggestion above shows, its button is the one "Share contact details".
+                if (canEngage && !hinted) {
                     KrButton(
                         text = stringResource(R.string.chat_connection_my_contact_share),
                         onClick = onShare,
-                        // One primary in the area: the suggestion above has it while it shows.
-                        variant = if (hinted) KrButtonVariant.SECONDARY else KrButtonVariant.PRIMARY,
+                        variant = KrButtonVariant.PRIMARY,
                         size = KrButtonSize.LARGE,
                         icon = Icons.Outlined.ContactPhone,
                         enabled = online,

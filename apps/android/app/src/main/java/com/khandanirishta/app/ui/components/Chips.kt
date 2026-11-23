@@ -15,6 +15,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
@@ -162,7 +163,11 @@ fun <T> SingleChoiceChips(
     }
 }
 
-/** A chosen value that a tap takes away: filters, multi-selects. */
+/**
+ * A chosen value with a way to take it away: filters, multi-selects. Without [onClick] a tap
+ * anywhere removes it. With [onClick] the chip does that, and only its close control (48, named
+ * [removeLabel]) removes, so a tap to read a search filter does not drop it and search again.
+ */
 @Composable
 fun KrRemovableChip(
     text: String,
@@ -170,11 +175,12 @@ fun KrRemovableChip(
     onRemove: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    onClick: (() -> Unit)? = null,
 ) {
     val colors = MaterialTheme.colorScheme
     InputChip(
         selected = false,
-        onClick = onRemove,
+        onClick = onClick ?: onRemove,
         enabled = enabled,
         shape = MaterialTheme.shapes.large,
         label = {
@@ -185,7 +191,17 @@ fun KrRemovableChip(
             )
         },
         trailingIcon = {
-            Icon(Icons.Outlined.Close, contentDescription = null, modifier = Modifier.size(Sizes.iconSmall))
+            if (onClick == null) {
+                Icon(Icons.Outlined.Close, contentDescription = null, modifier = Modifier.size(Sizes.iconSmall))
+            } else {
+                IconButton(onClick = onRemove, enabled = enabled, modifier = Modifier.size(Sizes.touch)) {
+                    Icon(
+                        Icons.Outlined.Close,
+                        contentDescription = removeLabel,
+                        modifier = Modifier.size(Sizes.iconSmall),
+                    )
+                }
+            }
         },
         colors =
             InputChipDefaults.inputChipColors(
@@ -195,11 +211,14 @@ fun KrRemovableChip(
             ),
         border = BorderStroke(Strokes.hairline, colors.outline),
         modifier =
-            modifier
-                .semantics {
+            if (onClick == null) {
+                modifier.semantics {
                     contentDescription = removeLabel
                     role = Role.Button
-                }.heightIn(min = Sizes.touch),
+                }
+            } else {
+                modifier
+            }.heightIn(min = Sizes.touch),
     )
 }
 

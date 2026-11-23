@@ -102,7 +102,9 @@ fun SectionHeading(
             verticalArrangement = Arrangement.spacedBy(Spacing.s4),
         ) {
             if (ornament == HeadingOrnament.RULE) OrnamentRule()
-            val heading = Modifier.semantics { heading() }
+            // Merged, so TalkBack lands on one node that is the heading, not on the text inside a
+            // diamond row that carries the flag alone.
+            val heading = Modifier.semantics(mergeDescendants = true) { heading() }
             if (ornament == HeadingOrnament.DIAMOND) {
                 DiamondTitle(title, modifier = heading, style = style)
             } else {

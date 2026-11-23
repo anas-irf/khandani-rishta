@@ -170,7 +170,8 @@ internal fun MessageBubble(
                 interactionSource = press,
                 // Drawn inside the bubble, so it follows its shape.
                 indication = null,
-                onClickLabel = if (failed) retryLabel else null,
+                // Offline a tap does nothing, so TalkBack does not offer to retry.
+                onClickLabel = if (failed && online) retryLabel else null,
                 onLongClickLabel = optionsLabel,
                 onLongClick = { menuOpen = true },
                 onClick = { if (failed && online) actions.retry(item) },

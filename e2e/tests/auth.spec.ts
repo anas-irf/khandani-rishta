@@ -6,7 +6,9 @@ test.describe('sign-in', () => {
 
     expect(response?.status()).toBe(200)
     await expect(page).toHaveTitle('Sign in | Khandani Rishta')
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Sign in or create a profile')
+    // One page heading: ours when Clerk is not configured (pull request builds), Clerk's own once
+    // its card loads (deployed sites).
+    await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1)
     await expect(page.getByRole('link', { name: 'Khandani Rishta home' })).toHaveAttribute(
       'href',
       '/',

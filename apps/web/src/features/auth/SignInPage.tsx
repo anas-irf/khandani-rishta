@@ -29,7 +29,8 @@ export function SignInPage({ redirectUrl }: { redirectUrl?: string }) {
         <Wordmark />
       </Link>
       <main id="main" className="flex w-full max-w-[28rem] flex-col items-center gap-6">
-        <h1 className="sr-only">{t('title')}</h1>
+        {/* Clerk's card brings its own visible h1, so this one is only for the other cards. */}
+        {(isMockMode || !clerkEnabled) && <h1 className="sr-only">{t('title')}</h1>}
         {isMockMode ? (
           <MockSignIn target={target} />
         ) : clerkEnabled ? (

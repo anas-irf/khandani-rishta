@@ -43,6 +43,10 @@ export function buildContentSecurityPolicy({
   const apiSocket = api ? api.replace(/^http/, 'ws') : null
   const clerk = clerkPublishableKey ? clerkFrontendApiHost(clerkPublishableKey) : null
   const clerkOrigin = clerk ? `https://${clerk}` : null
+  // Clerk's bot and fraud protection (Clerk's CSP guide). Its hosts also answer on ports other
+  // than 443, hence the port wildcard for connections.
+  const clerkProtect = clerk ? 'https://*.protect.clerk.com' : null
+  const clerkProtectConnect = clerk ? 'https://*.protect.clerk.com:*' : null
   const r2 = 'https://*.r2.cloudflarestorage.com'
   const sentry = 'https://*.sentry.io'
   const turnstile = 'https://challenges.cloudflare.com'
@@ -54,16 +58,17 @@ export function buildContentSecurityPolicy({
       nonce ? `'nonce-${nonce}'` : null,
       ...scriptHashes.map((hash) => `'${hash}'`),
       clerkOrigin,
+      clerkProtect,
       turnstile,
     ],
     // Clerk's components and the toast library inject styles at run time.
     'style-src': ["'self'", "'unsafe-inline'"],
     'img-src': ["'self'", 'data:', 'blob:', r2, 'https://img.clerk.com'],
     'font-src': ["'self'", 'data:'],
-    'connect-src': ["'self'", api, apiSocket, clerkOrigin, r2, sentry],
+    'connect-src': ["'self'", api, apiSocket, clerkOrigin, clerkProtectConnect, r2, sentry],
     'media-src': ["'self'", 'blob:'],
     'worker-src': ["'self'", 'blob:'],
-    'frame-src': [turnstile],
+    'frame-src': [turnstile, clerkProtect],
     'frame-ancestors': ["'none'"],
     'base-uri': ["'self'"],
     'form-action': ["'self'"],

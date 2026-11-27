@@ -34,11 +34,12 @@ describe('buildContentSecurityPolicy (17 section 14)', () => {
       ?.split(' ')
       .slice(1)
 
-  it('allows only own scripts, the nonce, Clerk and Turnstile', () => {
+  it('allows only own scripts, the nonce, Clerk, its bot protection and Turnstile', () => {
     expect(directive('script-src')).toEqual([
       "'self'",
       "'nonce-abc123'",
       'https://happy-fox-12.clerk.accounts.dev',
+      'https://*.protect.clerk.com',
       'https://challenges.cloudflare.com',
     ])
   })
@@ -49,6 +50,7 @@ describe('buildContentSecurityPolicy (17 section 14)', () => {
       'https://api.example.com',
       'wss://api.example.com',
       'https://happy-fox-12.clerk.accounts.dev',
+      'https://*.protect.clerk.com:*',
       'https://*.r2.cloudflarestorage.com',
       'https://*.sentry.io',
     ])
@@ -57,7 +59,10 @@ describe('buildContentSecurityPolicy (17 section 14)', () => {
   it('forbids framing and plugins', () => {
     expect(directive('frame-ancestors')).toEqual(["'none'"])
     expect(directive('object-src')).toEqual(["'none'"])
-    expect(directive('frame-src')).toEqual(['https://challenges.cloudflare.com'])
+    expect(directive('frame-src')).toEqual([
+      'https://challenges.cloudflare.com',
+      'https://*.protect.clerk.com',
+    ])
   })
 
   it('works without Clerk', () => {
@@ -67,6 +72,7 @@ describe('buildContentSecurityPolicy (17 section 14)', () => {
     })
     expect(withoutClerk).toContain("script-src 'self' 'nonce-n' https://challenges.cloudflare.com")
     expect(withoutClerk).toContain('ws://localhost:8787')
+    expect(withoutClerk).not.toContain('protect.clerk.com')
   })
 })
 

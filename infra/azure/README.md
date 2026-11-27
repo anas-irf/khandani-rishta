@@ -41,7 +41,19 @@ CREATE DATABASE khandani_prod OWNER khandani_prod;
 REVOKE CONNECT ON DATABASE khandani_prod FROM PUBLIC;
 ```
 
-Then, connected to `khandani_prod`, run `CREATE EXTENSION pg_stat_statements;`. Remove your IP from the firewall once the VM's IP is added (step 3).
+Then, still as the admin user but connected to `khandani_prod`:
+
+```sql
+-- On Azure the public schema of a new database belongs to azure_pg_admin, so the API's
+-- migrations fail with "permission denied for schema public" until the app role owns it.
+ALTER SCHEMA public OWNER TO khandani_prod;
+-- Only members of azure_pg_admin may create extensions. Creating them here makes the
+-- `CREATE EXTENSION IF NOT EXISTS` in the first migration a no-op.
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+```
+
+Remove your IP from the firewall once the VM's IP is added (step 3).
 
 ## 3. The VM
 

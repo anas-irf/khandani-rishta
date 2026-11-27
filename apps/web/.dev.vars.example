@@ -1,6 +1,6 @@
 # Copy to .dev.vars for local development. Never commit real values.
-# Server-side secrets for the Worker (read during `pnpm dev`). On staging and
-# production, upload each value with `wrangler secret put <NAME> --env <env>`.
+# Server-side secrets for the Worker (read during `pnpm dev`). In production, upload
+# each value with `wrangler secret put <NAME>`.
 
 # Clerk secret key of the development instance (sk_test_...), used by clerkMiddleware().
 CLERK_SECRET_KEY=sk_test_replace_me

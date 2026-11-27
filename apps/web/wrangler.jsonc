@@ -18,22 +18,9 @@
   "observability": {
     "enabled": true
   },
-  // Production. Uncomment once khandanirishta.app is a zone in the Cloudflare account:
-  // "routes": [
-  //   { "pattern": "khandanirishta.app", "custom_domain": true },
-  //   { "pattern": "www.khandanirishta.app", "custom_domain": true }
-  // ],
-  "env": {
-    // Built with CLOUDFLARE_ENV=staging, then deployed with `wrangler deploy`.
-    "staging": {
-      "name": "khandani-web-staging",
-      "vars": {
-        "CLERK_SIGN_IN_URL": "/sign-in",
-        "CLERK_SIGN_UP_URL": "/sign-in",
-        "CLERK_SIGN_IN_FALLBACK_REDIRECT_URL": "/home",
-        "CLERK_SIGN_UP_FALLBACK_REDIRECT_URL": "/home"
-      }
-      // "routes": [{ "pattern": "staging.khandanirishta.app", "custom_domain": true }]
-    }
-  }
+  // Production is the only deployed environment.
+  "routes": [
+    { "pattern": "khandanirishta.app", "custom_domain": true },
+    { "pattern": "www.khandanirishta.app", "custom_domain": true }
+  ]
 }

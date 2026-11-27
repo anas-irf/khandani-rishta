@@ -1,74 +1,70 @@
 # Azure setup runbook
 
-How to create and run the two API VMs (production `B2ats_v2`, staging `B1s`) and the shared PostgreSQL server. Sizes, limits and the reasons behind them are in [docs/tech-stack.md](../../docs/tech-stack.md) (section 12).
+How to create and run the production API VM (`B2ats_v2`) and its PostgreSQL server. There is no staging environment: every merge to `main` deploys to production. Sizes, limits and the reasons behind them are in [docs/tech-stack.md](../../docs/tech-stack.md) (section 12).
 
 | Path | What it is |
 |---|---|
-| `cloud-init.yaml` | First-boot setup for both VMs: service account, swap, journald limit, `cloudflared` |
+| `cloud-init.yaml` | First-boot setup for the VM: service account, swap, journald limit, `cloudflared` |
 | `systemd/` | Units for the API and the nightly database dump. Each deploy installs them |
-| `bin/deploy.sh` | Activates a release on a VM and rolls back if it doesn't become ready |
+| `bin/deploy.sh` | Activates a release on the VM and rolls back if it doesn't become ready |
 | `bin/pg-backup.sh` | Streams `pg_dump` output to Cloudflare R2 |
-| `env/*.env.example` | Templates for the env files on the VMs |
+| `env/*.env.example` | Templates for the env files on the VM |
+
+Everything lives in the resource group `rg-khandani` in **India South Central** (`indiasouthcentral`), the closest region the Azure for Students policy allows ("Allowed resource deployment regions": Sweden Central, India South Central, East Asia, Poland Central, Korea Central).
+
+Keep every generated secret in a file outside the repository (the repository is public) and in your password manager.
 
 ## 1. Before you start
 
-- Check which regions the subscription allows: Azure portal > Policy > Assignments > "Allowed resource deployment regions". Use one region for everything.
-- Create a budget alert at $5: Cost Management > Budgets.
-- Create an SSH key pair for the VM admin user (`ssh-keygen -t ed25519`).
-- Add the domain to Cloudflare (free plan).
+- Register the resource providers once: `Microsoft.Compute`, `Microsoft.Network`, `Microsoft.DBforPostgreSQL`, `Microsoft.CognitiveServices` (`az provider register -n <name>`).
+- Create a monthly budget of $5 with alerts at 80% and 100%: Cost Management > Budgets.
+- Create an SSH key pair for the VM admin user (`ssh-keygen -t ed25519`) and a second one for GitHub Actions deploys.
+- Add the domain to Cloudflare (free plan) and point its nameservers there.
 
-## 2. PostgreSQL server (once)
+## 2. PostgreSQL server
 
-Create "Azure Database for PostgreSQL flexible server":
+```sh
+az postgres flexible-server create -g rg-khandani -n pg-khandani -l indiasouthcentral \
+  --tier Burstable --sku-name Standard_B1ms --storage-size 32 --storage-auto-grow Disabled \
+  --version 18 --zonal-resiliency Disabled --backup-retention 7 --geo-redundant-backup Disabled \
+  --public-access None --admin-user kradmin --admin-password '<strong password>'
+az postgres flexible-server parameter set -g rg-khandani -s pg-khandani \
+  --name azure.extensions --value PG_TRGM,PG_STAT_STATEMENTS
+```
 
-- Compute: Burstable `B1MS`. Storage: 32 GiB, auto-grow off. PostgreSQL 18. High availability off. Backups: 7 days, locally redundant.
-- Networking: public access. Firewall rules for the two VM IPs come in step 3.
-- Server parameter `azure.extensions`: `PG_TRGM,PG_STAT_STATEMENTS` (add `POSTGIS` only if location search is needed).
-
-Connect as the admin user and create one database and one login per environment:
+Add a temporary firewall rule for your own IP, connect as the admin user and create the application login and database:
 
 ```sql
 CREATE ROLE khandani_prod LOGIN PASSWORD '<strong password>';
-CREATE ROLE khandani_staging LOGIN PASSWORD '<strong password>';
-GRANT khandani_prod, khandani_staging TO CURRENT_USER;
+GRANT khandani_prod TO CURRENT_USER;
 CREATE DATABASE khandani_prod OWNER khandani_prod;
-CREATE DATABASE khandani_staging OWNER khandani_staging;
 REVOKE CONNECT ON DATABASE khandani_prod FROM PUBLIC;
-REVOKE CONNECT ON DATABASE khandani_staging FROM PUBLIC;
 ```
 
-Then, connected to `khandani_prod`, run `CREATE EXTENSION pg_stat_statements;`.
+Then, connected to `khandani_prod`, run `CREATE EXTENSION pg_stat_statements;`. Remove your IP from the firewall once the VM's IP is added (step 3).
 
-## 3. The two VMs
+## 3. The VM
 
-Create each VM ("Virtual machine" in the portal):
+```sh
+az vm create -g rg-khandani -n vm-khandani-prod -l indiasouthcentral \
+  --image Canonical:ubuntu-26_04-lts:server:latest --size Standard_B2ats_v2 \
+  --admin-username azureuser --ssh-key-values ~/.ssh/<admin key>.pub \
+  --os-disk-size-gb 64 --storage-sku Premium_LRS \
+  --public-ip-sku Standard --public-ip-address-allocation static \
+  --nsg-rule NONE --custom-data infra/azure/cloud-init.yaml
+```
 
-| Setting | Production | Staging |
-|---|---|---|
-| Name | `vm-khandani-prod` | `vm-khandani-staging` |
-| Size | `Standard_B2ats_v2` | `Standard_B1s` |
-| Image | Ubuntu Server 26.04 LTS, x64 | same |
-| Authentication | SSH public key, user `azureuser` | same |
-| Inbound ports | SSH (22), from your IP only, for setup | same |
-| OS disk | Premium SSD, **64 GiB** (the free P6 size, not the 30 GiB default) | same |
-| Public IP | Standard, static | same |
-| Advanced > Custom data | contents of `cloud-init.yaml` | same |
+- The 64 GiB Premium SSD is the free P6 size. The 30 GiB default is billed.
+- Allow SSH (22) in the VM's network security group from your own IP only, for the setup in steps 4 and 5.
+- Add the VM's public IP to the PostgreSQL firewall.
 
-Afterwards, add each VM's public IP to the PostgreSQL firewall.
+## 4. Cloudflare Tunnel and Access
 
-## 4. Cloudflare Tunnel and Access (each VM)
-
-1. Cloudflare Zero Trust > Networks > Tunnels: create a tunnel (`khandani-prod`, `khandani-staging`) and copy its token.
+1. Zero Trust > Networks > Tunnels: create a tunnel `khandani-prod` and copy its token (or use the Cloudflare API with a token that has Cloudflare Tunnel Edit).
 2. On the VM: `sudo cloudflared service install <token>`.
-3. Add the tunnel's public hostnames:
-
-   | Hostname | Production | Staging |
-   |---|---|---|
-   | API | `api.khandanirishta.app` to `http://localhost:8080` | `api-staging.khandanirishta.app` to `http://localhost:8080` |
-   | SSH | `ssh.khandanirishta.app` to `ssh://localhost:22` | `ssh-staging.khandanirishta.app` to `ssh://localhost:22` |
-
-4. Zero Trust > Access > Applications: add a self-hosted application for each SSH hostname. Allow your own email (one-time PIN), plus a Service Auth rule for a service token used by GitHub Actions (Access > Service credentials > Service tokens).
-5. Remove the SSH rule from the VM's network security group. From now on, connect through Access (install `cloudflared` locally first):
+3. Add the tunnel's public hostnames: `api.khandanirishta.app` to `http://localhost:8080`, `ssh.khandanirishta.app` to `ssh://localhost:22`.
+4. Zero Trust > Access > Applications: add a self-hosted application for `ssh.khandanirishta.app`. Allow your own email (one-time PIN), plus a Service Auth rule for a service token used by GitHub Actions (Access > Service credentials > Service tokens).
+5. Remove the SSH rule from the VM's network security group, so it has no inbound rules. From now on, connect through Access (install `cloudflared` locally first):
 
    ```sh
    ssh -o ProxyCommand="cloudflared access ssh --hostname %h" azureuser@ssh.khandanirishta.app
@@ -76,42 +72,41 @@ Afterwards, add each VM's public IP to the PostgreSQL firewall.
 
 ## 5. Env files
 
-On each VM, create the API env file from `env/api.env.example`:
+On the VM, create the API env file from `env/api.env.example`:
 
 ```sh
 sudo install -m 640 -o root -g khandani /dev/null /etc/khandani/api.env
 sudoedit /etc/khandani/api.env
 ```
 
-On the production VM only, do the same for `/etc/khandani/backup.env` from `env/backup.env.example`. Keep a copy of every env file in your password manager.
+Do the same for `/etc/khandani/backup.env` from `env/backup.env.example`. Keep a copy of every env file in your password manager.
 
 ## 6. GitHub settings for deploys
 
-Create the environments `staging` and `production` (Settings > Environments). Limit `production` to the `main` branch.
+Create the environment `production` (Settings > Environments) and limit it to the `main` branch.
 
 | Name | Kind | Where | Value |
 |---|---|---|---|
-| `SSH_HOST` | Variable | Each environment | `ssh.khandanirishta.app` or `ssh-staging.khandanirishta.app` |
-| `SSH_USER` | Variable | Each environment | `azureuser` |
-| `API_BASE_URL` | Variable | Each environment | `https://api.khandanirishta.app` or `https://api-staging.khandanirishta.app`. Also the target of the API smoke test after each deploy |
-| `WEB_URL` | Variable | Each environment | `https://khandanirishta.app` or `https://staging.khandanirishta.app` (or the `workers.dev` address until the domain exists). The web smoke tests run against it after each deploy; leave it unset to skip them |
-| `CLERK_PUBLISHABLE_KEY` | Variable | Each environment | Built into the web app. Staging: the Development instance key (`pk_test_...`, `clerk env pull --app app_3MNual4Fg0860GLX8xfhawZOecL`). Production: the Production instance key (`pk_live_...`) |
-| `SENTRY_DSN_WEB` | Variable | Each environment | DSN of the Sentry web project, used by the browser and the Worker. Empty turns reporting off |
-| `SSH_PRIVATE_KEY` | Secret | Each environment | A deploy key whose public half is in the VM's `~/.ssh/authorized_keys` |
-| `SSH_KNOWN_HOSTS` | Secret | Each environment | `ssh.khandanirishta.app ` followed by the VM's `/etc/ssh/ssh_host_ed25519_key.pub` |
-| `CF_ACCESS_CLIENT_ID`, `CF_ACCESS_CLIENT_SECRET` | Secret | Each environment | The Access service token |
-| `CLOUDFLARE_API_TOKEN` | Secret | Each environment | API token with Workers Scripts Edit and R2 Edit |
+| `SSH_HOST` | Variable | `production` | `ssh.khandanirishta.app` |
+| `SSH_USER` | Variable | `production` | `azureuser` |
+| `API_BASE_URL` | Variable | `production` | `https://api.khandanirishta.app`. Also the target of the API smoke test after each deploy |
+| `WEB_URL` | Variable | `production` | `https://khandanirishta.app`. The web smoke tests run against it after each deploy; leave it unset to skip them |
+| `CLERK_PUBLISHABLE_KEY` | Variable | `production` | The Clerk Production instance key (`pk_live_...`), built into the web app |
+| `SENTRY_DSN_WEB` | Variable | `production` | DSN of the Sentry web project, used by the browser and the Worker. Empty turns reporting off |
+| `SSH_PRIVATE_KEY` | Secret | `production` | The deploy key whose public half is in the VM's `~/.ssh/authorized_keys` |
+| `SSH_KNOWN_HOSTS` | Secret | `production` | `ssh.khandanirishta.app ` followed by the VM's `/etc/ssh/ssh_host_ed25519_key.pub` |
+| `CF_ACCESS_CLIENT_ID`, `CF_ACCESS_CLIENT_SECRET` | Secret | `production` | The Access service token |
+| `CLOUDFLARE_API_TOKEN` | Secret | `production` | API token with Workers Scripts Edit, Workers Routes Edit and R2 Edit |
 | `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | Secret | `production` | Android release signing |
 | `CLOUDFLARE_ACCOUNT_ID` | Variable | Repository | Cloudflare account ID |
 | `DEPLOY_ENABLED` | Variable | Repository | `true` once everything above exists. Until then, workflows build and test but never deploy |
 
-The web Worker reads one secret at run time, the Clerk secret key of its instance. Set it once per environment from `apps/web`: `pnpm exec wrangler secret put CLERK_SECRET_KEY` for production and `pnpm exec wrangler secret put CLERK_SECRET_KEY --env staging` for staging.
+The web Worker reads one secret at run time, the Clerk secret key of the Production instance. Set it from `apps/web`: `pnpm exec wrangler secret put CLERK_SECRET_KEY`.
 
 ## 7. First deploy
 
-- Staging: merge to `main`. The CD workflow checks and deploys the changed apps automatically.
-- Production: Actions > CD > Run workflow on `main`, with environment `production`.
-- Then turn on backups on the production VM and test them once:
+- Set `DEPLOY_ENABLED` to `true`, then Actions > CD > Run workflow on `main`. After that, every merge to `main` deploys.
+- Turn on backups on the VM and test them once:
 
   ```sh
   sudo systemctl enable --now pg-backup.timer

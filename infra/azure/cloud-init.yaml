@@ -7,7 +7,6 @@ package_upgrade: true
 packages:
   - curl
   - postgresql-client
-  - rclone
   - unattended-upgrades
 
 groups:

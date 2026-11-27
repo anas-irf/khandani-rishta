@@ -7,7 +7,7 @@ How to create and run the production API VM (`B2ats_v2`) and its PostgreSQL serv
 | `cloud-init.yaml` | First-boot setup for the VM: service account, swap, journald limit, `cloudflared` |
 | `systemd/` | Units for the API and the nightly database dump. Each deploy installs them |
 | `bin/deploy.sh` | Activates a release on the VM and rolls back if it doesn't become ready |
-| `bin/pg-backup.sh` | Streams `pg_dump` output to Cloudflare R2 |
+| `bin/pg-backup.sh` | Dumps the database and uploads it to Cloudflare R2 with a signed `curl` PUT |
 | `env/*.env.example` | Templates for the env files on the VM |
 
 Everything lives in the resource group `rg-khandani` in **India South Central** (`indiasouthcentral`), the closest region the Azure for Students policy allows ("Allowed resource deployment regions": Sweden Central, India South Central, East Asia, Poland Central, Korea Central).

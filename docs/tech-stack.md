@@ -224,7 +224,7 @@ Each app commits an `.env.example`. Real env files are git-ignored (section 15).
 Backups:
 
 1. **Azure automatic backups:** 7-day point-in-time restore of the whole server (both databases), inside the free 32 GiB of backup storage.
-2. **Nightly dump outside Azure:** a systemd timer on the production VM runs `pg_dump` (custom format) of `khandani_prod` and uploads it to the R2 bucket `kr-backups` with `rclone`. An R2 lifecycle rule deletes dumps after 30 days. This copy lives outside Azure on purpose, so it survives if the student subscription is disabled.
+2. **Nightly dump outside Azure:** a systemd timer on the production VM runs `pg_dump` (custom format) of `khandani_prod` and uploads it to the R2 bucket `kr-backups` with one signed `curl` PUT. An R2 lifecycle rule deletes dumps after 30 days. This copy lives outside Azure on purpose, so it survives if the student subscription is disabled.
 3. Practice a full restore into a local database before launch.
 
 ## 8. Web app
@@ -374,7 +374,7 @@ Subscription: Azure for Students ($100 credit plus free services for 12 months).
 |---|---|
 | `khandani-api.service` | systemd unit running `/opt/khandani/current/khandani-api` as an unprivileged user, with `EnvironmentFile=/etc/khandani/api.env` and `Restart=always` |
 | `cloudflared.service` | A remotely managed Tunnel, installed with its token. Hostnames: `api.khandanirishta.app` and `ssh.khandanirishta.app`. The API route points to `http://localhost:8080`, the SSH route to `ssh://localhost:22` behind Cloudflare Access |
-| `pg-backup.timer` | Nightly `pg_dump` of `khandani_prod`, uploaded to R2 `kr-backups` with `rclone` |
+| `pg-backup.timer` | Nightly `pg_dump` of `khandani_prod`, uploaded to R2 `kr-backups` with a signed `curl` PUT (Ubuntu's `rclone` 1.60 fails against R2) |
 | Env files | `/etc/khandani/api.env` and `/etc/khandani/backup.env`. Owned by root, readable only by the service's group, edited over SSH (section 15) |
 | OS upkeep | `unattended-upgrades` for security patches, a 2 GiB swap file, journald capped at 1 GiB |
 

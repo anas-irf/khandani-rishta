@@ -10,8 +10,7 @@ flowchart LR
     B[Branch] -->|git hooks| P[Pull request]
     P -->|CI: checks per changed app| G{CI passed}
     G -->|squash merge| M[main]
-    M -->|CD: checks again, build| S[Staging deploy + smoke tests]
-    S -->|Run workflow by hand| PR[Production deploy + smoke tests]
+    M -->|CD: checks again, build| PR[Production deploy + smoke tests]
     T[android-v* tag] -->|Android release| R[Signed APK on R2 + GitHub Release]
 ```
 
@@ -20,16 +19,18 @@ flowchart LR
 2. Open a pull request. Its title follows [Conventional Commits](#commit-messages), because the
    squash merge turns it into the commit on `main`.
 3. CI runs. Merge once **CI passed** is green.
-4. CD deploys the changed apps to staging and smoke-tests them.
-5. Production deploys are started by hand for a commit that is already on staging.
+4. CD deploys the changed apps to production and smoke-tests them. There is no staging
+   environment: a merge to `main` is a release. If the new API release fails its readiness
+   check, `deploy.sh` rolls the VM back to the previous release.
 
 ## Workflows
 
 | File | Runs on | What it does |
 |---|---|---|
 | `ci.yml` | Every pull request | Detects which apps changed, runs their checks, plus the repository checks below. Ends with **CI passed** |
-| `cd.yml` | Push to `main`; by hand | Re-runs the checks for changed apps, deploys them to staging (API first, then web), smoke-tests both. By hand: deploys the chosen apps to staging or production |
+| `cd.yml` | Push to `main`; by hand | Re-runs the checks for changed apps, deploys them to production (API first, then web), smoke-tests both. By hand: redeploys the chosen apps |
 | `release-android.yml` | `android-v*` tags | Android checks, then a signed release APK to R2 and a GitHub Release with its SHA-256 |
+| `usage-watch.yml` | Daily; by hand | Checks Cloudflare R2 and Workers usage against the free limits, and renewal dates (`scripts/ci/usage-watch.mjs`). Fails, so GitHub emails the owner, when something is close |
 | `security.yml` | Mondays; by hand | `pnpm audit`, `cargo deny check advisories` and zizmor against `main`, so newly published advisories surface without a code change |
 | `_web.yml`, `_api.yml`, `_android.yml` | Called by the workflows above | The per-app checks, shared so pull requests and deploys run exactly the same steps |
 
@@ -73,7 +74,7 @@ traces, screenshots and videos of failures, is uploaded as the `playwright-repor
 | Fix formatting and safe lint issues | `pnpm format` |
 | Unit tests | `pnpm test` (coverage: `pnpm --filter @khandani/web test:coverage`) |
 | End-to-end tests (builds the web app first) | `pnpm test:e2e` |
-| End-to-end tests against a deployed site | `E2E_BASE_URL=https://staging.khandanirishta.app pnpm --filter @khandani/e2e e2e:smoke` |
+| End-to-end tests against a deployed site | `E2E_BASE_URL=https://khandanirishta.app pnpm --filter @khandani/e2e e2e:smoke` |
 | Playwright report of the last run | `pnpm --filter @khandani/e2e e2e:report` |
 | API | `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo nextest run` (or `cargo test`), `cargo deny check`, `cargo shear` (in `apps/api`, database running) |
 | Android | `./gradlew spotlessCheck lintDebug testDebugUnitTest assembleDebug` (in `apps/android`); `./gradlew spotlessApply` fixes formatting |

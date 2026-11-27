@@ -4,7 +4,7 @@ import type { Options } from './tests/fixtures'
 const isCI = Boolean(process.env.CI)
 
 /**
- * Address of a deployed site to test, for example the staging URL after a deploy. When it
+ * Address of a deployed site to test, for example the production URL after a deploy. When it
  * is not set, Playwright serves the local production build (`pnpm build:web` first) itself.
  */
 const deployedUrl = process.env.E2E_BASE_URL

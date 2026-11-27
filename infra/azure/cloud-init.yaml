@@ -1,5 +1,5 @@
 #cloud-config
-# First-boot setup for both API VMs (production and staging).
+# First-boot setup for the API VM.
 # Paste this file into "Custom data" when creating the VM in the Azure portal.
 
 package_update: true

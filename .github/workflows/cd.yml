@@ -1,9 +1,10 @@
-# Continuous delivery from main.
+# Continuous delivery from main. There is one environment, production.
 #
 # - Every push to main re-runs the checks for the apps it changed, then deploys those apps to
-#   staging: the API first, then the web app, each followed by a smoke test.
+#   production: the API first, then the web app, each followed by a smoke test. A release that
+#   fails the API readiness check is rolled back on the VM by deploy.sh.
 # - Running this workflow by hand (Actions > CD > Run workflow, on main) checks and deploys the
-#   chosen apps to staging or production.
+#   chosen apps, for example to redeploy after an env file change.
 #
 # Deploys stay off until the repository variable DEPLOY_ENABLED is 'true'. Until then this
 # workflow only runs the checks. Setup steps: infra/azure/README.md.
@@ -14,11 +15,6 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
-      environment:
-        description: Environment to deploy to
-        type: choice
-        options: [staging, production]
-        default: staging
       apps:
         description: Apps to deploy
         type: choice
@@ -39,7 +35,6 @@ jobs:
     runs-on: ubuntu-26.04
     timeout-minutes: 5
     outputs:
-      environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'staging' }}
       web: >-
         ${{ (github.event_name == 'workflow_dispatch' && inputs.apps != 'api')
         || steps.filter.outputs.web == 'true' || steps.filter.outputs.pipeline == 'true' }}
@@ -108,16 +103,16 @@ jobs:
           cache-disabled: true
 
   deploy-api:
-    name: Deploy API (${{ needs.changes.outputs.environment }})
+    name: Deploy API
     needs: [changes, api]
     if: vars.DEPLOY_ENABLED == 'true' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-26.04
     timeout-minutes: 15
     environment:
-      name: ${{ needs.changes.outputs.environment }}
+      name: production
       url: ${{ vars.API_BASE_URL }}
     concurrency:
-      group: deploy-api-${{ needs.changes.outputs.environment }}
+      group: deploy-api-production
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -148,7 +143,7 @@ jobs:
         run: curl --fail --silent --show-error --retry 5 --retry-delay 5 --retry-all-errors "$API_BASE_URL/readyz"
 
   deploy-web:
-    name: Deploy web (${{ needs.changes.outputs.environment }})
+    name: Deploy web
     needs: [changes, web, api, deploy-api]
     # Runs after the API deploy, or without it when the API had nothing to deploy. A skipped API
     # job means the API was not selected; a failed one blocks this deploy, because a failed API
@@ -161,10 +156,10 @@ jobs:
     runs-on: ubuntu-26.04
     timeout-minutes: 20
     environment:
-      name: ${{ needs.changes.outputs.environment }}
+      name: production
       url: ${{ vars.WEB_URL }}
     concurrency:
-      group: deploy-web-${{ needs.changes.outputs.environment }}
+      group: deploy-web-production
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -176,31 +171,23 @@ jobs:
         with:
           cache: "false"
 
-      # Each environment needs its own build: these public values are baked into the bundle
-      # (17 section 15). Without CLERK_PUBLISHABLE_KEY the app treats everyone as signed out.
+      # These public values are baked into the bundle at build time (17 section 15). Without
+      # CLERK_PUBLISHABLE_KEY the app treats everyone as signed out.
       - name: Build
         env:
-          DEPLOY_ENVIRONMENT: ${{ needs.changes.outputs.environment }}
           VITE_API_BASE_URL: ${{ vars.API_BASE_URL }}
-          VITE_APP_ENV: ${{ needs.changes.outputs.environment }}
+          VITE_APP_ENV: production
           VITE_CLERK_PUBLISHABLE_KEY: ${{ vars.CLERK_PUBLISHABLE_KEY }}
           VITE_SENTRY_DSN: ${{ vars.SENTRY_DSN_WEB }}
-        run: |
-          if [ "$DEPLOY_ENVIRONMENT" = staging ]; then export CLOUDFLARE_ENV=staging; fi
-          pnpm build:web
+        run: pnpm build:web
 
-      # The Cloudflare Vite plugin writes the chosen environment into the generated config, and
-      # `wrangler deploy` reads that file. Stop here if the build names the wrong Worker, rather
-      # than overwrite production with a staging build or the other way round.
-      - name: Check the build targets the right Worker
-        env:
-          DEPLOY_ENVIRONMENT: ${{ needs.changes.outputs.environment }}
+      # The Cloudflare Vite plugin writes the Worker config into the build, and `wrangler deploy`
+      # reads that file. Stop here if the build names another Worker.
+      - name: Check the build targets the production Worker
         run: |
-          expected=khandani-web
-          if [ "$DEPLOY_ENVIRONMENT" = staging ]; then expected=khandani-web-staging; fi
           actual="$(jq -r .name apps/web/dist/server/wrangler.json)"
-          if [ "$actual" != "$expected" ]; then
-            echo "::error::The $DEPLOY_ENVIRONMENT build names the Worker '$actual', expected '$expected'."
+          if [ "$actual" != khandani-web ]; then
+            echo "::error::The build names the Worker '$actual', expected 'khandani-web'."
             exit 1
           fi
 
@@ -227,7 +214,7 @@ jobs:
         if: ${{ failure() && steps.smoke.outcome == 'failure' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: smoke-test-report-${{ needs.changes.outputs.environment }}
+          name: smoke-test-report
           path: |
             e2e/playwright-report/
             e2e/test-results/

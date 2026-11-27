@@ -15,6 +15,10 @@ matric = "matric"
 # Bachelor of Arts, in the list of degree abbreviations.
 ba = "ba"
 
+[default.extend-identifiers]
+# Azure VM size name (2 vCPU, 4 GiB), compared in docs/tech-stack.md section 12.
+B2als_v2 = "B2als_v2"
+
 [files]
 # Generated from GeoNames: tens of thousands of place names that are not dictionary words.
 extend-exclude = ["apps/api/migrations/0012_seed_geography.sql"]

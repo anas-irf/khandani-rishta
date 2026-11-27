@@ -74,4 +74,4 @@ Work on a branch and open a pull request; `main` only changes through merged pul
 
 ## Deployment
 
-GitHub Actions deploy every merge to `main` to staging, then smoke-test it. Production deploys are started by hand from the Actions tab (CD > Run workflow). Deploys stay switched off until the repository variable `DEPLOY_ENABLED` is `true`; the steps to get there are in the [Azure runbook](infra/azure/README.md).
+There is one environment, production. GitHub Actions deploy every merge to `main` to production, then smoke-test it; a failed API readiness check rolls the server back to the previous release. To redeploy without a merge, run CD by hand from the Actions tab (CD > Run workflow). Deploys stay switched off until the repository variable `DEPLOY_ENABLED` is `true`; the steps to get there are in the [Azure runbook](infra/azure/README.md).

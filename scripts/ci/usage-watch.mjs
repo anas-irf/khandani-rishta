@@ -37,6 +37,12 @@ const REMINDERS = [
     todo: "Check the registrar's renewal price and auto-renew setting",
     warnDaysBefore: 30,
   },
+  {
+    what: 'Cloudflare Access service token github-actions-deploy expires (API deploys stop)',
+    date: '2027-11-27',
+    todo: 'Refresh it in Zero Trust > Access > Service credentials, then update CF_ACCESS_CLIENT_SECRET',
+    warnDaysBefore: 30,
+  },
 ]
 
 // R2 operation classes, from https://developers.cloudflare.com/r2/pricing/. Anything else

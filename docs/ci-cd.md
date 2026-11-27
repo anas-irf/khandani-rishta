@@ -30,6 +30,7 @@ flowchart LR
 | `ci.yml` | Every pull request | Detects which apps changed, runs their checks, plus the repository checks below. Ends with **CI passed** |
 | `cd.yml` | Push to `main`; by hand | Re-runs the checks for changed apps, deploys them to production (API first, then web), smoke-tests both. By hand: redeploys the chosen apps |
 | `release-android.yml` | `android-v*` tags | Android checks, then a signed release APK to R2 and a GitHub Release with its SHA-256 |
+| `usage-watch.yml` | Daily; by hand | Checks Cloudflare R2 and Workers usage against the free limits, and renewal dates (`scripts/ci/usage-watch.mjs`). Fails, so GitHub emails the owner, when something is close |
 | `security.yml` | Mondays; by hand | `pnpm audit`, `cargo deny check advisories` and zizmor against `main`, so newly published advisories surface without a code change |
 | `_web.yml`, `_api.yml`, `_android.yml` | Called by the workflows above | The per-app checks, shared so pull requests and deploys run exactly the same steps |
 

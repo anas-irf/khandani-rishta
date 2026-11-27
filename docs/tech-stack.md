@@ -486,7 +486,7 @@ The full pipeline, with every check and how to run it locally, is described in [
 | API logs | `tracing` JSON logs in journald on the VM (`journalctl -u khandani-api`) |
 | VM and database metrics | Azure Monitor platform metrics: CPU, CPU credits remaining, disk, network, database connections and storage |
 | Slow queries | `pg_stat_statements` |
-| Spend | Azure Cost Management budget alert, plus the Cloudflare usage page |
+| Spend and free limits | Azure: budget alerts (any spend, 80%, 100%, forecast) and metric alerts for database storage, backup storage and daily egress, all by email. Cloudflare: the daily Usage watch workflow, which fails and emails the owner near the R2 and Workers free limits or a renewal date. Cloudflare's own usage alerts need a paid plan. Details: `infra/azure/README.md` section 8 |
 | Uptime | No external uptime monitor for now. Sentry reports errors as they happen |
 
 No log-shipping agent on the VM. It would compete for RAM on a 1 GiB machine.
@@ -543,13 +543,13 @@ The Heroku student credit isn't used in this plan. It stays available as the yea
 |---|---|---|
 | Workers CPU per request (Free) | 10 ms | Render signed-in screens in the browser; upgrade to Workers Paid |
 | Workers requests (Free) | 100,000/day | Workers Paid |
-| Azure outbound data | 15 GB/month free | Files go directly between clients and R2; API compression on |
+| Azure outbound data | 15 GB/month free | Files go directly between clients and R2; API compression on; email alert above 450 MB in a day |
 | Free disk and IP allowance | Half used by the VM | At most one more small VM; no extra data disks |
 | VM memory | 1 GiB | Swap file, capped caches, no extra agents |
 | VM CPU | Burstable and credit-based | Watch "CPU Credits Remaining" in Azure Monitor |
-| PostgreSQL storage | 32 GiB free | Alert at 80% |
+| PostgreSQL storage | 32 GiB free | Email alert at 80%; auto-grow off, so it fills up instead of billing |
 | PostgreSQL CPU and connections | 1 vCore and about 50 connections | Pool of 10; no load tests against production |
-| R2 free tier | 10 GB, 1M writes, 10M reads per month | Monitor in the Cloudflare dashboard |
+| R2 free tier | 10 GB, 1M writes, 10M reads per month. No spending cap: past the free tier R2 bills the card on file | Usage watch warns at 8 GB and at 80% of the operations; 10 MB upload limit in the API; lifecycle rules clear unfinished uploads and old backups |
 | Resend free tier | 100 emails/day | Batch or digest; Resend Pro when needed |
 | Idle WebSockets | Closed by Cloudflare when idle | 30-second pings |
 | GitHub Actions once private | 3,000 minutes/month (GitHub Pro) | Path filters and cached Rust builds |

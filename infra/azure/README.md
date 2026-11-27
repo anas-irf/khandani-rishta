@@ -99,6 +99,7 @@ Create the environment `production` (Settings > Environments) and limit it to th
 | `CLOUDFLARE_API_TOKEN` | Secret | `production` | API token with Workers Scripts Edit, Workers Routes Edit and R2 Edit |
 | `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | Secret | `production` | Android release signing |
 | `CLOUDFLARE_ACCOUNT_ID` | Variable | Repository | Cloudflare account ID |
+| `CF_ANALYTICS_TOKEN` | Secret | Repository | Read-only Cloudflare token (Account Analytics Read) for the daily usage check (section 8) |
 | `DEPLOY_ENABLED` | Variable | Repository | `true` once everything above exists. Until then, workflows build and test but never deploy |
 
 The web Worker reads one secret at run time, the Clerk secret key of the Production instance. Set it from `apps/web`: `pnpm exec wrangler secret put CLERK_SECRET_KEY`.
@@ -113,6 +114,23 @@ The web Worker reads one secret at run time, the Clerk secret key of the Product
   sudo systemctl start pg-backup.service
   journalctl -u pg-backup -n 20 --no-pager
   ```
+
+## 8. Cost guards and alerts
+
+Everything is meant to cost $0. These guards make a charge, or a free limit about to run out, show up in your email.
+
+| Guard | What it does |
+|---|---|
+| Azure for Students spending limit | On by default. Azure can't charge a card; when the credit or the free year runs out, resources stop instead |
+| Budget `khandani-monthly-5usd` | Emails at any spend (1%, 5 cents), 80%, 100% and a 100% forecast of $5 a month |
+| Action group `ag-khandani-email` | Email receiver for the alerts below |
+| `alert-pg-storage-80` | PostgreSQL storage above 80% of 32 GiB. Auto-grow is off, so at 100% writes fail rather than bill |
+| `alert-pg-backup-storage` | Backup storage above 24 GiB of the free 32 GiB |
+| `alert-vm-egress-daily` | The VM sent more than 450 MB in a day, the pace at which the free 15 GB a month runs out |
+| R2 lifecycle rules | All buckets abort unfinished multipart uploads after 1 day (they count as storage); `kr-backups` deletes dumps after 30 days |
+| Usage watch (`.github/workflows/usage-watch.yml`) | Daily. Fails, and GitHub emails you, when R2 storage reaches 8 GB, R2 Class A or B operations reach 80% of the month's free amount (or are on pace to pass it), Workers requests reach 80,000 in a day, or a date in `scripts/ci/usage-watch.mjs` is close. Cloudflare's own usage alerts need a paid plan |
+
+The first 10 Azure metric alert series and 1,000 alert emails a month are free. R2 is the only service in the stack that bills a card automatically. Workers Free refuses requests past its limit instead of billing.
 
 ## Day-to-day
 

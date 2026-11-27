@@ -173,8 +173,11 @@ jobs:
 
       # The VITE_ values are public and baked into the bundle at build time (17 section 15).
       # Without CLERK_PUBLISHABLE_KEY the app treats everyone as signed out. With it, the
-      # prerender step runs clerkMiddleware() in Node, which needs the secret key too; it is read
-      # at run time only and never written into the output (checked below).
+      # prerender step runs clerkMiddleware(), which needs the secret key too. The Cloudflare
+      # plugin gives the prerender server its bindings from apps/web/.dev.vars (not from the
+      # environment) and copies them to dist/server/.dev.vars for `vite preview`, so the key is
+      # written there for the build and both copies are deleted afterwards. `wrangler deploy`
+      # never uploads .dev.vars; the Worker reads its own secret at run time.
       - name: Build
         env:
           VITE_API_BASE_URL: ${{ vars.API_BASE_URL }}
@@ -182,7 +185,10 @@ jobs:
           VITE_CLERK_PUBLISHABLE_KEY: ${{ vars.CLERK_PUBLISHABLE_KEY }}
           VITE_SENTRY_DSN: ${{ vars.SENTRY_DSN_WEB }}
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-        run: pnpm build:web
+        run: |
+          trap 'rm -f apps/web/.dev.vars apps/web/dist/server/.dev.vars' EXIT
+          (umask 077 && printf 'CLERK_SECRET_KEY=%s\n' "$CLERK_SECRET_KEY" > apps/web/.dev.vars)
+          pnpm build:web
 
       - name: Check the Clerk secret key is not in the build output
         env:

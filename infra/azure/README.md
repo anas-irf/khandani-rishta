@@ -108,6 +108,7 @@ Create the environment `production` (Settings > Environments) and limit it to th
 | `SSH_PRIVATE_KEY` | Secret | `production` | The deploy key whose public half is in the VM's `~/.ssh/authorized_keys` |
 | `SSH_KNOWN_HOSTS` | Secret | `production` | `ssh.khandanirishta.app ` followed by the VM's `/etc/ssh/ssh_host_ed25519_key.pub` |
 | `CF_ACCESS_CLIENT_ID`, `CF_ACCESS_CLIENT_SECRET` | Secret | `production` | The Access service token |
+| `CLERK_SECRET_KEY` | Secret | `production` | The Clerk Production instance secret key (`sk_live_...`). The web build needs it to prerender public pages through `clerkMiddleware()`; CD checks it never lands in the build output |
 | `CLOUDFLARE_API_TOKEN` | Secret | `production` | API token with Workers Scripts Edit, Workers Routes Edit and R2 Edit |
 | `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | Secret | `production` | Android release signing |
 | `CLOUDFLARE_ACCOUNT_ID` | Variable | Repository | Cloudflare account ID |

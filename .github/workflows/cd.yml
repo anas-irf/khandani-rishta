@@ -171,15 +171,27 @@ jobs:
         with:
           cache: "false"
 
-      # These public values are baked into the bundle at build time (17 section 15). Without
-      # CLERK_PUBLISHABLE_KEY the app treats everyone as signed out.
+      # The VITE_ values are public and baked into the bundle at build time (17 section 15).
+      # Without CLERK_PUBLISHABLE_KEY the app treats everyone as signed out. With it, the
+      # prerender step runs clerkMiddleware() in Node, which needs the secret key too; it is read
+      # at run time only and never written into the output (checked below).
       - name: Build
         env:
           VITE_API_BASE_URL: ${{ vars.API_BASE_URL }}
           VITE_APP_ENV: production
           VITE_CLERK_PUBLISHABLE_KEY: ${{ vars.CLERK_PUBLISHABLE_KEY }}
           VITE_SENTRY_DSN: ${{ vars.SENTRY_DSN_WEB }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
         run: pnpm build:web
+
+      - name: Check the Clerk secret key is not in the build output
+        env:
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+        run: |
+          if [ -n "$CLERK_SECRET_KEY" ] && grep -rqF -- "$CLERK_SECRET_KEY" apps/web/dist; then
+            echo "::error::The Clerk secret key appears in apps/web/dist. Not deploying."
+            exit 1
+          fi
 
       # The Cloudflare Vite plugin writes the Worker config into the build, and `wrangler deploy`
       # reads that file. Stop here if the build names another Worker.

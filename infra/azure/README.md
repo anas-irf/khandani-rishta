@@ -7,7 +7,7 @@ How to create and run the production API VM (`B2ats_v2`) and its PostgreSQL serv
 | `cloud-init.yaml` | First-boot setup for the VM: service account, swap, journald limit, `cloudflared` |
 | `systemd/` | Units for the API and the nightly database dump. Each deploy installs them |
 | `bin/deploy.sh` | Activates a release on the VM and rolls back if it doesn't become ready |
-| `bin/pg-backup.sh` | Streams `pg_dump` output to Cloudflare R2 |
+| `bin/pg-backup.sh` | Dumps the database and uploads it to Cloudflare R2 with a signed `curl` PUT |
 | `env/*.env.example` | Templates for the env files on the VM |
 
 Everything lives in the resource group `rg-khandani` in **India South Central** (`indiasouthcentral`), the closest region the Azure for Students policy allows ("Allowed resource deployment regions": Sweden Central, India South Central, East Asia, Poland Central, Korea Central).
@@ -41,7 +41,19 @@ CREATE DATABASE khandani_prod OWNER khandani_prod;
 REVOKE CONNECT ON DATABASE khandani_prod FROM PUBLIC;
 ```
 
-Then, connected to `khandani_prod`, run `CREATE EXTENSION pg_stat_statements;`. Remove your IP from the firewall once the VM's IP is added (step 3).
+Then, still as the admin user but connected to `khandani_prod`:
+
+```sql
+-- On Azure the public schema of a new database belongs to azure_pg_admin, so the API's
+-- migrations fail with "permission denied for schema public" until the app role owns it.
+ALTER SCHEMA public OWNER TO khandani_prod;
+-- Only members of azure_pg_admin may create extensions. Creating them here makes the
+-- `CREATE EXTENSION IF NOT EXISTS` in the first migration a no-op.
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+```
+
+Remove your IP from the firewall once the VM's IP is added (step 3).
 
 ## 3. The VM
 
@@ -96,6 +108,7 @@ Create the environment `production` (Settings > Environments) and limit it to th
 | `SSH_PRIVATE_KEY` | Secret | `production` | The deploy key whose public half is in the VM's `~/.ssh/authorized_keys` |
 | `SSH_KNOWN_HOSTS` | Secret | `production` | `ssh.khandanirishta.app ` followed by the VM's `/etc/ssh/ssh_host_ed25519_key.pub` |
 | `CF_ACCESS_CLIENT_ID`, `CF_ACCESS_CLIENT_SECRET` | Secret | `production` | The Access service token |
+| `CLERK_SECRET_KEY` | Secret | `production` | The Clerk Production instance secret key (`sk_live_...`). The web build needs it to prerender public pages through `clerkMiddleware()`; CD checks it never lands in the build output |
 | `CLOUDFLARE_API_TOKEN` | Secret | `production` | API token with Workers Scripts Edit, Workers Routes Edit and R2 Edit |
 | `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | Secret | `production` | Android release signing |
 | `CLOUDFLARE_ACCOUNT_ID` | Variable | Repository | Cloudflare account ID |

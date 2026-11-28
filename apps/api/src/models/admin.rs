@@ -279,7 +279,18 @@ pub struct UserFlags {
     pub shared_device_with_sanctioned_user: bool,
 }
 
-/// A row of the user search.
+/// One numbered page of the users list (18 section 5.1).
+#[derive(Debug, Clone, Serialize, ToSchema)]
+pub struct AdminUserPage {
+    pub items: Vec<AdminUserListItem>,
+    /// Accounts matching the filters, on every page.
+    pub total: i64,
+    /// The page shown, from 1.
+    pub page: i64,
+    pub page_size: i64,
+}
+
+/// A row of the users list.
 #[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct AdminUserListItem {
     pub user_id: Uuid,

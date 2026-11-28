@@ -1,17 +1,21 @@
-// ADM-USERS: user search (18 section 5.1). There is no "browse members" list on purpose.
+// ADM-USERS: every account, newest first, in numbered pages; search and filters narrow it
+// (18 section 5.1).
 import { Link } from '@tanstack/react-router'
 import { Search } from 'lucide-react'
-import { type FormEvent, useRef, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { EmptyState } from '~/components/common/EmptyState'
+import { ErrorState } from '~/components/common/ErrorState'
 import { Page } from '~/components/common/Page'
 import { RelativeTime } from '~/components/common/RelativeTime'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '~/components/ui/native-select'
 import { formatDate } from '~/lib/format'
-import { AdminList, type Column, tableLinkClass } from './components/DataTable'
+import { cn } from '~/lib/utils'
+import { type Column, DataTable, TableSkeleton, tableLinkClass } from './components/DataTable'
 import { FormField } from './components/FormField'
+import { Pagination } from './components/Pagination'
 import { StatusBadge } from './components/StatusBadge'
 import { fullName } from './names'
 import { USER_SEARCH_MIN_LENGTH, useAdminUsers } from './queries'
@@ -28,19 +32,32 @@ export function UsersScreen() {
   const container = useRef<HTMLDivElement>(null)
   useQueueFocusNavigation(container)
 
-  const q = (filters.q ?? '').trim()
-  const searching = q.length >= USER_SEARCH_MIN_LENGTH
-  const query = useAdminUsers({ q, status: filters.status, role: filters.role })
+  const page = filters.page ?? 1
+  const query = useAdminUsers({
+    q: filters.q?.trim() || undefined,
+    status: filters.status,
+    role: filters.role,
+    page,
+  })
+  const data = query.data
+  const pageCount = data ? Math.max(1, Math.ceil(data.total / data.page_size)) : 1
+
+  // A page past the end (an old link, or a list that shrank) moves to the last page.
+  useEffect(() => {
+    if (data && data.items.length === 0 && data.total > 0 && page > pageCount) {
+      setFilters({ page: pageCount === 1 ? undefined : pageCount })
+    }
+  }, [data, page, pageCount, setFilters])
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
     const value = draft.trim()
-    if (value.length < USER_SEARCH_MIN_LENGTH) {
+    if (value.length > 0 && value.length < USER_SEARCH_MIN_LENGTH) {
       setError(t('users.too_short', { min: USER_SEARCH_MIN_LENGTH }))
       return
     }
     setError(undefined)
-    setFilters({ q: value })
+    setFilters({ q: value || undefined, page: undefined })
   }
 
   const columns: Column<AdminUserListItem>[] = [
@@ -121,6 +138,7 @@ export function UsersScreen() {
                     status: (event.target.value || undefined) as
                       | (typeof USER_STATUSES)[number]
                       | undefined,
+                    page: undefined,
                   })
                 }
               >
@@ -143,6 +161,7 @@ export function UsersScreen() {
                     role: (event.target.value || undefined) as
                       | (typeof USER_ROLES)[number]
                       | undefined,
+                    page: undefined,
                   })
                 }
               >
@@ -160,16 +179,38 @@ export function UsersScreen() {
             {t('actions.search')}
           </Button>
         </form>
-        {searching ? (
-          <AdminList
-            caption={t('users.caption')}
-            query={query}
-            columns={columns}
-            getKey={(item) => item.user_id}
-            empty={<EmptyState title={t('users.empty')} />}
+        {query.isPending && !data ? (
+          <TableSkeleton />
+        ) : !data ? (
+          <ErrorState
+            error={query.error}
+            onRetry={() => void query.refetch()}
+            retrying={query.isFetching}
           />
+        ) : data.items.length === 0 ? (
+          <EmptyState title={t('users.empty')} />
         ) : (
-          <EmptyState icon={Search} title={t('users.prompt_title')} text={t('users.prompt_text')} />
+          <div className="flex flex-col gap-3">
+            <p className="text-body-sm text-muted-foreground" aria-live="polite">
+              {t('users.showing', {
+                from: (data.page - 1) * data.page_size + 1,
+                to: (data.page - 1) * data.page_size + data.items.length,
+                count: data.total,
+              })}
+            </p>
+            <DataTable
+              caption={t('users.caption')}
+              columns={columns}
+              rows={data.items}
+              getKey={(item) => item.user_id}
+              className={cn(query.isPlaceholderData && 'opacity-60 transition-opacity')}
+            />
+            <Pagination
+              page={page}
+              pageCount={pageCount}
+              onChange={(next) => setFilters({ page: next === 1 ? undefined : next })}
+            />
+          </div>
         )}
       </Page>
     </div>

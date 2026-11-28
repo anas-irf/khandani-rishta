@@ -67,25 +67,44 @@ impl UserRow {
     }
 }
 
-/// Filters of `GET /v1/admin/users`.
+/// Filters of `GET /v1/admin/users`, all optional.
 #[derive(Debug, Default)]
 pub struct UserSearch {
-    /// At least 3 characters (checked by the route).
+    /// At least 3 characters when given (checked by the route).
     pub q: Option<String>,
     pub status: Option<UserStatus>,
     pub role: Option<UserRole>,
 }
 
-/// Users matching the filters, newest first. `q` matches, case-insensitively: the exact email,
-/// the phone number (digits only, suffix match of at least 7 digits), the exact profile code,
-/// or a prefix of the first or last name. Fetches `limit + 1` rows.
-pub async fn search(
+/// One page of the users matching the filters, newest first, and how many match in all. With no
+/// filter it is every account. `q` matches, case-insensitively: the exact email, the phone
+/// number (digits only, suffix match of at least 7 digits), the exact profile code, or a prefix
+/// of the first or last name.
+pub async fn list(
     db: &PgPool,
     filter: &UserSearch,
-    cursor: Option<(OffsetDateTime, Uuid)>,
+    offset: i64,
     limit: i64,
-) -> sqlx::Result<Vec<UserRow>> {
+) -> sqlx::Result<(Vec<UserRow>, i64)> {
+    let mut count = QueryBuilder::<Postgres>::new(
+        "SELECT count(*) FROM users u JOIN profiles p ON p.user_id = u.id",
+    );
+    push_filters(&mut count, filter);
+    let total: i64 = count.build_query_scalar().fetch_one(db).await?;
+
     let mut query = QueryBuilder::<Postgres>::new(BASE);
+    push_filters(&mut query, filter);
+    query
+        .push(" ORDER BY u.created_at DESC, u.id DESC LIMIT ")
+        .push_bind(limit)
+        .push(" OFFSET ")
+        .push_bind(offset);
+    let rows = query.build_query_as::<UserRow>().fetch_all(db).await?;
+    Ok((rows, total))
+}
+
+/// The `WHERE` clause of [`list`], shared by its count and its page.
+fn push_filters(query: &mut QueryBuilder<Postgres>, filter: &UserSearch) {
     query.push(" WHERE TRUE");
     if let Some(status) = filter.status {
         query.push(" AND u.status = ").push_bind(status);
@@ -111,18 +130,6 @@ pub async fn search(
         }
         query.push(")");
     }
-    if let Some((created_at, id)) = cursor {
-        query
-            .push(" AND (u.created_at, u.id) < (")
-            .push_bind(created_at)
-            .push(", ")
-            .push_bind(id)
-            .push(")");
-    }
-    query
-        .push(" ORDER BY u.created_at DESC, u.id DESC LIMIT ")
-        .push_bind(limit + 1);
-    query.build_query_as::<UserRow>().fetch_all(db).await
 }
 
 /// One account, or `None`.

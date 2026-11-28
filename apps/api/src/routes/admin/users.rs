@@ -12,11 +12,10 @@ use crate::auth::account::AccountSnapshot;
 use crate::auth::{Admin, Moderator};
 use crate::db::admin::users::{self, UserSearch};
 use crate::db::admin::{audit, reports};
-use crate::db::pagination::{Page, PageParams};
 use crate::domain::types::{UserRole, UserStatus};
 use crate::error::{ApiError, ApiResult, ErrorBody, FieldCode};
 use crate::extract::{ApiJson, ApiPath, ApiQuery};
-use crate::models::admin::{AdminUser, AdminUserListItem, from_micros, to_micros};
+use crate::models::admin::{AdminUser, AdminUserPage};
 use crate::sanctions::{self, SanctionKind};
 use crate::state::AppState;
 
@@ -35,26 +34,36 @@ pub fn router() -> OpenApiRouter<AppState> {
         .routes(routes!(change_role))
 }
 
+/// Accounts on one page of the users list unless `page_size` says otherwise.
+const DEFAULT_PAGE_SIZE: i64 = 25;
+const MAX_PAGE_SIZE: i64 = 100;
+/// Far beyond any real list; keeps the offset arithmetic small.
+const MAX_PAGE: i64 = 100_000;
+
 #[derive(Debug, Deserialize, IntoParams)]
 #[into_params(parameter_in = Query)]
 pub struct UsersQuery {
-    /// At least 3 characters: an exact email, a phone number (7 or more digits, suffix match),
-    /// an exact profile code, or the start of a first or last name.
+    /// Optional, at least 3 characters: an exact email, a phone number (7 or more digits, suffix
+    /// match), an exact profile code, or the start of a first or last name.
     pub q: Option<String>,
     pub status: Option<UserStatus>,
     pub role: Option<UserRole>,
+    /// The page to show, from 1 (default 1).
+    pub page: Option<i64>,
+    /// Accounts per page, 1 to 100 (default 25).
+    pub page_size: Option<i64>,
 }
 
-/// Searches accounts. At least one of `q`, `status` and `role` is required: the console has no
-/// "browse members" screen on purpose (18 section 10).
+/// Lists accounts, newest first, one numbered page at a time with the total. Every filter is
+/// optional: without one it is every account (18 section 5.1).
 #[utoipa::path(
     get,
     path = "/users",
     tag = "admin",
     security(("bearer" = [])),
-    params(UsersQuery, PageParams),
+    params(UsersQuery),
     responses(
-        (status = 200, body = Page<AdminUserListItem>),
+        (status = 200, body = AdminUserPage),
         (status = 400, body = ErrorBody),
         (status = 403, body = ErrorBody)
     )
@@ -63,8 +72,7 @@ async fn search_users(
     State(state): State<AppState>,
     _staff: Moderator,
     ApiQuery(query): ApiQuery<UsersQuery>,
-    ApiQuery(page): ApiQuery<PageParams>,
-) -> ApiResult<Json<Page<AdminUserListItem>>> {
+) -> ApiResult<Json<AdminUserPage>> {
     let q = query
         .q
         .as_deref()
@@ -76,25 +84,26 @@ async fn search_users(
     {
         return Err(ApiError::field("q", FieldCode::TooShort));
     }
-    if q.is_none() && query.status.is_none() && query.role.is_none() {
-        return Err(ApiError::field("q", FieldCode::Required));
+    let page = query.page.unwrap_or(1);
+    if !(1..=MAX_PAGE).contains(&page) {
+        return Err(ApiError::field("page", FieldCode::OutOfRange));
     }
-    let limit = page.limit();
-    let cursor = page
-        .cursor::<(i64, Uuid)>()?
-        .map(|(micros, id)| (from_micros(micros), id));
+    let page_size = query
+        .page_size
+        .unwrap_or(DEFAULT_PAGE_SIZE)
+        .clamp(1, MAX_PAGE_SIZE);
     let filter = UserSearch {
         q,
         status: query.status,
         role: query.role,
     };
-    let rows = users::search(&state.db, &filter, cursor, limit).await?;
-    Ok(Json(Page::from_rows(
-        rows,
-        limit,
-        |row| (to_micros(row.created_at), row.user_id),
-        |row| row.item(),
-    )))
+    let (rows, total) = users::list(&state.db, &filter, (page - 1) * page_size, page_size).await?;
+    Ok(Json(AdminUserPage {
+        items: rows.iter().map(users::UserRow::item).collect(),
+        total,
+        page,
+        page_size,
+    }))
 }
 
 /// The account view. `phone_e164` is only filled in for admins.
@@ -1113,7 +1122,7 @@ mod tests {
             "the list never shows phone numbers"
         );
 
-        // Filters need no query text, and a bare request is refused.
+        // Filters need no query text.
         let suspended = app
             .get("/v1/admin/users?status=suspended", Some(&moderator.token))
             .await;
@@ -1122,16 +1131,54 @@ mod tests {
             .get("/v1/admin/users?role=admin", Some(&moderator.token))
             .await;
         assert_eq!(found(&staff), vec![admin.user_id.to_string()]);
-        let bare = app.get("/v1/admin/users", Some(&moderator.token)).await;
-        assert_eq!(bare.field_errors(), vec!["q:required"]);
-        let paged = app
+
+        // Without any filter it is every account, newest first, with the total on each page.
+        let all = app.get("/v1/admin/users", Some(&moderator.token)).await;
+        assert_eq!(all.status, StatusCode::OK, "{}", all.text);
+        let everyone: i64 =
+            sqlx::query_scalar("SELECT count(*) FROM users u JOIN profiles p ON p.user_id = u.id")
+                .fetch_one(app.db())
+                .await
+                .unwrap();
+        assert_eq!(all.json["total"], everyone);
+        assert_eq!(all.json["page"], 1);
+        assert_eq!(all.json["page_size"], 25);
+        assert_eq!(found(&all).len(), usize::try_from(everyone).unwrap());
+        assert_eq!(found(&all)[0], bilal.user_id.to_string(), "newest first");
+
+        // Numbered pages cover the list once each, and a page past the end is empty.
+        let mut paged = Vec::new();
+        for page in 1..=everyone {
+            let response = app
+                .get(
+                    &format!("/v1/admin/users?page={page}&page_size=1"),
+                    Some(&moderator.token),
+                )
+                .await;
+            assert_eq!(response.json["total"], everyone);
+            paged.extend(found(&response));
+        }
+        assert_eq!(paged, found(&all));
+        let past_end = app
             .get(
-                "/v1/admin/users?role=member&limit=1",
+                &format!("/v1/admin/users?page={}&page_size=1", everyone + 1),
                 Some(&moderator.token),
             )
             .await;
-        assert_eq!(paged.json["items"].as_array().unwrap().len(), 1);
-        assert!(paged.json["next_cursor"].is_string());
+        assert!(found(&past_end).is_empty(), "a page past the end");
+        assert_eq!(past_end.json["total"], everyone);
+        let filtered = app
+            .get(
+                "/v1/admin/users?role=member&page_size=1",
+                Some(&moderator.token),
+            )
+            .await;
+        assert_eq!(filtered.json["items"].as_array().unwrap().len(), 1);
+        assert_eq!(filtered.json["total"], 2, "the two members");
+        let zero = app
+            .get("/v1/admin/users?page=0", Some(&moderator.token))
+            .await;
+        assert_eq!(zero.field_errors(), vec!["page:out_of_range"]);
         let by_member = app
             .get("/v1/admin/users?q=zarmeen", Some(&zarmeen.token))
             .await;

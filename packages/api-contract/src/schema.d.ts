@@ -527,8 +527,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Searches accounts. At least one of `q`, `status` and `role` is required: the console has no
-         *     "browse members" screen on purpose (18 section 10).
+         * Lists accounts, newest first, one numbered page at a time with the total. Every filter is
+         *     optional: without one it is every account (18 section 5.1).
          */
         get: operations["search_users"];
         put?: never;
@@ -2714,7 +2714,7 @@ export interface components {
             /** Format: date-time */
             suspended_until: string | null;
         };
-        /** @description A row of the user search. */
+        /** @description A row of the users list. */
         AdminUserListItem: {
             /** Format: date-time */
             created_at: string;
@@ -2732,6 +2732,22 @@ export interface components {
             status: components["schemas"]["UserStatus"];
             /** Format: uuid */
             user_id: string;
+        };
+        /** @description One numbered page of the users list (18 section 5.1). */
+        AdminUserPage: {
+            items: components["schemas"]["AdminUserListItem"][];
+            /**
+             * Format: int64
+             * @description The page shown, from 1.
+             */
+            page: number;
+            /** Format: int64 */
+            page_size: number;
+            /**
+             * Format: int64
+             * @description Accounts matching the filters, on every page.
+             */
+            total: number;
         };
         /** @description One request in full (18 section 4.4). */
         AdminVerificationDetail: {
@@ -4345,29 +4361,6 @@ export interface components {
                 text_sha256: string;
                 /** Format: date-time */
                 updated_at: string;
-            }[];
-            /** @description `null` on the last page. */
-            next_cursor: string | null;
-        };
-        /** @description One page of a list. */
-        Page_AdminUserListItem: {
-            items: {
-                /** Format: date-time */
-                created_at: string;
-                email: string | null;
-                first_name: string | null;
-                gender: components["schemas"]["Gender"] | null;
-                last_name: string | null;
-                /** Format: date-time */
-                last_seen_at: string | null;
-                /** Format: uuid */
-                profile_id: string;
-                profile_status: components["schemas"]["ProfileStatus"];
-                public_code: string;
-                role: components["schemas"]["UserRole"];
-                status: components["schemas"]["UserStatus"];
-                /** Format: uuid */
-                user_id: string;
             }[];
             /** @description `null` on the last page. */
             next_cursor: string | null;
@@ -6757,16 +6750,16 @@ export interface operations {
         parameters: {
             query?: {
                 /**
-                 * @description At least 3 characters: an exact email, a phone number (7 or more digits, suffix match),
-                 *     an exact profile code, or the start of a first or last name.
+                 * @description Optional, at least 3 characters: an exact email, a phone number (7 or more digits, suffix
+                 *     match), an exact profile code, or the start of a first or last name.
                  */
                 q?: string;
                 status?: components["schemas"]["UserStatus"];
                 role?: components["schemas"]["UserRole"];
-                /** @description 1 to 50, default 20. */
-                limit?: number;
-                /** @description `next_cursor` of the previous page. */
-                cursor?: string;
+                /** @description The page to show, from 1 (default 1). */
+                page?: number;
+                /** @description Accounts per page, 1 to 100 (default 25). */
+                page_size?: number;
             };
             header?: never;
             path?: never;
@@ -6779,7 +6772,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Page_AdminUserListItem"];
+                    "application/json": components["schemas"]["AdminUserPage"];
                 };
             };
             400: {

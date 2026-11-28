@@ -23,6 +23,12 @@
     "load_more_failed": "Could not load more. Try again.",
     "queue_empty": "Nothing waiting. Well done."
   },
+  "pagination": {
+    "label": "Pages",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {{page}}"
+  },
   "errors": {
     "invalid_state": "This item has changed or was already handled by someone else. It has been reloaded.",
     "date_of_birth": {
@@ -832,7 +838,7 @@
   },
   "users": {
     "title": "Users",
-    "description": "Look up an account to act on a queue item or a support request.",
+    "description": "Every account, newest first. Search or filter to narrow the list.",
     "filters": "User search",
     "search": "Search",
     "search_hint": "Email, phone number, profile code, or the start of a first or last name.",
@@ -840,10 +846,10 @@
     "status": "Status",
     "role": "Role",
     "any": "Any",
-    "caption": "Users found",
+    "caption": "Accounts",
     "empty": "No accounts match.",
-    "prompt_title": "Search for an account",
-    "prompt_text": "There is no list of all members on purpose. Search by email, phone number, profile code or name.",
+    "showing_one": "Showing {{from}} to {{to}} of {{count}} account",
+    "showing_other": "Showing {{from}} to {{to}} of {{count}} accounts",
     "col": {
       "user": "Account",
       "profile": "Profile",

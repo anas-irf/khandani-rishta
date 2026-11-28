@@ -74,7 +74,7 @@ flowchart TD
     MOD --> OUT[Approve, reject, warn, suspend, ban]
 ```
 
-Moderators work only from the five queues in the admin console (18 section 4). They do not browse members.
+Moderators work from the five queues in the admin console (18 section 4). The users list (18 section 5.1) gives an overview of accounts; staff open an account only when a queue item or a support request needs it (18 section 10).
 
 ### 2.2 Settings
 

@@ -95,7 +95,7 @@ Do the same for `/etc/khandani/backup.env` from `env/backup.env.example`. Keep a
 
 ## 6. GitHub settings for deploys
 
-Create the environment `production` (Settings > Environments) and limit it to the `main` branch.
+Create the environment `production` (Settings > Environments) and limit it to the `main` branch and the tag pattern `android-v*` (the Android release runs on tags).
 
 | Name | Kind | Where | Value |
 |---|---|---|---|
@@ -111,6 +111,8 @@ Create the environment `production` (Settings > Environments) and limit it to th
 | `CLERK_SECRET_KEY` | Secret | `production` | The Clerk Production instance secret key (`sk_live_...`). The web build needs it to prerender public pages through `clerkMiddleware()`. CD writes it to `apps/web/.dev.vars` for the build only, deletes it afterwards and checks it never lands in the build output |
 | `CLOUDFLARE_API_TOKEN` | Secret | `production` | API token with Workers Scripts Edit, Workers Routes Edit and R2 Edit |
 | `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | Secret | `production` | Android release signing |
+| `ANDROID_GOOGLE_SERVICES_JSON` | Secret | `production` | The Firebase project's `google-services.json` for `com.khandanirishta.app`. The release job refuses to build without it, since the APK would have no push |
+| `SENTRY_DSN_ANDROID` | Variable | `production` | DSN of the Sentry Android project. Empty turns reporting off |
 | `CLOUDFLARE_ACCOUNT_ID` | Variable | Repository | Cloudflare account ID |
 | `CF_ANALYTICS_TOKEN` | Secret | Repository | Read-only Cloudflare token (Account Analytics Read) for the daily usage check (section 8) |
 | `DEPLOY_ENABLED` | Variable | Repository | `true` once everything above exists. Until then, workflows build and test but never deploy |

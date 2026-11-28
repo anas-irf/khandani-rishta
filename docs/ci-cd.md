@@ -114,16 +114,44 @@ everything again.
 
 ## Deploying
 
-- **Staging:** automatic for every merge to `main` that changes the web app or the API.
-- **Production:** Actions > CD > Run workflow, branch `main`, environment `production`, then
-  pick the apps. It re-runs the checks before deploying.
-- **Android:** push a tag such as `android-v1.2.0` on a commit that is on `main`. The version
-  name comes from the tag, the version code from the run number. The release job refuses tags
-  that are not on `main` and tags older than the newest `android-v*` tag, so a late or re-run
-  older release can't replace the latest download. If a publish fails part way, re-run the job.
+- **Web and API:** automatic for every merge to `main` that changes them; there is no staging.
+  To redeploy without a change: Actions > CD > Run workflow on `main`, then pick the apps. It
+  re-runs the checks before deploying.
+- **Android:** push a tag such as `android-v1.2.0` on a commit that is on `main`, then record
+  the release (see [Android releases](#android-releases)).
 - Deploys stay off until the repository variable `DEPLOY_ENABLED` is `true`. Secrets,
   variables (including `WEB_URL` for the smoke tests) and environments are listed in the
   [Azure runbook](../infra/azure/README.md#6-github-settings-for-deploys).
+
+### Android releases
+
+The app is distributed as an APK from `https://download.khandanirishta.app` (the R2 bucket
+`kr-public`), linked from the web app's `/download` page, and as a GitHub Release.
+
+One-time setup, already done for production:
+
+- The release keystore is generated once and kept for the life of the app: installed copies only
+  accept updates signed with the same key. Keep it and its passwords in the password manager
+  and in the `production` environment secrets.
+- Its SHA-256 is in `apps/web/public/.well-known/assetlinks.json` (App Links) and in the Clerk
+  Production instance's native application settings, which also need the Native API on.
+- The `production` environment's deployment policy allows the `main` branch and `android-v*`
+  tags, otherwise the release job waits forever.
+- The R2 custom domain `download.khandanirishta.app` is connected to `kr-public`.
+
+Each release:
+
+1. Tag the merged commit on `main` and push the tag: `git tag android-v1.2.0 && git push origin
+   android-v1.2.0`. The version name comes from the tag, the version code from the run number.
+   The job refuses tags that are not on `main` and tags older than the newest `android-v*`
+   tag, so a late or re-run older release can't replace the latest download. If a publish
+   fails part way, re-run the job.
+2. The job uploads `android/khandani-rishta-<version>.apk`, its `.sha256` and
+   `android/khandani-rishta-latest.apk`, creates the GitHub Release, and keeps the R8 mapping as
+   the `android-release-mapping` artifact for 90 days.
+3. Users see nothing until the release is recorded: open the run's summary and copy its values
+   into the admin console's Releases screen (`/admin/releases`). Raise the minimum supported
+   version code only to force everyone onto this build; older apps then show the upgrade gate.
 
 After each deploy, CD checks the API's `/readyz` through Cloudflare and runs the end-to-end
 tests tagged `@smoke` against the web app. Tag a test with `{ tag: '@smoke' }` when it is safe

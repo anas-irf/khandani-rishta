@@ -344,11 +344,12 @@ The app is distributed as an APK outside the Play Store (tech stack section 9).
 
 | Item | Value |
 |---|---|
-| `BuildConfig.API_BASE_URL` | From `local.properties` (key `API_BASE_URL`), default `http://10.0.2.2:8787` for the emulator |
-| `BuildConfig.CLERK_PUBLISHABLE_KEY` | From `local.properties` (key `CLERK_PUBLISHABLE_KEY`), see 06 section 13 |
-| `BuildConfig.WEB_BASE_URL` | From `local.properties` (key `WEB_BASE_URL`), used for legal pages and share links |
-| `BuildConfig.SENTRY_DSN` | From `local.properties` (key `SENTRY_DSN`), optional |
-| Build types | `debug` (staging or local API, cleartext allowed to `10.0.2.2` only), `release` (production API, minified, signed in CI) |
+| `BuildConfig.API_BASE_URL` | Debug: from `local.properties` (key `API_BASE_URL`), default `http://10.0.2.2:8787` for the emulator. Release: Gradle property or environment variable `RELEASE_API_BASE_URL`, default `https://api.khandanirishta.app` |
+| `BuildConfig.CLERK_PUBLISHABLE_KEY` | Debug: from `local.properties` (key `CLERK_PUBLISHABLE_KEY`), see 06 section 13. Release: `RELEASE_CLERK_PUBLISHABLE_KEY`, which CI sets to the Production key. A signed build fails unless the key starts with `pk_live_` |
+| `BuildConfig.WEB_BASE_URL` | Debug: from `local.properties` (key `WEB_BASE_URL`). Release: `RELEASE_WEB_BASE_URL`, default `https://khandanirishta.app`. Used for legal pages and share links |
+| `BuildConfig.SENTRY_DSN` | Gradle property or environment variable `SENTRY_DSN` (CI), else `local.properties` (key `SENTRY_DSN`), optional |
+| Version | `-PversionCode` (CI: the run number) and `-PversionName` (CI: the tag without `android-v`), default `1` and `0.1.0` |
+| Build types | `debug` (local API, cleartext allowed to `10.0.2.2` only), `release` (production API, minified, signed in CI with the permanent release key) |
 | Network security config | Cleartext traffic off, except the emulator host in debug |
 | Permissions | `INTERNET`, `ACCESS_NETWORK_STATE`, `POST_NOTIFICATIONS`, `CAMERA`. No location, contacts or storage permissions. Debug builds also declare `ACCESS_LOCAL_NETWORK` and ask for it at start: Android 17 blocks private network addresses (the local API at `10.0.2.2`) for apps targeting it. |
 

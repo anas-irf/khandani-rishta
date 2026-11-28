@@ -80,13 +80,24 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_GOOGLE_SERVICES_JSON: ${{ secrets.ANDROID_GOOGLE_SERVICES_JSON }}
+          # The Production Clerk instance, shared with the web app. The build refuses a signed
+          # APK without a pk_live_ key.
+          RELEASE_CLERK_PUBLISHABLE_KEY: ${{ vars.CLERK_PUBLISHABLE_KEY }}
+          SENTRY_DSN: ${{ vars.SENTRY_DSN_ANDROID }}
         run: |
+          # Without google-services.json the app builds without push, so a release must have it.
+          if [ -z "$ANDROID_GOOGLE_SERVICES_JSON" ]; then
+            echo "::error::The ANDROID_GOOGLE_SERVICES_JSON secret is missing, so push would be off."
+            exit 1
+          fi
+          printf '%s' "$ANDROID_GOOGLE_SERVICES_JSON" > app/google-services.json
           export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/release.jks"
           printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$ANDROID_KEYSTORE_PATH"
           ./gradlew assembleRelease --console=plain \
             -PversionCode="$GITHUB_RUN_NUMBER" \
             -PversionName="${GITHUB_REF_NAME#android-v}"
-          rm -f "$ANDROID_KEYSTORE_PATH"
+          rm -f "$ANDROID_KEYSTORE_PATH" app/google-services.json
 
       - name: Name the APK and write its checksum
         run: |
@@ -94,6 +105,15 @@ jobs:
           cp apps/android/app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/$apk"
           (cd "$RUNNER_TEMP" && sha256sum "$apk" > "$apk.sha256")
           echo "APK=$apk" >> "$GITHUB_ENV"
+
+      # Turns R8-obfuscated stack traces from Sentry back into readable ones.
+      - name: Keep the R8 mapping
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: android-release-mapping
+          path: apps/android/app/build/outputs/mapping/release/mapping.txt
+          retention-days: 90
+          if-no-files-found: error
 
       # Wrangler at the version in pnpm-lock.yaml.
       - uses: ./.github/actions/setup-node-pnpm
@@ -106,10 +126,19 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          for key in "android/$APK" "android/khandani-rishta-latest.apk"; do
-            pnpm --filter @khandani/web exec wrangler r2 object put "kr-public/$key" \
-              --file "$RUNNER_TEMP/$APK" --content-type application/vnd.android.package-archive --remote
-          done
+          put() {
+            pnpm --filter @khandani/web exec wrangler r2 object put "kr-public/android/$1" --remote "${@:2}"
+          }
+          # Both names download as the versioned file. The versioned object never changes, so it
+          # caches for a year; "latest" is replaced on every release, so it is always revalidated.
+          disposition="attachment; filename=\"$APK\""
+          apk_type=application/vnd.android.package-archive
+          put "$APK" --file "$RUNNER_TEMP/$APK" --content-type "$apk_type" \
+            --content-disposition "$disposition" --cache-control "public, max-age=31536000, immutable"
+          put "$APK.sha256" --file "$RUNNER_TEMP/$APK.sha256" --content-type "text/plain; charset=utf-8" \
+            --cache-control "public, max-age=31536000, immutable"
+          put khandani-rishta-latest.apk --file "$RUNNER_TEMP/$APK" --content-type "$apk_type" \
+            --content-disposition "$disposition" --cache-control no-cache
           # Safe to re-run: if an earlier attempt failed part way, running the job again finishes
           # the publish instead of failing on a release that already exists.
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
@@ -118,3 +147,18 @@ jobs:
             gh release create "$GITHUB_REF_NAME" "$RUNNER_TEMP/$APK" "$RUNNER_TEMP/$APK.sha256" \
               --verify-tag --title "Android ${GITHUB_REF_NAME#android-v}" --generate-notes
           fi
+
+      # Users only see the release once it is recorded in the admin console (specs/18 ADM-RELEASES),
+      # which needs the version code this run gave the build.
+      - name: Summarise what to record in the admin console
+        run: |
+          {
+            echo "## Record this release in /admin/releases"
+            echo
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Version code | \`$GITHUB_RUN_NUMBER\` |"
+            echo "| Version name | \`${GITHUB_REF_NAME#android-v}\` |"
+            echo "| Download URL | \`https://download.khandanirishta.app/android/$APK\` |"
+            echo "| SHA-256 | \`$(cut -d' ' -f1 "$RUNNER_TEMP/$APK.sha256")\` |"
+          } >> "$GITHUB_STEP_SUMMARY"

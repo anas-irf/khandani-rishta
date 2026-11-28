@@ -6,11 +6,14 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    // Declared here, not in the root build file, so it loads next to the Android plugin: from the
+    // root classloader it cannot see the Android plugin's classes (NoClassDefFoundError).
+    alias(libs.plugins.google.services) apply false
 }
 
 // Firebase Cloud Messaging needs google-services.json, which is never committed (specs/22 section 8).
-// CI writes it from a secret; developers place their own copy. Without it the app builds and runs
-// without push notifications.
+// The release workflow writes it from a secret; developers place their own copy. Without it the app
+// builds and runs without push notifications.
 if (file("google-services.json").exists()) {
     apply(
         plugin = libs.plugins.google.services
@@ -60,7 +63,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "SENTRY_DSN", quoted(localValue("SENTRY_DSN", "")))
+        // The release workflow passes SENTRY_DSN from a repository variable.
+        buildConfigField("String", "SENTRY_DSN", quoted(releaseValue("SENTRY_DSN", localValue("SENTRY_DSN", ""))))
     }
 
     compileOptions {
@@ -68,9 +72,19 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    // Release signing comes from CI secrets. Local release builds stay unsigned.
+    val keystorePath = providers.environmentVariable("ANDROID_KEYSTORE_PATH").orNull
+    val releaseClerkKey = releaseValue("RELEASE_CLERK_PUBLISHABLE_KEY", localValue("CLERK_PUBLISHABLE_KEY", ""))
+    // A signed build is one users can install, so it must sign in against the Production
+    // instance. The development key falls back from local.properties, and a blank key shows the
+    // "not configured" screen: both would ship an app nobody can use.
+    if (keystorePath != null) {
+        require(releaseClerkKey.startsWith("pk_live_")) {
+            "Signed release builds need the Production Clerk key: set RELEASE_CLERK_PUBLISHABLE_KEY=pk_live_..."
+        }
+    }
+
     signingConfigs {
-        // Release signing comes from CI secrets. Local release builds stay unsigned.
-        val keystorePath = providers.environmentVariable("ANDROID_KEYSTORE_PATH").orNull
         if (keystorePath != null) {
             create("release") {
                 storeFile = file(keystorePath)
@@ -110,11 +124,7 @@ android {
                 "WEB_BASE_URL",
                 quoted(releaseValue("RELEASE_WEB_BASE_URL", "https://khandanirishta.app")),
             )
-            buildConfigField(
-                "String",
-                "CLERK_PUBLISHABLE_KEY",
-                quoted(releaseValue("RELEASE_CLERK_PUBLISHABLE_KEY", localValue("CLERK_PUBLISHABLE_KEY", ""))),
-            )
+            buildConfigField("String", "CLERK_PUBLISHABLE_KEY", quoted(releaseClerkKey))
         }
     }
 

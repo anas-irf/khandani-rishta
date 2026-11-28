@@ -259,14 +259,18 @@ test.describe('crawler files', () => {
     expect(xml).not.toMatch(/\/(home|me|sign-in|admin|profiles)\b/)
   })
 
-  test('assetlinks.json names the Android package', async ({ request }) => {
+  test('assetlinks.json names the Android package and its certificate', async ({ request }) => {
     const response = await request.get('/.well-known/assetlinks.json')
     expect(response.status()).toBe(200)
 
     const statements = await response.json()
     expect(statements[0].target.namespace).toBe('android_app')
     expect(statements[0].target.package_name).toBe('com.khandanirishta.app')
-    expect(Array.isArray(statements[0].target.sha256_cert_fingerprints)).toBe(true)
+    // App Links stay unverified unless each entry is a real SHA-256: 32 colon-separated hex bytes.
+    const sha256 = /^([0-9A-F]{2}:){31}[0-9A-F]{2}$/
+    const fingerprints = statements[0].target.sha256_cert_fingerprints
+    expect(fingerprints.length).toBeGreaterThan(0)
+    for (const fingerprint of fingerprints) expect(fingerprint).toMatch(sha256)
   })
 
   test('the favicon and the Open Graph image are served', async ({ request }) => {

@@ -164,11 +164,67 @@ describe('ADM-USER', () => {
   })
 })
 
+/** A page of the users list with `total` accounts, as the API sends it. */
+function usersPage(page: number, total: number, pageSize = 25) {
+  const from = (page - 1) * pageSize
+  const items = Array.from({ length: Math.max(0, Math.min(pageSize, total - from)) }, (_, i) => {
+    const n = from + i + 1
+    return {
+      user_id: `00000000-0000-7000-8000-${String(n).padStart(12, '0')}`,
+      profile_id: `00000000-0000-7000-9000-${String(n).padStart(12, '0')}`,
+      public_code: `KR-${String(n).padStart(5, '0')}`,
+      email: `member${n}@example.com`,
+      role: 'member',
+      status: 'active',
+      profile_status: 'active',
+      first_name: `Member${n}`,
+      last_name: 'Test',
+      gender: 'female',
+      created_at: '2026-11-01T10:00:00Z',
+      last_seen_at: null,
+    }
+  })
+  return { items, total, page, page_size: pageSize }
+}
+
 describe('ADM-USERS', () => {
-  it('asks for a search first: there is no list of all members', async () => {
+  it('lists every account without a search, on one page when they fit', async () => {
     renderAdmin(() => <UsersScreen />)
-    expect(await screen.findByText('Search for an account')).toBeInTheDocument()
-    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+
+    const table = await screen.findByRole('table', { name: 'Accounts' })
+    expect(within(table).getAllByRole('row').length).toBeGreaterThan(5)
+    expect(screen.getByText(/^Showing 1 to \d+ of \d+ accounts$/)).toBeInTheDocument()
+    expect(screen.queryByRole('navigation', { name: 'Pages' })).not.toBeInTheDocument()
+  })
+
+  it('pages through a long list with numbered page links', async () => {
+    const pages: string[] = []
+    server.use(
+      http.get(apiUrl('/v1/admin/users'), ({ request }) => {
+        const page = Number(new URL(request.url).searchParams.get('page') ?? '1')
+        pages.push(String(page))
+        return Response.json(usersPage(page, 60))
+      }),
+    )
+    const user = userEvent.setup()
+    renderAdmin(() => <UsersScreen />)
+
+    expect(await screen.findByText('Showing 1 to 25 of 60 accounts')).toBeInTheDocument()
+    const nav = screen.getByRole('navigation', { name: 'Pages' })
+    expect(within(nav).getByRole('button', { name: 'Page 1' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    expect(within(nav).getByRole('button', { name: 'Previous' })).toBeDisabled()
+
+    await user.click(within(nav).getByRole('button', { name: 'Page 2' }))
+    expect(await screen.findByText('Showing 26 to 50 of 60 accounts')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'member26@example.com' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Next' }))
+    expect(await screen.findByText('Showing 51 to 60 of 60 accounts')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled()
+    expect(pages).toEqual(['1', '2', '3'])
   })
 
   it('refuses a search of fewer than 3 characters', async () => {
@@ -184,7 +240,7 @@ describe('ADM-USERS', () => {
   it('lists the accounts that match the search in the address', async () => {
     renderAdmin(() => <UsersScreen />, 'moderator', '/admin/users?q=ayesha')
 
-    const table = await screen.findByRole('table', { name: 'Users found' })
+    const table = await screen.findByRole('table', { name: 'Accounts' })
     expect(within(table).getByRole('link', { name: 'ayesha.khan@example.com' })).toBeInTheDocument()
     expect(within(table).getAllByRole('columnheader').length).toBeGreaterThan(3)
   })

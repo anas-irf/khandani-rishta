@@ -408,9 +408,15 @@ Rules:
 
 ## 5. Users and sanctions
 
-### 5.1 Search (`ADM-USERS`)
+### 5.1 Users list and search (`ADM-USERS`)
 
-`GET /v1/admin/users?q=...`. `q` (at least 3 characters) matches, case-insensitively: the exact email; the phone number (digits only, suffix match of at least 7 digits); the exact profile code; a prefix of the first or last name. Optional filters: `status`, `role`.
+`GET /v1/admin/users?page=1&page_size=25`. Every account, newest first, in numbered pages with the total, so staff can see who has joined (decided by the product owner on 2026-11-28; until then the screen was search-only). All filters are optional and narrow the list:
+
+- `q` (at least 3 characters when given) matches, case-insensitively: the exact email; the phone number (digits only, suffix match of at least 7 digits); the exact profile code; a prefix of the first or last name.
+- `status`, `role`.
+- `page` from 1 (default 1); `page_size` 1 to 100 (default 25). A page past the end is empty and still carries `total`.
+
+The response is `{ items: AdminUserListItem[], total, page, page_size }`. The screen shows "Showing 26 to 50 of 92 accounts", the table, and page links (first, last, and the current page with its neighbours, with Previous and Next). The page is kept in the address, and changing a filter returns to page 1.
 
 ```ts
 type AdminUserListItem = {
@@ -801,7 +807,7 @@ The screen shows the queues as cards (each linking to its queue, coloured amber 
 
 These rules are part of onboarding every moderator and are linked from the console's footer.
 
-1. **Least access.** Open a profile, an account or a document only because a queue item or a support request requires it. The console has no "browse members" screen on purpose.
+1. **Least access.** Open a profile, an account or a document only because a queue item or a support request requires it. The users list (section 5.1) is for an overview of who has joined, not a reason to open accounts.
 2. **No curiosity.** Looking up someone you know, a public figure, or a profile you matched with as a member is forbidden and is grounds for removal of the role.
 3. **Identity documents.** Every view of a verification request is logged with your name. Never photograph, copy, download or forward an identity image or number. Close the tab when you finish.
 4. **Chat privacy.** You see private messages only as the excerpt inside a report. Never ask a developer for more.

@@ -1906,13 +1906,13 @@
         "tags": [
           "admin"
         ],
-        "summary": "Searches accounts. At least one of `q`, `status` and `role` is required: the console has no\n\"browse members\" screen on purpose (18 section 10).",
+        "summary": "Lists accounts, newest first, one numbered page at a time with the total. Every filter is\noptional: without one it is every account (18 section 5.1).",
         "operationId": "search_users",
         "parameters": [
           {
             "name": "q",
             "in": "query",
-            "description": "At least 3 characters: an exact email, a phone number (7 or more digits, suffix match),\nan exact profile code, or the start of a first or last name.",
+            "description": "Optional, at least 3 characters: an exact email, a phone number (7 or more digits, suffix\nmatch), an exact profile code, or the start of a first or last name.",
             "required": false,
             "schema": {
               "type": "string"
@@ -1935,9 +1935,9 @@
             }
           },
           {
-            "name": "limit",
+            "name": "page",
             "in": "query",
-            "description": "1 to 50, default 20.",
+            "description": "The page to show, from 1 (default 1).",
             "required": false,
             "schema": {
               "type": "integer",
@@ -1945,12 +1945,13 @@
             }
           },
           {
-            "name": "cursor",
+            "name": "page_size",
             "in": "query",
-            "description": "`next_cursor` of the previous page.",
+            "description": "Accounts per page, 1 to 100 (default 25).",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int64"
             }
           }
         ],
@@ -1959,7 +1960,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Page_AdminUserListItem"
+                  "$ref": "#/components/schemas/AdminUserPage"
                 }
               }
             }
@@ -9299,7 +9300,7 @@
       },
       "AdminUserListItem": {
         "type": "object",
-        "description": "A row of the user search.",
+        "description": "A row of the users list.",
         "required": [
           "created_at",
           "email",
@@ -9373,6 +9374,38 @@
           "user_id": {
             "type": "string",
             "format": "uuid"
+          }
+        }
+      },
+      "AdminUserPage": {
+        "type": "object",
+        "description": "One numbered page of the users list (18 section 5.1).",
+        "required": [
+          "items",
+          "page",
+          "page_size",
+          "total"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminUserListItem"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The page shown, from 1."
+          },
+          "page_size": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Accounts matching the filters, on every page."
           }
         }
       },
@@ -14902,105 +14935,6 @@
                 "updated_at": {
                   "type": "string",
                   "format": "date-time"
-                }
-              }
-            }
-          },
-          "next_cursor": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "`null` on the last page."
-          }
-        }
-      },
-      "Page_AdminUserListItem": {
-        "type": "object",
-        "description": "One page of a list.",
-        "required": [
-          "items",
-          "next_cursor"
-        ],
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "description": "A row of the user search.",
-              "required": [
-                "created_at",
-                "email",
-                "first_name",
-                "gender",
-                "last_name",
-                "last_seen_at",
-                "profile_id",
-                "profile_status",
-                "public_code",
-                "role",
-                "status",
-                "user_id"
-              ],
-              "properties": {
-                "created_at": {
-                  "type": "string",
-                  "format": "date-time"
-                },
-                "email": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
-                },
-                "first_name": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
-                },
-                "gender": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/Gender"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "last_name": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
-                },
-                "last_seen_at": {
-                  "type": [
-                    "string",
-                    "null"
-                  ],
-                  "format": "date-time"
-                },
-                "profile_id": {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                "profile_status": {
-                  "$ref": "#/components/schemas/ProfileStatus"
-                },
-                "public_code": {
-                  "type": "string"
-                },
-                "role": {
-                  "$ref": "#/components/schemas/UserRole"
-                },
-                "status": {
-                  "$ref": "#/components/schemas/UserStatus"
-                },
-                "user_id": {
-                  "type": "string",
-                  "format": "uuid"
                 }
               }
             }

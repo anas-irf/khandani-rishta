@@ -78,10 +78,13 @@ export const adminKeys = {
 
 export type ProfileFilters = { status: ProfileStatus; q?: string }
 export type VerificationFilters = { status: VerificationStatus; kind?: AdminVerificationKind }
-export type UserFilters = { q: string; status?: UserStatus; role?: UserRole }
+export type UserFilters = { q?: string; status?: UserStatus; role?: UserRole; page: number }
 
 /** Minimum length of a user search (18 section 5.1). */
 export const USER_SEARCH_MIN_LENGTH = 3
+
+/** Accounts on one page of the users list. */
+export const USERS_PAGE_SIZE = 25
 
 /** The paging parameters of one page of an admin list. */
 type PageQuery = { limit: number; cursor: string | undefined }
@@ -452,16 +455,27 @@ export function useResolveReport() {
 // ---------------------------------------------------------------------------
 
 /** Runs only for a search of at least 3 characters: there is no "browse members" list. */
+/**
+ * One numbered page of the users list (18 section 5.1). The previous page stays on screen while
+ * the next one loads, so the table and the page links don't jump.
+ */
 export function useAdminUsers(filters: UserFilters) {
-  return useAdminList(
-    adminKeys.userList(filters),
-    (page, signal) =>
+  return useQuery({
+    queryKey: adminKeys.userList(filters),
+    queryFn: ({ signal }) =>
       http.get(`${ADMIN}/users`, {
-        query: { q: filters.q, status: filters.status, role: filters.role, ...page },
+        query: {
+          q: filters.q || undefined,
+          status: filters.status,
+          role: filters.role,
+          page: filters.page,
+          page_size: USERS_PAGE_SIZE,
+        },
         signal,
       }),
-    filters.q.trim().length >= USER_SEARCH_MIN_LENGTH,
-  )
+    placeholderData: (previous) => previous,
+    staleTime: STALE.none,
+  })
 }
 
 export function useAdminUser(userId: string | undefined) {

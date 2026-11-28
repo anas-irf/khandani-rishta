@@ -46,6 +46,8 @@ export const usersSearch = z.object({
   q: optionalText,
   status: z.enum(USER_STATUSES).optional().catch(undefined),
   role: z.enum(USER_ROLES).optional().catch(undefined),
+  /** The page of the users list, from 1. Missing or invalid means the first page. */
+  page: z.coerce.number().int().min(1).optional().catch(undefined),
 })
 
 export const castesSearch = z.object({

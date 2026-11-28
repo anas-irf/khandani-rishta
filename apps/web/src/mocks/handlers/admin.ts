@@ -1565,15 +1565,21 @@ export const handlers = [
     const s = state()
     const params = new URL(request.url).searchParams
     const q = (params.get('q') ?? '').trim().toLowerCase()
-    if (q.length < 3) {
+    if (q.length > 0 && q.length < 3) {
       return bad({ field: 'q', code: 'too_short', message: 'Enter at least 3 characters.' })
     }
+    const page = Number(params.get('page') ?? '1')
+    if (!Number.isInteger(page) || page < 1) {
+      return bad({ field: 'page', code: 'out_of_range', message: 'Out of range.' })
+    }
+    const pageSize = Math.min(Math.max(Number(params.get('page_size') ?? '25') || 25, 1), 100)
     const digits = q.replace(/\D/g, '')
     const status = params.get('status')
     const roleFilter = params.get('role')
-    const items = s.people
+    const matching = s.people
       .filter(
         (p) =>
+          !q ||
           p.email.toLowerCase() === q ||
           p.code.toLowerCase() === q ||
           (digits.length >= 7 && p.phone.replace(/\D/g, '').endsWith(digits)) ||
@@ -1583,7 +1589,13 @@ export const handlers = [
       .filter((p) => !status || p.userStatus === status)
       .filter((p) => !roleFilter || roleOf(p) === roleFilter)
       .map(userListItem)
-    return HttpResponse.json(paginate(items, request))
+      .sort((a, b) => b.created_at.localeCompare(a.created_at))
+    return HttpResponse.json({
+      items: matching.slice((page - 1) * pageSize, page * pageSize),
+      total: matching.length,
+      page,
+      page_size: pageSize,
+    })
   }),
 
   http.get(apiUrl('/v1/admin/users/:userId'), ({ params }) => {

@@ -3,8 +3,6 @@
 
 plugins {
     alias(libs.plugins.spotless)
-    // Applied by app/build.gradle.kts only when google-services.json is present.
-    alias(libs.plugins.google.services) apply false
 }
 
 // ktlint settings for every Kotlin file. They live here rather than in .editorconfig because

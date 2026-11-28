@@ -68,7 +68,6 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" />
                 <data android:host="khandanirishta.app" />
-                <data android:host="staging.khandanirishta.app" />
                 <data android:pathPrefix="/profiles/" />
                 <data android:pathPrefix="/p/" />
                 <data android:pathPrefix="/chats/" />
